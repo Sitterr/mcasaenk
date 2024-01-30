@@ -1,0 +1,29 @@
+﻿<Window x:Class="Mcasaenk.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mcasaenk" xmlns:canvas="clr-namespace:Mcasaenk.UI.Canvas" xmlns:ui="clr-namespace:Mcasaenk.UI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+
+    <!--<local:CanvasControl x:Name="i" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" />-->
+
+    <Grid x:Name="GlobalContainer" Background="Green" Grid.Row="1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="720*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="720*"/>
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel x:Name="canvasContainer" LastChildFill="True" Background="Black" Grid.Row="0" >
+            <canvas:CanvasControl x:Name="canvas"/>
+        </DockPanel>
+        <DockPanel x:Name="footerContainer" Background="#151515" Grid.Row="1" Grid.RowSpan="1">
+            <ui:Footer x:Name="footer"></ui:Footer>
+        </DockPanel>
+    </Grid>
+
+</Window>

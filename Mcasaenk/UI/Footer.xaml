@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="Mcasaenk.UI.Footer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mcasaenk.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="25">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="15" />
+            
+            
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            
+            <ColumnDefinition Width="Auto" />
+            
+            
+            <ColumnDefinition Width="15" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.Resources>
+            <SolidColorBrush x:Key="text">#FFAFAFAF</SolidColorBrush>
+            <SolidColorBrush x:Key="blue">#FF95ECF9</SolidColorBrush>
+            <SolidColorBrush x:Key="green">#FFB2FFB6</SolidColorBrush>
+            <SolidColorBrush x:Key="red">#FFDEAA</SolidColorBrush>
+        </Grid.Resources>
+
+        <TextBlock Padding="0,4,0,0" Grid.Column="1" x:Name="gr0">
+                <Run Text="fps: " Foreground="{DynamicResource text}"/>
+                <Run x:Name="txt_fps" Text="0" Foreground="{DynamicResource blue}"/>
+                <Run Text="" Foreground="{DynamicResource text}"/>
+        </TextBlock>
+
+        <TextBlock Padding="0,4,0,0" Grid.Column="3" x:Name="gr1">
+                <Run Text="queue: " Foreground="{DynamicResource text}"/>
+                <Run x:Name="txt_queue" Text="0" Foreground="{DynamicResource blue}"/>
+                <Run Text="" Foreground="{DynamicResource text}"/>
+        </TextBlock>
+    </Grid>
+</UserControl>
