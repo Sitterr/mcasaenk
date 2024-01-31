@@ -40,13 +40,12 @@ namespace Mcasaenk {
 
         public bool Loaded { get; set; } // temp
         public bool Loading { get; set; } // temp
+        public bool Queued { get; set; } // temp
 
         public Tile(Point2i position) {
             this.pos = position;
             image = new TileImage(this);
             observers = new List<WorldPosition>();
-
-            //Reload();
         }
 
         public void NewObserver(WorldPosition screen) {
@@ -57,7 +56,7 @@ namespace Mcasaenk {
         }
 
         public void Load() {
-            Loading = true;
+            Queued = true;
             var task = new Task(() => {
                 try {
                     bool atleastone = false;
@@ -68,16 +67,15 @@ namespace Mcasaenk {
                         }
                     }
                     if(!atleastone) return;
-
-                    image.PutLoadingScreen();
+                    Loading = true;
 
                     Task.Delay(2000).Wait();
-
                     image.GenerateForreal();
 
                     Loaded = true;
                 }
                 finally {
+                    Queued = false;
                     Loading = false;
                 }
             });
@@ -88,23 +86,22 @@ namespace Mcasaenk {
 
     public class TileImage {
         private Tile tile;
-        public ImageSource baseImage;
+        private WriteableBitmap img;
         public TileImage(Tile tile) {
             this.tile = tile;
         }
         public ImageSource GetImage() {
-            return baseImage;
-        }
-
-
-        public void PutLoadingScreen() {
-            baseImage = GetLoadingBitmap();
-            baseImage.Freeze();
+            return img;
         }
 
         public void GenerateForreal() {
-            baseImage = GenerateBitmap(RandomPixels());
-            baseImage.Freeze();
+            /*
+            za vseki region:
+                1) heightmap, bool[20], existing pixels
+                2) List<(bool[512*512] data, Point origin)> tileshadedatas;
+             */
+            img = GenerateBitmap(RandomPixels());
+            img.Freeze();
         }
 
 
@@ -138,53 +135,6 @@ namespace Mcasaenk {
             }
 
             return pixels;
-        }
-
-
-
-        private static ImageSource loadingImage = null;
-        private static ImageSource GetLoadingBitmap() {
-            return loadingImage ??= GenerateLoadingBitmap();
-        }
-        private static ImageSource GenerateLoadingBitmap() {
-            Drawing generateBrushDrawing() {
-                Pen pen1 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s0), 3);
-                Pen pen2 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s8), 3);
-                pen1.Freeze(); pen2.Freeze();
-                DrawingGroup brushDrawing = new DrawingGroup();
-                using(DrawingContext graphics = brushDrawing.Open()) {
-                    for(int i = 0; i < 3; i++) {
-                        for(int j = 0; j < 3; j++) {
-                            Pen pen = pen1;
-                            if(i % 2 == j % 2) pen = pen2;
-                            graphics.DrawLine(pen, new Point(i * 32 + 6, j * 32 + 6), new Point(i * 32 + 22, j * 32 + 22));
-                        }
-                    }
-
-
-                }
-                return brushDrawing;
-            }
-
-            DrawingBrush brush = new DrawingBrush();
-            Rect tileRect = new Rect(0, 0, 32 * 3, 32 * 3);
-            brush.Drawing = generateBrushDrawing();
-            brush.Stretch = Stretch.None;
-            brush.TileMode = TileMode.Tile;
-            brush.Viewport = tileRect;
-            brush.ViewportUnits = BrushMappingMode.Absolute;
-            brush.Freeze();
-
-            RenderTargetBitmap output = new RenderTargetBitmap(Tile.SIDE, Tile.SIDE, 96, 96, PixelFormats.Default);
-
-            DrawingVisual drawingVisual = new DrawingVisual();
-            using(var graphics = drawingVisual.RenderOpen()) {
-                graphics.DrawRectangle(brush, null, new Rect(0, 0, Tile.SIDE, Tile.SIDE));
-            }
-            output.Render(drawingVisual);
-            output.Freeze();
-
-            return output;
         }
 
     }

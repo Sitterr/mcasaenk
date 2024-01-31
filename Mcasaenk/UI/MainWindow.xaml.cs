@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Diagnostics;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,17 +17,30 @@ namespace Mcasaenk.UI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
+
+        public FooterInterface footer;
+
         public MainWindow() {
             InitializeComponent();
 
-            this.KeyUp += MainWindow_KeyUp;
+            footer = footerControl.@interface;
+            canvasControl.Init(this);        
+            footerControl.Init();
 
-            canvas.Init(footer.@interface);
-            footer.Init();
-        }
+            MouseHook.Start();
+            MouseHook.MouseMove += (a, b) => {
+                if(canvasControl.mousedown) {
+                    canvasControl.OnMouseMove(canvasControl.GetRelativeMouse(b));
+                }
+            };
+            MouseHook.MouseDown += (a, b) => {
+            };
+            MouseHook.MouseUp += (a, b) => {
+                if(canvasControl.mousedown) {
+                    canvasControl.OnMouseUp(a, null);
+                }
+            };
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e) {
-            //canvas.OnKeyUp(sender, e);
         }
     }
 }

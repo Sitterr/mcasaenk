@@ -23,27 +23,20 @@ namespace Mcasaenk.UI.Canvas {
     public partial class CanvasControl : UserControl {
 
         WorldPosition screen;
-
         List<Painter> painters;
-        Painter scenePainter, gridPainter, backgroundPainter;
+
+        MainWindow window;
 
         public CanvasControl() {
             InitializeComponent();
-
-
-            this.SizeChanged += OnSizeChange;
-            this.MouseWheel += OnMouseWheel;
-            this.MouseDown += OnMouseDown;
-            this.MouseUp += OnMouseUp;
-            this.MouseMove += OnMouseMove;
-
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
 
-            screen = new WorldPosition() { zoom = 1, position = new Point2f(0, 0), w = (int)ActualWidth, h = (int)ActualWidth };
-            scenePainter = new ScenePainter();
-            gridPainter = new GridPainter2();
-            backgroundPainter = new BackgroundPainter();
+            screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
+
+            var scenePainter = new ScenePainter();
+            var gridPainter = new GridPainter2();
+            var backgroundPainter = new BackgroundPainter();
             painters = [
                 backgroundPainter,
                 scenePainter,
@@ -54,13 +47,18 @@ namespace Mcasaenk.UI.Canvas {
 
             var secondaryTimer = new DispatcherTimer(DispatcherPriority.Normal, this.Dispatcher);
             secondaryTimer.Tick += OnSlowTick;
-            secondaryTimer.Interval = TimeSpan.FromMilliseconds(100);
+            secondaryTimer.Interval = TimeSpan.FromMilliseconds(500);
             secondaryTimer.Start();
-        }
 
-        private FooterInterface footer;
-        public void Init(FooterInterface footer) {
-            this.footer = footer;
+            this.SizeChanged += OnSizeChange;
+            this.MouseWheel += OnMouseWheel;
+            this.MouseDown += OnMouseDown;
+            this.MouseUp += OnMouseUp;
+            this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
+            this.MouseLeave += OnMouseLeave;
+        }
+        public void Init(MainWindow window) {
+            this.window = window;
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -74,77 +72,104 @@ namespace Mcasaenk.UI.Canvas {
         double tick_lastElapsed = 0, tick_accumulation = 0;
         int tick_count = 0;
         private void OnFastTick(object sender, EventArgs e) {
-            double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
-            tick_accumulation += (elapsed - tick_lastElapsed);
-            tick_lastElapsed = elapsed;
-            tick_count++;
-            if(tick_accumulation > 1000) {
-                footer.Fps = tick_count;
-                tick_accumulation = 0;
-                tick_count = 0;
-            }
-
             foreach(var painter in painters) {
                 painter.Update(screen);
+            }
+
+            { // footer update
+                double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
+                tick_accumulation += (elapsed - tick_lastElapsed);
+                tick_lastElapsed = elapsed;
+                tick_count++;
+                if(tick_accumulation > 1000) {
+                    window.footer.Fps = tick_count;
+                    tick_accumulation = 0;
+                    tick_count = 0;
+                }
+                window.footer.RegionQueue = TileMap.loading_pool.TaskCount();
+                window.footer.Region = screen.GetTile(mousePos).pos;
             }
         }
 
         private void OnSlowTick(object sender, EventArgs e) {
-            Debug.WriteLine("slow");
-
             foreach(var tile in screen.GetVisibleTiles()) {
-                if(tile.Loaded == false && tile.Loading == false) {
+                if(tile.Loaded == false && tile.Queued == false) {
                     tile.Load();
                 }
             }
-
-            var scheduler = TileMap.loading_pool;
-            footer.RegionQueue = scheduler.TaskCount();
+            
         }
+
+
+
+
 
 
         #region INPUT
-        private Point2f startDrag = default, startPos = default;
+        public Point GetRelativeMouse(Point screenMouse) {
+            Point pos;
+            Dispatcher.Invoke(() => {
+                pos = this.TranslatePoint(window.PointFromScreen(screenMouse), this);
+            });
+            return pos;
+        }
+
+        private Point mousePos = default, mouseStart = default;
+        public bool mousedown = false;
         public void OnMouseDown(object sender, MouseButtonEventArgs e) {
-            if(e.ChangedButton == MouseButton.Middle) {
-                startDrag = new Point2f(e.GetPosition(this));
-                startPos = screen.position;
+            switch(e.ChangedButton) {
+                case MouseButton.Left:
+                case MouseButton.Middle:
+                    mouseStart = screen.GetGlobalPos(e.GetPosition(this));
+                    mousedown = true;
+                    break;
+                default: break;
             }
+            
         }
         public void OnMouseUp(object sender, MouseButtonEventArgs e) {
-            if(e.ChangedButton == MouseButton.Middle) {
-                startDrag = default;
-                startPos = default;
-            } else if(e.ChangedButton == MouseButton.Left) {
-                TileMap.GetTile(screen.GetRelativeTile(new Point2f(e.GetPosition(this))), screen).Load();
+            switch(e?.ChangedButton) {
+                case null:
+                case MouseButton.Left:
+                case MouseButton.Middle:
+                    mouseStart = default;
+                    mousedown = false;
+                    break;
+                case MouseButton.Right:
+                    screen.GetTile(e.GetPosition(this)).Load();
+                    break;
+                default: break;
             }
         }
-        public void OnMouseMove(object sender, MouseEventArgs e) {
-            if(startDrag != default) {
-                Point2f currDrag = new Point2f(e.GetPosition(this));
-                screen.position = startPos + (startDrag - currDrag) / screen.zoom;
+        public void OnMouseMove(Point point) {
+            mousePos = point;
+            if(mousedown) {             
+                screen.SetStart(mouseStart.Sub(mousePos.Dev(screen.zoom)));
                 //Render();
             }
         }
         public void OnMouseWheel(object sender, MouseWheelEventArgs e) {
             int delta = e.Delta > 0 ? 1 : -1;
-            if(screen.GetZoomScale() + delta < Settings.MINZOOM || screen.GetZoomScale() + delta > Settings.MAXZOOM) return;
+            if(screen.ZoomScale + delta < Settings.MINZOOM || screen.ZoomScale + delta > Settings.MAXZOOM) return;
 
-            Point2f newCenter;
-            if(delta == 1) {
-                newCenter = screen.position + new Point2f(e.GetPosition((IInputElement)sender)) / screen.zoom;
-            } else {
-                newCenter = screen.position + new Point2f(screen.w / 2, screen.h / 2) / screen.zoom;
-            }
-            screen.zoom *= (float)Math.Pow(2, delta);
-            screen.position = newCenter - new Point2f(screen.w / 2, screen.h / 2) / screen.zoom;
-            startPos = screen.position;
+            Point mouseRel = e.GetPosition((IInputElement)sender);
+            Point mouseGl = screen.GetGlobalPos(mouseRel);
 
+            screen.ZoomScale += delta;
+            screen.SetStart(mouseGl.Sub(mouseRel.Dev(screen.zoom)));
+
+            mouseStart = screen.coord.TopLeft;
             //Render();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
-            screen.w = (int)this.ActualWidth; screen.h = (int)this.ActualHeight;
+            screen.ScreenWidth = (int)this.ActualWidth;
+            screen.ScreenHeight = (int)this.ActualHeight;
             //Render();
+        }
+        private void OnMouseLeave(object sender, MouseEventArgs e) {
+            //mousePos = default;
+            //mouseStart = default;
+            //origScreenPos = default;
         }
         #endregion
     }

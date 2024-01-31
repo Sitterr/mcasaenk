@@ -19,10 +19,10 @@
         </Grid.RowDefinitions>
 
         <DockPanel x:Name="canvasContainer" LastChildFill="True" Background="Black" Grid.Row="0" >
-            <canvas:CanvasControl x:Name="canvas"/>
+            <canvas:CanvasControl x:Name="canvasControl"/>
         </DockPanel>
         <DockPanel x:Name="footerContainer" Background="#151515" Grid.Row="1" Grid.RowSpan="1">
-            <ui:Footer x:Name="footer"></ui:Footer>
+            <ui:Footer x:Name="footerControl"></ui:Footer>
         </DockPanel>
     </Grid>
 

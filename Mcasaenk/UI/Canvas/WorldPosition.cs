@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,24 +8,72 @@ using System.Windows.Media;
 
 namespace Mcasaenk.UI.Canvas {
     public class WorldPosition {
-        public float zoom;
-        public int w, h;
-        public Point2f position;
+        private double _zoom;
 
-        public int GetZoomScale() {
-            return (int)Math.Log2(zoom);
+        public Rect coord;
+        public WorldPosition(Point start, int screenWidth, int screenHeight, double zoom) {
+            this.coord = new Rect(start.X, start.Y, screenWidth * zoom, screenHeight * zoom);
+            _zoom = zoom;
         }
 
-        public Point2i GetRelativeTile(Point2f point) {
-            return new Point2i(Global.Coord.absDev((position.X + point.X / zoom), 512), Global.Coord.absDev((position.Z + point.Z / zoom), 512));
+        public void SetStart(Point p) {
+            coord.X = p.X;
+            coord.Y = p.Y;
+        }
+
+        public int ScreenWidth {
+            get {
+                return (int)(coord.Width * zoom);
+            }
+            set {
+                coord.Width = value / zoom;
+            }
+        }
+        public int ScreenHeight {
+            get {
+                return (int)(coord.Height * zoom);
+            }
+            set {
+                coord.Height = value / zoom;
+            }
+        }
+        public double zoom {
+            get {
+                return _zoom;
+            }
+            set {
+                int screenw = ScreenWidth, screenh = ScreenHeight;
+                _zoom = value;
+                ScreenWidth = screenw;
+                ScreenHeight = screenh;
+            }
+        }
+
+        public int ZoomScale {
+            get {
+                return (int)Math.Log2(zoom);
+            }
+
+            set {
+                zoom = Math.Pow(2, value);
+            }
+        }
+
+        public Tile GetTile(Point rel) {
+            var globalPos = GetGlobalPos(rel);
+            return TileMap.GetTile(new Point2i(Global.Coord.absDev(globalPos.X, 512), Global.Coord.absDev(globalPos.Y, 512)), this);
+        }
+
+        public Point GetGlobalPos(Point rel) {
+            return new Point(coord.X + rel.X / zoom, coord.Y + rel.Y / zoom);
         }
 
         public IEnumerable<Tile> GetVisibleTiles() {
-            float sx = Global.Coord.absDev(position.X, 512), sz = Global.Coord.absDev(position.Z, 512), tx = Global.Coord.absMod(position.X, 512), tz = Global.Coord.absMod(position.Z, 512);
+            double sx = Global.Coord.absDev(coord.X, 512), sz = Global.Coord.absDev(coord.Y, 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
 
-            for(int x = 0; (x * 512 - tx) * zoom < w; x++) {
-                for(int z = 0; (z * 512 - tz) * zoom < h; z++) {
-                    if(x + sx > -7 && x + sx < 7 && z + sz > -7 && z + sz < 7) {
+            for(int x = 0; x * 512 - tx < coord.Width; x++) {
+                for(int z = 0; z * 512 - tz < coord.Height; z++) {
+                    if(x + sx > -10 && x + sx < 10 && z + sz > -10 && z + sz < 10) {
                         yield return TileMap.GetTile(new Point2i(x + sx, z + sz), this);
                     }
                 }
@@ -33,7 +82,8 @@ namespace Mcasaenk.UI.Canvas {
 
 
         public bool IsVisible(Tile tile) {
-            return GetVisibleTiles().Contains(tile);
+            Rect tileArea = new Rect(tile.pos.X * 512, tile.pos.Z * 512, 512, 512);
+            return coord.IntersectsWith(tileArea);
         }
     }
 }

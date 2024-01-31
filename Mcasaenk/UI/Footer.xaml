@@ -18,6 +18,9 @@
             <ColumnDefinition Width="30" />
 
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             
             <ColumnDefinition Width="Auto" />
@@ -33,15 +36,21 @@
             <SolidColorBrush x:Key="red">#FFDEAA</SolidColorBrush>
         </Grid.Resources>
 
-        <TextBlock Padding="0,4,0,0" Grid.Column="1" x:Name="gr0">
+        <TextBlock Padding="0,4,0,0" Grid.Column="1">
                 <Run Text="fps: " Foreground="{DynamicResource text}"/>
                 <Run x:Name="txt_fps" Text="0" Foreground="{DynamicResource blue}"/>
                 <Run Text="" Foreground="{DynamicResource text}"/>
         </TextBlock>
 
-        <TextBlock Padding="0,4,0,0" Grid.Column="3" x:Name="gr1">
+        <TextBlock Padding="0,4,0,0" Grid.Column="3">
                 <Run Text="queue: " Foreground="{DynamicResource text}"/>
                 <Run x:Name="txt_queue" Text="0" Foreground="{DynamicResource blue}"/>
+                <Run Text="" Foreground="{DynamicResource text}"/>
+        </TextBlock>
+
+        <TextBlock Padding="0,4,0,0" Grid.Column="5">
+                <Run Text="region: " Foreground="{DynamicResource text}"/>
+                <Run x:Name="txt_region" Text="0" Foreground="{DynamicResource blue}"/>
                 <Run Text="" Foreground="{DynamicResource text}"/>
         </TextBlock>
     </Grid>

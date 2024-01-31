@@ -18,12 +18,13 @@ namespace Mcasaenk.UI.Canvas {
         private readonly DrawingGroup drawingGroup;
         public Painter() {
             drawingGroup = new DrawingGroup();
+           //RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
         }
 
         public Drawing GetDrawing() {  return drawingGroup; }
 
         public void Update(WorldPosition wPos) {
-            using var graphics = drawingGroup.Open();
+            using var graphics = this.drawingGroup.Open();
             this.Render(graphics, wPos);
         }
 
@@ -34,35 +35,83 @@ namespace Mcasaenk.UI.Canvas {
     public class ScenePainter : Painter {
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             graphics.PushTransform(new ScaleTransform(screen.zoom, screen.zoom));
-            DrawImage(graphics, screen);
-        }
-
-        void DrawImage(DrawingContext graphics, WorldPosition screen) {
-            ImageSource img;
             foreach(var tile in screen.GetVisibleTiles()) {
-                Rect rect = new Rect(tile.pos.X * 512 - screen.position.X, tile.pos.Z * 512 - screen.position.Z, 512, 512);
-                img = tile.image.GetImage();
-                if(img == null) continue;
-                graphics.DrawImage(img, rect);
+                Rect rect = new Rect(tile.pos.X * 512 - screen.coord.X, tile.pos.Z * 512 - screen.coord.Y, 512, 512);
+                if(tile.image.GetImage() != null) {
+                    graphics.DrawImage(tile.image.GetImage(), rect);
+                }
+                if(tile.Loading) {
+                    graphics.DrawImage(GetLoadingOverlay(), rect);
+                }
             }
         }
 
+
+        private ImageSource _loadingOverlay = null;
+        private ImageSource GetLoadingOverlay() {
+            _loadingOverlay ??= GenerateLoadingBitmap();
+            return _loadingOverlay;
+        }
+
+        private static ImageSource GenerateLoadingBitmap() {
+            Drawing generateBrushDrawing() {
+                Pen pen1 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s0), 3);
+                Pen pen2 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s8), 3);
+                pen1.Freeze(); pen2.Freeze();
+                DrawingGroup brushDrawing = new DrawingGroup();
+                RenderOptions.SetEdgeMode(brushDrawing, EdgeMode.Aliased);
+                using(DrawingContext graphics = brushDrawing.Open()) {
+                    for(int i = 0; i < 3; i++) {
+                        for(int j = 0; j < 3; j++) {
+                            Pen pen = pen1;
+                            if(i % 2 == j % 2) pen = pen2;
+                            graphics.DrawLine(pen, new Point(i * 32 + 6, j * 32 + 6), new Point(i * 32 + 22, j * 32 + 22));
+                        }
+                    }
+
+
+                }
+                return brushDrawing;
+            }
+
+            DrawingBrush brush = new DrawingBrush();
+            Rect tileRect = new Rect(0, 0, 32 * 3, 32 * 3);
+            brush.Drawing = generateBrushDrawing();
+            brush.Stretch = Stretch.None;
+            brush.TileMode = TileMode.Tile;
+            brush.Viewport = tileRect;
+            brush.ViewportUnits = BrushMappingMode.Absolute;
+            brush.Freeze();
+
+            RenderTargetBitmap output = new RenderTargetBitmap(Tile.SIDE, Tile.SIDE, 96, 96, PixelFormats.Default);
+
+            DrawingVisual drawingVisual = new DrawingVisual();
+            using(var graphics = drawingVisual.RenderOpen()) {
+                graphics.DrawRectangle(brush, null, new Rect(0, 0, Tile.SIDE, Tile.SIDE));
+            }
+            output.Render(drawingVisual);
+            output.Freeze();
+
+            return output;
+        }
     }
 
     class ChunkGridPainter : Painter {
         private Pen pen;
         private DrawingBrush cached_chunkBrush;
-        private float cached_zoom = -1;
+        private double cached_zoom = -1;
+
+        const double opacity = 0.5;
 
         public ChunkGridPainter() {
-            pen = new Pen(new SolidColorBrush(Colors.LightGray), 1);
+            pen = new Pen(new SolidColorBrush(Global.FromArgb(opacity, Colors.LightGray)), 1);
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            float tx = Global.Coord.absMod(screen.position.X, 16) * screen.zoom, tz = Global.Coord.absMod(screen.position.Z, 16) * screen.zoom;
+            double tx = Global.Coord.absMod(screen.coord.X, 16) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 16) * screen.zoom;
 
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
-            graphics.DrawRectangle(GetChunkBrush(screen.zoom), null, new Rect(0, 0, screen.w + tx, screen.h + tz));
+            graphics.DrawRectangle(GetChunkBrush(screen.zoom), null, new Rect(0, 0, screen.ScreenWidth + tx, screen.ScreenHeight + tz));
         }
 
 
@@ -74,7 +123,7 @@ namespace Mcasaenk.UI.Canvas {
             }
             return drawing;
         }
-        private DrawingBrush GetChunkBrush(float zoom) {
+        private DrawingBrush GetChunkBrush(double zoom) {
             if(cached_zoom != zoom) {
 
                 cached_chunkBrush = new DrawingBrush();
@@ -92,59 +141,35 @@ namespace Mcasaenk.UI.Canvas {
         }
     }
     class RegionGridPainter : Painter {
-        private Pen linePen, dashPen, usedPen;
-        private DrawingBrush cached_chunkBrush;
-        private float cached_zoom = -1;
+        private Pen linePen, dashPen;
 
-        const int dashsize = 4;
+        const int dashtickness = 4;
+        const int dashsize = 32;
+        const double opacity = 0.5;
 
         public RegionGridPainter() {
-            usedPen = new Pen(null, 0);
-            linePen = new Pen(new SolidColorBrush(Colors.White), 1);
-            dashPen = new Pen(new SolidColorBrush(Colors.White), 3) {
-                DashStyle = new DashStyle(new double[] { dashsize, dashsize }, 0),
+            linePen = new Pen(new SolidColorBrush(Global.FromArgb(opacity, Colors.White)), 1);
+            dashPen = new Pen(new SolidColorBrush(Global.FromArgb(opacity, Colors.White)), dashtickness) {
+                DashStyle = new DashStyle(new double[] { dashsize / dashtickness }, 0),
+                DashCap = PenLineCap.Flat,
+                StartLineCap = PenLineCap.Flat,
             };
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            float tx = Global.Coord.absMod(screen.position.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.position.Z, 512) * screen.zoom;
-
-            graphics.PushTransform(new TranslateTransform(-tx - (int)Math.Ceiling(usedPen.Thickness / 2), -tz - (int)Math.Ceiling(usedPen.Thickness / 2)));
-            graphics.DrawRectangle(GetRegionBrush(screen), null, new Rect(0, 0, screen.w + tx, screen.h + tz));
-        }
+            double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
+            graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
 
-        private DrawingGroup GenerateRegionDrawing(Rect rect, int zoomScale) {
-            DrawingGroup drawing = new DrawingGroup();
-            //RenderOptions.SetBitmapScalingMode(drawing, BitmapScalingMode.NearestNeighbor);
+            Pen pen = screen.ZoomScale < 0 ? linePen : dashPen;
 
-            using(DrawingContext graphics = drawing.Open()) {
-                if(zoomScale < 0) {
-                    graphics.DrawRectangle(null, linePen, rect);
-                    usedPen = linePen;
-                } else if(zoomScale >= 0) {
-                    graphics.DrawLine(dashPen, new Point(rect.Left, rect.Top), new Point(rect.Right, rect.Top));
-                    graphics.DrawLine(dashPen, new Point(rect.Left, rect.Top), new Point(rect.Left, rect.Bottom));
-                    usedPen = dashPen;
-                }
+            for(int zz = 1; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(dashsize / 2 + 1, zz - 1), new Point(tx + screen.ScreenWidth, zz - 1));
             }
 
-            return drawing;
-        }
-        private DrawingBrush GetRegionBrush(WorldPosition screen) {
-            if(cached_zoom != screen.zoom) {
-
-                cached_chunkBrush = new DrawingBrush();
-                Rect tileRect = new Rect(0, 0, 512 * screen.zoom, 512 * screen.zoom);
-                cached_chunkBrush.Drawing = GenerateRegionDrawing(tileRect, screen.GetZoomScale());
-                cached_chunkBrush.TileMode = TileMode.Tile;
-                cached_chunkBrush.Viewport = tileRect;
-                cached_chunkBrush.ViewportUnits = BrushMappingMode.Absolute;
-                cached_chunkBrush.Freeze();
-
-                cached_zoom = screen.zoom;
+            for(int xx = 1; xx < screen.ScreenWidth + tx; xx += (int)(512 * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(xx - 1, dashsize / 2 + 1), new Point(xx - 1, 0 + tz + screen.ScreenHeight));
             }
-            return cached_chunkBrush;
         }
     }
     public class GridPainter2 : Painter {
@@ -158,7 +183,7 @@ namespace Mcasaenk.UI.Canvas {
     
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             if(Settings.CHUNKGRID) {
-                if(screen.GetZoomScale() >= 0) {
+                if(screen.ZoomScale >= 0) {
                     chunkPainter.Update(screen);
                     graphics.DrawDrawing(chunkPainter.GetDrawing());
                 }
@@ -179,7 +204,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            graphics.DrawRectangle(brush, null, new Rect(0, 0, screen.w, screen.h));
+            graphics.DrawRectangle(brush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
         }
     }
 }

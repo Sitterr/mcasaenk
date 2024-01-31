@@ -10,11 +10,12 @@ using System.Windows.Documents;
 namespace Mcasaenk.UI {
     public class FooterInterface {
 
-        private Run txt_queue, txt_fps;
+        private Run txt_queue, txt_fps, txt_region;
 
-        public FooterInterface(Run txt_queue, Run txt_fps) { 
+        public FooterInterface(Run txt_queue, Run txt_fps, Run txt_region) { 
             this.txt_queue = txt_queue;
             this.txt_fps = txt_fps;
+            this.txt_region = txt_region;
         }
 
         public int RegionQueue {
@@ -32,6 +33,12 @@ namespace Mcasaenk.UI {
             }
             set {
                 txt_fps.Text = value.ToString();
+            }
+        }
+
+        public Point2i Region {
+            set {
+                txt_region.Text = value.ToString();
             }
         }
 
