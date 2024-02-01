@@ -59,22 +59,22 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-        public Tile GetTile(Point rel) {
+        public Point2i GetTilePos(Point rel) {
             var globalPos = GetGlobalPos(rel);
-            return TileMap.GetTile(new Point2i(Global.Coord.absDev(globalPos.X, 512), Global.Coord.absDev(globalPos.Y, 512)), this);
+            return new Point2i(Global.Coord.absDev(globalPos.X, 512), Global.Coord.absDev(globalPos.Y, 512));
         }
 
         public Point GetGlobalPos(Point rel) {
             return new Point(coord.X + rel.X / zoom, coord.Y + rel.Y / zoom);
         }
 
-        public IEnumerable<Tile> GetVisibleTiles() {
+        public IEnumerable<Point2i> GetVisibleTilePositions() {
             double sx = Global.Coord.absDev(coord.X, 512), sz = Global.Coord.absDev(coord.Y, 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
 
             for(int x = 0; x * 512 - tx < coord.Width; x++) {
                 for(int z = 0; z * 512 - tz < coord.Height; z++) {
                     if(x + sx > -10 && x + sx < 10 && z + sz > -10 && z + sz < 10) {
-                        yield return TileMap.GetTile(new Point2i(x + sx, z + sz), this);
+                        yield return new Point2i(x + sx, z + sz);
                     }
                 }
             }

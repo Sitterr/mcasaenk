@@ -33,19 +33,26 @@ namespace Mcasaenk.UI.Canvas {
 
 
     public class ScenePainter : Painter {
+        private TileMap tileMap;
+        public void SetTileMap(TileMap tileMap) {
+            this.tileMap = tileMap;
+        }
+
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
+            if(tileMap == null) return;
             graphics.PushTransform(new ScaleTransform(screen.zoom, screen.zoom));
-            foreach(var tile in screen.GetVisibleTiles()) {
+            foreach(var pos in screen.GetVisibleTilePositions()) {
+                var tile = tileMap.GetTile(pos, screen);
                 Rect rect = new Rect(tile.pos.X * 512 - screen.coord.X, tile.pos.Z * 512 - screen.coord.Y, 512, 512);
-                if(tile.image.GetImage() != null) {
-                    graphics.DrawImage(tile.image.GetImage(), rect);
+                if(tile.GetImage() != null) {
+                    graphics.DrawImage(tile.GetImage(), rect);
                 }
                 if(tile.Loading) {
                     graphics.DrawImage(GetLoadingOverlay(), rect);
                 }
             }
         }
-
+    
 
         private ImageSource _loadingOverlay = null;
         private ImageSource GetLoadingOverlay() {
@@ -83,11 +90,11 @@ namespace Mcasaenk.UI.Canvas {
             brush.ViewportUnits = BrushMappingMode.Absolute;
             brush.Freeze();
 
-            RenderTargetBitmap output = new RenderTargetBitmap(Tile.SIDE, Tile.SIDE, 96, 96, PixelFormats.Default);
+            RenderTargetBitmap output = new RenderTargetBitmap(512, 512, 96, 96, PixelFormats.Default);
 
             DrawingVisual drawingVisual = new DrawingVisual();
             using(var graphics = drawingVisual.RenderOpen()) {
-                graphics.DrawRectangle(brush, null, new Rect(0, 0, Tile.SIDE, Tile.SIDE));
+                graphics.DrawRectangle(brush, null, new Rect(0, 0, 512, 512));
             }
             output.Render(drawingVisual);
             output.Freeze();
@@ -145,7 +152,7 @@ namespace Mcasaenk.UI.Canvas {
 
         const int dashtickness = 4;
         const int dashsize = 32;
-        const double opacity = 0.5;
+        const double opacity = 0.75;
 
         public RegionGridPainter() {
             linePen = new Pen(new SolidColorBrush(Global.FromArgb(opacity, Colors.White)), 1);
@@ -160,13 +167,11 @@ namespace Mcasaenk.UI.Canvas {
             double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
-
             Pen pen = screen.ZoomScale < 0 ? linePen : dashPen;
 
             for(int zz = 1; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
                 graphics.DrawLine(pen, new Point(dashsize / 2 + 1, zz - 1), new Point(tx + screen.ScreenWidth, zz - 1));
             }
-
             for(int xx = 1; xx < screen.ScreenWidth + tx; xx += (int)(512 * screen.zoom)) {
                 graphics.DrawLine(pen, new Point(xx - 1, dashsize / 2 + 1), new Point(xx - 1, 0 + tz + screen.ScreenHeight));
             }

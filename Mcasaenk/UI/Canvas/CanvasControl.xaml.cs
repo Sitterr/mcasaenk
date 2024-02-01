@@ -23,9 +23,13 @@ namespace Mcasaenk.UI.Canvas {
     public partial class CanvasControl : UserControl {
 
         WorldPosition screen;
-        List<Painter> painters;
-
+        TileMap tileMap;
         MainWindow window;
+
+        List<Painter> painters;
+        ScenePainter scenePainter;
+        GridPainter2 gridPainter;
+        BackgroundPainter backgroundPainter;
 
         public CanvasControl() {
             InitializeComponent();
@@ -34,9 +38,9 @@ namespace Mcasaenk.UI.Canvas {
 
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
-            var scenePainter = new ScenePainter();
-            var gridPainter = new GridPainter2();
-            var backgroundPainter = new BackgroundPainter();
+            scenePainter = new ScenePainter();
+            gridPainter = new GridPainter2();
+            backgroundPainter = new BackgroundPainter();
             painters = [
                 backgroundPainter,
                 scenePainter,
@@ -59,6 +63,10 @@ namespace Mcasaenk.UI.Canvas {
         }
         public void Init(MainWindow window) {
             this.window = window;
+        }
+        public void SetTileMap(TileMap tileMap) { 
+            this.tileMap = tileMap;
+            scenePainter.SetTileMap(tileMap);
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -86,13 +94,15 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                window.footer.RegionQueue = TileMap.loading_pool.TaskCount();
-                window.footer.Region = screen.GetTile(mousePos).pos;
+                window.footer.RegionQueue = Tile.loading_pool.TaskCount();
+                window.footer.Region = screen.GetTilePos(mousePos);
             }
         }
 
         private void OnSlowTick(object sender, EventArgs e) {
-            foreach(var tile in screen.GetVisibleTiles()) {
+            if(tileMap == null) return;
+            foreach(var pos in screen.GetVisibleTilePositions()) {
+                var tile = tileMap.GetTile(pos, screen);
                 if(tile.Loaded == false && tile.Queued == false) {
                     tile.Load();
                 }
@@ -136,7 +146,7 @@ namespace Mcasaenk.UI.Canvas {
                     mousedown = false;
                     break;
                 case MouseButton.Right:
-                    screen.GetTile(e.GetPosition(this)).Load();
+                    //screen.GetTilePos(e.GetPosition(this)).Load();
                     break;
                 default: break;
             }

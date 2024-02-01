@@ -20,13 +20,30 @@ namespace Mcasaenk.UI {
 
         public FooterInterface footer;
 
+        private Save _openedSave;
+        public Save OpenedSave {
+            get { 
+                return _openedSave;
+            }
+
+            set { 
+                _openedSave = value;
+                canvasControl.SetTileMap(_openedSave.overworld.tileMap);
+            }
+        }
         public MainWindow() {
             InitializeComponent();
 
             footer = footerControl.@interface;
-            canvasControl.Init(this);        
+            canvasControl.Init(this);
             footerControl.Init();
 
+            OpenedSave = new Save("C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\Niki2 - Copy");
+
+            this.InitEvents();
+        }
+
+        private void InitEvents() {
             MouseHook.Start();
             MouseHook.MouseMove += (a, b) => {
                 if(canvasControl.mousedown) {
@@ -40,7 +57,6 @@ namespace Mcasaenk.UI {
                     canvasControl.OnMouseUp(a, null);
                 }
             };
-
         }
     }
 }
