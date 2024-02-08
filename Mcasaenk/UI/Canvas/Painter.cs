@@ -33,7 +33,7 @@ namespace Mcasaenk.UI.Canvas {
 
 
     public class ScenePainter : Painter {
-        private TileMap tileMap;
+        private TileMap tileMap = null;
         public void SetTileMap(TileMap tileMap) {
             this.tileMap = tileMap;
         }
@@ -42,11 +42,15 @@ namespace Mcasaenk.UI.Canvas {
             if(tileMap == null) return;
             graphics.PushTransform(new ScaleTransform(screen.zoom, screen.zoom));
             foreach(var pos in screen.GetVisibleTilePositions()) {
-                var tile = tileMap.GetTile(pos, screen);
+                var tile = tileMap.GetTile(pos);
+                if(tile == null) continue;
                 Rect rect = new Rect(tile.pos.X * 512 - screen.coord.X, tile.pos.Z * 512 - screen.coord.Y, 512, 512);
                 if(tile.GetImage() != null) {
                     graphics.DrawImage(tile.GetImage(), rect);
+                } else {
+                    graphics.DrawImage(GetUnloadedOverlay(), rect);
                 }
+
                 if(tile.Loading) {
                     graphics.DrawImage(GetLoadingOverlay(), rect);
                 }
@@ -54,25 +58,25 @@ namespace Mcasaenk.UI.Canvas {
         }
     
 
-        private ImageSource _loadingOverlay = null;
-        private ImageSource GetLoadingOverlay() {
-            _loadingOverlay ??= GenerateLoadingBitmap();
-            return _loadingOverlay;
+        private ImageSource _unloadedOverlay = null;
+        private ImageSource GetUnloadedOverlay() {
+            _unloadedOverlay ??= GenerateUnloaded();
+            return _unloadedOverlay;
         }
-
-        private static ImageSource GenerateLoadingBitmap() {
+        private static ImageSource GenerateUnloaded() {
             Drawing generateBrushDrawing() {
-                Pen pen1 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s0), 3);
-                Pen pen2 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s8), 3);
+                Pen pen1 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s0), 24);
+                Pen pen2 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s8), 24);
                 pen1.Freeze(); pen2.Freeze();
                 DrawingGroup brushDrawing = new DrawingGroup();
                 RenderOptions.SetEdgeMode(brushDrawing, EdgeMode.Aliased);
                 using(DrawingContext graphics = brushDrawing.Open()) {
-                    for(int i = 0; i < 3; i++) {
-                        for(int j = 0; j < 3; j++) {
+                    for(int i = 0; i < 4; i++) {
+                        for(int j = 0; j < 4; j++) {
                             Pen pen = pen1;
                             if(i % 2 == j % 2) pen = pen2;
-                            graphics.DrawLine(pen, new Point(i * 32 + 6, j * 32 + 6), new Point(i * 32 + 22, j * 32 + 22));
+                            int q = 24;
+                            graphics.DrawLine(pen, new Point(i * 128 + q, j * 128 + q), new Point(i * 128 + (128 - 2 * q), j * 128 + (128 - 2 * q)));
                         }
                     }
 
@@ -82,7 +86,7 @@ namespace Mcasaenk.UI.Canvas {
             }
 
             DrawingBrush brush = new DrawingBrush();
-            Rect tileRect = new Rect(0, 0, 32 * 3, 32 * 3);
+            Rect tileRect = new Rect(0, 0, 128 * 4, 128 * 4);
             brush.Drawing = generateBrushDrawing();
             brush.Stretch = Stretch.None;
             brush.TileMode = TileMode.Tile;
@@ -95,6 +99,30 @@ namespace Mcasaenk.UI.Canvas {
             DrawingVisual drawingVisual = new DrawingVisual();
             using(var graphics = drawingVisual.RenderOpen()) {
                 graphics.DrawRectangle(brush, null, new Rect(0, 0, 512, 512));
+            }
+            output.Render(drawingVisual);
+            output.Freeze();
+
+            return output;
+        }
+
+
+        private ImageSource _loadingOverlay = null;
+        private ImageSource GetLoadingOverlay() {
+            _loadingOverlay ??= GenerateLoading();
+            return _loadingOverlay;
+        }
+        private static ImageSource GenerateLoading() {
+            RenderTargetBitmap output = new RenderTargetBitmap(512, 512, 96, 96, PixelFormats.Default);
+
+            DrawingVisual drawingVisual = new DrawingVisual();
+            using(var graphics = drawingVisual.RenderOpen()) {
+                var radient = new RadialGradientBrush(Colors.Transparent, Global.FromArgb(0.35, Global.ColorPallete.Pallete.s7)) {
+                    Center = new Point(0.5, 0.5),
+                    RadiusX = 1.25, RadiusY = 1.25,
+                    GradientOrigin = new Point(0.5, 0.5),
+                };
+                graphics.DrawRectangle(radient, null, new Rect(0, 0, 512, 512));
             }
             output.Render(drawingVisual);
             output.Freeze();
@@ -151,7 +179,7 @@ namespace Mcasaenk.UI.Canvas {
         private Pen linePen, dashPen;
 
         const int dashtickness = 4;
-        const int dashsize = 32;
+        const int dashsize = 32, linesize = 0;
         const double opacity = 0.75;
 
         public RegionGridPainter() {
@@ -168,12 +196,13 @@ namespace Mcasaenk.UI.Canvas {
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
             Pen pen = screen.ZoomScale < 0 ? linePen : dashPen;
+            int pensize = pen == linePen ? linesize : dashsize;
 
-            for(int zz = 1; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
-                graphics.DrawLine(pen, new Point(dashsize / 2 + 1, zz - 1), new Point(tx + screen.ScreenWidth, zz - 1));
+            for(int zz = 0; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(pensize / 2 + 1, zz), new Point(tx + screen.ScreenWidth, zz));
             }
-            for(int xx = 1; xx < screen.ScreenWidth + tx; xx += (int)(512 * screen.zoom)) {
-                graphics.DrawLine(pen, new Point(xx - 1, dashsize / 2 + 1), new Point(xx - 1, 0 + tz + screen.ScreenHeight));
+            for(int xx = 0; xx < screen.ScreenWidth + tx; xx += (int)(512 * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(xx, pensize / 2 + 1), new Point(xx, 0 + tz + screen.ScreenHeight));
             }
         }
     }

@@ -73,9 +73,7 @@ namespace Mcasaenk.UI.Canvas {
 
             for(int x = 0; x * 512 - tx < coord.Width; x++) {
                 for(int z = 0; z * 512 - tz < coord.Height; z++) {
-                    if(x + sx > -10 && x + sx < 10 && z + sz > -10 && z + sz < 10) {
-                        yield return new Point2i(x + sx, z + sz);
-                    }
+                    yield return new Point2i(x + sx, z + sz);
                 }
             }
         }

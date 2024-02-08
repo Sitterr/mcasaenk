@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mcasaenk {
+namespace Mcasaenk.Rendering {
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler {
         // Indicates whether the current thread is processing work items.
         [ThreadStatic]
@@ -41,8 +41,7 @@ namespace Mcasaenk {
 
         // Inform the ThreadPool that there's work to be executed for this scheduler.
         private void NotifyThreadPoolOfPendingWork() {
-            ThreadPool.UnsafeQueueUserWorkItem(_ =>
-            {
+            ThreadPool.UnsafeQueueUserWorkItem(_ => {
                 // Note that the current thread is now processing work items.
                 // This is necessary to enable inlining of tasks into this thread.
                 _currentThreadIsProcessingItems = true;
@@ -65,7 +64,7 @@ namespace Mcasaenk {
 
                         // Execute the task we pulled out of the queue
                         //if()
-                        base.TryExecuteTask(item);
+                        TryExecuteTask(item);
                     }
                 }
                 // We're done processing items on the current thread
@@ -82,11 +81,11 @@ namespace Mcasaenk {
             if(taskWasPreviouslyQueued)
                 // Try to run the task.
                 if(TryDequeue(task))
-                    return base.TryExecuteTask(task);
+                    return TryExecuteTask(task);
                 else
                     return false;
             else
-                return base.TryExecuteTask(task);
+                return TryExecuteTask(task);
         }
 
         // Attempt to remove a previously scheduled task from the scheduler.

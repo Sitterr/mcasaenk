@@ -9,9 +9,9 @@ namespace Mcasaenk {
 
         public static int MAXZOOM = 5, MINZOOM = -5;
 
-        public static bool REGIONGRID = true, CHUNKGRID = true;
+        public static bool REGIONGRID = true, CHUNKGRID = false;
 
-        public static int MAXCONCURRENCY = 5;
+        public static int MAXCONCURRENCY = 12;
 
     }
 }

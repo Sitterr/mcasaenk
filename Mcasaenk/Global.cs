@@ -13,10 +13,8 @@ namespace Mcasaenk {
 
 
         public static Color FromArgb(double alpha, Color baseColor) {
-            return Color.FromArgb((byte)(alpha * 256), baseColor.R, baseColor.G, baseColor.B);
+            return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
         }
-
-
 
         public static class Coord {
             public static double absDev(double a, int b) {
@@ -149,5 +147,47 @@ namespace Mcasaenk {
 
             return new Dpi(VisualTreeHelper.GetDpi(Application.Current.MainWindow));
         }
+
+
+
+
+        public static T GetValue<T>(this SharpNBT.CompoundTag tag, string key) where T : SharpNBT.Tag {
+            T t;
+            if(!tag.TryGetValue(key, out t)) return null;
+            return t;
+        }
+
+
+
+
+
+        public static short SwapEndian(this short value) {
+            return (short)((value << 8) | ((value >> 8) & 0xFF));
+        }
+        public static ushort SwapEndian(this ushort value) {
+            return (ushort)((value << 8) | (value >> 8));
+        }
+        public static int SwapEndian(this int value) => unchecked((int)SwapEndian(unchecked((uint)value)));
+        public static uint SwapEndian(this uint value) {
+            value = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
+            return (value << 16) | (value >> 16);
+        }
+        public static ulong SwapEndian(this ulong value) {
+            value = ((value << 8) & 0xFF00FF00FF00FF00UL) | ((value >> 8) & 0x00FF00FF00FF00FFUL);
+            value = ((value << 16) & 0xFFFF0000FFFF0000UL) | ((value >> 16) & 0x0000FFFF0000FFFFUL);
+            return (value << 32) | (value >> 32);
+        }
+        public static long SwapEndian(this long value) => unchecked((long)SwapEndian(unchecked((ulong)value)));
+        public static float SwapEndian(this float value) {
+            var n = BitConverter.SingleToInt32Bits(value);
+            return BitConverter.Int32BitsToSingle(n.SwapEndian());
+        }
+        public static double SwapEndian(this double value) {
+            var n = BitConverter.DoubleToInt64Bits(value);
+            return BitConverter.Int64BitsToDouble(n.SwapEndian());
+        }
+
+
+
     }
 }

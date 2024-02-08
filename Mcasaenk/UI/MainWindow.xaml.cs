@@ -40,7 +40,7 @@ namespace Mcasaenk.UI {
 
             OpenedSave = new Save("C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\Niki2 - Copy");
 
-            this.InitEvents();
+            //this.InitEvents();
         }
 
         private void InitEvents() {

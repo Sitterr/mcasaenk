@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Mcasaenk {
@@ -29,6 +30,8 @@ namespace Mcasaenk {
         public readonly Save save;
         public readonly TileMap tileMap;
 
+        public static readonly Regex regionNamingConvention = new Regex("r.(-?\\d+).(-?\\d+).(mca|mcr)$");
+
         public Dimension(Save save, Type type) {
             this.save = save;
             this.type = type;
@@ -37,7 +40,7 @@ namespace Mcasaenk {
                 Type.Nether => Path.Combine(save.path, "DIM-1", "region"),
                 Type.End => Path.Combine(save.path, "DIM1", "region"),
             };
-            this.tileMap = new TileMap(this);
+            this.tileMap = new TileMap(this, ExistingRegions());
         }
 
         public string GetRegionPath(Point2i pos) {
@@ -46,6 +49,19 @@ namespace Mcasaenk {
 
         public enum Type { 
             Overworld, Nether, End
+        }
+
+        private HashSet<Point2i> ExistingRegions() { 
+            var set = new HashSet<Point2i>();
+
+            foreach(var file in Directory.GetFiles(this.path)) {
+                var match = regionNamingConvention.Match(file);
+                if (match.Success) {
+                    set.Add(new Point2i(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value)));
+                }
+            }
+
+            return set;
         }
     }
 }

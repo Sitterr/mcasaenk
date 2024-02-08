@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Mcasaenk.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -31,12 +32,14 @@ namespace Mcasaenk.UI.Canvas {
         GridPainter2 gridPainter;
         BackgroundPainter backgroundPainter;
 
+        Timer secondaryTimer;
+
         public CanvasControl() {
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
 
-            screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
+            screen = new WorldPosition(new Point(520, 150), (int)ActualWidth, (int)ActualHeight, 2);
 
             scenePainter = new ScenePainter();
             gridPainter = new GridPainter2();
@@ -49,10 +52,7 @@ namespace Mcasaenk.UI.Canvas {
 
             CompositionTarget.Rendering += OnFastTick;
 
-            var secondaryTimer = new DispatcherTimer(DispatcherPriority.Normal, this.Dispatcher);
-            secondaryTimer.Tick += OnSlowTick;
-            secondaryTimer.Interval = TimeSpan.FromMilliseconds(500);
-            secondaryTimer.Start();
+            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 1_000);
 
             this.SizeChanged += OnSizeChange;
             this.MouseWheel += OnMouseWheel;
@@ -72,10 +72,11 @@ namespace Mcasaenk.UI.Canvas {
         protected override void OnRender(DrawingContext drawingContext) {
             base.OnRender(drawingContext);
 
-            foreach(var painter in painters){
+            foreach(var painter in painters) {
                 drawingContext.DrawDrawing(painter.GetDrawing());
             }
         }
+
 
         double tick_lastElapsed = 0, tick_accumulation = 0;
         int tick_count = 0;
@@ -94,20 +95,20 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                window.footer.RegionQueue = Tile.loading_pool.TaskCount();
+                window.footer.RegionQueue = PoolHandler.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
             }
         }
 
-        private void OnSlowTick(object sender, EventArgs e) {
+        private void OnSlowTick(object a) {
             if(tileMap == null) return;
             foreach(var pos in screen.GetVisibleTilePositions()) {
-                var tile = tileMap.GetTile(pos, screen);
+                var tile = tileMap.GetTile(pos);
+                if(tile == null) continue;
                 if(tile.Loaded == false && tile.Queued == false) {
-                    tile.Load();
+                    tile.Load(screen);
                 }
             }
-            
         }
 
 
@@ -133,6 +134,8 @@ namespace Mcasaenk.UI.Canvas {
                     mouseStart = screen.GetGlobalPos(e.GetPosition(this));
                     mousedown = true;
                     break;
+                case MouseButton.Right:
+                    break;
                 default: break;
             }
             
@@ -146,7 +149,7 @@ namespace Mcasaenk.UI.Canvas {
                     mousedown = false;
                     break;
                 case MouseButton.Right:
-                    //screen.GetTilePos(e.GetPosition(this)).Load();
+                    GC.Collect(2, GCCollectionMode.Aggressive);
                     break;
                 default: break;
             }
@@ -155,7 +158,7 @@ namespace Mcasaenk.UI.Canvas {
             mousePos = point;
             if(mousedown) {             
                 screen.SetStart(mouseStart.Sub(mousePos.Dev(screen.zoom)));
-                //Render();
+                //OnFastTick(null, null);
             }
         }
         public void OnMouseWheel(object sender, MouseWheelEventArgs e) {
@@ -168,13 +171,12 @@ namespace Mcasaenk.UI.Canvas {
             screen.ZoomScale += delta;
             screen.SetStart(mouseGl.Sub(mouseRel.Dev(screen.zoom)));
 
-            mouseStart = screen.coord.TopLeft;
-            //Render();
+            //OnFastTick(null, null);
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
             screen.ScreenWidth = (int)this.ActualWidth;
             screen.ScreenHeight = (int)this.ActualHeight;
-            //Render();
+            //OnFastTick(null, null);
         }
         private void OnMouseLeave(object sender, MouseEventArgs e) {
             //mousePos = default;
