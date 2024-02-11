@@ -22,7 +22,7 @@ namespace Mcasaenk.Rendering {
             header.name = ReadUTF8(!namewanted);
             return header;
         }
-        public void ReadPayload(TagType tagType) {
+        public void SkipPayLoad(TagType tagType) {
             switch(tagType) {
                 case TagType.Byte:
                     Seek(sizeof(byte)); break;
@@ -37,7 +37,7 @@ namespace Mcasaenk.Rendering {
                 case TagType.Double:
                     Seek(sizeof(double)); break;
                 case TagType.String:
-                    ReadUTF8(); break;
+                    ReadUTF8(true); break;
                 case TagType.ByteArray: {
                     int len = ReadInt();
                     Seek(len * sizeof(byte));
@@ -58,7 +58,7 @@ namespace Mcasaenk.Rendering {
                     var count = ReadInt();
 
                     for(int i = 0; i < count; i++) {
-                        ReadPayload(childtype);
+                        SkipPayLoad(childtype);
                     }
 
                     break;                
@@ -69,7 +69,7 @@ namespace Mcasaenk.Rendering {
                         if(header.type == TagType.End)
                             break;
 
-                        ReadPayload(header.type);
+                        SkipPayLoad(header.type);
                     }
 
                     break;
@@ -84,7 +84,7 @@ namespace Mcasaenk.Rendering {
                 if(childheader.type == TagType.End)
                     break;
                 bool handled = ondo(childheader);
-                if(!handled) ReadPayload(childheader.type);
+                if(!handled) SkipPayLoad(childheader.type);
                 i++;
             }
         }

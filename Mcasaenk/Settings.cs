@@ -11,7 +11,7 @@ namespace Mcasaenk {
 
         public static bool REGIONGRID = true, CHUNKGRID = false;
 
-        public static int MAXCONCURRENCY = 12;
+        public static int MAXCONCURRENCY = 4;
 
     }
 }

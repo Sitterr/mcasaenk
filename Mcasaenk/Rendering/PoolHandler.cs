@@ -1,5 +1,4 @@
-﻿using SharpNBT;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,13 +10,13 @@ namespace Mcasaenk.Rendering {
     public class PoolHandler {
         private static LimitedConcurrencyLevelTaskScheduler task_pool = new LimitedConcurrencyLevelTaskScheduler(Settings.MAXCONCURRENCY);
 
-        public static ArrayPool<int> pixelBuffer = ArrayPool<int>.Create(512 * 512, Settings.MAXCONCURRENCY);
-        public static ArrayPool<int> waterPixels = ArrayPool<int>.Create(512 * 512, Settings.MAXCONCURRENCY);
-        public static ArrayPool<short> terrainHeights = ArrayPool<short>.Create(512 * 512, Settings.MAXCONCURRENCY);
-        public static ArrayPool<short> waterHeights = ArrayPool<short>.Create(512 * 512, Settings.MAXCONCURRENCY);
+        public static readonly ArrayPool<int> pixelBuffer = ArrayPool<int>.Create(512 * 512, Settings.MAXCONCURRENCY);
+        public static readonly ArrayPool<int> waterPixels = ArrayPool<int>.Create(512 * 512, Settings.MAXCONCURRENCY);
+        public static readonly ArrayPool<short> terrainHeights = ArrayPool<short>.Create(512 * 512, Settings.MAXCONCURRENCY);
+        public static readonly ArrayPool<short> waterHeights = ArrayPool<short>.Create(512 * 512, Settings.MAXCONCURRENCY);
 
-        public static ArrayPool<int> biomes = ArrayPool<int>.Create(1536, Settings.MAXCONCURRENCY * 1024);
-        public static ArrayPool<long> blockstates = ArrayPool<long>.Create(768, Settings.MAXCONCURRENCY * 1024 * 24);
+        public static readonly ArrayPool<int> biomes = ArrayPool<int>.Create(1536, Settings.MAXCONCURRENCY * 1024);
+        public static readonly ArrayPool<long> blockstates = ArrayPool<long>.Create(768, Settings.MAXCONCURRENCY * 1024 * 24);
 
         public static void StartLoadingTask(Task task) {
             task.Start(task_pool);

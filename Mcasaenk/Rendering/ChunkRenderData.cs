@@ -8,32 +8,24 @@ using System.Threading.Tasks;
 using System.Windows.Media.Animation;
 
 namespace Mcasaenk.Rendering {
-    public class ChunkRenderData117 : IDisposable {
 
-        public int[] biomes;
-        public int biomeSize;
+    public interface IChunkRenderData {
+        string GetBiome(int cx, int cz, int cy, int i);
+        string GetBlock(int cx, int cz, int cy, int i);
+        bool CanSkipSection(int i);
+        bool ContainsInformation();
+    }
+
+    public class ChunkRenderData117 : IChunkRenderData, IDisposable {
+
+        private int[] biomes;
+        private int biomeSize;
         private byte[] y;
         private long[][] blockStates;
-        public short[] blockStatesSize;
+        private short[] blockStatesSize;
         private List<string>[] palettes;
 
-        public List<string> palette(int i) {
-            if(y[i] == 100) return null;
-            return palettes[y[i]];
-        }
-        public long[] blockState(int i) {
-            if(y[i] == 100) return null;
-            return blockStates[y[i]];
-        }
-        public short blockStateSize(int i) {
-            if(y[i] == 100) return 0;
-            return blockStatesSize[y[i]];
-        }
-
-        private LazyNBTReader r;
         public ChunkRenderData117(LazyNBTReader r) {
-            this.r = r;
-
             y = new byte[24];
             blockStates = new long[24][];
             blockStatesSize = new short[24];
@@ -44,24 +36,10 @@ namespace Mcasaenk.Rendering {
                 palettes[i] = new List<string>();
             }
 
-
-
-            this.Populate();
+            this.Populate(r);
         }
-
-        public void Dispose() {
-            if(biomes != null) PoolHandler.biomes.Return(biomes, false);
-            for(int i = 0; i < blockStates.Length; i++) {
-                if(blockStates[i] != null) PoolHandler.blockstates.Return(blockStates[i], false);
-            }
-        }
-
-        public bool ContainsInformation() {
-            return !error && hassections;
-        }
-
         private bool error, hassections;
-        private void Populate() {
+        private void Populate(LazyNBTReader r) {
             hassections = false;
             error = false;
 
@@ -119,8 +97,57 @@ namespace Mcasaenk.Rendering {
                 error = true;
             }
         }
+        public void Dispose() {
+            if(biomes != null) PoolHandler.biomes.Return(biomes, false);
+            for(int i = 0; i < blockStates.Length; i++) {
+                if(blockStates[i] != null) PoolHandler.blockstates.Return(blockStates[i], false);
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        public bool ContainsInformation() {
+            return !error && hassections;
+        }
+        public bool CanSkipSection(int i) {
+            if(y[i + 4] == 100) return true;
+            if(blockStates[y[i + 4]] == null || palettes[y[i + 4]] == null) return true;
+            return false;
+        }
 
 
+        public string GetBiome(int cx, int cz, int cy, int i) {
+            return ColorMapping.GetBiomeById(getBiomeAtBlock(this.biomes, cx, i * 16 + cy, cz));
+        }
+
+        public string GetBlock(int cx, int cz, int cy, int i) {
+            int bits = (int)blockStatesSize[y[i + 4]] >> 6;       
+
+            int paletteIndex = getPaletteIndex(getIndex(cx, cy, cz, 16), blockStates[y[i + 4]], bits);
+            return palettes[y[i + 4]][paletteIndex];
+        }
+
+
+        private int getIndex(int x, int y, int z, int stride) {
+            return y * stride * stride + z * stride + x;
+        }
+        private int getPaletteIndex(int index, long[] blockStates, int bits) {
+            int indicesPerLong = (int)(64D / bits);
+            int blockStatesIndex = index / indicesPerLong;
+            int startBit = index % indicesPerLong * bits;
+            return (int)(blockStates[blockStatesIndex] >> startBit) & (Global.Pow2(bits) - 1);
+        }
+        private int getBiomeAtBlock(int[] biomes, int biomeX, int biomeY, int biomeZ) {
+            if(biomes == null) {
+                return -1;
+            }
+            if(biomeSize == 1536) {
+                biomeY += 64; // adjust for negative y block coordinates
+            } else if(biomeSize != 1024) { // still support 256 height
+                return -1;
+            }
+            return biomes[getIndex(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
+        }
 
     }
 }

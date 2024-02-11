@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SharpNBT;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
@@ -34,7 +33,7 @@ namespace Mcasaenk.Rendering {
 
             byte* curr = (byte*)memIntPtr.ToPointer();
 
-            byte[] headerSection = new byte[4];
+            Span<byte> headerSection = stackalloc byte[4];
             for(int i = 0; i < 1024; i++) {
                 for(int s = 0; s < 4; s++) {
                     headerSection[s] = *curr;
@@ -63,12 +62,12 @@ namespace Mcasaenk.Rendering {
                 byte* pointer = curr;
 
                 int orig = chunkinfos[i].orig;
-                //tasks[i] = new Task(() => {
+                tasks[i] = new Task(() => {
                     chunks[orig] = ChunkWork_LazyRenderData(pointer);
-                //});
-                //tasks[i].Start(TaskScheduler.Default);
+                });
+                tasks[i].Start(TaskScheduler.Default);
 
-            curr += size;
+                curr += size;
             }
             for(int i = 0; i < 1024; i++) { // autocomplete task for empty chunks
                 if(tasks[i] == null) {

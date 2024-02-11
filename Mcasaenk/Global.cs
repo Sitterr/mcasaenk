@@ -11,10 +11,35 @@ namespace Mcasaenk {
     public class Global {
         public static Random rand = new Random();
 
+        
+        static Global(){
+            pows2 = new int[32];
+            pows2[0] = 1;
+            for(int i = 1; i < pows2.Length; i++) {
+                pows2[i] = pows2[i - 1] * 2;
+            }
+        }
+
+        private static int[] pows2;
+        public static int Pow2(int i) { 
+            return pows2[i];
+        }
+
+        public static uint ToARGBInt(string hex6) {
+            return 0xFF000000 | (uint)Convert.ToInt32(hex6, 16);
+        }
+
+        public static uint ToARGBInt(byte r, byte g, byte b, byte a = 255) {
+            return (uint)((a << 24) | (r << 16) | (g << 8) | (b));
+        }
 
         public static Color FromArgb(double alpha, Color baseColor) {
             return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
         }
+
+
+
+
 
         public static class Coord {
             public static double absDev(double a, int b) {
@@ -151,11 +176,6 @@ namespace Mcasaenk {
 
 
 
-        public static T GetValue<T>(this SharpNBT.CompoundTag tag, string key) where T : SharpNBT.Tag {
-            T t;
-            if(!tag.TryGetValue(key, out t)) return null;
-            return t;
-        }
 
 
 
