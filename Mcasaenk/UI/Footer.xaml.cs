@@ -22,7 +22,7 @@ namespace Mcasaenk.UI {
         public Footer() {
             InitializeComponent();
 
-            @interface = new FooterInterface(txt_queue, txt_fps, txt_region);
+            @interface = new FooterInterface(txt_queue, txt_fps, txt_region, txt_redraw);
         }
 
         public void Init() { }

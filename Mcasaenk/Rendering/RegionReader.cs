@@ -26,6 +26,8 @@ namespace Mcasaenk.Rendering {
             int len;
             using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file
                 len = (int)_baseStream.Length;
+                if(len == 0) return chunks;
+
                 memIntPtr = Marshal.AllocHGlobal(len);
                 var bytes = new Span<byte>((byte*)memIntPtr.ToPointer(), (int)_baseStream.Length);
                 _baseStream.Read(bytes);
@@ -51,21 +53,22 @@ namespace Mcasaenk.Rendering {
             int lastoffset = 0;
             int lastsize = 0;
             for(int i = 0; i < 1024; i++) {
+                if(chunkinfos[i].offset == -2 || chunkinfos[i].size == 0) continue;
+
                 curr += (chunkinfos[i].offset - (lastoffset + lastsize)) * 4096;
                 lastoffset = chunkinfos[i].offset;
                 lastsize = chunkinfos[i].size;
 
-                if(chunkinfos[i].size == 0 && chunkinfos[i].offset == 0) continue;
                 if(chunkinfos[i].size == 0) continue;
 
                 int size = chunkinfos[i].size * 4096;
                 byte* pointer = curr;
 
                 int orig = chunkinfos[i].orig;
-                tasks[i] = new Task(() => {
+                //tasks[i] = new Task(() => {
                     chunks[orig] = ChunkWork_LazyRenderData(pointer);
-                });
-                tasks[i].Start(TaskScheduler.Default);
+                //});
+                //tasks[i].Start(TaskScheduler.Default);
 
                 curr += size;
             }

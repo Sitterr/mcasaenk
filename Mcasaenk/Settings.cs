@@ -3,15 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Mcasaenk {
     public static class Settings {
 
         public static int MAXZOOM = 5, MINZOOM = -5;
 
-        public static bool REGIONGRID = true, CHUNKGRID = false;
+        public static bool REGIONGRID = false, CHUNKGRID = false;
 
-        public static int MAXCONCURRENCY = 4;
+        
+        public static int MAXCONCURRENCY = 1;
 
+        
+        public static bool SHADE3D = true;
+
+        public static double ADEG = 45, BDEG = 10;
+
+        public static int SHADE3DMOODYNESS = (int)(0.7 * -100);
     }
 }

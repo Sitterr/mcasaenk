@@ -18,6 +18,8 @@ namespace Mcasaenk {
 
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
         }
+
+        public const string WORLDPATH = "C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\Niki2 - Copy";
     }
 
 }

@@ -1,4 +1,4 @@
--1;invalid
+-1;plains
 0;ocean
 1;plains
 2;desert

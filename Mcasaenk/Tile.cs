@@ -16,6 +16,7 @@ using Mcasaenk.UI.Canvas;
 using System.IO;
 using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
+using Mcasaenk.Shade3d;
 
 namespace Mcasaenk
 {
@@ -42,9 +43,10 @@ namespace Mcasaenk
     }
 
     public class Tile {
-
-        private TileImage image;
         private TileMap tileMap;
+
+        public TileImage image;
+        public TileShade shade;
 
         private List<WorldPosition> observers;
 
@@ -58,6 +60,7 @@ namespace Mcasaenk
             this.tileMap = tileMap;
             this.pos = position;
             image = new TileImage(this);
+            shade = new TileShade(this);
             observers = new List<WorldPosition>();
         }
 

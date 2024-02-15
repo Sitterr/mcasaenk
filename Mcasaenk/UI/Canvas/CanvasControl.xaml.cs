@@ -39,7 +39,7 @@ namespace Mcasaenk.UI.Canvas {
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
 
-            screen = new WorldPosition(new Point(520, 150), (int)ActualWidth, (int)ActualHeight, 2);
+            screen = new WorldPosition(new Point(-512, -512), (int)ActualWidth, (int)ActualHeight, 2);
 
             scenePainter = new ScenePainter();
             gridPainter = new GridPainter2();
@@ -97,6 +97,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
                 window.footer.RegionQueue = PoolHandler.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
+                window.footer.HardDraw = TileImage.lastRedrawTime;
             }
         }
 

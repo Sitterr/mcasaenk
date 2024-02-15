@@ -64,6 +64,7 @@ namespace Utils {
             }
 
 
+            const double q = 0.5;
             string @return = "";
             foreach(var pair in idtotexture) { // textures
                 if(!File.Exists(pair.texture + ".png")) continue;
@@ -82,9 +83,15 @@ namespace Utils {
                         b += bytes[i + 0];
                     }
                 }
-                if(r != 0) r /= (pixelCount - numberOfTransparent);
-                if(g != 0) g /= (pixelCount - numberOfTransparent);
-                if(b != 0) b /= (pixelCount - numberOfTransparent);
+
+                if(numberOfTransparent > q * pixelCount) {
+                    continue;
+                } else {
+                    r /= (pixelCount - numberOfTransparent);
+                    g /= (pixelCount - numberOfTransparent);
+                    b /= (pixelCount - numberOfTransparent);
+                }
+
 
                 int color = (r << 16) | (g << 8) | (b);
 

@@ -38,7 +38,7 @@ namespace Mcasaenk.UI {
             canvasControl.Init(this);
             footerControl.Init();
 
-            OpenedSave = new Save("C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\Niki2 - Copy");
+            OpenedSave = new Save(App.WORLDPATH);
 
             //this.InitEvents();
         }
