@@ -10,6 +10,8 @@ using System.Xml.Linq;
 using Mcasaenk.Shade3d;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Windows.Shapes;
+using Accessibility;
+using System.Windows.Controls;
 
 namespace Mcasaenk.Rendering
 {
@@ -80,18 +82,18 @@ namespace Mcasaenk.Rendering
             }
         }
 
-        public static void DrawChunk3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, int[] pixelBuffer, int[] waterPixels, short[] terrainHeights, short[] waterHeights, bool[] shades, int plusHeight, int minusHeight) {
+        public static void DrawChunk3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, int[] pixelBuffer, int[] waterPixels, short[] terrainHeights, short[] waterHeights, bool[] shadeFrame, bool[] shadeValues, byte[] shadeValuesLen, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
-            int x0 = ShadeConstants.GLOBAL.nflowX(0, 0, ShadeConstants.GLOBAL.rX) * 512;
-            int z0 = ShadeConstants.GLOBAL.nflowZ(0, 0, ShadeConstants.GLOBAL.rZ) * 512;
-            int SHADEX = ShadeConstants.GLOBAL.rX * 512, SHADEZ = ShadeConstants.GLOBAL.rZ * 512;
+            int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
+            int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
+            int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
 
             for(int _cz = 0; _cz < 16; _cz++) {
-                int cz = ShadeConstants.GLOBAL.flowZ(_cz, 0, 16);
+                int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
                 for(int _cx = 0; _cx < 16; _cx++) {
-                    int cx = ShadeConstants.GLOBAL.flowX(_cx, 0, 16);
+                    int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
 
                     int regionIndex = (z + cz) * 512 + x + cx;
 
@@ -111,7 +113,7 @@ namespace Mcasaenk.Rendering
                             startHeight = 16 - 1;
                         }
 
-                        for(int cy = startHeight; cy >= 0; cy--) {                   
+                        for(int cy = startHeight; cy >= 0; cy--) {
                             var block = data.GetBlock(cx, cz, cy, i);
 
                             bool isEmpty = IsEmpty(block), isWater = IsWater(block);
@@ -129,28 +131,25 @@ namespace Mcasaenk.Rendering
                             };
                             uint blockColor = colorMapping.GetColor(block, blockInformation);
 
-                            if(blockColor >> 24 == 0) { // another IsEmprty check
+                            if(blockColor >> 24 == 0) { // another IsEmpty check
                                 continue;
                             }
 
 
 
                             int h = 319 - (sectionHeight + minusHeight + cy);
-                            double x1 = (x0 + x + cx) + ShadeConstants.GLOBAL.cosAcotgB * h, z1 = (z0 + z + cz) + -ShadeConstants.GLOBAL.sinAcotgB * h;
+                            double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
-                            bool alreadyshade = CheckLine(shades, SHADEX, SHADEZ, x1, z1, Math.Abs(ShadeConstants.GLOBAL.cosAcotgB), Math.Abs(ShadeConstants.GLOBAL.sinAcotgB));
+                            bool alreadyshade = CheckLine(shadeFrame, SHADEX, SHADEZ, x1, z1);
 
-                            int intensity = 0;
-                            if(alreadyshade) {
-                                intensity = (int)(Settings.SHADE3DMOODYNESS * 1);
-                            }
                             uint unshadedBlockColor = blockColor;
-                            blockColor = Global.AddShade(blockColor, intensity, intensity, intensity);
+                            if(alreadyshade) blockColor = Global.AddShade(blockColor, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS);
 
                             if(!waterDepth) {
                                 if(!done) {
                                     pixelBuffer[regionIndex] = (int)blockColor; // water color
                                     waterHeights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                    SetShadeValuesLine(shadeFrame, shadeValues, ref shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                                 }
 
                                 if(isWater) {
@@ -161,7 +160,7 @@ namespace Mcasaenk.Rendering
 
 
                             if(!alreadyshade) {
-                                SetLine(shades, true, SHADEX, SHADEZ, x1, z1, Math.Abs(ShadeConstants.GLOBAL.cosAcotgB), Math.Abs(ShadeConstants.GLOBAL.sinAcotgB));
+                                SetLine(shadeFrame, true, SHADEX, SHADEZ, x1, z1);
                             }
 
                             if(!done) {
@@ -181,46 +180,69 @@ namespace Mcasaenk.Rendering
 
 
 
-        static void SetLine(bool[] shades, bool value, int SHADEX, int SHADEZ, double _x1, double _z1, double w, double h) {
+        static void SetLine(bool[] shadeFrame, bool value, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
+            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
             w = w % 1; h = h % 1;
             _x1 = _x1 % 1; _z1 = _z1 % 1;
 
             List<Point2i> blockReach;
-            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLOBAL.blockReachCC;
-            else if(_x1 + w > 1) blockReach = ShadeConstants.GLOBAL.blockReachCF;
-            else if(_z1 + h > 1) blockReach = ShadeConstants.GLOBAL.blockReachFC;
-            else blockReach = ShadeConstants.GLOBAL.blockReachFF;
+            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
+            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
+            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
+            else blockReach = ShadeConstants.GLB.blockReachFF;
 
             foreach(var p in blockReach) {
                 if((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) continue;
                 if((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX) continue;
-                shades[(z1 + p.Z) * SHADEX + (x1 + p.X)] = value;
+                shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] = value;
             }
         }
-        static bool CheckLine(bool[] shades, int SHADEX, int SHADEZ, double _x1, double _z1, double w, double h) {
+        static bool CheckLine(bool[] shadeFrame, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
+            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
             w = w % 1; h = h % 1;
             _x1 = _x1 % 1; _z1 = _z1 % 1;
 
             List<Point2i> blockReach;
-            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLOBAL.blockReachCC;
-            else if(_x1 + w > 1) blockReach = ShadeConstants.GLOBAL.blockReachCF;
-            else if(_z1 + h > 1) blockReach = ShadeConstants.GLOBAL.blockReachFC;
-            else blockReach = ShadeConstants.GLOBAL.blockReachFF;
+            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
+            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
+            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
+            else blockReach = ShadeConstants.GLB.blockReachFF;
 
             foreach(var p in blockReach) {
                 if((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) continue;
                 if((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX) continue;
-                if(shades[(z1 + p.Z) * SHADEX + (x1 + p.X)] == false) {
-                    return false;
-                }
+                if(shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] == false) return false;
             }
-
             return true;
         }
 
+        public static void SetShadeValuesLine(bool[] shadeFrame, bool[] shades, ref byte shadesLen, int regionIndex, int SHADEX, int SHADEZ, double _x1, double _z1) {
+            int x1 = (int)_x1, z1 = (int)_z1;
+            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
+            w = w % 1; h = h % 1;
+            _x1 = _x1 % 1; _z1 = _z1 % 1;
 
+            List<Point2i> blockReach;
+            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
+            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
+            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
+            else blockReach = ShadeConstants.GLB.blockReachFF;
+
+            for(int i = 0; i < blockReach.Count; i++) {
+                var p = blockReach[i];
+                shadesLen = (byte)blockReach.Count;
+
+                if(((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) || ((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)) {
+                    shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] = true;
+                    continue;
+                }
+
+                bool val = shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)];
+                shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] |= val;
+            }
+        }
 
 
 

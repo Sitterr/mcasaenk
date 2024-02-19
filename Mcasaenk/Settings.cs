@@ -10,16 +10,16 @@ namespace Mcasaenk {
 
         public static int MAXZOOM = 5, MINZOOM = -5;
 
-        public static bool REGIONGRID = false, CHUNKGRID = false;
+        public static bool REGIONGRID = true, CHUNKGRID = false, THINREGIONGRIDONLY = true;
 
         
-        public static int MAXCONCURRENCY = 1;
+        public static int MAXCONCURRENCY = 4, CHUNKRENDERMAXCONCURRENCY = 16;
 
         
         public static bool SHADE3D = true;
 
-        public static double ADEG = 45, BDEG = 10;
+        public static double ADEG = 135, BDEG = 10;
 
-        public static int SHADE3DMOODYNESS = (int)(0.7 * -100);
+        public static int SHADE3DMOODYNESS = (int)(0.99 * -100);
     }
 }

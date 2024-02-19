@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +25,15 @@ namespace Mcasaenk {
         private static int[] pows2;
         public static int Pow2(int i) { 
             return pows2[i];
+        }
+
+        public static void Time(Action func, out long time) {
+            var st = Stopwatch.StartNew();
+
+            func();
+
+            st.Stop();
+            time = st.ElapsedMilliseconds;
         }
 
         public static uint ToARGBInt(string hex6) {

@@ -64,7 +64,7 @@ namespace Utils {
             }
 
 
-            const double q = 0.5;
+            const double q = 1.01;
             string @return = "";
             foreach(var pair in idtotexture) { // textures
                 if(!File.Exists(pair.texture + ".png")) continue;

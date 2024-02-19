@@ -10,8 +10,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Mcasaenk.Shade3d {
     public class ShadeConstants {
         public const double MINB = 5;
-        //public static readonly ShadeConstants MAX = new ShadeConstants(135.1, MINB);
-        public static ShadeConstants GLOBAL = new ShadeConstants(Settings.ADEG, Settings.BDEG);
+        public static readonly ShadeConstants MAX = new ShadeConstants(135.1, MINB);
+        public static ShadeConstants GLB = new ShadeConstants(Settings.ADEG, Settings.BDEG);
 
         public readonly double Adeg, Bdeg;
         public readonly double A, B;
@@ -22,6 +22,7 @@ namespace Mcasaenk.Shade3d {
         public readonly int rX, rZ;
 
         public readonly List<Point2i> blockReachFF, blockReachFC, blockReachCF, blockReachCC, regionReach;
+        public readonly byte blockReachLenMax;
 
         public ShadeConstants(double A_deg, double B_deg) {
             Adeg = A_deg;
@@ -44,6 +45,11 @@ namespace Mcasaenk.Shade3d {
             blockReachFC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2);
             blockReachCF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1);
             blockReachCC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2);
+            blockReachLenMax = 0;
+            blockReachLenMax = (byte)Math.Max(blockReachFF.Count, blockReachLenMax);
+            blockReachLenMax = (byte)Math.Max(blockReachFC.Count, blockReachLenMax);
+            blockReachLenMax = (byte)Math.Max(blockReachCF.Count, blockReachLenMax);
+            blockReachLenMax = (byte)Math.Max(blockReachCC.Count, blockReachLenMax);
 
             regionReach = CreateReach(rX, rZ);
         }
@@ -52,12 +58,12 @@ namespace Mcasaenk.Shade3d {
             var reach = new List<Point2i>();
 
             bool[,] possible = new bool[x, z];
-            //Ugliest_DDA_Ever_Sorry(possible, 0.0);
+            Ugliest_DDA_Ever_Sorry(possible, 0.0);
 
-            const double a = 0.9;
-            Bresenham(possible, 0.5, 0.5, 0.5 + x - 1, 0.5 + z - 1);
-            Bresenham(possible, a, 0, a + x - 1, z - 1);
-            Bresenham(possible, 0, a, x - 1, a + z - 1);
+            //const double a = 0.9;
+            //Bresenham(possible, 0.5, 0.5, 0.5 + x - 1, 0.5 + z - 1);
+            //Bresenham(possible, a, 0, a + x - 1, z - 1);
+            //Bresenham(possible, 0, a, x - 1, a + z - 1);
 
             Debug.WriteLine(""); Debug.WriteLine(""); Debug.WriteLine("");
             for(int i = 0; i < x; i++) {

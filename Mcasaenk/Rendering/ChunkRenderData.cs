@@ -25,7 +25,10 @@ namespace Mcasaenk.Rendering {
         private short[] blockStatesSize;
         private List<string>[] palettes;
 
-        public ChunkRenderData117(LazyNBTReader r) {
+        private GenerateTilePool pool;
+        public ChunkRenderData117(GenerateTilePool pool, LazyNBTReader r) {
+            this.pool = pool;
+
             y = new byte[24];
             blockStates = new long[24][];
             blockStatesSize = new short[24];
@@ -52,7 +55,7 @@ namespace Mcasaenk.Rendering {
                             if(levelEl.name == "Biomes") {
                                 int len = r.ReadInt();
                                 biomeSize = len;
-                                biomes = PoolHandler.biomes.Rent(len);
+                                biomes = pool.biomes.Rent(len);
                                 r.ReadIntArray(biomes, len);
                                 return true;
                             } else if(levelEl.name == "Sections") {
@@ -68,7 +71,7 @@ namespace Mcasaenk.Rendering {
                                         } else if(sectionEl.name == "BlockStates") {
                                             int len = r.ReadInt();
                                             blockStatesSize[si] = (short)len;
-                                            blockStates[si] = PoolHandler.blockstates.Rent(len);
+                                            blockStates[si] = pool.blockstates.Rent(len);
                                             r.ReadLongArray(blockStates[si], len);
                                             return true;
                                         } else if(sectionEl.name == "Palette") {
@@ -98,9 +101,9 @@ namespace Mcasaenk.Rendering {
             }
         }
         public void Dispose() {
-            if(biomes != null) PoolHandler.biomes.Return(biomes, false);
+            if(biomes != null) pool.biomes.Return(biomes, false);
             for(int i = 0; i < blockStates.Length; i++) {
-                if(blockStates[i] != null) PoolHandler.blockstates.Return(blockStates[i], false);
+                if(blockStates[i] != null) pool.blockstates.Return(blockStates[i], false);
             }
 
             GC.SuppressFinalize(this);

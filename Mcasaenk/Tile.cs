@@ -22,13 +22,30 @@ namespace Mcasaenk
 {
     public class TileMap {
         public readonly Dimension dimension;
-        private Dictionary<Point2i, Tile> tiles;
-        private HashSet<Point2i> possibleTiles;
-        
+        private readonly ConcurrentDictionary<Point2i, Tile> tiles;
+        private readonly ConcurrentDictionary<Point2i, TileShadeFrames> shadeFrames;
+        private readonly HashSet<Point2i> possibleTiles;
+
+        public GenerateTilePool generateTilePool;
+        public TilePool quickTilePool;
+
         public TileMap(Dimension dimension, HashSet<Point2i> existingRegions) {
             this.dimension = dimension;
             this.possibleTiles = existingRegions;
-            tiles = new Dictionary<Point2i, Tile>();       
+            tiles = new ConcurrentDictionary<Point2i, Tile>();
+            shadeFrames = new ConcurrentDictionary<Point2i, TileShadeFrames>();
+
+            SetPools();
+        }
+
+        private void SetPools() {
+            if(Settings.SHADE3D) {
+                if(generateTilePool is not ShadeGenerateTilePool) generateTilePool = new ShadeGenerateTilePool();
+            } else { 
+                if(generateTilePool is not StandardGenerateTilePool) generateTilePool = new StandardGenerateTilePool();
+            }
+
+            if(quickTilePool is null) quickTilePool = new TilePool(4);
         }
 
         public Tile GetTile(Point2i point) {
@@ -36,60 +53,54 @@ namespace Mcasaenk
             Tile tile;
             if(tiles.TryGetValue(point, out tile) == false) {
                 tile = new Tile(this, point);
-                tiles.Add(point, tile);
+                tiles.TryAdd(point, tile);
             }
             return tile;
         }
+
+        public TileShadeFrames GetTileShadeFrame(Point2i point) {
+            TileShadeFrames fr;
+            if(!shadeFrames.TryGetValue(point, out fr)) {
+                fr = new TileShadeFrames(this, point);
+                shadeFrames.TryAdd(point, fr);
+            }
+            return fr;
+        }
+
+        public int ShadeTiles() => tiles.Values.Where(t => t.shade.active).Count();
+
+        public int ShadeFrames() => shadeFrames.Values.Select(t => t.frames.Count).Sum();
     }
 
     public class Tile {
-        private TileMap tileMap;
+       
 
         public TileImage image;
         public TileShade shade;
 
-        private List<WorldPosition> observers;
-
         public readonly Point2i pos;
-
-        public volatile bool Loaded; // temp
-        public volatile bool Loading; // temp
-        public volatile bool Queued; // temp
-
+        private readonly TileMap map;
         public Tile(TileMap tileMap, Point2i position) {
-            this.tileMap = tileMap;
+            this.map = tileMap;
             this.pos = position;
             image = new TileImage(this);
             shade = new TileShade(this);
-            observers = new List<WorldPosition>();
         }
 
-        public void Load(WorldPosition observer) {
-            if(observers.Contains(observer) == false) observers.Add(observer);
-
-            Queued = true;
-            var task = new Task(() => {
-                try {
-                    bool atleastone = false;
-                    foreach(var screen in this.observers) {
-                        if(screen.IsVisible(this)) {
-                            atleastone = true;
-                            break;
-                        }
-                    }
-                    if(!atleastone) return;
-                    Loading = true;
-
-                    image.GenerateForreal();
-
-                    Loaded = true;
-                }
-                finally {
-                    Queued = false;
-                    Loading = false;
-                }
-            });
-            PoolHandler.StartLoadingTask(task);
+        public void QueueGenerate(WorldPosition observer) {
+            map.generateTilePool.Queue(this, observer);
+        }
+        public void QueueShadeUpdate() {
+            map.quickTilePool.QueueTileTask(this, (_) => {
+                Task.Delay(1000).Wait();
+                this.image.ShadeRedraw();
+            }, this.shade.ShouldRedraw);
+        }
+        public bool IsLoading() {
+            bool res = false;
+            res |= map.generateTilePool.IsLoading(this);
+            res |= map.quickTilePool.IsLoading(this);
+            return res;
         }
 
         public ImageSource GetImage() {
@@ -97,7 +108,7 @@ namespace Mcasaenk
         }
 
         public TileMap GetOrigin() { 
-            return tileMap;
+            return map;
         }
     }
 }

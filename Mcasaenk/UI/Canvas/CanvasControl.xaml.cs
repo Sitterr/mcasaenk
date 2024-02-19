@@ -38,8 +38,9 @@ namespace Mcasaenk.UI.Canvas {
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-            screen = new WorldPosition(new Point(-512, -512), (int)ActualWidth, (int)ActualHeight, 2);
+            screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 2);
 
             scenePainter = new ScenePainter();
             gridPainter = new GridPainter2();
@@ -52,7 +53,7 @@ namespace Mcasaenk.UI.Canvas {
 
             CompositionTarget.Rendering += OnFastTick;
 
-            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 1_000);
+            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_100);
 
             this.SizeChanged += OnSizeChange;
             this.MouseWheel += OnMouseWheel;
@@ -95,9 +96,11 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                window.footer.RegionQueue = PoolHandler.GetLoadingQueue();
+                window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
                 window.footer.HardDraw = TileImage.lastRedrawTime;
+                window.footer.ShadeTiles = tileMap.ShadeTiles();
+                window.footer.ShadeFrames = tileMap.ShadeFrames();
             }
         }
 
@@ -106,8 +109,11 @@ namespace Mcasaenk.UI.Canvas {
             foreach(var pos in screen.GetVisibleTilePositions()) {
                 var tile = tileMap.GetTile(pos);
                 if(tile == null) continue;
-                if(tile.Loaded == false && tile.Queued == false) {
-                    tile.Load(screen);
+                if(tileMap.generateTilePool.HasLoaded(tile) == false && tileMap.generateTilePool.IsLoading(tile) == false) {
+                    tile.QueueGenerate(screen);
+                }
+                if(tile.shade.ShouldRedraw()) {
+                    tile.QueueShadeUpdate();
                 }
             }
         }

@@ -8,31 +8,42 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Windows.Controls;
 
 namespace Mcasaenk.Rendering {
-    public static class RegionReader {
+    public unsafe class RegionReader : IDisposable {
+        private readonly string path;
+        private readonly IntPtr memIntPtr;
+   
+        public RegionReader(string path) { 
+            this.path = path;
+        
+            int len;
+            using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file into unmanaged
+                len = (int)_baseStream.Length;
+                if(len > 0) {
+                    memIntPtr = Marshal.AllocHGlobal(len);
+                    var bytes = new Span<byte>((byte*)memIntPtr.ToPointer(), len);
+                    _baseStream.Read(bytes);
+                }
+            }
+        }
+        public void Dispose() {
+            Marshal.FreeHGlobal(memIntPtr);
+            GC.SuppressFinalize(this);
+        }
+
+
         struct ChunkInfo {
             public int offset;
             public int size;
             public int orig;
         }
+        public byte*[] ReadChunkOffsets() {
+            byte*[] ptrs = new byte*[1024];
+            if(memIntPtr.ToPointer() == null) return ptrs;
 
-        public static unsafe ChunkRenderData117[] ReadAnvilFileWithUnmanaged(string path) {
-            ChunkRenderData117[] chunks = new ChunkRenderData117[1024];
             Span<ChunkInfo> chunkinfos = stackalloc ChunkInfo[1024];
-            Task[] tasks = new Task[1024];
-
-            IntPtr memIntPtr;
-            int len;
-            using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file
-                len = (int)_baseStream.Length;
-                if(len == 0) return chunks;
-
-                memIntPtr = Marshal.AllocHGlobal(len);
-                var bytes = new Span<byte>((byte*)memIntPtr.ToPointer(), (int)_baseStream.Length);
-                _baseStream.Read(bytes);
-            }
-
             byte* curr = (byte*)memIntPtr.ToPointer();
 
             Span<byte> headerSection = stackalloc byte[4];
@@ -49,7 +60,7 @@ namespace Mcasaenk.Rendering {
             MemoryExtensions.Sort(chunkinfos, (a, b) => { return a.offset.CompareTo(b.offset); });
 
             curr += 4096; // update header
-
+       
             int lastoffset = 0;
             int lastsize = 0;
             for(int i = 0; i < 1024; i++) {
@@ -61,36 +72,27 @@ namespace Mcasaenk.Rendering {
 
                 if(chunkinfos[i].size == 0) continue;
 
+                ptrs[chunkinfos[i].orig] = curr;
+
                 int size = chunkinfos[i].size * 4096;
-                byte* pointer = curr;
-
-                int orig = chunkinfos[i].orig;
-                //tasks[i] = new Task(() => {
-                    chunks[orig] = ChunkWork_LazyRenderData(pointer);
-                //});
-                //tasks[i].Start(TaskScheduler.Default);
-
                 curr += size;
             }
-            for(int i = 0; i < 1024; i++) { // autocomplete task for empty chunks
-                if(tasks[i] == null) {
-                    tasks[i] = Task.CompletedTask;
-                }
-            }
 
-            Task.WaitAll(tasks);
-            Marshal.FreeHGlobal(memIntPtr);
-
-            return chunks;
+            return ptrs;
         }
-        private static unsafe ChunkRenderData117 ChunkWork_LazyRenderData(byte* pointer) {
+
+
+
+
+        public static ChunkRenderData117 LazyRenderData(GenerateTilePool pool, byte* pointer) {
+            if(pointer == null) return null;
             int actualsize = pointer[0] << 24 | pointer[1] << 16 | pointer[2] << 8 | pointer[3];
             if(actualsize == 0) return null;
 
             using var decompressedStream = new ZLibStream(new UnmanagedMemoryStream(pointer + 5, actualsize - 1), CompressionMode.Decompress);
 
             var lazyreader = new LazyNBTReader(decompressedStream);
-            return new ChunkRenderData117(lazyreader);
+            return new ChunkRenderData117(pool, lazyreader);
         }
     }
 }

@@ -32,9 +32,10 @@ namespace Mcasaenk {
             return -1; // TODO
         }
 
-
         public override string ToString() {
             return $"{X},{Z}";
         }
+
+        public static Point2i NULL = new Point2i(int.MinValue, int.MinValue);
     }
 }

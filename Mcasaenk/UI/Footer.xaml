@@ -24,6 +24,15 @@
             <ColumnDefinition Width="30" />
 
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             
             <ColumnDefinition Width="Auto" />
@@ -62,5 +71,18 @@
                 <Run x:Name="txt_region" Text="0" Foreground="{DynamicResource blue}"/>
                 <Run Text="" Foreground="{DynamicResource text}"/>
         </TextBlock>
+
+        <TextBlock Padding="0,4,0,0" Grid.Column="9">
+                <Run Text="shade tiles: " Foreground="{DynamicResource text}"/>
+                <Run x:Name="txt_shadetiles" Text="0" Foreground="{DynamicResource blue}"/>
+                <Run Text="" Foreground="{DynamicResource text}"/>
+        </TextBlock>
+
+        <TextBlock Padding="0,4,0,0" Grid.Column="11">
+                <Run Text="shade frames: " Foreground="{DynamicResource text}"/>
+                <Run x:Name="txt_shadeframes" Text="0" Foreground="{DynamicResource blue}"/>
+                <Run Text="" Foreground="{DynamicResource text}"/>
+        </TextBlock>
+
     </Grid>
 </UserControl>

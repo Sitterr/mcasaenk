@@ -16,10 +16,10 @@ namespace Mcasaenk {
         protected override void OnStartup(StartupEventArgs e) {
             Debug.WriteLine("int main()?");
 
-            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+            //GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
         }
 
-        public const string WORLDPATH = "C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\Niki2 - Copy";
+        public const string WORLDPATH = "C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\saves\\NIki2 - Copy";
     }
 
 }

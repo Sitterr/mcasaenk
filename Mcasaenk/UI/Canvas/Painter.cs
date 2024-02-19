@@ -51,8 +51,12 @@ namespace Mcasaenk.UI.Canvas {
                     graphics.DrawImage(GetUnloadedOverlay(), rect);
                 }
 
-                if(tile.Loading) {
+                if(tile.IsLoading()) {
                     graphics.DrawImage(GetLoadingOverlay(), rect);
+                }
+
+                if(tile.shade.active) {
+                    graphics.DrawImage(GetRedOverlay(), rect);
                 }
             }
         }
@@ -109,15 +113,15 @@ namespace Mcasaenk.UI.Canvas {
 
         private ImageSource _loadingOverlay = null;
         private ImageSource GetLoadingOverlay() {
-            _loadingOverlay ??= GenerateLoading();
+            _loadingOverlay ??= GenerateColorOverlay(Colors.Transparent, Global.ColorPallete.Pallete.s7, 0.65);
             return _loadingOverlay;
         }
-        private static ImageSource GenerateLoading() {
+        private static ImageSource GenerateColorOverlay(Color centerColor, Color outerColor, double alpha) {
             RenderTargetBitmap output = new RenderTargetBitmap(512, 512, 96, 96, PixelFormats.Default);
 
             DrawingVisual drawingVisual = new DrawingVisual();
             using(var graphics = drawingVisual.RenderOpen()) {
-                var radient = new RadialGradientBrush(Colors.Transparent, Global.FromArgb(0.35, Global.ColorPallete.Pallete.s7)) {
+                var radient = new RadialGradientBrush(centerColor, Global.FromArgb(alpha, outerColor)) {
                     Center = new Point(0.5, 0.5),
                     RadiusX = 1.25, RadiusY = 1.25,
                     GradientOrigin = new Point(0.5, 0.5),
@@ -128,6 +132,14 @@ namespace Mcasaenk.UI.Canvas {
             output.Freeze();
 
             return output;
+        }
+
+
+
+        private ImageSource _redOverlay = null;
+        private ImageSource GetRedOverlay() {
+            _redOverlay ??= GenerateColorOverlay(Colors.Transparent, Colors.Red, 1);
+            return _redOverlay;
         }
     }
 
@@ -195,7 +207,7 @@ namespace Mcasaenk.UI.Canvas {
             double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
-            Pen pen = screen.ZoomScale < 0 ? linePen : dashPen;
+            Pen pen = Settings.THINREGIONGRIDONLY ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;
             int pensize = pen == linePen ? linesize : dashsize;
 
             for(int zz = 0; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
