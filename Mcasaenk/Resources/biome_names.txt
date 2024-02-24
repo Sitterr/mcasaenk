@@ -11,7 +11,7 @@
 9;the_end
 10;frozen_ocean
 11;frozen_river
-12;snowy_tundra
+12;snowy_plains
 13;frozen_peaks
 14;mushroom_fields
 15;mushroom_fields

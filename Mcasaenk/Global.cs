@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk {
     public class Global {
@@ -163,6 +164,13 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+
+        public static T[] DeepCopy<T>(this T[] arr) where T : struct {
+            T[] arr2 = new T[arr.Length];
+            for(int i = 0; i < arr.Length; i++) arr2[i] = arr[i];
+            return arr2;
+        }
+
         public static Point Add(this Point p, Point p2) {
             return new Point(p.X + p2.X, p.Y + p2.Y);
         }

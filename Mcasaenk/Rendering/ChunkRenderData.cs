@@ -10,8 +10,8 @@ using System.Windows.Media.Animation;
 namespace Mcasaenk.Rendering {
 
     public interface IChunkRenderData {
-        string GetBiome(int cx, int cz, int cy, int i);
-        string GetBlock(int cx, int cz, int cy, int i);
+        ushort GetBiome(int cx, int cz, int cy, int i);
+        ushort GetBlock(int cx, int cz, int cy, int i);
         bool CanSkipSection(int i);
         bool ContainsInformation();
     }
@@ -23,7 +23,7 @@ namespace Mcasaenk.Rendering {
         private byte[] y;
         private long[][] blockStates;
         private short[] blockStatesSize;
-        private List<string>[] palettes;
+        private List<ushort>[] palettes;
 
         private GenerateTilePool pool;
         public ChunkRenderData117(GenerateTilePool pool, LazyNBTReader r) {
@@ -32,11 +32,11 @@ namespace Mcasaenk.Rendering {
             y = new byte[24];
             blockStates = new long[24][];
             blockStatesSize = new short[24];
-            palettes = new List<string>[24];
+            palettes = new List<ushort>[24];
             for(int i = 0; i < 24; i++) {
                 //blockStates[i] = new long[342];
                 y[i] = 100;
-                palettes[i] = new List<string>();
+                palettes[i] = new List<ushort>();
             }
 
             this.Populate(r);
@@ -55,7 +55,7 @@ namespace Mcasaenk.Rendering {
                             if(levelEl.name == "Biomes") {
                                 int len = r.ReadInt();
                                 biomeSize = len;
-                                biomes = pool.biomes.Rent(len);
+                                biomes = pool.chunk_biomes.Rent(len);
                                 r.ReadIntArray(biomes, len);
                                 return true;
                             } else if(levelEl.name == "Sections") {
@@ -79,7 +79,7 @@ namespace Mcasaenk.Rendering {
                                                 r.ForreachCompound((piC) => {
                                                     if(piC.name == "Name") {
                                                         string str = r.ReadUTF8();
-                                                        palettes[si].Add(str);
+                                                        palettes[si].Add(ColorMapping.Block.GetId(str));
                                                         return true;
                                                     } else return false;
                                                 });
@@ -98,10 +98,11 @@ namespace Mcasaenk.Rendering {
             }
             catch(Exception e) {
                 error = true;
+                throw;
             }
         }
         public void Dispose() {
-            if(biomes != null) pool.biomes.Return(biomes, false);
+            if(biomes != null) pool.chunk_biomes.Return(biomes, false);
             for(int i = 0; i < blockStates.Length; i++) {
                 if(blockStates[i] != null) pool.blockstates.Return(blockStates[i], false);
             }
@@ -119,11 +120,11 @@ namespace Mcasaenk.Rendering {
         }
 
 
-        public string GetBiome(int cx, int cz, int cy, int i) {
-            return ColorMapping.GetBiomeById(getBiomeAtBlock(this.biomes, cx, i * 16 + cy, cz));
+        public ushort GetBiome(int cx, int cz, int cy, int i) {
+            return ColorMapping.GetBiomeByOldId(getBiomeAtBlock(this.biomes, cx, i * 16 + cy, cz));
         }
 
-        public string GetBlock(int cx, int cz, int cy, int i) {
+        public ushort GetBlock(int cx, int cz, int cy, int i) {
             int bits = (int)blockStatesSize[y[i + 4]] >> 6;       
 
             int paletteIndex = getPaletteIndex(getIndex(cx, cy, cz, 16), blockStates[y[i + 4]], bits);

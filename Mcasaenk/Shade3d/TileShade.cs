@@ -107,7 +107,7 @@ namespace Mcasaenk.Shade3d {
         }
 
         private void CheckForDestruct() {
-            if(!harvested.Contains(false)) {
+            if(harvested.Contains(false) == false) {
                 Debug.WriteLine($"{tile.pos}'s shade f-ed");
                 this.Destruct();
             }

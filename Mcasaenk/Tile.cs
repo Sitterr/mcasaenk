@@ -17,6 +17,7 @@ using System.IO;
 using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
+using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk
 {
@@ -34,18 +35,13 @@ namespace Mcasaenk
             this.possibleTiles = existingRegions;
             tiles = new ConcurrentDictionary<Point2i, Tile>();
             shadeFrames = new ConcurrentDictionary<Point2i, TileShadeFrames>();
-
-            SetPools();
         }
 
-        private void SetPools() {
-            if(Settings.SHADE3D) {
-                if(generateTilePool is not ShadeGenerateTilePool) generateTilePool = new ShadeGenerateTilePool();
-            } else { 
-                if(generateTilePool is not StandardGenerateTilePool) generateTilePool = new StandardGenerateTilePool();
-            }
+        public void SetSettings() {
+            generateTilePool = new GenerateTilePool();
+            quickTilePool = new TilePool(4);
 
-            if(quickTilePool is null) quickTilePool = new TilePool(4);
+            ColorMapping.Init();
         }
 
         public Tile GetTile(Point2i point) {
@@ -91,9 +87,9 @@ namespace Mcasaenk
             map.generateTilePool.Queue(this, observer);
         }
         public void QueueShadeUpdate() {
-            map.quickTilePool.QueueTileTask(this, (_) => {
+            map.quickTilePool.Queue(this, () => {
                 Task.Delay(1000).Wait();
-                this.image.ShadeRedraw();
+                this.image.Redraw();
             }, this.shade.ShouldRedraw);
         }
         public bool IsLoading() {

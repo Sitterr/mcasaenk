@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Xml.Linq;
 using Mcasaenk.Shade3d;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Windows.Shapes;
 using Accessibility;
 using System.Windows.Controls;
@@ -16,7 +15,7 @@ using System.Windows.Controls;
 namespace Mcasaenk.Rendering
 {
     public class ChunkRenderer {
-        public static void DrawChunk(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, int[] pixelBuffer, int[] waterPixels, short[] terrainHeights, short[] waterHeights, int plusHeight, int minusHeight) {
+        public static void Extract(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -51,28 +50,18 @@ namespace Mcasaenk.Rendering
                                 continue;
                             }
 
-                            BlockInformation blockInformation = new BlockInformation() {
-                                biome = data.GetBiome(cx, cz, cy, i),
-                                height = sectionHeight + cy,
-                            };
-                            uint blockColor = colorMapping.GetColor(block, blockInformation);
-
-                            if(blockColor >> 24 == 0) { // another IsEmprty check
-                                continue;
-                            }
-
                             if(!waterDepth) {
-                                pixelBuffer[regionIndex] = (int)blockColor; // water color
-                                waterHeights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                if(rdata.biomeIds != null) rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
+                                if(rdata.heights != null) rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
 
-                                if(IsWater(block)) {
+                                if(IsWater(block) && Settings.WATER) {
                                     waterDepth = true;
                                     continue;
                                 }
                             }
 
-                            waterPixels[regionIndex] = (int)blockColor; // color of block at bottom of water
-                            terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
+                            rdata.blockIds[regionIndex] = block;
+                            if(rdata.terrainHeights != null) rdata.terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
                             goto zLoop;
                         }
                     }
@@ -82,7 +71,9 @@ namespace Mcasaenk.Rendering
             }
         }
 
-        public static void DrawChunk3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, int[] pixelBuffer, int[] waterPixels, short[] terrainHeights, short[] waterHeights, bool[] shadeFrame, bool[] shadeValues, byte[] shadeValuesLen, int plusHeight, int minusHeight) {
+
+
+        public static void DrawChunk3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -125,12 +116,7 @@ namespace Mcasaenk.Rendering
                                 continue;
                             }
 
-                            BlockInformation blockInformation = new BlockInformation() {
-                                biome = data.GetBiome(cx, cz, cy, i),
-                                height = sectionHeight + cy,
-                            };
-                            uint blockColor = colorMapping.GetColor(block, blockInformation);
-
+                            uint blockColor = colorMapping.GetColor(block, data.GetBiome(cx, cz, cy, i));
                             if(blockColor >> 24 == 0) { // another IsEmpty check
                                 continue;
                             }
@@ -140,16 +126,13 @@ namespace Mcasaenk.Rendering
                             int h = 319 - (sectionHeight + minusHeight + cy);
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
-                            bool alreadyshade = CheckLine(shadeFrame, SHADEX, SHADEZ, x1, z1);
-
-                            uint unshadedBlockColor = blockColor;
-                            if(alreadyshade) blockColor = Global.AddShade(blockColor, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS);
+                            bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
 
                             if(!waterDepth) {
                                 if(!done) {
-                                    pixelBuffer[regionIndex] = (int)blockColor; // water color
-                                    waterHeights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
-                                    SetShadeValuesLine(shadeFrame, shadeValues, ref shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
+                                    if(rdata.biomeIds != null) rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
+                                    if(rdata.heights != null) rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                    SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen.Get()[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                                 }
 
                                 if(isWater) {
@@ -160,12 +143,12 @@ namespace Mcasaenk.Rendering
 
 
                             if(!alreadyshade) {
-                                SetLine(shadeFrame, true, SHADEX, SHADEZ, x1, z1);
+                                SetLine(rdata.shadeFrame, true, SHADEX, SHADEZ, x1, z1);
                             }
 
                             if(!done) {
-                                waterPixels[regionIndex] = (int)unshadedBlockColor; // color of block at bottom of water
-                                terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
+                                rdata.blockIds[regionIndex] = block;
+                                if(rdata.terrainHeights != null) rdata.terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
                                 //goto zLoop;
                                 done = true;
                             }
@@ -246,20 +229,21 @@ namespace Mcasaenk.Rendering
 
 
 
-
-
-
-        static bool IsEmpty(string blockname) {
-            return blockname switch {
-                "minecraft:air" or "minecraft:cave_air" or "minecraft:barrier" => true,
-                _ => false,
-            };
+        static bool IsEmpty(ushort blockid) {
+            if(blockid == ColorMapping.BLOCK_AIR) return true;
+            return false;
+            //return blockname switch {
+            //    "minecraft:air" or "minecraft:cave_air" or "minecraft:barrier" => true,
+            //    _ => false,
+            //};
         }
-        static bool IsWater(string blockname) {
-            return blockname switch {
-                "minecraft:water" or "minecraft:bubble_column" or "minecraft:barrier" => true,
-                _ => false,
-            };
+        static bool IsWater(ushort blockid) {
+            if(blockid == ColorMapping.BLOCK_WATER) return true;
+            return false;
+            //return blockname switch {
+            //    "minecraft:water" or "minecraft:bubble_column" or "minecraft:barrier" => true,
+            //    _ => false,
+            //};
         }
     }
 

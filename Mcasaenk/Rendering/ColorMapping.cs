@@ -1,5 +1,6 @@
 ﻿using Accessibility;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,25 +10,96 @@ using System.Windows.Media;
 
 namespace Mcasaenk.Rendering {
 
+    public class NameToIdBiMap {
+        private IDictionary<string, ushort> nameToId = new Dictionary<string, ushort>();
+        private IDictionary<ushort, string> idToName = new Dictionary<ushort, string>();
+        private ushort counter;
+        private bool frozen;
 
+        private string defaultName;
+        private readonly Action<string, ushort> onAdd;
+        public NameToIdBiMap(string defaultName, Action<string, ushort> onAdd) { 
+            this.onAdd = onAdd;
+            this.defaultName = defaultName;
+        }
+
+        public ushort GetId(string name) {
+            if(nameToId.TryGetValue(name, out var id)) return id;
+            else if(frozen == false) return assignNew(name);
+            else return 0;
+        }
+
+        public string GetName(ushort id) {
+            return idToName[id];
+        }
+
+        private ushort assignNew(string name) {
+            nameToId.Add(name, counter);
+            idToName.Add(counter, name);
+            onAdd(name, counter);
+            return counter++;
+        }
+
+        public void Freeze() {
+            frozen = true;
+            nameToId = nameToId.ToFrozenDictionary();
+            idToName = idToName.ToFrozenDictionary();
+        }
+
+        public void Reset() {
+            counter = 0;
+            frozen = false;
+            nameToId = new Dictionary<string, ushort>();
+            idToName = new Dictionary<ushort, string>();
+
+            assignNew(defaultName);
+        }
+    }
 
     public static class ColorMapping {
 
-        private static Dictionary<int, string> biomeNameMap;
-        static ColorMapping() {
-            biomeNameMap = new();
+        public static ushort BLOCK_AIR, BLOCK_WATER;
+
+        public static readonly NameToIdBiMap 
+            Block = new("minecraft:air", (name, id) => {
+                switch(name) {
+                    case "minecraft:air":
+                        BLOCK_AIR = id;
+                        break;
+                    case "minecraft:water":
+                        BLOCK_WATER = id;
+                        break;
+                }
+            }), 
+            Biome = new("plains", (name, id) => {
+                switch(name) { 
+                }
+            });
+
+
+        private static IDictionary<int, ushort> oldBiomeIdToName;
+        public static ushort GetBiomeByOldId(int oldid) {
+            if(oldBiomeIdToName.TryGetValue(oldid, out var id)) return id;
+            return oldBiomeIdToName[-1];
+        }
+        private static void SetOldBiomeIds() {
+            oldBiomeIdToName = new Dictionary<int, ushort>();
             ReadStandartFormat(Resources.ResourceMapping.biome_names, (_, parts) => {
                 int id = Convert.ToInt32(parts[0]);
                 string name = parts[1];
-                biomeNameMap.Add(id, name);
+                oldBiomeIdToName.Add(id, ColorMapping.Biome.GetId(name));
             });
+            oldBiomeIdToName = oldBiomeIdToName.ToFrozenDictionary();
         }
 
-        public static string GetBiomeById(int biomeid) {
-            if(!biomeNameMap.TryGetValue(biomeid, out var name)) return biomeNameMap[-1];
-            return name;
-        }
-
+        public static void Init() {
+            Block.Reset();
+            Biome.Reset();
+            SetOldBiomeIds();
+            _ = Current; // force constructor becuase its lazy
+            Block.Freeze();
+            Biome.Freeze();
+        }      
 
 
         public static void ReadStandartFormat(string data, Action<string, string[]> onRead) {
@@ -54,89 +126,97 @@ namespace Mcasaenk.Rendering {
 
 
     public struct BlockInformation {
-        public string biome;
+        public ushort biome;
         public int height;
     }
     public interface IColorMapping {
-        uint GetColor(string block, BlockInformation blockInformation);
+        uint GetColor(ushort block, ushort biome);
     }
 
     public class MapColorMapping : IColorMapping {
-        private Dictionary<string, uint> colorMap;
+        private IDictionary<ushort, uint> colorMap;
         public MapColorMapping() {
-            colorMap = new();
+            colorMap = new Dictionary<ushort, uint>();
             ColorMapping.ReadStandartFormat(Resources.ResourceMapping.block_colors_map, (_, parts) => {
                 string name = parts[0];
                 if(!name.Contains(":")) name = "minecraft:" + name;
 
                 uint color = 0xFF000000 | (uint)Convert.ToInt32(parts[1], 16);
 
-                colorMap.Add(name, color);
+                colorMap.Add(ColorMapping.Block.GetId(name), color);
             });
+            colorMap = colorMap.ToFrozenDictionary();
         }
-        public uint GetColor(string blockname, BlockInformation blockInformation) {
-            if(!colorMap.TryGetValue(blockname, out var color)) return 0x00000000;
-            return color;
+
+        public uint GetColor(ushort blockname, ushort biome) {
+            if(colorMap.TryGetValue(blockname, out var color)) return color;
+            return 0x00000000;
         }
     }
 
     public class MeanColorMapping : IColorMapping {
-        private Dictionary<string, uint> colorMap;
-        private HashSet<string> grassBlocks, foliageBlocks, waterBlocks;
-        private Dictionary<string, (uint grassTint, uint foliageTint, uint waterTint)> tintMap;
+        private IDictionary<ushort, uint> colorMap;
+        private ISet<ushort> grassBlocks, foliageBlocks, waterBlocks;
+        private IDictionary<ushort, (uint grassTint, uint foliageTint, uint waterTint)> tintMap;
 
         public MeanColorMapping() {
-            colorMap = new();
-            grassBlocks = new(); foliageBlocks = new(); waterBlocks = new();
-            tintMap = new();
+            colorMap = new Dictionary<ushort, uint>();
+            grassBlocks = new HashSet<ushort>(); foliageBlocks = new HashSet<ushort>(); waterBlocks = new HashSet<ushort>();
+            tintMap = new Dictionary<ushort, (uint grassTint, uint foliageTint, uint waterTint)>();
 
             ColorMapping.ReadStandartFormat(Resources.ResourceMapping.block_colors_mean, (group, parts) => {
                 switch(group) {
                     case "BIOMES": {
                         string name = parts[0];
                         uint grassTint = Global.ToARGBInt(parts[1]), foliageTint = Global.ToARGBInt(parts[2]), waterTint = Global.ToARGBInt(parts[3]);
-                        tintMap.Add(parts[0], (grassTint, foliageTint, waterTint));
+                        tintMap.Add(ColorMapping.Biome.GetId(parts[0]), (grassTint, foliageTint, waterTint));
                         break;
                     }
                     case "COLORS": {
                         string name = parts[0];
                         if(!name.Contains(":")) name = "minecraft:" + name;
                         uint color = Global.ToARGBInt(parts[1]);
-                        colorMap.Add(name, color);
+                        colorMap.Add(ColorMapping.Block.GetId(name), color);
                         break;
                     }
                     case "GRASS": {
                         string name = parts[0];
                         if(!name.Contains(":")) name = "minecraft:" + name;
-                        grassBlocks.Add(name);
+                        grassBlocks.Add(ColorMapping.Block.GetId(name));
                         break;
                     }
                     case "FOLIAGE": {
                         string name = parts[0];
                         if(!name.Contains(":")) name = "minecraft:" + name;
-                        foliageBlocks.Add(name);
+                        foliageBlocks.Add(ColorMapping.Block.GetId(name));
                         break;
                     }
                     case "WATER": {
                         string name = parts[0];
                         if(!name.Contains(":")) name = "minecraft:" + name;
-                        waterBlocks.Add(name);
+                        waterBlocks.Add(ColorMapping.Block.GetId(name));
                         break;
                     }
                 }
-
-
             });
+
+            colorMap = colorMap.ToFrozenDictionary();
+            tintMap = tintMap.ToFrozenDictionary();
+
+            grassBlocks = grassBlocks.ToFrozenSet();
+            foliageBlocks = foliageBlocks.ToFrozenSet();
+            waterBlocks = waterBlocks.ToFrozenSet();
         }
-        public uint GetColor(string blockname, BlockInformation blockInformation) {
+
+        public uint GetColor(ushort blockname, ushort biome) {
             if(!colorMap.TryGetValue(blockname, out var color)) return 0x00000000;
 
             if(grassBlocks.Contains(blockname)) {
-                color = applyTint(color, tintMap[blockInformation.biome].grassTint);
+                color = applyTint(color, tintMap[biome].grassTint);
             } else if(foliageBlocks.Contains(blockname)) {
-                color = applyTint(color, tintMap[blockInformation.biome].foliageTint);
+                color = applyTint(color, tintMap[biome].foliageTint);
             } else if(waterBlocks.Contains(blockname)) {
-                color = applyTint(color, tintMap[blockInformation.biome].waterTint);
+                color = applyTint(color, tintMap[biome].waterTint);
             }
             return color;
         }

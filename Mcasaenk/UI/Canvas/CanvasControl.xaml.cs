@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Xml.Xsl;
 
 
 namespace Mcasaenk.UI.Canvas {
@@ -50,11 +51,7 @@ namespace Mcasaenk.UI.Canvas {
                 scenePainter,
                 gridPainter,
             ];
-
-            CompositionTarget.Rendering += OnFastTick;
-
-            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_100);
-
+        
             this.SizeChanged += OnSizeChange;
             this.MouseWheel += OnMouseWheel;
             this.MouseDown += OnMouseDown;
@@ -68,6 +65,11 @@ namespace Mcasaenk.UI.Canvas {
         public void SetTileMap(TileMap tileMap) { 
             this.tileMap = tileMap;
             scenePainter.SetTileMap(tileMap);
+
+            tileMap.SetSettings();
+
+            CompositionTarget.Rendering += OnFastTick;
+            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_100);
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -98,7 +100,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
                 window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
-                window.footer.HardDraw = TileImage.lastRedrawTime;
+                window.footer.HardDraw = GenerateTilePool.lastRedrawTime;
                 window.footer.ShadeTiles = tileMap.ShadeTiles();
                 window.footer.ShadeFrames = tileMap.ShadeFrames();
             }
