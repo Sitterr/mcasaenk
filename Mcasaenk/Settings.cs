@@ -16,12 +16,12 @@ namespace Mcasaenk {
         public static int MAXCONCURRENCY = 4, CHUNKRENDERMAXCONCURRENCY = 16;
 
 
-        public static bool SHADE3D = false;
+        public static bool SHADE3D = true;
         public static bool STATIC_SHADE = true;
         public static bool WATER = true;
         public static bool BIOMES = true;
 
-        public static double ADEG = 135, BDEG = 10;
+        public static double ADEG = 45, BDEG = 20;
 
         public static int SHADE3DMOODYNESS = (int)(0.99 * -100);
     }

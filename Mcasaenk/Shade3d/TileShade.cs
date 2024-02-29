@@ -1,75 +1,99 @@
-﻿using Mcasaenk.Rendering;
+﻿using Accessibility;
+using Mcasaenk.Rendering;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;
 using System.Windows;
+using System.Xml.XPath;
+using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Shade3d {
-    public class TileShade {
+    public class TileShade : GenDataEditor {
         private readonly Tile tile;
         private int shadeStride;
-        public TileShade(Tile tile) {
+        public TileShade(Tile tile) : base(tile) {
             this.tile = tile;
-            active = false;
         }
 
-        private short[] heightMap; // 512x512 waterHeights
-
-        private bool[] isShade; // 512x512
-        private bool[] shadeValues; // 512x512x20
-        private byte[] valuesLen; // 512x512
-        public bool[] shouldShade; // 512x512
-
-        private bool shouldRedraw;
-        public bool active;
+        private ManArray<short> heightMap; // 512x512 waterHeights
+        private ManArray<bool> shadeValues; // 512x512x20
+        private ManArray<byte> valuesLen; // 512x512
 
         private bool[] harvested;
 
-        public object locker = new object();
+        public void Construct(RawData freeRaw) {
+            lock(locker) {
+                IsActive = true;
+                this.heightMap = freeRaw.heights;
+                this.shadeValues = freeRaw.shadeValues;
+                this.valuesLen = freeRaw.shadeValuesLen;
 
-        public void Construct(short[] heightMap, bool[] shadeValues, byte[] valuesLen) {
-            this.heightMap = heightMap;
-            this.isShade = new bool[512 * 512];
-            this.shouldShade = new bool[512 * 512];
-            this.shadeValues = shadeValues;
-            this.valuesLen = valuesLen;
+                this.shadeStride = ShadeConstants.GLB.blockReachLenMax;
 
-            this.shadeStride = ShadeConstants.GLB.blockReachLenMax;
+                _ = Recalc();
 
-            harvested = new bool[ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ];
-            for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
+                harvested = new bool[ShadeConstants.GLB.regionReach.Count];
+                int i = 0;
+                foreach(var p in ShadeConstants.GLB.regionReach) {
+                    int _iz = p.Z, _ix = p.X;
+
+                    if(_ix == 0 && _iz == 0) harvested[i] = true;
+
+
+                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[i] = true;
+
+                    i++;
                 }
-            }
-            harvested[0] = true;
 
-            RecalcIsShade(true);
-            active = true;
+                //harvested = new bool[ShadeConstants.GLB.rZ * ShadeConstants.GLB.rZ];
+                //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
+                //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
+                //        if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
+                //    }
+                //}
+                //harvested[0] = true;
+
+
+
+                CheckDestruct();
+            }
         }
-        private void Destruct() {
+
+        protected override bool ShouldDestruct() {
+            return harvested.Contains(false) == false;
+        }
+        protected override void Destruct() {
             this.heightMap = null;
-            this.isShade = null;
             this.shadeValues = null;
             this.valuesLen = null;
-            this.shouldShade = null;
-
-            active = false;
+            harvested = null;
         }
 
 
-        public void UpdateInfo(bool[] shadeFrame) {
+        public void UpdateSelf(bool[] shadeFrame) {
             lock(locker) {
-                if(!active) return;
+                if(!IsActive) return;
 
-                for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
-                        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
+                //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
+                //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
+                //        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
+                //        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
 
-                        if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
-                            .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
-                    }
+                //        if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
+                //            .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
+                //    }
+                //}
+                int i = 0;
+                foreach(var p in ShadeConstants.GLB.regionReach) {
+                    int _iz = p.Z, _ix = p.X;
+
+                    int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
+                    int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
+
+                    if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
+                        .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[i] = true;
+
+                    i++;
                 }
 
                 int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
@@ -86,52 +110,34 @@ namespace Mcasaenk.Shade3d {
                         if(heightMap[regionIndex] != 0) {
                             byte a = 3;
                             ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues, ref a, regionIndex, SHADEX, SHADEZ, x1, z1);
+                            Debug.Assert(a == valuesLen[regionIndex]);
                         }
                     }
                 }
 
-                RecalcIsShade();
-                if(!shouldRedraw) {
-                    CheckForDestruct();
-                }
-            }
-        }
-        public bool ShouldRedraw() => active && shouldRedraw;
-        public void ResetAfterDraw() {
-            lock(locker) {
-                shouldRedraw = false;
-                Array.Fill(shouldShade, false);
-
-                CheckForDestruct();
+                ShouldRedraw = Recalc();
+                CheckDestruct();
             }
         }
 
-        private void CheckForDestruct() {
-            if(harvested.Contains(false) == false) {
-                Debug.WriteLine($"{tile.pos}'s shade f-ed");
-                this.Destruct();
-            }
-        }
-
-
-        private void RecalcIsShade(bool init = false) {
+        public override bool Recalc() {
+            bool changes = false;
             for(int i = 0; i < shadeValues.Length / shadeStride; i++) {
-                if(isShade[i]) continue;
+                if(genData.isShade[i]) continue;
                 int j;
                 for(j = 0; j < valuesLen[i]; j++) {
                     if(shadeValues[i * shadeStride + j] == false) break;
                 }
                 if(j == valuesLen[i]) {
-                    if(!init) {
-                        shouldShade[i] = true;
-                        shouldRedraw = true;
-                    }
-                    isShade[i] = true;
+                    changes = true;
+                    genData.isShade[i] = true;
                 }
             }
+            return changes;
         }
-
     }
+
+
 
 
     public class TileShadeFrames {
@@ -145,18 +151,42 @@ namespace Mcasaenk.Shade3d {
             frames = new();
         }
 
+        public static int br = 0;
         public void AddFrame(bool[] frame, Point2i dist) {
-            bool[] harvested = new bool[ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ];
+            bool[] harvested = new bool[ShadeConstants.GLB.regionReach.Count];
+            //bool[] harvested = new bool[ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ];
+            Array.Fill(harvested, true);
 
-            for(int i = 0; i < ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ; i++) harvested[i] = true;
+            var tilepos = pos - new Point2i(dist.X * ShadeConstants.GLB.xp, dist.Z * ShadeConstants.GLB.zp);
 
-            for(int _ix = dist.X; _ix < ShadeConstants.GLB.rX; _ix++) {
-                for(int _iz = dist.Z; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                    var p = pos + new Point2i(_ix * -ShadeConstants.GLB.xp, _iz * -ShadeConstants.GLB.zp);
-                    harvested[_iz * ShadeConstants.GLB.rX + _ix] = (tileMap.GetTile(p) == null);
+            int i = 0;
+            foreach(var p in ShadeConstants.GLB.regionReach) {
+                int _iz = p.Z, _ix = p.X;
+
+                if(_ix >= dist.X && _iz >= dist.Z) {
+                    var pp = pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
+                    harvested[i] = (tileMap.GetTile(pp) == null);
+
+                    var f = (pp - tilepos).abs();
+                    if(!ShadeConstants.GLB.regionReach.Contains(f)) {
+                        br++;
+                        harvested[i] = true;
+                    }
+                    
                 }
+                if(_ix == dist.X && _iz == dist.Z) {
+                    harvested[i] = true;
+                }
+                i++;
             }
-            harvested[dist.Z * ShadeConstants.GLB.rX + dist.X] = true;
+
+            //for(int _ix = dist.X; _ix < ShadeConstants.GLB.rX; _ix++) {
+            //    for(int _iz = dist.Z; _iz < ShadeConstants.GLB.rZ; _iz++) {
+            //        var p = pos + new Point2i(_ix * -ShadeConstants.GLB.xp, _iz * -ShadeConstants.GLB.zp);
+            //        harvested[_iz * ShadeConstants.GLB.rX + _ix] = (tileMap.GetTile(p) == null);
+            //    }
+            //}
+            //harvested[dist.Z * ShadeConstants.GLB.rX + dist.X] = true;
 
             frames.TryAdd(dist, (frame, harvested));
 
@@ -165,25 +195,56 @@ namespace Mcasaenk.Shade3d {
 
         public bool GetCombinedSuitableFrames(Point2i d, bool[] shadeFrame, int offsetX, int offsetZ, int stride) {
             bool usedZeroZero = false;
-            for(int xx = 0; xx <= d.X; xx++) {
-                for(int zz = 0; zz <= d.Z; zz++) {
-                    if(xx == d.X && zz == d.Z) continue;
 
-                    var p = new Point2i(xx, zz);
-                    if(frames.TryGetValue(p, out var fr)) {
+            int i = 0, di = 0;
+            foreach(var p in ShadeConstants.GLB.regionReach) {
+                int zz = p.Z, xx = p.X;
+                if(xx == d.X && zz == d.Z) { di = i; break; }
+                i++;
+            }
+
+            foreach(var p in ShadeConstants.GLB.regionReach) {
+                int zz = p.Z, xx = p.X;
+
+                if(xx <= d.X && zz <= d.Z) {
+                    if(xx == d.X && zz == d.Z) {
+                        continue;
+                    }
+
+                    if(frames.TryGetValue(new Point2i(xx, zz), out var fr)) {
                         for(int lx = 0; lx < 512; lx++) {
                             for(int lz = 0; lz < 512; lz++) {
                                 shadeFrame[(offsetZ + lz) * stride + offsetX + lx] |= fr.frame[lz * 512 + lx];
                             }
                         }
 
-                        fr.harvested[d.Z * ShadeConstants.GLB.rX + d.X] = true;
+                        fr.harvested[di] = true;
 
                         if(xx == 0 && zz == 0) usedZeroZero = true;
                     }
-                    
                 }
+
             }
+
+            //for(int xx = 0; xx <= d.X; xx++) {
+            //    for(int zz = 0; zz <= d.Z; zz++) {
+            //        if(xx == d.X && zz == d.Z) continue;
+
+            //        var p = new Point2i(xx, zz);
+            //        if(frames.TryGetValue(p, out var fr)) {
+            //            for(int lx = 0; lx < 512; lx++) {
+            //                for(int lz = 0; lz < 512; lz++) {
+            //                    shadeFrame[(offsetZ + lz) * stride + offsetX + lx] |= fr.frame[lz * 512 + lx];
+            //                }
+            //            }
+
+            //            fr.harvested[d.Z * ShadeConstants.GLB.rX + d.X] = true;
+
+            //            if(xx == 0 && zz == 0) usedZeroZero = true;
+            //        }
+
+            //    }
+            //}
 
             RemoveUnnecessary();
             return usedZeroZero;

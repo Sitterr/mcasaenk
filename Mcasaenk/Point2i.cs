@@ -32,6 +32,7 @@ namespace Mcasaenk {
             return -1; // TODO
         }
 
+        public Point2i abs() => new Point2i(Math.Abs(this.X), Math.Abs(this.Z));
         public override string ToString() {
             return $"{X},{Z}";
         }

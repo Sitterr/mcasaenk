@@ -41,7 +41,7 @@ namespace Mcasaenk.UI.Canvas {
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-            screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 2);
+            screen = new WorldPosition(new Point(0, -2000), (int)ActualWidth, (int)ActualHeight, 1);
 
             scenePainter = new ScenePainter();
             gridPainter = new GridPainter2();
@@ -100,7 +100,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
                 window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
-                window.footer.HardDraw = GenerateTilePool.lastRedrawTime;
+                window.footer.HardDraw = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
                 window.footer.ShadeTiles = tileMap.ShadeTiles();
                 window.footer.ShadeFrames = tileMap.ShadeFrames();
             }
@@ -108,14 +108,14 @@ namespace Mcasaenk.UI.Canvas {
 
         private void OnSlowTick(object a) {
             if(tileMap == null) return;
-            foreach(var pos in screen.GetVisibleTilePositions()) {
+            foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
                 var tile = tileMap.GetTile(pos);
                 if(tile == null) continue;
                 if(tileMap.generateTilePool.HasLoaded(tile) == false && tileMap.generateTilePool.IsLoading(tile) == false) {
                     tile.QueueGenerate(screen);
                 }
-                if(tile.shade.ShouldRedraw()) {
-                    tile.QueueShadeUpdate();
+                if(tile.contgen.ShouldUpdate) {
+                    tile.QueueGenUpdate();
                 }
             }
         }

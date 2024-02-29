@@ -39,37 +39,42 @@ namespace Mcasaenk.Rendering
 
         public unsafe void StandartGenerate() {
             using var rawData = new RawData(pool);
-            using var pixelBuffer = pool.pixelBufferInit.CreateRent();
+            using var pixelBuffer = pool.BorrowPixels();
 
             using(var regionReader = new RegionReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 
-                const int g = 5;
-                Parallel.For(0, (1024 / g) + 1, new ParallelOptions { MaxDegreeOfParallelism = Settings.CHUNKRENDERMAXCONCURRENCY }, (j) => {
+                const int g = 10;
+                Parallel.For(0, (1024 / g) + 1, new ParallelOptions { MaxDegreeOfParallelism = Settings.CHUNKRENDERMAXCONCURRENCY }, (j) => {                
                     for(int i = j * g; i < j * g + g; i++) {
                         if(i >= 1024) break;
                         int cz = i / 32, cx = i % 32;
                         using var chunk = RegionReader.LazyRenderData(pool, ptrs[i]);
-                        ChunkRenderer.Extract(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                        if(chunk == null) continue;
+
+                        if(chunk.ContainsHeightmaps())
+                            ChunkRenderer.ExtractWithHeightmaps(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                        else
+                            ChunkRenderer.Extract(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                     }
                 });
             }
 
-            CreatePixels(pixelBuffer, new GenData(rawData));
+            CreatePixels(pixelBuffer, new GenData(rawData, pool));
 
             img = GenerateBitmap(pixelBuffer);
         }
 
         public unsafe void ShadeGenerate() {
             using var rawData = new RawData(pool);
-            using var pixelBuffer = pool.pixelBufferInit.CreateRent();
+            using var pixelBuffer = pool.BorrowPixels();
 
             using(var regionReader = new RegionReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 
                 void doChunk(int cx, int cz) {
                     using var chunk = RegionReader.LazyRenderData(pool, ptrs[cz * 32 + cx]);
-                    ChunkRenderer.DrawChunk3D(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                    ChunkRenderer.Extract3D(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                 }
 
                 const int g = 5;
@@ -120,59 +125,88 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            //CreatePixels(pixelBuffer, new GenData(rawData));
-            //img = GenerateBitmap(pixelBuffer);
+            using var freeRaw = rawData.Free();
+            var genData = new GenData(freeRaw, pool);
 
-            var freeRaw = rawData.Free();
-            var genData = new GenData(freeRaw);
-
+            
             { // save shades 
-                tile.shade.Construct(freeRaw.heights, freeRaw.shadeValues, freeRaw.shadeValuesLen);
+                tile.contgen.Safe(genData);
+
+                tile.shade.Construct(freeRaw);
 
                 // frame
                 {
-                    for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {                  
-                        for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                            int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
-                            int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
+                    foreach(var p in ShadeConstants.GLB.regionReach) {
+                        int _iz = p.Z, _ix = p.X;
 
-                            bool[] arr = new bool[512 * 512];
-                            for(int xx = offsetX; xx < offsetX + 512; xx++) {
-                                for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
-                                    int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                                    arr[ai] = freeRaw.shadeFrame[si];
-                                }
+                        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
+                        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
+
+                        bool[] arr = new bool[512 * 512];
+                        for(int xx = offsetX; xx < offsetX + 512; xx++) {
+                            for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
+                                int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
+                                arr[ai] = freeRaw.shadeFrame[si];
                             }
-                            tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)).AddFrame(arr, new Point2i(_ix, _iz));
                         }
+                        tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)).AddFrame(arr, new Point2i(_ix, _iz));
                     }
+
+                    //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
+                    //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
+                    //        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
+                    //        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
+
+                    //        bool[] arr = new bool[512 * 512];
+                    //        for(int xx = offsetX; xx < offsetX + 512; xx++) {
+                    //            for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
+                    //                int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
+                    //                arr[ai] = freeRaw.shadeFrame[si];
+                    //            }
+                    //        }
+                    //        tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)).AddFrame(arr, new Point2i(_ix, _iz));
+                    //    }
+                    //}
                 }
 
                 // update tile shades that use the above frame
                 {
                     var tileMap = tile.GetOrigin();
-                    for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                        int ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
-                        for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                            int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ);
 
-                            var t = tileMap.GetTile(this.tile.pos + new Point2i(ix, iz));
+                    foreach(var p in ShadeConstants.GLB.regionReach) {
+                        int _iz = p.Z, _ix = p.X;
+                        //int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ), ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
 
-                            if(t != null) {
-                                Array.Clear(freeRaw.shadeFrame);
-                                t.shade.UpdateInfo(freeRaw.shadeFrame); // reuse
-                            }
+                        var t = tileMap.GetTile(this.tile.pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp));
+
+                        if(t != null) {
+                            Array.Clear(freeRaw.shadeFrame);
+                            t.shade.UpdateSelf(freeRaw.shadeFrame); // reuse
                         }
                     }
+
+
+                    //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
+                    //    int ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
+                    //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
+                    //        int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ);
+
+                    //        var t = tileMap.GetTile(this.tile.pos + new Point2i(ix, iz));
+
+                    //        if(t != null) {
+                    //            Array.Clear(freeRaw.shadeFrame);
+                    //            t.shade.UpdateSelf(freeRaw.shadeFrame); // reuse
+                    //        }
+                    //    }
+                    //}
                 }
-            }
+            }         
 
+            CreatePixels(pixelBuffer, genData);
+            img = GenerateBitmap(pixelBuffer);
 
+            tile.contgen.FinishedSafe();
         }
-
-
-
-
 
 
 
@@ -192,24 +226,61 @@ namespace Mcasaenk.Rendering
                     }
                 }
             }
-            if(Settings.STATIC_SHADE) staticshade(pixels, genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA);
-            
 
-            if(tile.shade.active) {
-                bool[] shouldShade = tile.shade.shouldShade;
+            if(Settings.STATIC_SHADE) {
+                float q = 8;
+                if(Settings.SHADE3D) q = 3;
+                staticshade(pixels, genData.heights, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+            } 
+
+
+            if(Settings.SHADE3D) {
+                int i = 0;
                 for(int z = 0; z < 512; z++) {
-                    for(int x = 0; x < 512; x++) {
-                        int i = z * 512 + x;
-                        if(shouldShade[i]) {
+                    for(int x = 0; x < 512; x++, i++) {
+                        if(genData.isShade[i]) {
                             pixels[i] = Global.AddShade((uint)pixels[i], Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS);
                         }
                     }
                 }
-                tile.shade.ResetAfterDraw();
             }
         }
 
-        private static void staticshade(Span<uint> pixelBuffer, GenData rawData, double cosA, double sinA) {
+
+
+        public unsafe void Redraw() {
+            if(tile.contgen.IsActive == false) return;
+            var img = this.img.Clone();
+            img.Lock();
+
+            uint* pixels = (uint*)img.BackBuffer;
+            CreatePixels(new Span<uint>(pixels, 512 * 512), tile.contgen.genData);
+            tile.contgen.Redrawn();
+
+            img.Unlock();
+            img.Freeze();
+
+            this.img = img;
+        }
+        private static WriteableBitmap GenerateBitmap(uint[] pixels) {
+            WriteableBitmap output = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
+
+            if(pixels != null) {
+                int stride = (int)output.Width * (output.Format.BitsPerPixel / 8);
+                output.WritePixels(new Int32Rect(0, 0, 512, 512), pixels, stride, 0);
+                output.Freeze();
+            }
+            
+            
+            return output;
+        }
+
+
+
+
+
+
+        private static void staticshade(Span<uint> pixelBuffer, ManArray<short> heights, double cosA, double sinA, float q) {
             cosA = Math.Round(cosA, 2);
             sinA = Math.Round(sinA, 2);
 
@@ -224,19 +295,19 @@ namespace Mcasaenk.Rendering
 
                     {
                         if(z == 0) {
-                            zShade = (rawData.heights[index + 512]) - (rawData.heights[index]);
+                            zShade = (heights[index + 512]) - (heights[index]);
                         } else if(z == 512 - 1) {
-                            zShade = (rawData.heights[index]) - (rawData.heights[index - 512]);
+                            zShade = (heights[index]) - (heights[index - 512]);
                         } else {
-                            zShade = ((rawData.heights[index + 512]) - (rawData.heights[index - 512])) * 2;
+                            zShade = ((heights[index + 512]) - (heights[index - 512])) * 2;
                         }
 
                         if(x == 0) {
-                            xShade = (rawData.heights[index + 1]) - (rawData.heights[index]);
+                            xShade = (heights[index + 1]) - (heights[index]);
                         } else if(x == 512 - 1) {
-                            xShade = (rawData.heights[index]) - (rawData.heights[index - 1]);
+                            xShade = (heights[index]) - (heights[index - 1]);
                         } else {
-                            xShade = ((rawData.heights[index + 1]) - (rawData.heights[index - 1])) * 2;
+                            xShade = ((heights[index + 1]) - (heights[index - 1])) * 2;
                         }
 
                         double shade = -(cosA * xShade + -sinA * zShade);
@@ -247,7 +318,7 @@ namespace Mcasaenk.Rendering
                             shade = 8;
                         }
 
-                        int altitudeShade = 16 * (rawData.heights[index] - 64) / 255;
+                        int altitudeShade = 16 * (heights[index] - 64) / 255;
                         if(altitudeShade < -4) {
                             altitudeShade = -4;
                         }
@@ -256,41 +327,12 @@ namespace Mcasaenk.Rendering
                         }
                         shade += altitudeShade;
 
-                        if(Settings.SHADE3D) {
-                            pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * 3), (int)(shade * 3), (int)(shade * 3));
-                        } else {
-                            pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * 8), (int)(shade * 8), (int)(shade * 8));
-                        }
+                        pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * q), (int)(shade * q), (int)(shade * q));
                     }
 
 
                 }
             }
-        }
-
-
-
-
-        public unsafe void Redraw() {
-            var img = this.img.Clone();
-            img.Lock();
-
-            uint* pixels = (uint*)img.BackBuffer;
-            CreatePixels(new Span<uint>(pixels, 512 * 512), null);
-
-            img.Unlock();
-            img.Freeze();
-
-            this.img = img;
-        }
-        private static WriteableBitmap GenerateBitmap(uint[] pixels) {
-            WriteableBitmap output = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
-
-            int stride = (int)output.Width * (output.Format.BitsPerPixel / 8);
-            output.WritePixels(new Int32Rect(0, 0, 512, 512), pixels, stride, 0);
-
-            output.Freeze();
-            return output;
         }
     }
 

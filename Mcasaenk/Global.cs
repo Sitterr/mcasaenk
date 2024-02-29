@@ -93,6 +93,14 @@ namespace Mcasaenk {
 
             return a << 24 | r << 16 | g << 8 | b;
         }
+        public static (byte r, byte g, byte b, byte a) GetARGB(uint color) {
+            byte aA = (byte)(color >> 24 & 0xFF);
+            byte aR = (byte)(color >> 16 & 0xFF);
+            byte aG = (byte)(color >> 8 & 0xFF);
+            byte aB = (byte)(color & 0xFF);
+
+            return (aR, aG, aB, aA);
+        }
 
 
         public static class Coord {
@@ -164,6 +172,34 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+        public static IList<T> Shuffle<T>(this IEnumerable<T> sequence) {
+            return sequence.Shuffle(new Random());
+        }
+
+        public static IList<T> Shuffle<T>(this IEnumerable<T> sequence, Random randomNumberGenerator) {
+            if(sequence == null) {
+                throw new ArgumentNullException("sequence");
+            }
+
+            if(randomNumberGenerator == null) {
+                throw new ArgumentNullException("randomNumberGenerator");
+            }
+
+            T swapTemp;
+            List<T> values = sequence.ToList();
+            int currentlySelecting = values.Count;
+            while(currentlySelecting > 1) {
+                int selectedElement = randomNumberGenerator.Next(currentlySelecting);
+                --currentlySelecting;
+                if(currentlySelecting != selectedElement) {
+                    swapTemp = values[currentlySelecting];
+                    values[currentlySelecting] = values[selectedElement];
+                    values[selectedElement] = swapTemp;
+                }
+            }
+
+            return values;
+        }
 
         public static T[] DeepCopy<T>(this T[] arr) where T : struct {
             T[] arr2 = new T[arr.Length];

@@ -1,25 +1,24 @@
-﻿using Accessibility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Animation;
+﻿using System.Diagnostics;
 
 namespace Mcasaenk.Rendering {
 
     public interface IChunkRenderData {
         ushort GetBiome(int cx, int cz, int cy, int i);
         ushort GetBlock(int cx, int cz, int cy, int i);
+
+        short GetHeight(int cx, int cz);
+        short GetTerrainHeight(int cx, int cz);
+
         bool CanSkipSection(int i);
         bool ContainsInformation();
+        bool ContainsHeightmaps();
     }
 
     public class ChunkRenderData117 : IChunkRenderData, IDisposable {
 
         private int[] biomes;
         private int biomeSize;
+        private long[] world_surface, ocean_floor;
         private byte[] y;
         private long[][] blockStates;
         private short[] blockStatesSize;
@@ -89,7 +88,26 @@ namespace Mcasaenk.Rendering {
                                     });
                                 });
                                 return true;
-                            } else return false;
+                            } 
+                            else if(levelEl.name == "Heightmaps") {
+                                r.ForreachCompound((hm) => {
+                                    if(hm.name == "OCEAN_FLOOR") {
+                                        int l = r.ReadInt();
+                                        Debug.Assert(l == 37);
+                                        ocean_floor = pool.ocean_floor.Rent(37);
+                                        r.ReadLongArray(ocean_floor, 37);
+                                        return true;
+                                    } else if(hm.name == "WORLD_SURFACE") {
+                                        int l = r.ReadInt();
+                                        Debug.Assert(l == 37);
+                                        world_surface = pool.world_surface.Rent(37);
+                                        r.ReadLongArray(world_surface, 37);
+                                        return true;
+                                    } else return false;
+                                });
+                                return true;
+                            } 
+                            else return false;
                         });
                         return true;
                     } else return false;
@@ -103,6 +121,8 @@ namespace Mcasaenk.Rendering {
         }
         public void Dispose() {
             if(biomes != null) pool.chunk_biomes.Return(biomes, false);
+            if(world_surface != null) pool.world_surface.Return(world_surface, false);
+            if(ocean_floor != null) pool.ocean_floor.Return(ocean_floor, false);
             for(int i = 0; i < blockStates.Length; i++) {
                 if(blockStates[i] != null) pool.blockstates.Return(blockStates[i], false);
             }
@@ -112,6 +132,9 @@ namespace Mcasaenk.Rendering {
 
         public bool ContainsInformation() {
             return !error && hassections;
+        }
+        public bool ContainsHeightmaps() { 
+            return world_surface != null && ocean_floor != null;
         }
         public bool CanSkipSection(int i) {
             if(y[i + 4] == 100) return true;
@@ -127,15 +150,26 @@ namespace Mcasaenk.Rendering {
         public ushort GetBlock(int cx, int cz, int cy, int i) {
             int bits = (int)blockStatesSize[y[i + 4]] >> 6;       
 
-            int paletteIndex = getPaletteIndex(getIndex(cx, cy, cz, 16), blockStates[y[i + 4]], bits);
+            int paletteIndex = GetValueFromBitArray(getIndexXYZ(cx, cy, cz, 16), blockStates[y[i + 4]], bits);
             return palettes[y[i + 4]][paletteIndex];
         }
+        public short GetHeight(int cx, int cz) {
+            return (short)GetValueFromBitArray(getIndexXZ(cx, cz, 16), world_surface, 9);
+        }
+        public short GetTerrainHeight(int cx, int cz) {
+            return (short)GetValueFromBitArray(getIndexXZ(cx, cz, 16), ocean_floor, 9);
+        }
 
-
-        private int getIndex(int x, int y, int z, int stride) {
+        private int getIndexXYZ(int x, int y, int z, int stride) {
             return y * stride * stride + z * stride + x;
         }
-        private int getPaletteIndex(int index, long[] blockStates, int bits) {
+        private int getIndexXZ(int x, int z, int stride) {
+            return getIndexXYZ(x, 0, z, stride);
+        }
+        private int GetValueFromBitArrayUninterrupted(int index, long[] blockStates, int bits) {
+            throw new NotImplementedException();
+        }
+        private int GetValueFromBitArray(int index, long[] blockStates, int bits) {
             int indicesPerLong = (int)(64D / bits);
             int blockStatesIndex = index / indicesPerLong;
             int startBit = index % indicesPerLong * bits;
@@ -150,7 +184,7 @@ namespace Mcasaenk.Rendering {
             } else if(biomeSize != 1024) { // still support 256 height
                 return -1;
             }
-            return biomes[getIndex(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
+            return biomes[getIndexXYZ(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
         }
 
     }

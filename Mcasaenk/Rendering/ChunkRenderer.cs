@@ -43,25 +43,27 @@ namespace Mcasaenk.Rendering
                         for(int cy = startHeight; cy >= 0; cy--) {
                             var block = data.GetBlock(cx, cz, cy, i);
 
-                            if(IsEmpty(block)) {
+                            bool isEmpty = IsEmpty(block), isWater = IsWater(block);
+                            if(isEmpty) {
                                 continue;
                             }
-                            if(IsWater(block) && waterDepth) {
+                            if(isWater && waterDepth) {
                                 continue;
                             }
 
                             if(!waterDepth) {
-                                if(rdata.biomeIds != null) rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
-                                if(rdata.heights != null) rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
+                                rdata.heights[regionIndex] = (short)((sectionHeight + cy) + -minusHeight); // height of highest water or terrain block
 
-                                if(IsWater(block) && Settings.WATER) {
+                                if(isWater && Settings.WATER) {
                                     waterDepth = true;
                                     continue;
                                 }
                             }
 
                             rdata.blockIds[regionIndex] = block;
-                            if(rdata.terrainHeights != null) rdata.terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
+                            rdata.terrainHeights[regionIndex] = (short)((sectionHeight + cy) + -minusHeight); // height of bottom of water
+                            //rdata.terrainHeights[regionIndex] = data.GetTerrainHeight(cx, cz);
                             goto zLoop;
                         }
                     }
@@ -70,10 +72,45 @@ namespace Mcasaenk.Rendering
                 }
             }
         }
+        public static void ExtractWithHeightmaps(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
+            if(data == null) return;
+            if(data.ContainsInformation() == false) return;
 
 
+            for(int cx = 0; cx < 16; cx++) {
+                for(int cz = 0; cz < 16; cz++) {
+                    int regionIndex = (z + cz) * 512 + x + cx;
 
-        public static void DrawChunk3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
+                    short height = (short)(data.GetHeight(cx, cz) - 1);
+                    rdata.heights[regionIndex] = height;
+                    var hy = getY(height);
+                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, hy.cy, hy.i);
+                    ushort hBlock = data.GetBlock(cx, cz, hy.cy, hy.i);
+
+                    if(Settings.WATER) {
+                        short theight = (short)(data.GetTerrainHeight(cx, cz) - 1);
+                        rdata.terrainHeights[regionIndex] = theight;
+                        var ty = getY(theight);
+                        ushort tBlock = data.GetBlock(cx, cz, ty.cy, ty.i);
+                        rdata.blockIds[regionIndex] = tBlock;
+
+                        if(height != theight && hBlock != ColorMapping.BLOCK_WATER) {
+                            rdata.terrainHeights[regionIndex] = height;
+                        }
+                    } else {
+                        rdata.blockIds[regionIndex] = hBlock;
+                    }
+                }
+            }
+
+            (int i, int cy) getY(short height) {
+                int sect = height / 16 - -minusHeight / 16;
+                int cy = (height + -minusHeight) % 16;
+                return (sect, cy);
+            }
+        }
+
+        public static void Extract3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -130,12 +167,12 @@ namespace Mcasaenk.Rendering
 
                             if(!waterDepth) {
                                 if(!done) {
-                                    if(rdata.biomeIds != null) rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
-                                    if(rdata.heights != null) rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
+                                    rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
                                     SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen.Get()[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                                 }
 
-                                if(isWater) {
+                                if(isWater && Settings.WATER) {
                                     waterDepth = true;
                                     continue;
                                 }
@@ -148,7 +185,7 @@ namespace Mcasaenk.Rendering
 
                             if(!done) {
                                 rdata.blockIds[regionIndex] = block;
-                                if(rdata.terrainHeights != null) rdata.terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
+                                rdata.terrainHeights[regionIndex] = (short)(sectionHeight + cy); // height of bottom of water
                                 //goto zLoop;
                                 done = true;
                             }
@@ -232,18 +269,10 @@ namespace Mcasaenk.Rendering
         static bool IsEmpty(ushort blockid) {
             if(blockid == ColorMapping.BLOCK_AIR) return true;
             return false;
-            //return blockname switch {
-            //    "minecraft:air" or "minecraft:cave_air" or "minecraft:barrier" => true,
-            //    _ => false,
-            //};
         }
         static bool IsWater(ushort blockid) {
             if(blockid == ColorMapping.BLOCK_WATER) return true;
             return false;
-            //return blockname switch {
-            //    "minecraft:water" or "minecraft:bubble_column" or "minecraft:barrier" => true,
-            //    _ => false,
-            //};
         }
     }
 

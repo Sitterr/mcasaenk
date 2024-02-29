@@ -55,7 +55,7 @@ namespace Mcasaenk.UI.Canvas {
                     graphics.DrawImage(GetLoadingOverlay(), rect);
                 }
 
-                if(tile.shade.active) {
+                if(tile.contgen.IsActive) {
                     graphics.DrawImage(GetRedOverlay(), rect);
                 }
             }
@@ -138,7 +138,7 @@ namespace Mcasaenk.UI.Canvas {
 
         private ImageSource _redOverlay = null;
         private ImageSource GetRedOverlay() {
-            _redOverlay ??= GenerateColorOverlay(Colors.Transparent, Colors.Red, 1);
+            _redOverlay ??= GenerateColorOverlay(Colors.Transparent, Colors.Red, 0.65);
             return _redOverlay;
         }
     }

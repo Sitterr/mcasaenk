@@ -63,7 +63,7 @@ namespace Mcasaenk
             return fr;
         }
 
-        public int ShadeTiles() => tiles.Values.Where(t => t.shade.active).Count();
+        public int ShadeTiles() => tiles.Values.Where(t => t.contgen.IsActive).Count();
 
         public int ShadeFrames() => shadeFrames.Values.Select(t => t.frames.Count).Sum();
     }
@@ -73,6 +73,7 @@ namespace Mcasaenk
 
         public TileImage image;
         public TileShade shade;
+        public TileGenData contgen;
 
         public readonly Point2i pos;
         private readonly TileMap map;
@@ -81,16 +82,18 @@ namespace Mcasaenk
             this.pos = position;
             image = new TileImage(this);
             shade = new TileShade(this);
+
+            contgen = new TileGenData(shade);
         }
 
         public void QueueGenerate(WorldPosition observer) {
             map.generateTilePool.Queue(this, observer);
         }
-        public void QueueShadeUpdate() {
+        public void QueueGenUpdate() {
             map.quickTilePool.Queue(this, () => {
-                Task.Delay(1000).Wait();
+                Task.Delay(500).Wait();
                 this.image.Redraw();
-            }, this.shade.ShouldRedraw);
+            }, () => true);
         }
         public bool IsLoading() {
             bool res = false;

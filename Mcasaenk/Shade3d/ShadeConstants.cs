@@ -41,20 +41,20 @@ namespace Mcasaenk.Shade3d {
             rX = (byte)Math.Ceiling(Math.Abs(cosAcotgB * (319 + 64)) / 512) + 1;
             rZ = (byte)Math.Ceiling(Math.Abs(sinAcotgB * (319 + 64)) / 512) + 1;
 
-            blockReachFF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1);
-            blockReachFC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2);
-            blockReachCF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1);
-            blockReachCC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2);
+            blockReachFF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1, true);
+            blockReachFC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2, true);
+            blockReachCF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1, true);
+            blockReachCC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2, true);
             blockReachLenMax = 0;
             blockReachLenMax = (byte)Math.Max(blockReachFF.Count, blockReachLenMax);
             blockReachLenMax = (byte)Math.Max(blockReachFC.Count, blockReachLenMax);
             blockReachLenMax = (byte)Math.Max(blockReachCF.Count, blockReachLenMax);
             blockReachLenMax = (byte)Math.Max(blockReachCC.Count, blockReachLenMax);
 
-            regionReach = CreateReach(rX, rZ);
+            regionReach = CreateReach(rX, rZ, false);
         }
 
-        private List<Point2i> CreateReach(int x, int z) {
+        private List<Point2i> CreateReach(int x, int z, bool transf) {
             var reach = new List<Point2i>();
 
             bool[,] possible = new bool[x, z];
@@ -70,7 +70,8 @@ namespace Mcasaenk.Shade3d {
                 for(int j = 0; j < z; j++) {
                     if(possible[i, j]) {
                         Debug.Write(" $");
-                        reach.Add(new Point2i((x - i) * -this.xp, (z - j) * -this.zp));
+                        if(transf) reach.Add(new Point2i((x - i - 1) * -this.xp, (z - j - 1) * -this.zp));
+                        else reach.Add(new Point2i((x - i - 1), (z - j - 1)));
                     } else Debug.Write(" .");
                 }
                 Debug.WriteLine("");
