@@ -74,15 +74,6 @@ namespace Mcasaenk.Shade3d {
             lock(locker) {
                 if(!IsActive) return;
 
-                //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                //        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
-                //        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
-
-                //        if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
-                //            .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
-                //    }
-                //}
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
                     int _iz = p.Z, _ix = p.X;
@@ -180,14 +171,6 @@ namespace Mcasaenk.Shade3d {
                 i++;
             }
 
-            //for(int _ix = dist.X; _ix < ShadeConstants.GLB.rX; _ix++) {
-            //    for(int _iz = dist.Z; _iz < ShadeConstants.GLB.rZ; _iz++) {
-            //        var p = pos + new Point2i(_ix * -ShadeConstants.GLB.xp, _iz * -ShadeConstants.GLB.zp);
-            //        harvested[_iz * ShadeConstants.GLB.rX + _ix] = (tileMap.GetTile(p) == null);
-            //    }
-            //}
-            //harvested[dist.Z * ShadeConstants.GLB.rX + dist.X] = true;
-
             frames.TryAdd(dist, (frame, harvested));
 
             RemoveUnnecessary();
@@ -226,28 +209,14 @@ namespace Mcasaenk.Shade3d {
 
             }
 
-            //for(int xx = 0; xx <= d.X; xx++) {
-            //    for(int zz = 0; zz <= d.Z; zz++) {
-            //        if(xx == d.X && zz == d.Z) continue;
-
-            //        var p = new Point2i(xx, zz);
-            //        if(frames.TryGetValue(p, out var fr)) {
-            //            for(int lx = 0; lx < 512; lx++) {
-            //                for(int lz = 0; lz < 512; lz++) {
-            //                    shadeFrame[(offsetZ + lz) * stride + offsetX + lx] |= fr.frame[lz * 512 + lx];
-            //                }
-            //            }
-
-            //            fr.harvested[d.Z * ShadeConstants.GLB.rX + d.X] = true;
-
-            //            if(xx == 0 && zz == 0) usedZeroZero = true;
-            //        }
-
-            //    }
-            //}
-
             RemoveUnnecessary();
             return usedZeroZero;
+        }
+
+        public bool[] GetFrame(Point2i dist) {
+            if(frames.TryGetValue(dist, out var fr)) {
+                return fr.frame;
+            } else return null;
         }
 
         private void RemoveUnnecessary() {

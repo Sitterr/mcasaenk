@@ -74,22 +74,22 @@ namespace Mcasaenk {
         }
         public static uint Blend(uint color, uint other, float ratio) {
             ratio = Math.Clamp(ratio, 0, 1);
-            float oration = 1 - ratio;
 
             uint aA = color >> 24 & 0xFF;
             uint aR = color >> 16 & 0xFF;
             uint aG = color >> 8 & 0xFF;
             uint aB = color & 0xFF;
 
+            float bratio = 1 - ratio;
             uint bA = other >> 24 & 0xFF;
             uint bR = other >> 16 & 0xFF;
             uint bG = other >> 8 & 0xFF;
             uint bB = other & 0xFF;
 
-            uint a = (uint)(aA * oration + bA * ratio);
-            uint r = (uint)(aR * oration + bR * ratio);
-            uint g = (uint)(aG * oration + bG * ratio);
-            uint b = (uint)(aB * oration + bB * ratio);
+            uint a = (uint)(aA * ratio + bA * bratio);
+            uint r = (uint)(aR * ratio + bR * bratio);
+            uint g = (uint)(aG * ratio + bG * bratio);
+            uint b = (uint)(aB * ratio + bB * bratio);
 
             return a << 24 | r << 16 | g << 8 | b;
         }

@@ -9,15 +9,20 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Windows.Controls;
+using Mcasaenk.Rendering;
+using CommunityToolkit.HighPerformance.Buffers;
+using System.Buffers;
+using Mcasaenk.Rendering.ChunkRenderData;
+using Mcasaenk.Rendering.ChunkRenderData._117;
 
-namespace Mcasaenk.Rendering {
-    public unsafe class RegionReader : IDisposable {
+namespace Mcasaenk.Nbt {
+    public unsafe class McaReader : IDisposable {
         private readonly string path;
-        private readonly IntPtr memIntPtr;
-   
-        public RegionReader(string path) { 
+        private readonly nint memIntPtr;
+
+        public McaReader(string path) {
             this.path = path;
-        
+
             int len;
             using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file into unmanaged
                 len = (int)_baseStream.Length;
@@ -57,10 +62,10 @@ namespace Mcasaenk.Rendering {
                 chunkinfos[i].size = headerSection[3];
                 chunkinfos[i].orig = i;
             }
-            MemoryExtensions.Sort(chunkinfos, (a, b) => { return a.offset.CompareTo(b.offset); });
+            chunkinfos.Sort((a, b) => { return a.offset.CompareTo(b.offset); });
 
             curr += 4096; // update header
-       
+
             int lastoffset = 0;
             int lastsize = 0;
             for(int i = 0; i < 1024; i++) {
@@ -81,18 +86,5 @@ namespace Mcasaenk.Rendering {
             return ptrs;
         }
 
-
-
-
-        public static ChunkRenderData117 LazyRenderData(GenerateTilePool pool, byte* pointer) {
-            if(pointer == null) return null;
-            int actualsize = pointer[0] << 24 | pointer[1] << 16 | pointer[2] << 8 | pointer[3];
-            if(actualsize == 0) return null;
-
-            using var decompressedStream = new ZLibStream(new UnmanagedMemoryStream(pointer + 5, actualsize - 1), CompressionMode.Decompress);
-
-            var lazyreader = new LazyNBTReader(decompressedStream);
-            return new ChunkRenderData117(pool, lazyreader);
-        }
     }
 }

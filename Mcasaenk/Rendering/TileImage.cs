@@ -17,6 +17,10 @@ using static Mcasaenk.Rendering.GenerateTilePool;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Windows.Documents;
+using Accessibility;
+using Mcasaenk.Nbt;
+using CommunityToolkit.HighPerformance.Buffers;
+using Mcasaenk.Rendering.ChunkRenderData;
 
 namespace Mcasaenk.Rendering
 {
@@ -41,7 +45,7 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
-            using(var regionReader = new RegionReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+            using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 
                 const int g = 10;
@@ -49,13 +53,14 @@ namespace Mcasaenk.Rendering
                     for(int i = j * g; i < j * g + g; i++) {
                         if(i >= 1024) break;
                         int cz = i / 32, cx = i % 32;
-                        using var chunk = RegionReader.LazyRenderData(pool, ptrs[i]);
-                        if(chunk == null) continue;
+                        var ptr = ptrs[i];
+                        using var chunkdata = ChunkInterpreterStartingPoint.Read(tile, ptrs[i]);
+                        if(chunkdata == null) continue;
 
-                        if(chunk.ContainsHeightmaps())
-                            ChunkRenderer.ExtractWithHeightmaps(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                        if(chunkdata.ContainsHeightmaps() && Settings.USE_HEIGHTMAPS_GEN)
+                            ChunkRenderer.ExtractWithHeightmaps(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                         else
-                            ChunkRenderer.Extract(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                            ChunkRenderer.Extract(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                     }
                 });
             }
@@ -69,12 +74,12 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
-            using(var regionReader = new RegionReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+            using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 
                 void doChunk(int cx, int cz) {
-                    using var chunk = RegionReader.LazyRenderData(pool, ptrs[cz * 32 + cx]);
-                    ChunkRenderer.Extract3D(chunk, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                    using var chunkdata = ChunkInterpreterStartingPoint.Read(tile, ptrs[cz * 32 + cx]);
+                    ChunkRenderer.Extract3D(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                 }
 
                 const int g = 5;
@@ -136,37 +141,43 @@ namespace Mcasaenk.Rendering
 
                 // frame
                 {
+                    int i = 0;
                     foreach(var p in ShadeConstants.GLB.regionReach) {
                         int _iz = p.Z, _ix = p.X;
 
+                        var frPos = tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
+
+                        bool[] arr = null;
+                        {
+                            if(true) {
+                                switch(ShadeConstants.GLB.regionDir[i]) {
+                                    case ShadeConstants.RegionDir.c:
+                                        break;
+
+                                    case ShadeConstants.RegionDir.l:
+                                        arr = tile.GetOrigin().GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix + 1, _iz - 1));
+                                        break;
+
+                                    case ShadeConstants.RegionDir.r:
+                                        arr = tile.GetOrigin().GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix - 1, _iz + 1));
+                                        break;
+                                }
+                            }
+                            if(arr == null) arr = new bool[512 * 512];                
+                        }
+
                         int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
                         int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
-
-                        bool[] arr = new bool[512 * 512];
                         for(int xx = offsetX; xx < offsetX + 512; xx++) {
                             for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
                                 int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                                arr[ai] = freeRaw.shadeFrame[si];
+                                arr[ai] |= freeRaw.shadeFrame[si];
                             }
                         }
-                        tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)).AddFrame(arr, new Point2i(_ix, _iz));
+                        tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));
+
+                        i++;
                     }
-
-                    //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                    //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                    //        int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
-                    //        int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
-
-                    //        bool[] arr = new bool[512 * 512];
-                    //        for(int xx = offsetX; xx < offsetX + 512; xx++) {
-                    //            for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
-                    //                int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                    //                arr[ai] = freeRaw.shadeFrame[si];
-                    //            }
-                    //        }
-                    //        tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)).AddFrame(arr, new Point2i(_ix, _iz));
-                    //    }
-                    //}
                 }
 
                 // update tile shades that use the above frame
@@ -184,21 +195,6 @@ namespace Mcasaenk.Rendering
                             t.shade.UpdateSelf(freeRaw.shadeFrame); // reuse
                         }
                     }
-
-
-                    //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                    //    int ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
-                    //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                    //        int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ);
-
-                    //        var t = tileMap.GetTile(this.tile.pos + new Point2i(ix, iz));
-
-                    //        if(t != null) {
-                    //            Array.Clear(freeRaw.shadeFrame);
-                    //            t.shade.UpdateSelf(freeRaw.shadeFrame); // reuse
-                    //        }
-                    //    }
-                    //}
                 }
             }         
 
@@ -220,17 +216,17 @@ namespace Mcasaenk.Rendering
                 for(int z = 0; z < 512; z++) {
                     for(int x = 0; x < 512; x++, i++) {
                         if(genData.terrainHeights[i] != genData.heights[i]) {
-                            float ratio = 0.5f - 0.5f / 40f * (float)((genData.heights[i]) - (genData.terrainHeights[i]));
-                            pixels[i] = Global.Blend(ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, genData.biomeIds[i]), pixels[i], ratio);
+                            float ratio = 0.5f + 0.5f / 40f * (float)((genData.heights[i]) - (genData.terrainHeights[i]));
+
+                            ushort waterbiome = Settings.WATERBIOMES ? genData.biomeIds[i] : default;
+                            pixels[i] = Global.Blend(ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome), pixels[i], ratio);
                         }
                     }
                 }
             }
 
             if(Settings.STATIC_SHADE) {
-                float q = 8;
-                if(Settings.SHADE3D) q = 3;
-                staticshade(pixels, genData.heights, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+                staticshade(pixels, genData.heights, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, Settings.STATIC_SHADE_POWER);
             } 
 
 

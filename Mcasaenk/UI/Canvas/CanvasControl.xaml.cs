@@ -41,7 +41,7 @@ namespace Mcasaenk.UI.Canvas {
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-            screen = new WorldPosition(new Point(0, -2000), (int)ActualWidth, (int)ActualHeight, 1);
+            screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
             scenePainter = new ScenePainter();
             gridPainter = new GridPainter2();

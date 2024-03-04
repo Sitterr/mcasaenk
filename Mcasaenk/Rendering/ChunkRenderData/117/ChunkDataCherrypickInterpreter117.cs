@@ -1,20 +1,12 @@
-﻿using System.Diagnostics;
+﻿using Mcasaenk.Nbt;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Mcasaenk.Rendering {
-
-    public interface IChunkRenderData {
-        ushort GetBiome(int cx, int cz, int cy, int i);
-        ushort GetBlock(int cx, int cz, int cy, int i);
-
-        short GetHeight(int cx, int cz);
-        short GetTerrainHeight(int cx, int cz);
-
-        bool CanSkipSection(int i);
-        bool ContainsInformation();
-        bool ContainsHeightmaps();
-    }
-
-    public class ChunkRenderData117 : IChunkRenderData, IDisposable {
+namespace Mcasaenk.Rendering.ChunkRenderData._117 {
+    public class ChunkDataCherrypickInterpreter117 : IChunkInterpreter {
 
         private int[] biomes;
         private int biomeSize;
@@ -25,7 +17,7 @@ namespace Mcasaenk.Rendering {
         private List<ushort>[] palettes;
 
         private GenerateTilePool pool;
-        public ChunkRenderData117(GenerateTilePool pool, LazyNBTReader r) {
+        public ChunkDataCherrypickInterpreter117(GenerateTilePool pool, CherrypickNbtReader r) {
             this.pool = pool;
 
             y = new byte[24];
@@ -41,7 +33,7 @@ namespace Mcasaenk.Rendering {
             this.Populate(r);
         }
         private bool error, hassections;
-        private void Populate(LazyNBTReader r) {
+        private void Populate(CherrypickNbtReader r) {
             hassections = false;
             error = false;
 
@@ -88,26 +80,22 @@ namespace Mcasaenk.Rendering {
                                     });
                                 });
                                 return true;
-                            } 
-                            else if(levelEl.name == "Heightmaps") {
+                            } else if(levelEl.name == "Heightmaps") {
                                 r.ForreachCompound((hm) => {
                                     if(hm.name == "OCEAN_FLOOR") {
                                         int l = r.ReadInt();
-                                        Debug.Assert(l == 37);
                                         ocean_floor = pool.ocean_floor.Rent(37);
                                         r.ReadLongArray(ocean_floor, 37);
                                         return true;
                                     } else if(hm.name == "WORLD_SURFACE") {
                                         int l = r.ReadInt();
-                                        Debug.Assert(l == 37);
                                         world_surface = pool.world_surface.Rent(37);
                                         r.ReadLongArray(world_surface, 37);
                                         return true;
                                     } else return false;
                                 });
                                 return true;
-                            } 
-                            else return false;
+                            } else return false;
                         });
                         return true;
                     } else return false;
@@ -133,7 +121,7 @@ namespace Mcasaenk.Rendering {
         public bool ContainsInformation() {
             return !error && hassections;
         }
-        public bool ContainsHeightmaps() { 
+        public bool ContainsHeightmaps() {
             return world_surface != null && ocean_floor != null;
         }
         public bool CanSkipSection(int i) {
@@ -148,7 +136,7 @@ namespace Mcasaenk.Rendering {
         }
 
         public ushort GetBlock(int cx, int cz, int cy, int i) {
-            int bits = (int)blockStatesSize[y[i + 4]] >> 6;       
+            int bits = (int)blockStatesSize[y[i + 4]] >> 6;
 
             int paletteIndex = GetValueFromBitArray(getIndexXYZ(cx, cy, cz, 16), blockStates[y[i + 4]], bits);
             return palettes[y[i + 4]][paletteIndex];

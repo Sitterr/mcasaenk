@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\ResourceMapping.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

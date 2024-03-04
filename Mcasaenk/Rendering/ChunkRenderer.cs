@@ -11,11 +11,12 @@ using Mcasaenk.Shade3d;
 using System.Windows.Shapes;
 using Accessibility;
 using System.Windows.Controls;
+using Mcasaenk.Rendering.ChunkRenderData;
 
 namespace Mcasaenk.Rendering
 {
     public class ChunkRenderer {
-        public static void Extract(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
+        public static void Extract(IChunkInterpreter data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -72,7 +73,7 @@ namespace Mcasaenk.Rendering
                 }
             }
         }
-        public static void ExtractWithHeightmaps(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
+        public static void ExtractWithHeightmaps(IChunkInterpreter data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -110,7 +111,7 @@ namespace Mcasaenk.Rendering
             }
         }
 
-        public static void Extract3D(ChunkRenderData117 data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
+        public static void Extract3D(IChunkInterpreter data, IColorMapping colorMapping, int x, int z, GenerateTilePool.RawData rdata, int plusHeight, int minusHeight) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 

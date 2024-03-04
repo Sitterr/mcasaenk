@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Automation;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Shade3d {
@@ -22,6 +23,7 @@ namespace Mcasaenk.Shade3d {
         public readonly int rX, rZ;
 
         public readonly List<Point2i> blockReachFF, blockReachFC, blockReachCF, blockReachCC, regionReach;
+        public enum RegionDir { l, r, c }; public readonly List<RegionDir> regionDir;
         public readonly byte blockReachLenMax;
 
         public ShadeConstants(double A_deg, double B_deg) {
@@ -52,8 +54,78 @@ namespace Mcasaenk.Shade3d {
             blockReachLenMax = (byte)Math.Max(blockReachCC.Count, blockReachLenMax);
 
             regionReach = CreateReach(rX, rZ, false);
+            regionDir = CreateDir();
         }
+        private List<RegionDir> CreateDir() {
+            RegionDir[] dirs = new RegionDir[regionReach.Count];
 
+            Point2i lastl, lastr;
+            lastl = new Point2i(0, 0);
+            lastr = new Point2i(0, 0);
+            dirs[regionReach.IndexOf(lastl)] = RegionDir.c;
+
+            while(true) {
+                Point2i nl, nc, nr;
+                bool nll, ncc, nrr;
+
+                nl = new Point2i(lastl.X, lastl.Z + 1);
+                nll = regionReach.Contains(nl);
+
+                nr = new Point2i(lastr.X + 1, lastr.Z);
+                nrr = regionReach.Contains(nr);
+
+                nc = new Point2i(lastl.X + 1, lastl.Z);
+                ncc = regionReach.Contains(nc);
+
+                if(nr == nc) nrr = false;
+                if(nl == nc) nll = false;
+
+                if(nll && ncc) {
+                    lastl = nl;
+                    lastr = nc;
+                    dirs[regionReach.IndexOf(nl)] = RegionDir.l;
+                    dirs[regionReach.IndexOf(nc)] = RegionDir.r;
+                } else if(ncc && nrr) {
+                    lastl = nc;
+                    lastr = nr;
+                    dirs[regionReach.IndexOf(nc)] = RegionDir.l;
+                    dirs[regionReach.IndexOf(nr)] = RegionDir.r;
+                } else if(ncc) {
+                    lastl = nc;
+                    lastr = nc;
+                    dirs[regionReach.IndexOf(nc)] = RegionDir.c;
+                } else if(nll) {
+                    lastl = nl;
+                    lastr = nl;
+                    dirs[regionReach.IndexOf(nl)] = RegionDir.c;
+                } else if(nrr) {
+                    lastl = nr;
+                    lastr = nr;
+                    dirs[regionReach.IndexOf(nr)] = RegionDir.c;
+                } else break;
+            }
+
+            for(int i = 0; i < rX; i++) {
+                for(int j = 0; j < rZ; j++) {
+                    if(regionReach.Contains(new Point2i(i, j))) {
+                        switch(dirs[regionReach.IndexOf(new Point2i(i, j))]) {
+                            case RegionDir.l:
+                                Debug.Write("l ");
+                                break;
+                            case RegionDir.r:
+                                Debug.Write("r ");
+                                break;
+                            case RegionDir.c:
+                                Debug.Write("c ");
+                                break;
+                        }
+                    } else Debug.Write("  ");
+                }
+                Debug.WriteLine("");
+            }
+
+            return dirs.ToList();
+        } 
         private List<Point2i> CreateReach(int x, int z, bool transf) {
             var reach = new List<Point2i>();
 

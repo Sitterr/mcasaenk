@@ -5,13 +5,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 
-namespace Mcasaenk.Rendering {
-
-    public class LazyNBTReader {
+namespace Mcasaenk.Nbt {
+    public class CherrypickNbtReader {
         private Stream stream;
-        public LazyNBTReader(Stream stream) {
+        public CherrypickNbtReader(Stream stream) {
             this.stream = stream;
         }
 
@@ -61,7 +59,7 @@ namespace Mcasaenk.Rendering {
                         SkipPayLoad(childtype);
                     }
 
-                    break;                
+                    break;
                 }
                 case TagType.Compound: {
                     while(true) {
@@ -80,7 +78,7 @@ namespace Mcasaenk.Rendering {
         public void ForreachCompound(Func<TagHeader, bool> ondo) {
             int i = 0;
             while(true) {
-                 var childheader = ReadHeader();
+                var childheader = ReadHeader();
                 if(childheader.type == TagType.End)
                     break;
                 bool handled = ondo(childheader);
@@ -179,7 +177,7 @@ namespace Mcasaenk.Rendering {
 
 
         void ReadBuffer(Span<byte> buffer, int len = -1) {
-            if(len != -1) { 
+            if(len != -1) {
                 buffer = buffer.Slice(0, len);
             }
             len = buffer.Length;
@@ -200,33 +198,5 @@ namespace Mcasaenk.Rendering {
     public struct TagHeader {
         public string name;
         public TagType type;
-    }
-
-    public enum TagType : byte {
-        End = 0x00,
-
-        Byte = 0x01,
-
-        Short = 0x02,
-
-        Int = 0x03,
-
-        Long = 0x04,
-
-        Float = 0x05,
-
-        Double = 0x06,
-
-        ByteArray = 0x07,
-
-        String = 0x08,
-
-        List = 0x09,
-
-        Compound = 0x0a,
-
-        IntArray = 0x0b,
-
-        LongArray = 0x0c,
     }
 }

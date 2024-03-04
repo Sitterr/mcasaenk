@@ -96,7 +96,10 @@ namespace Mcasaenk.Rendering {
             Block.Reset();
             Biome.Reset();
             SetOldBiomeIds();
-            _ = Current; // force constructor becuase its lazy
+            Current = Settings.COLOR_MAPPING_MODE switch {
+                ColorMappingMode.Map => new MapColorMapping(),
+                ColorMappingMode.Mean => new MeanColorMapping(),
+            };
             Block.Freeze();
             Biome.Freeze();
         }      
@@ -120,8 +123,7 @@ namespace Mcasaenk.Rendering {
 
 
 
-        private static IColorMapping _currentColorMapping = null;
-        public static IColorMapping Current { get => _currentColorMapping ??= new MeanColorMapping(); }
+        public static IColorMapping Current { get; private set; }
     }
 
 
@@ -141,7 +143,9 @@ namespace Mcasaenk.Rendering {
                 string name = parts[0];
                 if(!name.Contains(":")) name = "minecraft:" + name;
 
-                uint color = 0xFF000000 | (uint)Convert.ToInt32(parts[1], 16);
+                var hex = (uint)Convert.ToInt32(parts[1], 16);
+                if(hex == 0) return;
+                uint color = 0xFF000000 | hex;
 
                 colorMap.Add(ColorMapping.Block.GetId(name), color);
             });
