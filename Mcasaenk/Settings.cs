@@ -7,10 +7,10 @@ using System.Windows.Input;
 
 namespace Mcasaenk {
     public static class Settings {
-        public static int MAXZOOM = 6, MINZOOM = -5;
+        public static int MAXZOOM = 5, MINZOOM = -5;
 
 
-        public static bool REGIONGRID = true, CHUNKGRID = false, THINREGIONGRIDONLY = true;
+        public static bool REGIONGRID = false, CHUNKGRID = false, THINREGIONGRIDONLY = false;
         
 
         public static int MAXCONCURRENCY = 4, CHUNKRENDERMAXCONCURRENCY = 16;
@@ -27,7 +27,7 @@ namespace Mcasaenk {
 
 
         public static bool SHADE3D = false;
-        public static int SHADE3DMOODYNESS = (int)(0.99 * -100);
+        public static int SHADE3DMOODYNESS = (int)(0.80 * -100);
 
         public static bool STATIC_SHADE = true;
         public static float STATIC_SHADE_POWER { 
@@ -37,7 +37,7 @@ namespace Mcasaenk {
             } 
         }
 
-        public static double ADEG = 135, BDEG = 10;
+        public static double ADEG = 15, BDEG = 20;
 
 
         public static bool USE_HEIGHTMAPS_GEN = false;

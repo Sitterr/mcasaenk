@@ -35,7 +35,6 @@ namespace Mcasaenk.Nbt {
         }
         public void Dispose() {
             Marshal.FreeHGlobal(memIntPtr);
-            GC.SuppressFinalize(this);
         }
 
 

@@ -154,7 +154,6 @@ namespace Mcasaenk.Rendering {
                 if(way == AllocOption.Rent) {
                     this.pool.Return(array, true);
                 }
-                GC.SuppressFinalize(this);
             }
         }
 
@@ -204,8 +203,6 @@ namespace Mcasaenk.Rendering {
                 heights.Dispose();
                 terrainHeights.Dispose();
                 shadeFrame.Dispose();
-
-                GC.SuppressFinalize(this);
             }
         }
         public class GenData {

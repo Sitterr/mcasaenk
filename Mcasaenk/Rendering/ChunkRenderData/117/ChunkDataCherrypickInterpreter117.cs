@@ -114,8 +114,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
             for(int i = 0; i < blockStates.Length; i++) {
                 if(blockStates[i] != null) pool.blockstates.Return(blockStates[i], false);
             }
-
-            GC.SuppressFinalize(this);
         }
 
         public bool ContainsInformation() {

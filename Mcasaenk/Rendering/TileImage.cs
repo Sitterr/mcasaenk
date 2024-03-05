@@ -45,6 +45,8 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
+            //_ = new SortedList<int, int>().GetEnumerator;
+
             using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 

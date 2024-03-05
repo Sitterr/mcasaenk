@@ -22,8 +22,8 @@ namespace Mcasaenk.Nbt {
         IntArray = 0x0b,
         LongArray = 0x0c
     }
-    public abstract class Tag : IDisposable {
-        protected const int INSTANCEPOOLCOUNT = 1000;
+    public abstract class Tag : IDisposable, IResettable {
+        protected const int INSTANCEPOOLCOUNT = 10_000;
 
         public TagType type;
         public string name;
@@ -34,6 +34,8 @@ namespace Mcasaenk.Nbt {
         }
 
         public abstract void Dispose();
+
+        public abstract bool TryReset();
     }
     public class NumTag<T> : Tag {
         private static ObjectPool<NumTag<T>> objpool = new DefaultObjectPool<NumTag<T>>(new DefaultPooledObjectPolicy<NumTag<T>>(), INSTANCEPOOLCOUNT);
@@ -47,13 +49,16 @@ namespace Mcasaenk.Nbt {
             objpool.Return(this);
         }
 
+        public override bool TryReset() {
+            return true;
+        }
 
         private T value;
         public NumTag() { }
 
         public static implicit operator T(NumTag<T> tag) => tag.value;
     }
-    public class ArrTag<T> : Tag where T : struct {
+    public class ArrTag<T> : Tag {
         private static ArrayPool<T> arrpool = ArrayPool<T>.Shared;
         private static ObjectPool<ArrTag<T>> objpool = new DefaultObjectPool<ArrTag<T>>(new DefaultPooledObjectPolicy<ArrTag<T>>(), INSTANCEPOOLCOUNT);
         public static ArrTag<T> Get(TagType type, string name, int len) {
@@ -66,6 +71,10 @@ namespace Mcasaenk.Nbt {
         public override void Dispose() {
             arrpool.Return(arr);
             objpool.Return(this);
+        }
+
+        public override bool TryReset() {
+            return true;
         }
 
         private T[] arr;
@@ -87,14 +96,20 @@ namespace Mcasaenk.Nbt {
         public static CompoundTag Get(string name) {
             var obj = objpool.Get();
             obj.Set(TagType.Compound, name);
-            obj.dict.Clear();
             return obj;
         }
         public override void Dispose() {
-            foreach(var val in dict.Values) {
-                val.Dispose();
+            //foreach(var val in dict.Values) {
+            //    val.Dispose();
+            //}
+            for(int i = 0; i < dict.Count; i++) { 
+                dict.GetValueAtIndex(i).Dispose();
             }
             objpool.Return(this);
+        }
+        public override bool TryReset() {
+            this.dict.Clear();
+            return true;
         }
 
 
@@ -122,15 +137,21 @@ namespace Mcasaenk.Nbt {
         public static ListTag Get(string name, TagType childType) {
             var obj = objpool.Get();
             obj.Set(TagType.List, name);
-            obj.list.Clear();
             obj.childType = childType;
             return obj;
         }
         public override void Dispose() {
-            foreach(var val in list) {
-                val.Dispose();
+            //foreach(var val in list) {
+            //    val.Dispose();
+            //}
+            for(int i = 0; i < list.Count; i++) {
+                list[i].Dispose();
             }
             objpool.Return(this);
+        }
+        public override bool TryReset() {
+            this.list.Clear();
+            return true;
         }
 
 
@@ -176,24 +197,24 @@ namespace Mcasaenk.Nbt {
 
         private Tag ReadPayLoad(string name, TagType ttype) {
             switch(ttype) {
-                case TagType.Byte: {
+                case TagType.Byte:
                     return NumTag<sbyte>.Get(ttype, name, ReadSByte());
-                }
-                case TagType.Short: {
+                
+                case TagType.Short:
                     return NumTag<short>.Get(ttype, name, ReadShort());
-                }
-                case TagType.Int: {
+                
+                case TagType.Int:
                     return NumTag<int>.Get(ttype, name, ReadInt());
-                }
-                case TagType.Long: {
+                
+                case TagType.Long:
                     return NumTag<long>.Get(ttype, name, ReadLong());
-                }
-                case TagType.Float: {
+                
+                case TagType.Float:
                     return NumTag<float>.Get(ttype, name, ReadFloat());
-                }
-                case TagType.Double: {
+                
+                case TagType.Double:
                     return NumTag<double>.Get(ttype, name, ReadDouble());
-                }
+                
                 case TagType.ByteArray: {
                     var len = ReadInt();
                     var tag = ArrTag<byte>.Get(ttype, name, len);
@@ -218,16 +239,15 @@ namespace Mcasaenk.Nbt {
                     }
                     return tag;
                 }
-                case TagType.String: {
+                case TagType.String:
                     return NumTag<string>.Get(ttype, name, ReadUTF8());
-                }
-
-                case TagType.Compound: {
+                
+                case TagType.Compound:
                     return ReadCompoundTag(name);
-                }
-                case TagType.List: {
+                
+                case TagType.List:
                     return ReadListTag(name);
-                }
+                
 
                 default: return null;
             }
@@ -269,9 +289,10 @@ namespace Mcasaenk.Nbt {
                 Seek(len);
                 return null;
             } else {
-                Span<byte> buffer = stackalloc byte[len]; // stackalloc?
+                Span<byte> buffer = new byte[len]; // stackalloc?
                 ReadBuffer(buffer);
-                return StringPool.Shared.GetOrAdd(buffer, Encoding.UTF8);
+                //return StringPool.Shared.GetOrAdd(buffer, Encoding.UTF8);
+                return Encoding.UTF8.GetString(buffer);
             }
         }
         private byte ReadByte() {

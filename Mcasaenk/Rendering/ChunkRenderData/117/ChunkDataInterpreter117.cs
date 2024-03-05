@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Rendering.ChunkRenderData._117 {
     public class ChunkDataInterpreter117 : IChunkInterpreter {
+        private static ArrayPool<ushort> shortArrayPool = ArrayPool<ushort>.Shared;
+
         private CompoundTag tag;
 
         private ArrTag<int> biomes;
@@ -45,7 +47,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
                         var palette = (ListTag)section["Palette"];
                         if(palette != null) {
-                            palettes[y] = new ushort[palette.Length];
+                            //palettes[y] = new ushort[palette.Length];
+                            palettes[y] = shortArrayPool.Rent(palette.Length);
                             int i = 0;
                             foreach(var _p in (List<Tag>)palette) {
                                 var p = (CompoundTag)_p;
@@ -126,7 +129,11 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
         public void Dispose() {
             tag.Dispose();
-            GC.SuppressFinalize(this);
+            for(int i = 0; i < palettes.Length; i++) {
+                if(palettes[i] != null) {
+                    shortArrayPool.Return(palettes[i]);
+                }
+            }
         }
     }
 }
