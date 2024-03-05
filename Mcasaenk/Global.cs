@@ -172,10 +172,33 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+
+        public static int NbtHash(this string str) {
+            return Utf16Hash(str.AsSpan());
+        }
+        public static int NbtHash(this Span<char> utf16bytes) {
+            return Utf16Hash(utf16bytes);
+        }
+        private static int Utf16Hash(ReadOnlySpan<char> utf16bytes) {
+            unchecked {
+                int hash1 = (5381 << 16) + 5381;
+                int hash2 = hash1;
+
+                for(int i = 0; i < utf16bytes.Length; i += 2) {
+                    hash1 = ((hash1 << 5) + hash1) ^ utf16bytes[i];
+                    if(i == utf16bytes.Length - 1)
+                        break;
+                    hash2 = ((hash2 << 5) + hash2) ^ utf16bytes[i + 1];
+                }
+
+                return hash1 + (hash2 * 1566083941);
+            }
+        }
+
+
         public static IList<T> Shuffle<T>(this IEnumerable<T> sequence) {
             return sequence.Shuffle(new Random());
         }
-
         public static IList<T> Shuffle<T>(this IEnumerable<T> sequence, Random randomNumberGenerator) {
             if(sequence == null) {
                 throw new ArgumentNullException("sequence");
@@ -278,32 +301,23 @@ namespace Mcasaenk {
 
 
 
-        public static short SwapEndian(this short value) {
-            return (short)((value << 8) | ((value >> 8) & 0xFF));
-        }
+        public static short SwapEndian(this short value) => unchecked((short)SwapEndian(unchecked((ushort)value)));
         public static ushort SwapEndian(this ushort value) {
             return (ushort)((value << 8) | (value >> 8));
         }
+
         public static int SwapEndian(this int value) => unchecked((int)SwapEndian(unchecked((uint)value)));
         public static uint SwapEndian(this uint value) {
             value = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
             return (value << 16) | (value >> 16);
         }
+
+        public static long SwapEndian(this long value) => unchecked((long)SwapEndian(unchecked((ulong)value)));
         public static ulong SwapEndian(this ulong value) {
             value = ((value << 8) & 0xFF00FF00FF00FF00UL) | ((value >> 8) & 0x00FF00FF00FF00FFUL);
             value = ((value << 16) & 0xFFFF0000FFFF0000UL) | ((value >> 16) & 0x0000FFFF0000FFFFUL);
             return (value << 32) | (value >> 32);
         }
-        public static long SwapEndian(this long value) => unchecked((long)SwapEndian(unchecked((ulong)value)));
-        public static float SwapEndian(this float value) {
-            var n = BitConverter.SingleToInt32Bits(value);
-            return BitConverter.Int32BitsToSingle(n.SwapEndian());
-        }
-        public static double SwapEndian(this double value) {
-            var n = BitConverter.DoubleToInt64Bits(value);
-            return BitConverter.Int64BitsToDouble(n.SwapEndian());
-        }
-
 
 
     }
