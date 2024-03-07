@@ -18,23 +18,24 @@ using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
 using static Mcasaenk.Rendering.GenerateTilePool;
+using System.Collections.Frozen;
 
 namespace Mcasaenk
 {
     public class TileMap {
         public readonly Dimension dimension;
-        private readonly ConcurrentDictionary<Point2i, Tile> tiles;
-        private readonly ConcurrentDictionary<Point2i, TileShadeFrames> shadeFrames;
-        private readonly HashSet<Point2i> possibleTiles;
+        private readonly ConcurrentDictionary<long, Tile> tiles;
+        private readonly ConcurrentDictionary<long, TileShadeFrames> shadeFrames;
+        private readonly FrozenSet<long> possibleTiles;
 
         public GenerateTilePool generateTilePool;
         public TilePool quickTilePool;
 
         public TileMap(Dimension dimension, HashSet<Point2i> existingRegions) {
             this.dimension = dimension;
-            this.possibleTiles = existingRegions;
-            tiles = new ConcurrentDictionary<Point2i, Tile>();
-            shadeFrames = new ConcurrentDictionary<Point2i, TileShadeFrames>();
+            this.possibleTiles = existingRegions.Select(a => a.AsLong()).ToFrozenSet();
+            tiles = new ConcurrentDictionary<long, Tile>();
+            shadeFrames = new ConcurrentDictionary<long, TileShadeFrames>();
         }
 
         public void SetSettings() {
@@ -45,20 +46,22 @@ namespace Mcasaenk
         }
 
         public Tile GetTile(Point2i point) {
-            if(!possibleTiles.Contains(point)) return null;
+            long pointL = point.AsLong();
+            if(!possibleTiles.Contains(pointL)) return null;
             Tile tile;
-            if(tiles.TryGetValue(point, out tile) == false) {
+            if(tiles.TryGetValue(pointL, out tile) == false) {
                 tile = new Tile(this, point);
-                tiles.TryAdd(point, tile);
+                tiles.TryAdd(pointL, tile);
             }
             return tile;
         }
 
         public TileShadeFrames GetTileShadeFrame(Point2i point) {
+            long pointL = point.AsLong();
             TileShadeFrames fr;
-            if(!shadeFrames.TryGetValue(point, out fr)) {
+            if(!shadeFrames.TryGetValue(pointL, out fr)) {
                 fr = new TileShadeFrames(this, point);
-                shadeFrames.TryAdd(point, fr);
+                shadeFrames.TryAdd(pointL, fr);
             }
             return fr;
         }

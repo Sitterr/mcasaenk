@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace Mcasaenk.Rendering {
-
     public class NameToIdBiMap {
         private IDictionary<string, ushort> nameToId = new Dictionary<string, ushort>();
         private IDictionary<ushort, string> idToName = new Dictionary<ushort, string>();

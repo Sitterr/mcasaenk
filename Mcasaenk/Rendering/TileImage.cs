@@ -56,7 +56,7 @@ namespace Mcasaenk.Rendering
                         if(i >= 1024) break;
                         int cz = i / 32, cx = i % 32;
                         var ptr = ptrs[i];
-                        using var chunkdata = ChunkInterpreterStartingPoint.Read(tile, ptrs[i]);
+                        using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[i]);
                         if(chunkdata == null) continue;
 
                         if(chunkdata.ContainsHeightmaps() && Settings.USE_HEIGHTMAPS_GEN)
@@ -80,7 +80,7 @@ namespace Mcasaenk.Rendering
                 var ptrs = regionReader.ReadChunkOffsets();
 
                 void doChunk(int cx, int cz) {
-                    using var chunkdata = ChunkInterpreterStartingPoint.Read(tile, ptrs[cz * 32 + cx]);
+                    using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[cz * 32 + cx]);
                     ChunkRenderer.Extract3D(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
                 }
 

@@ -29,7 +29,7 @@ namespace Mcasaenk {
         public static bool operator !=(Point2i a, Point2i b) => !(a == b);
 
         public long AsLong() {
-            return -1; // TODO
+            return (long)X << 32 | Z & 0xFFFFFFFFL;
         }
 
         public Point2i abs() => new Point2i(Math.Abs(this.X), Math.Abs(this.Z));

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Mcasaenk.Nbt;
+using Microsoft.Extensions.ObjectPool;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -122,6 +124,42 @@ namespace Mcasaenk {
         }
 
 
+        public class ArrPointerObjectPool<T> : DefaultObjectPool<Arr2DBox<T>> {
+            public ArrPointerObjectPool(int count) : base(new ArrPointerPoolPolicy<T>(count)) { }
+            public ArrPointerObjectPool(int count, int maximumRetained) : base(new ArrPointerPoolPolicy<T>(count), maximumRetained) { }
+            class ArrPointerPoolPolicy<T> : DefaultPooledObjectPolicy<Arr2DBox<T>> {
+                private int count;
+                public ArrPointerPoolPolicy(int count) {
+                    this.count = count;
+                }
+                public override Arr2DBox<T> Create() {
+                    return new Arr2DBox<T>(count);
+                }
+
+                public override bool Return(Arr2DBox<T> obj) {
+                    for(int i = 0; i < count; i++) obj[i] = null;
+                    return true;
+                }
+            }
+        }
+        public class Arr2DBox<T> {
+            private T[][] data;
+            public Arr2DBox(int count) {
+                data = new T[count][];
+            }
+            public Arr2DBox() { }
+
+            public int Length { get => data.Length; }
+
+            public T[] this[int index] {
+                get => data[index];
+                set => data[index] = value;
+            }
+
+            public static implicit operator T[][](Arr2DBox<T> box) => box.data;
+        }
+
+
         public class ColorPallete {
             public static readonly ColorPallete Pallete = new ColorPallete(2, (float)75/100);
 
@@ -172,32 +210,8 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
-
-        public static int NbtHash(this string str) {
-            return Utf16Hash(str.AsSpan());
-        }
-        public static int NbtHash(this Span<char> utf16bytes) {
-            return Utf16Hash(utf16bytes);
-        }
-        private static int Utf16Hash(ReadOnlySpan<char> utf16bytes) {
-            unchecked {
-                int hash1 = (5381 << 16) + 5381;
-                int hash2 = hash1;
-
-                for(int i = 0; i < utf16bytes.Length; i += 2) {
-                    hash1 = ((hash1 << 5) + hash1) ^ utf16bytes[i];
-                    if(i == utf16bytes.Length - 1)
-                        break;
-                    hash2 = ((hash2 << 5) + hash2) ^ utf16bytes[i + 1];
-                }
-
-                return hash1 + (hash2 * 1566083941);
-            }
-        }
-
-
         public static IList<T> Shuffle<T>(this IEnumerable<T> sequence) {
-            return sequence.Shuffle(new Random());
+            return sequence.Shuffle(Global.rand);
         }
         public static IList<T> Shuffle<T>(this IEnumerable<T> sequence, Random randomNumberGenerator) {
             if(sequence == null) {

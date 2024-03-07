@@ -19,9 +19,6 @@ namespace Mcasaenk {
         public static ColorMappingMode COLOR_MAPPING_MODE = ColorMappingMode.Mean;
 
 
-        public static NbtReadingMethod NBT_READING_METHOD = NbtReadingMethod.Standard;
-
-
         public static bool WATER = true;
         public static bool BIOMES = true, WATERBIOMES = false;
 
@@ -38,11 +35,10 @@ namespace Mcasaenk {
         }
 
         public static double ADEG = 15, BDEG = 20;
-
+            
 
         public static bool USE_HEIGHTMAPS_GEN = false;
     }
 
     public enum ColorMappingMode { Mean, Map }
-    public enum NbtReadingMethod { Standard, Lazy117 }
 }

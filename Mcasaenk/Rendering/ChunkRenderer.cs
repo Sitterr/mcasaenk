@@ -42,7 +42,8 @@ namespace Mcasaenk.Rendering
                         }
 
                         for(int cy = startHeight; cy >= 0; cy--) {
-                            var block = data.GetBlock(cx, cz, cy, i);
+                            int h = sectionHeight + cy;
+                            var block = data.GetBlock(cx, cz, sectionHeight + cy);
 
                             bool isEmpty = IsEmpty(block), isWater = IsWater(block);
                             if(isEmpty) {
@@ -53,8 +54,8 @@ namespace Mcasaenk.Rendering
                             }
 
                             if(!waterDepth) {
-                                rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
-                                rdata.heights[regionIndex] = (short)((sectionHeight + cy) + -minusHeight); // height of highest water or terrain block
+                                rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, h); // water biome
+                                rdata.heights[regionIndex] = (short)(h); // height of highest water or terrain block
 
                                 if(isWater && Settings.WATER) {
                                     waterDepth = true;
@@ -63,7 +64,7 @@ namespace Mcasaenk.Rendering
                             }
 
                             rdata.blockIds[regionIndex] = block;
-                            rdata.terrainHeights[regionIndex] = (short)((sectionHeight + cy) + -minusHeight); // height of bottom of water
+                            rdata.terrainHeights[regionIndex] = (short)(h); // height of bottom of water
                             //rdata.terrainHeights[regionIndex] = data.GetTerrainHeight(cx, cz);
                             goto zLoop;
                         }
@@ -84,15 +85,13 @@ namespace Mcasaenk.Rendering
 
                     short height = (short)(data.GetHeight(cx, cz) - 1);
                     rdata.heights[regionIndex] = height;
-                    var hy = getY(height);
-                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, hy.cy, hy.i);
-                    ushort hBlock = data.GetBlock(cx, cz, hy.cy, hy.i);
+                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, height);
+                    ushort hBlock = data.GetBlock(cx, cz, height, true);
 
                     if(Settings.WATER) {
                         short theight = (short)(data.GetTerrainHeight(cx, cz) - 1);
                         rdata.terrainHeights[regionIndex] = theight;
-                        var ty = getY(theight);
-                        ushort tBlock = data.GetBlock(cx, cz, ty.cy, ty.i);
+                        ushort tBlock = data.GetBlock(cx, cz, theight, true);
                         rdata.blockIds[regionIndex] = tBlock;
 
                         if(height != theight && hBlock != ColorMapping.BLOCK_WATER) {
@@ -102,12 +101,6 @@ namespace Mcasaenk.Rendering
                         rdata.blockIds[regionIndex] = hBlock;
                     }
                 }
-            }
-
-            (int i, int cy) getY(short height) {
-                int sect = height / 16 - -minusHeight / 16;
-                int cy = (height + -minusHeight) % 16;
-                return (sect, cy);
             }
         }
 
@@ -143,7 +136,8 @@ namespace Mcasaenk.Rendering
                         }
 
                         for(int cy = startHeight; cy >= 0; cy--) {
-                            var block = data.GetBlock(cx, cz, cy, i);
+                            int h = sectionHeight + cy;
+                            var block = data.GetBlock(cx, cz, sectionHeight + cy);
 
                             bool isEmpty = IsEmpty(block), isWater = IsWater(block);
 
@@ -154,22 +148,22 @@ namespace Mcasaenk.Rendering
                                 continue;
                             }
 
-                            uint blockColor = colorMapping.GetColor(block, data.GetBiome(cx, cz, cy, i));
+                            uint blockColor = colorMapping.GetColor(block, data.GetBiome(cx, cz, h));
                             if(blockColor >> 24 == 0) { // another IsEmpty check
                                 continue;
                             }
 
 
 
-                            int h = 319 - (sectionHeight + minusHeight + cy);
-                            double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * h;
+                            int hs = 319 - (sectionHeight + minusHeight + cy);
+                            double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
 
                             bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
 
                             if(!waterDepth) {
                                 if(!done) {
-                                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, cy, i); // water biome
-                                    rdata.heights[regionIndex] = (short)(sectionHeight + cy); // height of highest water or terrain block
+                                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, h); // water biome
+                                    rdata.heights[regionIndex] = (short)(h); // height of highest water or terrain block
                                     SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen.Get()[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                                 }
 

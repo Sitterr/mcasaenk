@@ -103,15 +103,15 @@ namespace Mcasaenk.Nbt {
 
         private readonly Dictionary<int, Tag> dict;
         public CompoundTag() {
-            this.dict = new Dictionary<int, Tag>();
+            this.dict = new Dictionary<int, Tag>(50);
         }
 
         public void Add(int nbthash, Tag tag) { dict.Add(nbthash, tag); }
 
-        public TTag Get<TTag>(string name) where TTag : Tag => (TTag)dict[name.NbtHash()];
+        public TTag Get<TTag>(string name) where TTag : Tag => (TTag)dict[name.GetHashCode()];
         public Tag this[string name] {
             get {
-                if(dict.TryGetValue(name.NbtHash(), out Tag val)) return val;
+                if(dict.TryGetValue(name.GetHashCode(), out Tag val)) return val;
                 return null;
             }
         }
@@ -138,7 +138,7 @@ namespace Mcasaenk.Nbt {
         private readonly List<Tag> list;
         private TagType childType;
         public ListTag() {
-            this.list = new List<Tag>();
+            this.list = new List<Tag>(50);
         }
 
         public int Length {
@@ -198,13 +198,13 @@ namespace Mcasaenk.Nbt {
                     return NumTag<string>.Get(ReadUTF8());
 
                 case TagType.ByteArray: {
-                    var len = ReadInt();
+                    int len = ReadInt();
                     var tag = ArrTag<byte>.Get(len);
                     ReadBuffer(MemoryMarshal.Cast<byte, byte>(tag));
                     return tag;
                 }
                 case TagType.IntArray: {
-                    var len = ReadInt();
+                    int len = ReadInt();
                     var tag = ArrTag<int>.Get(len);
                     ReadBuffer(MemoryMarshal.Cast<int, byte>(tag));
                     for(int i = 0; i < len; i++) {
@@ -213,7 +213,7 @@ namespace Mcasaenk.Nbt {
                     return tag;
                 }
                 case TagType.LongArray: {
-                    var len = ReadInt();
+                    int len = ReadInt();
                     var tag = ArrTag<long>.Get(len);
                     ReadBuffer(MemoryMarshal.Cast<long, byte>(tag));
                     for(int i = 0; i < len; i++) {
@@ -234,7 +234,7 @@ namespace Mcasaenk.Nbt {
                 }   
                 case TagType.List: {
                     var childtype = (TagType)ReadByte();
-                    var count = ReadInt();
+                    int count = ReadInt();
 
                     var ltag = ListTag.Get(childtype);
                     for(int i = 0; i < count; i++) {
@@ -251,7 +251,7 @@ namespace Mcasaenk.Nbt {
             Span<byte> lenb = stackalloc byte[sizeof(ushort)];
             ReadBuffer(lenb);
             var uint16 = BitConverter.ToUInt16(lenb);
-            var len = uint16.SwapEndian();
+            int len = uint16.SwapEndian();
             if(len == 0) return null;
 
             if(garbage) {
@@ -268,14 +268,14 @@ namespace Mcasaenk.Nbt {
             Span<byte> lenb = stackalloc byte[sizeof(ushort)];
             ReadBuffer(lenb);
             var uint16 = BitConverter.ToUInt16(lenb);
-            var len = uint16.SwapEndian();
-            if(len == 0) return "".NbtHash();
+            int len = uint16.SwapEndian();
+            if(len == 0) return "".GetHashCode();
 
             Span<byte> utf8buffer = stackalloc byte[len];
             ReadBuffer(utf8buffer);
             Span<char> utf16result = stackalloc char[len];
             Utf8.ToUtf16(utf8buffer, utf16result, out int bytesRead, out int charsWritten);
-            return utf16result.Slice(0, charsWritten).NbtHash();
+            return String.GetHashCode(utf16result.Slice(0, charsWritten));
         }
         private byte ReadByte() {
             return (byte)stream.ReadByte();
@@ -287,22 +287,19 @@ namespace Mcasaenk.Nbt {
             Span<byte> buffer = stackalloc byte[sizeof(short)];
             ReadBuffer(buffer);
             buffer.Reverse();
-            var value = BitConverter.ToInt16(buffer);
-            return value;
+            return BitConverter.ToInt16(buffer);
         }
         private int ReadInt() {
             Span<byte> buffer = stackalloc byte[sizeof(int)];
             ReadBuffer(buffer);
             buffer.Reverse();
-            var value = BitConverter.ToInt32(buffer);
-            return value;
+            return BitConverter.ToInt32(buffer);
         }
         private long ReadLong() {
             Span<byte> buffer = stackalloc byte[sizeof(long)];
             ReadBuffer(buffer);
             buffer.Reverse();
-            var value = BitConverter.ToInt64(buffer);
-            return value;
+            return BitConverter.ToInt64(buffer);
         }
         private float ReadFloat() {
             Span<byte> buffer = stackalloc byte[sizeof(float)];
@@ -319,7 +316,7 @@ namespace Mcasaenk.Nbt {
 
 
         void ReadBuffer(Span<byte> buffer) {
-            var totalBytes = 0;
+            int totalBytes = 0;
             while(totalBytes < buffer.Length) {
                 var readBytes = stream.Read(buffer.Slice(totalBytes));
                 if(readBytes == 0)

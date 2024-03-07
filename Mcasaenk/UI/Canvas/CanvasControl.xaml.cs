@@ -98,11 +98,7 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                 window.footer.Region = screen.GetTilePos(mousePos);
-                window.footer.HardDraw = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
-                window.footer.ShadeTiles = tileMap.ShadeTiles();
-                window.footer.ShadeFrames = tileMap.ShadeFrames();
             }
         }
 
@@ -118,6 +114,15 @@ namespace Mcasaenk.UI.Canvas {
                     tile.QueueGenUpdate();
                 }
             }
+
+            Dispatcher.BeginInvoke(new Action(() => { 
+                { // footer update
+                    window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
+                    window.footer.HardDraw = (GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount) / Settings.MAXCONCURRENCY;
+                    window.footer.ShadeTiles = tileMap.ShadeTiles();
+                    window.footer.ShadeFrames = tileMap.ShadeFrames();
+                }
+            }));
         }
 
 
