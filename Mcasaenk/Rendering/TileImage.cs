@@ -45,8 +45,6 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
-            //_ = new SortedList<int, int>().GetEnumerator;
-
             using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var ptrs = regionReader.ReadChunkOffsets();
 
@@ -59,10 +57,7 @@ namespace Mcasaenk.Rendering
                         using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[i]);
                         if(chunkdata == null) continue;
 
-                        if(chunkdata.ContainsHeightmaps() && Settings.USE_HEIGHTMAPS_GEN)
-                            ChunkRenderer.ExtractWithHeightmaps(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
-                        else
-                            ChunkRenderer.Extract(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                        ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
                     }
                 });
             }
@@ -81,7 +76,7 @@ namespace Mcasaenk.Rendering
 
                 void doChunk(int cx, int cz) {
                     using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[cz * 32 + cx]);
-                    ChunkRenderer.Extract3D(chunkdata, ColorMapping.Current, cx * 16, cz * 16, rawData, 319, -64);
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
                 }
 
                 const int g = 5;
@@ -151,7 +146,7 @@ namespace Mcasaenk.Rendering
 
                         bool[] arr = null;
                         {
-                            if(true) {
+                            if(false) {
                                 switch(ShadeConstants.GLB.regionDir[i]) {
                                     case ShadeConstants.RegionDir.c:
                                         break;
@@ -218,14 +213,17 @@ namespace Mcasaenk.Rendering
                 for(int z = 0; z < 512; z++) {
                     for(int x = 0; x < 512; x++, i++) {
                         if(genData.terrainHeights[i] != genData.heights[i]) {
-                            float ratio = 0.5f + 0.5f / 40f * (float)((genData.heights[i]) - (genData.terrainHeights[i]));
-
                             ushort waterbiome = Settings.WATERBIOMES ? genData.biomeIds[i] : default;
-                            pixels[i] = Global.Blend(ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome), pixels[i], ratio);
+                            if(Settings.WATERDEPTH) {
+                                float ratio = 0.5f + 0.5f / 40f * (float)((genData.heights[i]) - (genData.terrainHeights[i]));
+                                pixels[i] = Global.Blend(ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome), pixels[i], ratio);
+                            } 
+                            else pixels[i] = ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome);
                         }
                     }
                 }
             }
+
 
             if(Settings.STATIC_SHADE) {
                 staticshade(pixels, genData.heights, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, Settings.STATIC_SHADE_POWER);

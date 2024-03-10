@@ -90,7 +90,8 @@ namespace Mcasaenk.UI.Canvas {
 
             { // footer update
                 double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
-                tick_accumulation += (elapsed - tick_lastElapsed);
+                double t = elapsed - tick_lastElapsed;
+                tick_accumulation += t;
                 tick_lastElapsed = elapsed;
                 tick_count++;
                 if(tick_accumulation > 1000) {

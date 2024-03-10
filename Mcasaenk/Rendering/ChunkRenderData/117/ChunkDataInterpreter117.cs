@@ -16,10 +16,12 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         private CompoundTag tag;
 
         private ArrTag<int> biomes;
-        private ArrTag<long> world_surface, ocean_floor;
+        private ArrTag<long> world_surface, ocean_floor, motion_blocking;
 
         private ArrTag<long>[] blockStates;
         private Global.Arr2DBox<ushort> palettes;
+
+        private bool oldChunk;
 
         public ChunkDataInterpreter117(Tag _tag, bool error) {
             this.error = error;
@@ -34,6 +36,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                 {
                     world_surface = (ArrTag<long>)heightmaps["WORLD_SURFACE"];
                     ocean_floor = (ArrTag<long>)heightmaps["OCEAN_FLOOR"];
+                    motion_blocking = (ArrTag<long>)heightmaps["MOTION_BLOCKING"];
                 }
 
                 blockStates = blockStatesPool.Rent(24);
@@ -65,6 +68,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                 }
             }
 
+            oldChunk = biomes?.Length == 1024;
 
             //} catch {
             //    this.error = true;
@@ -84,27 +88,42 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         }
 
 
-        public ushort GetBiome(int cx, int cz, int cy, bool absY = false) {
-            if(!absY) cy = cy + 64;
+
+        public ushort GetBiome(int cx, int cz, int cy) {
+            cy += 64;
             return ColorMapping.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
         }
 
-        public ushort GetBlock(int cx, int cz, int cy, bool absY = false) {
-            if(!absY) cy = cy + 64;
-            if(cy == -1) return default;
+        public ushort GetBlock(int cx, int cz, int cy) {
+            cy += 64;
             int i = cy / 16;
+            if(blockStates[i] == null || palettes[i] == null) return 0;
             int bits = blockStates[i].Length >> 6;
-
-            //(this as IChunkInterpreter).GetValueFromBitArray();
 
             int paletteIndex = (this as IChunkInterpreter).GetValueFromBitArray(getIndexXYZ(cx, cy % 16, cz, 16), blockStates[i], bits);
             return palettes[i][paletteIndex];
         }
+
         public short GetHeight(int cx, int cz) {
-            return (short)(this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), world_surface, 9);
+            return getHeight(world_surface, cx, cz);
         }
+        public short GetMotionHeight(int cx, int cz) {
+            return getHeight(motion_blocking, cx, cz);
+        }
+
         public short GetTerrainHeight(int cx, int cz) {
-            return (short)(this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), ocean_floor, 9);
+            return getHeight(ocean_floor, cx, cz);
+        }
+
+
+
+
+        private short getHeight(ArrTag<long> heightmap, int cx, int cz) {
+            if(heightmap == null) return -64;
+            short val = (short)((this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), heightmap, 9) - 1);
+            if(!oldChunk) val = (short)(val - 64);
+
+            return val;
         }
 
         private int getIndexXYZ(int x, int y, int z, int stride) {
@@ -115,9 +134,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         }
         private int getBiomeAtBlock(int biomeX, int biomeY, int biomeZ) {
             if(biomes == null) return default;
-            if(biomes.Length == 1024) {
-                biomeY -= 64; // support old chunks
-            }
+            if(oldChunk) biomeY -= 64;
+            if(biomeY <= -64) return default;
             return biomes[getIndexXYZ(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
         }
 

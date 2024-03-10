@@ -207,7 +207,7 @@ namespace Mcasaenk.UI.Canvas {
             double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
-            Pen pen = Settings.THINREGIONGRIDONLY ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;
+            Pen pen = Settings.ALWAYSTHINREGIONGRID ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;
             int pensize = pen == linePen ? linesize : dashsize;
 
             for(int zz = 0; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {

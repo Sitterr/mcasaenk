@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mcasaenk.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,35 +11,72 @@ namespace Mcasaenk {
         public static int MAXZOOM = 5, MINZOOM = -5;
 
 
-        public static bool REGIONGRID = false, CHUNKGRID = false, THINREGIONGRIDONLY = false;
-        
+        public static bool REGIONGRID = true, CHUNKGRID = false, ALWAYSTHINREGIONGRID = false;
 
+#if DEBUG
+        public static int MAXCONCURRENCY = 1, CHUNKRENDERMAXCONCURRENCY = 1;
+#else
         public static int MAXCONCURRENCY = 4, CHUNKRENDERMAXCONCURRENCY = 16;
-
+#endif
 
         public static ColorMappingMode COLOR_MAPPING_MODE = ColorMappingMode.Mean;
 
 
-        public static bool WATER = true;
-        public static bool BIOMES = true, WATERBIOMES = false;
+        public static bool WATER = true, WATERDEPTH_ = true;
+        public static bool BIOMES = false, WATERBIOMES = false;
 
 
-        public static bool SHADE3D = false;
-        public static int SHADE3DMOODYNESS = (int)(0.80 * -100);
+        public static bool SHADE3D = true;
+        public static int SHADE3DMOODYNESS = (int)(0.95 * -100);
 
         public static bool STATIC_SHADE = true;
-        public static float STATIC_SHADE_POWER { 
+        public static float _STATIC_SHADE_POWER = 8.0f;
+
+        public static double ADEG = 30, BDEG = 20;
+
+
+        public static FilterMode _AIR_FILTER = FilterMode.LightAir;
+        public static FilterMode _WATER_FILTER = FilterMode.LightWater;
+        public static FilterMode _SHADE3D_FILTER = FilterMode.AirWater; // muss be >= airfilter & waterfilter
+
+
+
+
+        #region derivatives
+        public static float STATIC_SHADE_POWER {
             get {
-                if(SHADE3D) return 3.0f;
-                else return 8.0f;
-            } 
+                if(SHADE3D) return _STATIC_SHADE_POWER / 3;
+                else return _STATIC_SHADE_POWER;
+            }
         }
-
-        public static double ADEG = 15, BDEG = 20;
-            
-
-        public static bool USE_HEIGHTMAPS_GEN = false;
+        public static Filter.filter AIR_FILTER { get => FromEnum.Filter(_AIR_FILTER); }
+        public static Filter.filter WATER_FILTER { get => FromEnum.Filter(_WATER_FILTER); }
+        public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(_SHADE3D_FILTER); }
+        public static bool WATERDEPTH { get => WATERDEPTH_ && WATER; }
+        #endregion
     }
 
+
+    public static class FromEnum {
+        public static Filter.filter Filter(FilterMode filter) {
+            return filter switch { 
+                FilterMode.None => Rendering.Filter.NullFilter,
+                FilterMode.LightAir => AirFilter.Def,
+                FilterMode.Shade3d => AirFilter.Strict,
+                FilterMode.LightWater => WaterFilter.Def,
+                FilterMode.AirWater => AirWaterFilter.Filter,
+                FilterMode.HeightmapAir => HeightmapFilter.FilterAir,
+                FilterMode.HeightmapWater => HeightmapFilter.FilterWater,
+            };
+        }
+
+        public static IColorMapping Mapping(ColorMappingMode mapping) {
+            return mapping switch {
+                ColorMappingMode.Map => new MapColorMapping(),
+                ColorMappingMode.Mean => new MeanColorMapping(),
+            };
+        }
+    }
     public enum ColorMappingMode { Mean, Map }
+    public enum FilterMode { None, Air, Water, LightAir, LightWater, Shade3d, AirWater, HeightmapAir, HeightmapWater }
 }

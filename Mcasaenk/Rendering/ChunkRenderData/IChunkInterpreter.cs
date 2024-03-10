@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public interface IChunkInterpreter : IDisposable {
-        ushort GetBiome(int cx, int cz, int cy, bool absY = false);
-        ushort GetBlock(int cx, int cz, int cy, bool absY = false);
+        ushort GetBiome(int cx, int cz, int cy);
+        ushort GetBlock(int cx, int cz, int cy);
 
         short GetHeight(int cx, int cz);
+        short GetMotionHeight(int cx, int cz);
         short GetTerrainHeight(int cx, int cz);
 
         bool CanSkipSection(int i);

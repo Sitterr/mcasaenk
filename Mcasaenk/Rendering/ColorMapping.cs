@@ -1,4 +1,5 @@
 ﻿using Accessibility;
+using Mcasaenk.Rendering.ChunkRenderData;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -95,10 +96,7 @@ namespace Mcasaenk.Rendering {
             Block.Reset();
             Biome.Reset();
             SetOldBiomeIds();
-            Current = Settings.COLOR_MAPPING_MODE switch {
-                ColorMappingMode.Map => new MapColorMapping(),
-                ColorMappingMode.Mean => new MeanColorMapping(),
-            };
+            Current = FromEnum.Mapping(Settings.COLOR_MAPPING_MODE);
             Block.Freeze();
             Biome.Freeze();
         }      
@@ -126,10 +124,6 @@ namespace Mcasaenk.Rendering {
     }
 
 
-    public struct BlockInformation {
-        public ushort biome;
-        public int height;
-    }
     public interface IColorMapping {
         uint GetColor(ushort block, ushort biome);
     }

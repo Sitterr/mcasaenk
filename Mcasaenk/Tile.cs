@@ -43,6 +43,7 @@ namespace Mcasaenk
             quickTilePool = new TilePool(4);
 
             ColorMapping.Init();
+            //GC.Collect(2, GCCollectionMode.Forced);
         }
 
         public Tile GetTile(Point2i point) {

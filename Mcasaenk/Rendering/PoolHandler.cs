@@ -64,7 +64,7 @@ namespace Mcasaenk.Rendering {
     }
 
     public class GenerateTilePool : TilePool {
-        private Dictionary<Tile, List<WorldPosition>> observers = new();
+        private ConcurrentDictionary<Tile, List<WorldPosition>> observers = new();
 
 
         enum AllocOption { Null, New, Rent }
@@ -262,7 +262,7 @@ namespace Mcasaenk.Rendering {
 
         public static long redrawAcc = 0, redrawCount = 1;
         public void Queue(Tile tile, WorldPosition observer) {
-            if(observers.ContainsKey(tile) == false) observers.Add(tile, new List<WorldPosition>());
+            if(observers.ContainsKey(tile) == false) observers.TryAdd(tile, new List<WorldPosition>());
 
             if(observers[tile].Contains(observer) == false) observers[tile].Add(observer);
 
