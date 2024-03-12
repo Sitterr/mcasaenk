@@ -35,7 +35,7 @@ namespace Mcasaenk.Shade3d {
                 harvested = new bool[ShadeConstants.GLB.regionReach.Count];
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
-                    int _iz = p.Z, _ix = p.X;
+                    int _iz = p.p.Z, _ix = p.p.X;
 
                     if(_ix == 0 && _iz == 0) harvested[i] = true;
 
@@ -76,7 +76,7 @@ namespace Mcasaenk.Shade3d {
 
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
-                    int _iz = p.Z, _ix = p.X;
+                    int _iz = p.p.Z, _ix = p.p.X;
 
                     int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
                     int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
@@ -152,14 +152,14 @@ namespace Mcasaenk.Shade3d {
 
             int i = 0;
             foreach(var p in ShadeConstants.GLB.regionReach) {
-                int _iz = p.Z, _ix = p.X;
+                int _iz = p.p.Z, _ix = p.p.X;
 
                 if(_ix >= dist.X && _iz >= dist.Z) {
                     var pp = pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
                     harvested[i] = (tileMap.GetTile(pp) == null);
 
                     var f = (pp - tilepos).abs();
-                    if(!ShadeConstants.GLB.regionReach.Contains(f)) {
+                    if(!ShadeConstants.GLB.regionReach.ContainsP(f)) {
                         br++;
                         harvested[i] = true;
                     }
@@ -181,13 +181,13 @@ namespace Mcasaenk.Shade3d {
 
             int i = 0, di = 0;
             foreach(var p in ShadeConstants.GLB.regionReach) {
-                int zz = p.Z, xx = p.X;
+                int zz = p.p.Z, xx = p.p.X;
                 if(xx == d.X && zz == d.Z) { di = i; break; }
                 i++;
             }
 
             foreach(var p in ShadeConstants.GLB.regionReach) {
-                int zz = p.Z, xx = p.X;
+                int zz = p.p.Z, xx = p.p.X;
 
                 if(xx <= d.X && zz <= d.Z) {
                     if(xx == d.X && zz == d.Z) {

@@ -32,7 +32,7 @@ namespace Mcasaenk {
         public static bool STATIC_SHADE = true;
         public static float _STATIC_SHADE_POWER = 8.0f;
 
-        public static double ADEG = 30, BDEG = 20;
+        public static double ADEG = 41, BDEG = 10;
 
 
         public static FilterMode _AIR_FILTER = FilterMode.LightAir;

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using static Mcasaenk.Rendering.GenerateTilePool;
+using static Mcasaenk.Shade3d.ShadeConstants;
 
 namespace Mcasaenk {
     public class Global {
@@ -225,6 +226,14 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+
+        public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
+            foreach(var el in list) {
+                if(el.p == p) return true;
+            }
+            return false;
+        }
+
         public static IList<T> Shuffle<T>(this IEnumerable<T> sequence) {
             return sequence.Shuffle(Global.rand);
         }

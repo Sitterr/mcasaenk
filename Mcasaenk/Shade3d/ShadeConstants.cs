@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,9 +23,8 @@ namespace Mcasaenk.Shade3d {
         public readonly double cosAcotgB, sinAcotgB;
         public readonly int xp, zp;
         public readonly int rX, rZ;
-
-        public readonly List<Point2i> blockReachFF, blockReachFC, blockReachCF, blockReachCC, regionReach;
-        public enum RegionDir { l, r, c }; public readonly List<RegionDir> regionDir;
+        public enum RegionDir { n, l, r, c }; 
+        public readonly List<(RegionDir dir, Point2i p)> regionReach, blockReach;
         public readonly byte blockReachLenMax;
 
         public ShadeConstants(double A_deg, double B_deg) {
@@ -43,259 +44,100 @@ namespace Mcasaenk.Shade3d {
             rX = (byte)Math.Ceiling(Math.Abs(cosAcotgB * (319 + 64)) / 512) + 1;
             rZ = (byte)Math.Ceiling(Math.Abs(sinAcotgB * (319 + 64)) / 512) + 1;
 
-            blockReachFF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1, true);
-            blockReachFC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 1, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2, true);
-            blockReachCF = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 1, true);
-            blockReachCC = CreateReach((int)Math.Floor(Math.Abs(cosAcotgB)) + 2, (int)Math.Floor(Math.Abs(sinAcotgB)) + 2, true);
-            blockReachLenMax = 0;
-            blockReachLenMax = (byte)Math.Max(blockReachFF.Count, blockReachLenMax);
-            blockReachLenMax = (byte)Math.Max(blockReachFC.Count, blockReachLenMax);
-            blockReachLenMax = (byte)Math.Max(blockReachCF.Count, blockReachLenMax);
-            blockReachLenMax = (byte)Math.Max(blockReachCC.Count, blockReachLenMax);
 
-            regionReach = CreateReach(rX, rZ, false);
-            regionDir = CreateDir();
+            var size = new SizeF(Math.Abs((float)cosAcotgB), Math.Abs((float)sinAcotgB));
+            blockReach = CreateReach(new PointF(0, 0), size, true);
+            blockReachLenMax = (byte)blockReach.Count;
+
+            regionReach = CreateReach(new PointF(0, 0), new SizeF((float)Math.Abs(cosAcotgB * (319 + 64)) / 512, (float)Math.Abs(sinAcotgB * (319 + 64)) / 512), false);
         }
-        private List<RegionDir> CreateDir() {
-            RegionDir[] dirs = new RegionDir[regionReach.Count];
+        private List<(RegionDir dir, Point2i p)> CreateReach(PointF a, SizeF size, bool transf, float precision = 0.85f) {
+            var list = new List<(RegionDir dir, Point2i p)>();
 
-            Point2i lastl, lastr;
-            lastl = new Point2i(0, 0);
-            lastr = new Point2i(0, 0);
-            dirs[regionReach.IndexOf(lastl)] = RegionDir.c;
+            Debug.WriteLine(a + " " + size);
+            var res = Tiles(a, size, precision);
+            for(int i = 0; i < res.lenX; i++) {
+                for(int j = 0; j < res.lenY; j++) {
+                    Debug.Write(res[i, j] switch { 
+                        RegionDir.n => ".",
+                        RegionDir.r => "r",
+                        RegionDir.l => "l",
+                        RegionDir.c => "c",
+                        _ => "$",
+                    } + " ");
+                    if(res[i, j] == RegionDir.n) continue;
 
-            while(true) {
-                Point2i nl, nc, nr;
-                bool nll, ncc, nrr;
 
-                nl = new Point2i(lastl.X, lastl.Z + 1);
-                nll = regionReach.Contains(nl);
 
-                nr = new Point2i(lastr.X + 1, lastr.Z);
-                nrr = regionReach.Contains(nr);
+                    Point2i p = new Point2i(i, j);
+                    if(transf) p = new Point2i((res.lenX - i - 1) * -this.xp, (res.lenY - j - 1) * -this.zp);
 
-                nc = new Point2i(lastl.X + 1, lastl.Z);
-                ncc = regionReach.Contains(nc);
-
-                if(nr == nc) nrr = false;
-                if(nl == nc) nll = false;
-
-                if(nll && ncc) {
-                    lastl = nl;
-                    lastr = nc;
-                    dirs[regionReach.IndexOf(nl)] = RegionDir.l;
-                    dirs[regionReach.IndexOf(nc)] = RegionDir.r;
-                } else if(ncc && nrr) {
-                    lastl = nc;
-                    lastr = nr;
-                    dirs[regionReach.IndexOf(nc)] = RegionDir.l;
-                    dirs[regionReach.IndexOf(nr)] = RegionDir.r;
-                } else if(ncc) {
-                    lastl = nc;
-                    lastr = nc;
-                    dirs[regionReach.IndexOf(nc)] = RegionDir.c;
-                } else if(nll) {
-                    lastl = nl;
-                    lastr = nl;
-                    dirs[regionReach.IndexOf(nl)] = RegionDir.c;
-                } else if(nrr) {
-                    lastl = nr;
-                    lastr = nr;
-                    dirs[regionReach.IndexOf(nr)] = RegionDir.c;
-                } else break;
-            }
-
-            for(int i = 0; i < rX; i++) {
-                for(int j = 0; j < rZ; j++) {
-                    if(regionReach.Contains(new Point2i(i, j))) {
-                        switch(dirs[regionReach.IndexOf(new Point2i(i, j))]) {
-                            case RegionDir.l:
-                                Debug.Write("l ");
-                                break;
-                            case RegionDir.r:
-                                Debug.Write("r ");
-                                break;
-                            case RegionDir.c:
-                                Debug.Write("c ");
-                                break;
-                        }
-                    } else Debug.Write("  ");
-                }
-                Debug.WriteLine("");
-            }
-
-            return dirs.ToList();
-        } 
-        private List<Point2i> CreateReach(int x, int z, bool transf) {
-            var reach = new List<Point2i>();
-
-            bool[,] possible = new bool[x, z];
-            Ugliest_DDA_Ever_Sorry(possible, 0.0);
-
-            //const double a = 0.9;
-            //Bresenham(possible, 0.5, 0.5, 0.5 + x - 1, 0.5 + z - 1);
-            //Bresenham(possible, a, 0, a + x - 1, z - 1);
-            //Bresenham(possible, 0, a, x - 1, a + z - 1);
-
-            Debug.WriteLine(""); Debug.WriteLine(""); Debug.WriteLine("");
-            for(int i = 0; i < x; i++) {
-                for(int j = 0; j < z; j++) {
-                    if(possible[i, j]) {
-                        Debug.Write(" $");
-                        if(transf) reach.Add(new Point2i((x - i - 1) * -this.xp, (z - j - 1) * -this.zp));
-                        else reach.Add(new Point2i((x - i - 1), (z - j - 1)));
-                    } else Debug.Write(" .");
+                    list.Add((res[i, j], p));
                 }
                 Debug.WriteLine("");
             }
             Debug.WriteLine(""); Debug.WriteLine(""); Debug.WriteLine("");
 
-            return reach;
+            return list;
         }
 
-        private static void Ugliest_DDA_Ever_Sorry(bool[,] arr, double treshold, bool f = true) {
-            int _x = 1, _y = 0;
-            int x0 = 0, y0 = 0, x1 = arr.GetLength(0) - 1, y1 = arr.GetLength(1) - 1;
-            if(!f) {
-                x1--;
-                y1--;
-            }
-            double dx = Math.Sqrt(1 * 1 + ((double)(y1 - y0) / (x1 - x0)) * ((double)(y1 - y0) / (x1 - x0)));
-            double dy = Math.Sqrt(1 * 1 + ((double)(x1 - x0) / (y1 - y0)) * ((double)(x1 - x0) / (y1 - y0)));
+        TilesResult Tiles(PointF a, SizeF size, float precision) {
+            PointF b = a + size;
 
-            arr[0, 0] = true;
-            arr[x1, y1] = true;
+            void SetLine(PointF start, PointF end, int steps, int[,] arr) {
+                float stepX = (end.X - start.X) / steps, stepY = (end.Y - start.Y) / steps;
+                var step = new SizeF(stepX, stepY);
+                for(int i = 0; i < steps - 1; i++) {
+                    start += step;
 
-            double rx = 0, ry = 0;
-            double lx = 0, ly = 0;
-            int x = 0, y = 0;
-
-            rx += dx;
-            x++;
-            ry += dy;
-            y++;
-            while(true) {
-                double r = Math.Min(rx, ry);
-
-
-                if(x > arr.GetLength(0) - 1 && y > arr.GetLength(1) - 1) break;
-
-                double xx, yy;
-                if(rx < ry) {
-                    xx = x;
-                    yy = Math.Sqrt(r * r - x * x);
-                } else {
-                    xx = Math.Sqrt(r * r - y * y);
-                    yy = y;
-                }
-
-
-
-                double xt = Math.Round(xx, 4), yt = Math.Round(yy, 4);
-                lx = Math.Round(lx, 4); ly = Math.Round(ly, 4);
-                lx -= x - 1;
-                ly -= y - 1;
-                xt -= x - 1;
-                yt -= y - 1;
-                bool rev = false;
-                if((ly == 0 && xt == 1) || (ly == 0 && yt == 1)) {
-                    (xt, yt) = (yt, xt);
-                    (lx, ly) = (ly, lx);
-                    rev = true;
-                }
-
-                double area = 0;
-                if(lx == 0 && yt == 1) {
-                    area = (1 - ly) * xt / 2;
-                } else if(lx == 0 && xt == 1) {
-                    area = (1 - yt) * 1 + (yt - ly) * 1 / 2;
-                }
-
-                if(rev) area = 1 - area;
-
-                if(area >= treshold) {
-                    if(inrange(x - 1 + x0 + _x, y - 1 + y0 + _y)) arr[x - 1 + x0 + _x, y - 1 + y0 + _y] = true;
-                }
-                if((1 - area) > treshold) {
-                    if(inrange(x - 1 + x0 - 1 + _x, y - 1 + y0 + 1 + _y)) arr[x - 1 + x0 - 1 + _x, y - 1 + y0 + 1 + _y] = true;
-                }
-                if(xt == 1 && yt == 1) {
-                    if(inrange(x - 1 + x0 + _x, y - 1 + y0 + 1 + _y)) arr[x - 1 + x0 + _x, y - 1 + y0 + 1 + _y] = true;
-                }
-
-
-
-                lx = xx; ly = yy;
-
-
-                bool xm = r == rx, ym = r == ry;
-                if(xm) {
-                    rx += dx;
-                    x++;
-                }
-                if(ym) {
-                    ry += dy;
-                    y++;
+                    int x = (int)Math.Floor(start.X), y = (int)Math.Floor(start.Y);
+                    if(x >= 0 && x < arr.GetLength(0) && y >= 0 && y < arr.GetLength(1)) arr[x, y]++;
                 }
             }
 
-            bool inrange(int x, int y) {
-                if(x >= 0 && x < arr.GetLength(0) && y >= 0 && y < arr.GetLength(1)) return true;
-                return false;
-            }
+            const float f = 0.99f;
+            const float af = 1 - f;
+
+            float d = (1 / precision) * (precision - 1) * (precision - 1) + 0.002f;
+
+            int sidesteps = Math.Max((int)(size.Width / d), (int)(size.Height / d));
+            var s2 = size + new SizeF(f, f) - new SizeF(af, af);
+            int mainsteps = Math.Max((int)(s2.Width / d), (int)(s2.Height / d));
+
+
+            int rx = (int)Math.Ceiling(b.X) + 1, ry = (int)Math.Ceiling(b.Y) + 1;
+            int[,] l = new int[rx, ry], r = new int[rx, ry], c = new int[rx, ry];
+            SetLine(a + new SizeF(-af, 1 + af), b + new SizeF(-af, 1 + af), sidesteps, r); // r
+            SetLine(a + new SizeF(1 + af, -af), b + new SizeF(1 + af, -af), sidesteps, l); // l
+            SetLine(a + new SizeF(af, af), b + new SizeF(f, f), mainsteps, c); // c
+
+            var res = new TilesResult(l, r, c);
+            return res;
         }
+        struct TilesResult {
+            private int[,] l, r, c;
 
-
-        private static void Bresenham(bool[,] bremAppr, double x0, double y0, double x1, double y1) {
-            double dx = Math.Abs(x1 - x0);
-            double dy = Math.Abs(y1 - y0);
-
-            int x = (int)Math.Floor(x0);
-            int y = (int)Math.Floor(y0);
-
-            int n = 1;
-            int x_inc, y_inc;
-            double error;
-
-            if(dx == 0) {
-                x_inc = 0;
-                error = Double.PositiveInfinity;
-            } else if(x1 > x0) {
-                x_inc = 1;
-                n += (int)Math.Floor(x1) - x;
-                error = (Math.Floor(x0) + 1 - x0) * dy;
-            } else {
-                x_inc = -1;
-                n += x - (int)Math.Floor(x1);
-                error = (x0 - Math.Floor(x0)) * dy;
+            public TilesResult(int[,] l, int[,] r, int[,] c) {
+                this.l = l;
+                this.r = r;
+                this.c = c;
             }
 
-            if(dy == 0) {
-                y_inc = 0;
-                error -= Double.PositiveInfinity;
-            } else if(y1 > y0) {
-                y_inc = 1;
-                n += (int)Math.Floor(y1) - y;
-                error -= (Math.Floor(y0) + 1 - y0) * dx;
-            } else {
-                y_inc = -1;
-                n += y - (int)Math.Floor(y1);
-                error -= (y0 - Math.Floor(y0)) * dx;
-            }
+            public int lenX { get => l.GetLength(0); }
+            public int lenY { get => l.GetLength(1); }
 
-            for(; n > 0; --n) {
-                bremAppr[x, y] = true;
+            public RegionDir this[int x, int y] {
+                get {
+                    int ll = l[x, y], rr = r[x, y], cc = c[x, y];
 
-                if(error > 0) {
-                    y += y_inc;
-                    error -= dx;
-                } else {
-                    x += x_inc;
-                    error += dy;
+                    if(ll > 0 && rr > 0) return RegionDir.c;
+                    if(ll > 0) return RegionDir.l;
+                    if(rr > 0) return RegionDir.r;
+                    if(cc > 0) return RegionDir.c;
+                    return RegionDir.n;
                 }
             }
         }
-
 
         private static int fl(int val, int min, int max, int p) {
             if(p <= 0) return val;

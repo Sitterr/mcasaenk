@@ -138,16 +138,15 @@ namespace Mcasaenk.Rendering
 
                 // frame
                 {
-                    int i = 0;
                     foreach(var p in ShadeConstants.GLB.regionReach) {
-                        int _iz = p.Z, _ix = p.X;
+                        int _iz = p.p.Z, _ix = p.p.X;
 
                         var frPos = tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
 
                         bool[] arr = null;
                         {
-                            if(false) {
-                                switch(ShadeConstants.GLB.regionDir[i]) {
+                            if(true) {
+                                switch(p.dir) {
                                     case ShadeConstants.RegionDir.c:
                                         break;
 
@@ -172,8 +171,6 @@ namespace Mcasaenk.Rendering
                             }
                         }
                         tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));
-
-                        i++;
                     }
                 }
 
@@ -182,7 +179,7 @@ namespace Mcasaenk.Rendering
                     var tileMap = tile.GetOrigin();
 
                     foreach(var p in ShadeConstants.GLB.regionReach) {
-                        int _iz = p.Z, _ix = p.X;
+                        int _iz = p.p.Z, _ix = p.p.X;
                         //int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ), ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
 
                         var t = tileMap.GetTile(this.tile.pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp));

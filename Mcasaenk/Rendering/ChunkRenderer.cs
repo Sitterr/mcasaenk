@@ -72,67 +72,42 @@ namespace Mcasaenk.Rendering
 
         static void SetLine(bool[] shadeFrame, bool value, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
-            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
-            w = w % 1; h = h % 1;
-            _x1 = _x1 % 1; _z1 = _z1 % 1;
 
-            List<Point2i> blockReach;
-            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
-            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
-            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
-            else blockReach = ShadeConstants.GLB.blockReachFF;
-
-            foreach(var p in blockReach) {
-                if((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) 
+            foreach(var p in ShadeConstants.GLB.blockReach) {
+                if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
                     continue;
-                if((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX) 
+                if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX) 
                     continue;
-                shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] = value;
+                shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)] = value;
             }
         }
         static bool CheckLine(bool[] shadeFrame, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
-            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
-            w = w % 1; h = h % 1;
-            _x1 = _x1 % 1; _z1 = _z1 % 1;
 
-            List<Point2i> blockReach;
-            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
-            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
-            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
-            else blockReach = ShadeConstants.GLB.blockReachFF;
-
-            foreach(var p in blockReach) {
-                if((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) 
+            foreach(var p in ShadeConstants.GLB.blockReach) {
+                if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
                     continue;
-                if((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)
+                if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX)
                     continue;
-                if(shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] == false) return false;
+                if(shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)] == false) return false;
             }
             return true;
         }
         public static void SetShadeValuesLine(bool[] shadeFrame, bool[] shades, ref byte shadesLen, int regionIndex, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
-            double w = Math.Abs(ShadeConstants.GLB.cosAcotgB), h = Math.Abs(ShadeConstants.GLB.sinAcotgB);
-            w = w % 1; h = h % 1;
-            _x1 = _x1 % 1; _z1 = _z1 % 1;
 
-            List<Point2i> blockReach;
-            if(_x1 + w > 1 && _z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachCC;
-            else if(_x1 + w > 1) blockReach = ShadeConstants.GLB.blockReachCF;
-            else if(_z1 + h > 1) blockReach = ShadeConstants.GLB.blockReachFC;
-            else blockReach = ShadeConstants.GLB.blockReachFF;
+            var blockReach = ShadeConstants.GLB.blockReach;
 
             shadesLen = (byte)blockReach.Count;
             for(int i = 0; i < blockReach.Count; i++) {
                 var p = blockReach[i];
 
-                if(((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) || ((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)) {
+                if(((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) || ((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX)) {
                     shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] = false;
                     continue;
                 }
 
-                bool val = shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)];
+                bool val = shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)];
                 shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] |= val;
             }
         }
