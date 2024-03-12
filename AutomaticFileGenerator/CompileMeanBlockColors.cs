@@ -95,7 +95,7 @@ namespace Utils {
 
                 int color = (r << 16) | (g << 8) | (b);
 
-                @return += pair.id + ";" + color.ToString("x") + '\n';
+                @return += pair.id/* + ";" + color.ToString("x")*/ + '\n';
             }
 
             return @return;

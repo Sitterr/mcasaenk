@@ -61,41 +61,42 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to invalid;-1
-        ///ocean;0
-        ///plains;1
-        ///desert;2
-        ///mountains;3
-        ///forest;4
-        ///taiga;5
-        ///swamp;6
-        ///river;7
-        ///nether;8
-        ///nether_wastes;8
-        ///the_end;9
-        ///frozen_ocean;10
-        ///frozen_river;11
-        ///snowy_tundra;12
-        ///snowy_mountains;13
-        ///mushroom_fields;14
-        ///mushroom_field_shore;15
-        ///beach;16
-        ///desert_hills;17
-        ///wooded_hills;18
-        ///taiga_hills;19
-        ///mountain_edge;20
-        ///jungle;21
-        ///jungle_hills;22
-        ///jungle_edge;23
-        ///deep_ocean;24
-        ///stone_shore;25
-        ///snowy_beach;26
-        ///birch_forest;27
-        ///birch_forest_hills;28
-        ///dark_forest;29
-        ///snowy_taiga;30
-        ///snowy_taiga_hills;31
-        ///gian [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to -1;plains
+        ///0;ocean
+        ///1;plains
+        ///2;desert
+        ///3;stony_shore
+        ///4;forest
+        ///5;taiga
+        ///6;swamp
+        ///7;river
+        ///8;nether
+        ///9;the_end
+        ///10;frozen_ocean
+        ///11;frozen_river
+        ///12;snowy_plains
+        ///13;frozen_peaks
+        ///14;mushroom_fields
+        ///15;mushroom_fields
+        ///16;beach
+        ///17;desert
+        ///18;forest
+        ///19;taiga
+        ///20;windswept_hills
+        ///21;jungle
+        ///22;jungle
+        ///23;sparse_jungle
+        ///24;deep_ocean
+        ///25;stony_shore
+        ///26;snowy_beach
+        ///27;birch_forest
+        ///28;birch_forest
+        ///29;dark_forest
+        ///30;snowy_taiga
+        ///31;snowy_taiga
+        ///32;old_growth_spruce_taiga
+        ///33;old_growth_spruce_taiga
+        ///34;s [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string biome_names {
             get {
@@ -130,7 +131,8 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to badlands;90814d;9e814d;3f76e4
+        ///   Looks up a localized string similar to --BIOMES--
+        ///badlands;90814d;9e814d;3f76e4
         ///bamboo_jungle;59c93c;30bb0b;3f76e4
         ///basalt_deltas;bfb755;aea42a;3f76e4
         ///beach;91bd59;77ab2f;3f76e4
@@ -144,11 +146,20 @@ namespace Mcasaenk.Resources {
         ///deep_frozen_ocean;8eb971;71a74d;3938c9
         ///deep_lukewarm_ocean;8eb971;71a74d;45adf2
         ///deep_ocean;8eb971;71a74d;3f76e4
-        ///desert;bfb755;aea42a;3 [rest of string was truncated]&quot;;.
+        ///desert;bfb [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string block_colors_mean {
             get {
                 return ResourceManager.GetString("block_colors_mean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string shade3d_filter {
+            get {
+                return ResourceManager.GetString("shade3d_filter", resourceCulture);
             }
         }
     }

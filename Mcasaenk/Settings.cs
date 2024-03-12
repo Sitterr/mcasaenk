@@ -11,7 +11,7 @@ namespace Mcasaenk {
         public static int MAXZOOM = 5, MINZOOM = -5;
 
 
-        public static bool REGIONGRID = true, CHUNKGRID = false, ALWAYSTHINREGIONGRID = false;
+        public static bool REGIONGRID = false, CHUNKGRID = false, ALWAYSTHINREGIONGRID = false;
 
 #if DEBUG
         public static int MAXCONCURRENCY = 1, CHUNKRENDERMAXCONCURRENCY = 1;
@@ -23,7 +23,7 @@ namespace Mcasaenk {
 
 
         public static bool WATER = true, WATERDEPTH_ = true;
-        public static bool BIOMES = false, WATERBIOMES = false;
+        public static bool BIOMES = true, WATERBIOMES = false;
 
 
         public static bool SHADE3D = true;
@@ -32,12 +32,12 @@ namespace Mcasaenk {
         public static bool STATIC_SHADE = true;
         public static float _STATIC_SHADE_POWER = 8.0f;
 
-        public static double ADEG = 41, BDEG = 10;
+        public static double ADEG = 40, BDEG = 10;
 
 
         public static FilterMode _AIR_FILTER = FilterMode.LightAir;
         public static FilterMode _WATER_FILTER = FilterMode.LightWater;
-        public static FilterMode _SHADE3D_FILTER = FilterMode.AirWater; // muss be >= airfilter & waterfilter
+        public static FilterMode _SHADE3D_FILTER = FilterMode.Shade3d; // muss be >= airfilter & waterfilter
 
 
 
@@ -62,9 +62,10 @@ namespace Mcasaenk {
             return filter switch { 
                 FilterMode.None => Rendering.Filter.NullFilter,
                 FilterMode.LightAir => AirFilter.Def,
-                FilterMode.Shade3d => AirFilter.Strict,
                 FilterMode.LightWater => WaterFilter.Def,
-                FilterMode.AirWater => AirWaterFilter.Filter,
+                FilterMode.Air => AirFilter.List,
+                FilterMode.Water => WaterFilter.List,
+                FilterMode.Shade3d => Shade3DFilter.List,
                 FilterMode.HeightmapAir => HeightmapFilter.FilterAir,
                 FilterMode.HeightmapWater => HeightmapFilter.FilterWater,
             };
@@ -78,5 +79,5 @@ namespace Mcasaenk {
         }
     }
     public enum ColorMappingMode { Mean, Map }
-    public enum FilterMode { None, Air, Water, LightAir, LightWater, Shade3d, AirWater, HeightmapAir, HeightmapWater }
+    public enum FilterMode { None, Air, Water, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 }

@@ -1,5 +1,6 @@
 ﻿using Mcasaenk.Rendering.ChunkRenderData;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,21 +27,46 @@ namespace Mcasaenk.Rendering {
             return Def(data, x, z, startY); // TODO
         }
 
-        public static short Strict(IChunkInterpreter data, int x, int z, short startY) {
-            for(int h = startY; h >= -64; h--) {
-                var block = data.GetBlock(x, z, h);
-
-                bool isEmpty = IsEmpty(block);
-                if(!isEmpty) return (short)h;
-            }
-            return -64;
-        }
-
         static bool IsEmpty(ushort blockid) {
             if(blockid == ColorMapping.BLOCK_AIR) return true;
             return false;
         }
     }
+    public static class Shade3DFilter {
+        static ISet<ushort> ids = new HashSet<ushort>(); 
+        static Shade3DFilter() {
+            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.shade3d_filter, (_, parts) => {
+                string name = parts[0];
+                if(!name.Contains(":")) name = "minecraft:" + name;
+                ushort id = ColorMapping.Block.GetId(name);
+                ids.Add(id);
+            });
+            ids = ids.ToFrozenSet();
+        }
+
+        public static short Inner(IChunkInterpreter data, int x, int z, short startY) {
+            for(int h = startY; h >= -64; h--) {
+                var block = data.GetBlock(x, z, h);
+
+                bool isEmpty = ids.Contains(block);
+                if(!isEmpty) return (short)h;
+            }
+            return -64;
+        }
+
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
+            while(true) {
+                short a = startY;
+                startY = AirFilter.List(data, x, z, startY);
+                startY = Inner(data, x, z, startY);
+                startY = WaterFilter.List(data, x, z, startY);
+
+                if(a == startY) break;
+            }
+            return startY;
+        }
+    }
+
     public static class WaterFilter {
         public static short Def(IChunkInterpreter data, int x, int z, short startY) {
             for(int h = startY; h >= -64; h--) {
@@ -61,14 +87,6 @@ namespace Mcasaenk.Rendering {
             return false;
         }
     }
-    public static class AirWaterFilter {
-        public static short Filter(IChunkInterpreter data, int x, int z, short startY) {
-            startY = AirFilter.List(data, x, z, startY);
-            startY = WaterFilter.List(data, x, z, startY);
-            return startY;
-        }
-    }
-
 
     public static class HeightmapFilter {
         public static short FilterAir(IChunkInterpreter data, int x, int z, short startY) {

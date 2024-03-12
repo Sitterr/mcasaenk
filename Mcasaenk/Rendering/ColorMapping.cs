@@ -56,6 +56,24 @@ namespace Mcasaenk.Rendering {
         }
     }
 
+    public static class TxtFormatReader {
+        public static void ReadStandartFormat(string data, Action<string, string[]> onRead) {
+            string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            string group = "";
+            foreach(string _line in lines) {
+                var line = _line.Trim();
+                if(line.Length == 0) continue;
+                if(line.StartsWith("--") && line.EndsWith("--")) {
+                    group = line.Substring(2, line.Length - 4);
+                    continue;
+                }
+                string[] parts = line.Split(';').Select(a => a.Trim()).ToArray();
+                onRead(group, parts);
+            }
+        }
+    }
+
     public static class ColorMapping {
 
         public static ushort BLOCK_AIR, BLOCK_WATER;
@@ -84,7 +102,7 @@ namespace Mcasaenk.Rendering {
         }
         private static void SetOldBiomeIds() {
             oldBiomeIdToName = new Dictionary<int, ushort>();
-            ReadStandartFormat(Resources.ResourceMapping.biome_names, (_, parts) => {
+            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.biome_names, (_, parts) => {
                 int id = Convert.ToInt32(parts[0]);
                 string name = parts[1];
                 oldBiomeIdToName.Add(id, ColorMapping.Biome.GetId(name));
@@ -102,21 +120,7 @@ namespace Mcasaenk.Rendering {
         }      
 
 
-        public static void ReadStandartFormat(string data, Action<string, string[]> onRead) {
-            string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            string group = "";
-            foreach(string _line in lines) {
-                var line = _line.Trim();
-                if(line.Length == 0) continue;
-                if(line.StartsWith("--") && line.EndsWith("--")) {
-                    group = line.Substring(2, line.Length - 4);
-                    continue;
-                }
-                string[] parts = line.Split(';').Select(a => a.Trim()).ToArray();
-                onRead(group, parts);
-            }
-        }
 
 
 
@@ -132,7 +136,7 @@ namespace Mcasaenk.Rendering {
         private IDictionary<ushort, uint> colorMap;
         public MapColorMapping() {
             colorMap = new Dictionary<ushort, uint>();
-            ColorMapping.ReadStandartFormat(Resources.ResourceMapping.block_colors_map, (_, parts) => {
+            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.block_colors_map, (_, parts) => {
                 string name = parts[0];
                 if(!name.Contains(":")) name = "minecraft:" + name;
 
@@ -161,7 +165,7 @@ namespace Mcasaenk.Rendering {
             grassBlocks = new HashSet<ushort>(); foliageBlocks = new HashSet<ushort>(); waterBlocks = new HashSet<ushort>();
             tintMap = new Dictionary<ushort, (uint grassTint, uint foliageTint, uint waterTint)>();
 
-            ColorMapping.ReadStandartFormat(Resources.ResourceMapping.block_colors_mean, (group, parts) => {
+            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.block_colors_mean, (group, parts) => {
                 switch(group) {
                     case "BIOMES": {
                         string name = parts[0];
