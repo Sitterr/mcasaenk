@@ -16,7 +16,7 @@ namespace Mcasaenk {
 #if DEBUG
         public static int MAXCONCURRENCY = 1, CHUNKRENDERMAXCONCURRENCY = 1;
 #else
-        public static int MAXCONCURRENCY = 4, CHUNKRENDERMAXCONCURRENCY = 16;
+        public static int MAXCONCURRENCY = 16, CHUNKRENDERMAXCONCURRENCY = 16;
 #endif
 
         public static ColorMappingMode COLOR_MAPPING_MODE = ColorMappingMode.Mean;
@@ -32,11 +32,11 @@ namespace Mcasaenk {
         public static bool STATIC_SHADE = true;
         public static float _STATIC_SHADE_POWER = 8.0f;
 
-        public static double ADEG = 40, BDEG = 10;
+        public static double ADEG = 40, BDEG = 20;
 
 
-        public static FilterMode _AIR_FILTER = FilterMode.LightAir;
-        public static FilterMode _WATER_FILTER = FilterMode.LightWater;
+        public static FilterMode _AIR_FILTER = FilterMode.HeightmapAir;
+        public static FilterMode _WATER_FILTER = FilterMode.HeightmapWater;
         public static FilterMode _SHADE3D_FILTER = FilterMode.Shade3d; // muss be >= airfilter & waterfilter
 
 

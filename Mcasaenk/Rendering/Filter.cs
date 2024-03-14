@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,8 +101,7 @@ namespace Mcasaenk.Rendering {
 
             if(motion_height == surface_height) {
                 return floor_height;
-            } 
-            
+            }
             return surface_height;
         }
     }

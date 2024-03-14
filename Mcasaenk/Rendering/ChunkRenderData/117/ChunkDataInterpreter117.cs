@@ -96,8 +96,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
         public ushort GetBlock(int cx, int cz, int cy) {
             cy += 64;
+            if(cy < 0) return default;
             int i = cy / 16;
-            if(blockStates[i] == null || palettes[i] == null) return 0;
+            if(blockStates[i] == null || palettes[i] == null) return default;
             int bits = blockStates[i].Length >> 6;
 
             int paletteIndex = (this as IChunkInterpreter).GetValueFromBitArray(getIndexXYZ(cx, cy % 16, cz, 16), blockStates[i], bits);
@@ -122,7 +123,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
             if(heightmap == null) return -64;
             short val = (short)((this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), heightmap, 9) - 1);
             if(!oldChunk) val = (short)(val - 64);
-
             return val;
         }
 

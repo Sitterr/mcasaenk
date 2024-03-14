@@ -45,21 +45,16 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
-            using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
-                var ptrs = regionReader.ReadChunkOffsets();
+            using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+                var streams = regionReader.ReadChunkOffsets();
 
-                const int g = 10;
-                Parallel.For(0, (1024 / g) + 1, new ParallelOptions { MaxDegreeOfParallelism = Settings.CHUNKRENDERMAXCONCURRENCY }, (j) => {                
-                    for(int i = j * g; i < j * g + g; i++) {
-                        if(i >= 1024) break;
-                        int cz = i / 32, cx = i % 32;
-                        var ptr = ptrs[i];
-                        using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[i]);
-                        if(chunkdata == null) continue;
+                for(int i = 0; i < 1024; i++) {
+                    int cz = i / 32, cx = i % 32;
+                    using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[i]);
+                    if(chunkdata == null) continue;
 
-                        ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
-                    }
-                });
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
+                }
             }
 
             CreatePixels(pixelBuffer, new GenData(rawData, pool));
@@ -71,11 +66,11 @@ namespace Mcasaenk.Rendering
             using var rawData = new RawData(pool);
             using var pixelBuffer = pool.BorrowPixels();
 
-            using(var regionReader = new McaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
-                var ptrs = regionReader.ReadChunkOffsets();
+            using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+                var streams = regionReader.ReadChunkOffsets();
 
                 void doChunk(int cx, int cz) {
-                    using var chunkdata = ChunkInterpreterStartingPoint.Read(ptrs[cz * 32 + cx]);
+                    using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[cz * 32 + cx]);
                     ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
                 }
 
@@ -84,7 +79,7 @@ namespace Mcasaenk.Rendering
                 for(int i = 0; i < 32; i++) {
                     for(int _c = 0; _c <= i; _c += g) {
                         int c = _c;
-                        var task = Task.Run(() => { 
+                        var task = Task.Run(() => {
                             for(int cc = c; cc < c + g; cc++) {
                                 if(cc > i) break;
 

@@ -13,7 +13,6 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Mcasaenk.Shade3d {
     public class ShadeConstants {
         public const double MINB = 5;
-        public static readonly ShadeConstants MAX = new ShadeConstants(135.1, MINB);
         public static ShadeConstants GLB = new ShadeConstants(Settings.ADEG, Settings.BDEG);
 
         public readonly double Adeg, Bdeg;

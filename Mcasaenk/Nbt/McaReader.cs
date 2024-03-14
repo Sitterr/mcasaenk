@@ -16,13 +16,22 @@ using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Rendering.ChunkRenderData._117;
 
 namespace Mcasaenk.Nbt {
-    public unsafe class McaReader : IDisposable {
-        private readonly string path;
-        private readonly nint memIntPtr;
+
+    public abstract class McaReader : IDisposable {
+        protected readonly string path;
 
         public McaReader(string path) {
             this.path = path;
+        }
 
+        public abstract Stream[] ReadChunkOffsets();
+        public virtual void Dispose() { }
+    }
+
+    public unsafe class UnmanagedMcaReader : McaReader {
+        private readonly nint memIntPtr;
+
+        public UnmanagedMcaReader(string path) : base(path) {
             int len;
             using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file into unmanaged
                 len = (int)_baseStream.Length;
@@ -33,7 +42,7 @@ namespace Mcasaenk.Nbt {
                 }
             }
         }
-        public void Dispose() {
+        public override void Dispose() {
             Marshal.FreeHGlobal(memIntPtr);
         }
 
@@ -43,9 +52,9 @@ namespace Mcasaenk.Nbt {
             public int size;
             public int orig;
         }
-        public byte*[] ReadChunkOffsets() {
-            byte*[] ptrs = new byte*[1024];
-            if(memIntPtr.ToPointer() == null) return ptrs;
+        public override Stream[] ReadChunkOffsets() {
+            Stream[] streams = new Stream[1024];
+            if(memIntPtr.ToPointer() == null) return streams;
 
             Span<ChunkInfo> chunkinfos = stackalloc ChunkInfo[1024];
             byte* curr = (byte*)memIntPtr.ToPointer();
@@ -76,13 +85,14 @@ namespace Mcasaenk.Nbt {
 
                 if(chunkinfos[i].size == 0) continue;
 
-                ptrs[chunkinfos[i].orig] = curr;
+                int actualsize = curr[0] << 24 | curr[1] << 16 | curr[2] << 8 | curr[3];
+                streams[chunkinfos[i].orig] = new UnmanagedMemoryStream(curr + 5, actualsize);
 
                 int size = chunkinfos[i].size * 4096;
                 curr += size;
             }
 
-            return ptrs;
+            return streams;
         }
 
     }

@@ -166,8 +166,9 @@ namespace Mcasaenk.Nbt {
 
                 tag = ReadPayLoad(type);
             }
-            catch {
+            catch (Exception e){
                 tag = null;
+                throw e;
                 return true;
             }
 

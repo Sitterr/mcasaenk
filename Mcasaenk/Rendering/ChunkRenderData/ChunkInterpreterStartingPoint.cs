@@ -7,17 +7,19 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Buffers;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public unsafe class ChunkInterpreterStartingPoint {
 
-        public static IChunkInterpreter Read(byte* pointer) {
+        public static IChunkInterpreter Read(Stream pointer) {
             return ReadNbtDeterministically(pointer);
         }
 
-        private static IChunkInterpreter ReadNbtDeterministically(byte* pointer) {
-            using var decompressedStream = GetDecompressedStream(pointer);
-            if(decompressedStream == null) return null;
+        private static IChunkInterpreter ReadNbtDeterministically(Stream pointer) {
+            if(pointer == null) return null;
+            using var zlip = new ZLibStream(pointer, CompressionMode.Decompress);
+            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared, 512);
 
             var nbtreader = new NbtReader(decompressedStream);
             bool error = nbtreader.TryRead(out var _g);
@@ -35,16 +37,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             catch {
                 throw new Exception("chunk version is strange");
             }          
-        }
-
-
-
-        static ZLibStream GetDecompressedStream(byte* pointer) {
-            if(pointer == null) return null;
-            int actualsize = pointer[0] << 24 | pointer[1] << 16 | pointer[2] << 8 | pointer[3];
-            if(actualsize == 0) return null;
-
-            return new ZLibStream(new UnmanagedMemoryStream(pointer + 5, actualsize - 1), CompressionMode.Decompress);
         }
     }
 }
