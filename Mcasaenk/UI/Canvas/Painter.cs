@@ -245,7 +245,8 @@ namespace Mcasaenk.UI.Canvas {
         private Brush brush;
         public BackgroundPainter() {
             //brush = new LinearGradientBrush(new GradientStopCollection(new[] { new GradientStop(Colors.Yellow, 0), new GradientStop(Colors.Blue, 1) }));
-            brush = new SolidColorBrush(Global.ColorPallete.Pallete.s2);
+            if(Settings.CONTRAST < 0.90) brush = new SolidColorBrush(Global.ColorPallete.Pallete.s2);
+            else brush = new SolidColorBrush(Colors.Black);
             brush.Freeze();
         }
 

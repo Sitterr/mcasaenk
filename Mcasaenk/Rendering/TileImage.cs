@@ -57,7 +57,18 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            CreatePixels(pixelBuffer, new GenData(rawData, pool));
+            //for(int i = 0; i < 512; i++) {
+            //    for(int j = 0; j < 512; j++) {
+            //        for(int x = -Settings.BIOME_BLEND / 2; x <= Settings.BIOME_BLEND / 2; x++) {
+            //            for(int z = -Settings.BIOME_BLEND / 2; z <= Settings.BIOME_BLEND / 2; z++) {
+            //                int a = 23;
+            //                _ = Global.Blend(1235123, 1253, 0.4);
+            //            }
+            //        }
+            //    }
+            //}
+
+            DrawImage.FillPixels(pixelBuffer, new GenData(rawData, pool));
 
             img = GenerateBitmap(pixelBuffer);
         }
@@ -185,56 +196,13 @@ namespace Mcasaenk.Rendering
                         }
                     }
                 }
-            }         
+            }
 
-            CreatePixels(pixelBuffer, genData);
+            DrawImage.FillPixels(pixelBuffer, genData);
             img = GenerateBitmap(pixelBuffer);
 
             tile.contgen.FinishedSafe();
         }
-
-
-
-        public void CreatePixels(Span<uint> pixels, GenData genData) {
-            for(int i = 0; i < 512 * 512; i++) {
-                pixels[i] = ColorMapping.Current.GetColor(genData.blockIds[i], genData.biomeIds[i]);
-            }
-
-            if(Settings.WATER) {
-                int i = 0;
-                for(int z = 0; z < 512; z++) {
-                    for(int x = 0; x < 512; x++, i++) {
-                        if(genData.terrainHeights[i] != genData.heights[i]) {
-                            ushort waterbiome = Settings.WATERBIOMES ? genData.biomeIds[i] : default;
-                            if(Settings.WATERDEPTH) {
-                                float ratio = 0.5f + 0.5f / 40f * (float)((genData.heights[i]) - (genData.terrainHeights[i]));
-                                pixels[i] = Global.Blend(ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome), pixels[i], ratio);
-                            } 
-                            else pixels[i] = ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome);
-                        }
-                    }
-                }
-            }
-
-
-            if(Settings.STATIC_SHADE) {
-                staticshade(pixels, genData.heights, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, Settings.STATIC_SHADE_POWER);
-            } 
-
-
-            if(Settings.SHADE3D) {
-                int i = 0;
-                for(int z = 0; z < 512; z++) {
-                    for(int x = 0; x < 512; x++, i++) {
-                        if(genData.isShade[i]) {
-                            pixels[i] = Global.AddShade((uint)pixels[i], Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS, Settings.SHADE3DMOODYNESS);
-                        }
-                    }
-                }
-            }
-        }
-
-
 
         public unsafe void Redraw() {
             if(tile.contgen.IsActive == false) return;
@@ -242,7 +210,7 @@ namespace Mcasaenk.Rendering
             img.Lock();
 
             uint* pixels = (uint*)img.BackBuffer;
-            CreatePixels(new Span<uint>(pixels, 512 * 512), tile.contgen.genData);
+            DrawImage.FillPixels(new Span<uint>(pixels, 512 * 512), tile.contgen.genData);
             tile.contgen.Redrawn();
 
             img.Unlock();
@@ -263,65 +231,6 @@ namespace Mcasaenk.Rendering
             return output;
         }
 
-
-
-
-
-
-        private static void staticshade(Span<uint> pixelBuffer, ManArray<short> heights, double cosA, double sinA, float q) {
-            cosA = Math.Round(cosA, 2);
-            sinA = Math.Round(sinA, 2);
-
-            int index = 0;
-            for(int z = 0; z < 512; z++) {
-                for(int x = 0; x < 512; x++, index++) {
-                    float xShade, zShade;
-
-                    if(pixelBuffer[index] == 0) {
-                        continue;
-                    }
-
-                    {
-                        if(z == 0) {
-                            zShade = (heights[index + 512]) - (heights[index]);
-                        } else if(z == 512 - 1) {
-                            zShade = (heights[index]) - (heights[index - 512]);
-                        } else {
-                            zShade = ((heights[index + 512]) - (heights[index - 512])) * 2;
-                        }
-
-                        if(x == 0) {
-                            xShade = (heights[index + 1]) - (heights[index]);
-                        } else if(x == 512 - 1) {
-                            xShade = (heights[index]) - (heights[index - 1]);
-                        } else {
-                            xShade = ((heights[index + 1]) - (heights[index - 1])) * 2;
-                        }
-
-                        double shade = -(cosA * xShade + -sinA * zShade);
-                        if(shade < -8) {
-                            shade = -8;
-                        }
-                        if(shade > 8) {
-                            shade = 8;
-                        }
-
-                        int altitudeShade = 16 * (heights[index] - 64) / 255;
-                        if(altitudeShade < -4) {
-                            altitudeShade = -4;
-                        }
-                        if(altitudeShade > 24) {
-                            altitudeShade = 24;
-                        }
-                        shade += altitudeShade;
-
-                        pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * q), (int)(shade * q), (int)(shade * q));
-                    }
-
-
-                }
-            }
-        }
     }
 
 }

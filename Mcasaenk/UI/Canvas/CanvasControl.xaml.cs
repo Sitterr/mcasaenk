@@ -119,7 +119,7 @@ namespace Mcasaenk.UI.Canvas {
             Dispatcher.BeginInvoke(new Action(() => { 
                 { // footer update
                     window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
-                    window.footer.HardDraw = (GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount) / Settings.MAXCONCURRENCY;
+                    window.footer.HardDraw = (GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount);
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
                 }

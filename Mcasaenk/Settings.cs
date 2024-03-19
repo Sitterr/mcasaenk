@@ -16,24 +16,26 @@ namespace Mcasaenk {
 #if DEBUG
         public static int MAXCONCURRENCY = 1, CHUNKRENDERMAXCONCURRENCY = 1;
 #else
-        public static int MAXCONCURRENCY = 16, CHUNKRENDERMAXCONCURRENCY = 16;
+        public static int MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16;
 #endif
 
         public static ColorMappingMode COLOR_MAPPING_MODE = ColorMappingMode.Mean;
 
 
-        public static bool WATER = true, WATERDEPTH_ = true;
+        public static bool WATERDEPTH = true;
         public static bool BIOMES = true, WATERBIOMES = false;
 
+        public static double SUN_LIGHT = 0.99;
+
+        public static double CONTRAST = 0.50;
 
         public static bool SHADE3D = true;
-        public static int SHADE3DMOODYNESS = (int)(0.95 * -100);
 
         public static bool STATIC_SHADE = true;
-        public static float _STATIC_SHADE_POWER = 8.0f;
 
-        public static double ADEG = 40, BDEG = 20;
+        public static double ADEG = 110, BDEG = 20;
 
+        public static int BIOME_BLEND = 5;
 
         public static FilterMode _AIR_FILTER = FilterMode.HeightmapAir;
         public static FilterMode _WATER_FILTER = FilterMode.HeightmapWater;
@@ -43,16 +45,9 @@ namespace Mcasaenk {
 
 
         #region derivatives
-        public static float STATIC_SHADE_POWER {
-            get {
-                if(SHADE3D) return _STATIC_SHADE_POWER / 3;
-                else return _STATIC_SHADE_POWER;
-            }
-        }
         public static Filter.filter AIR_FILTER { get => FromEnum.Filter(_AIR_FILTER); }
         public static Filter.filter WATER_FILTER { get => FromEnum.Filter(_WATER_FILTER); }
         public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(_SHADE3D_FILTER); }
-        public static bool WATERDEPTH { get => WATERDEPTH_ && WATER; }
         #endregion
     }
 

@@ -19,7 +19,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         private static IChunkInterpreter ReadNbtDeterministically(Stream pointer) {
             if(pointer == null) return null;
             using var zlip = new ZLibStream(pointer, CompressionMode.Decompress);
-            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared, 512);
+            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
 
             var nbtreader = new NbtReader(decompressedStream);
             bool error = nbtreader.TryRead(out var _g);

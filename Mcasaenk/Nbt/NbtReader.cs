@@ -329,4 +329,25 @@ namespace Mcasaenk.Nbt {
             ReadBuffer(stackalloc byte[bytes]);
         }
     }
+
+
+    public static class Extentions {
+        public static short SwapEndian(this short value) => unchecked((short)SwapEndian(unchecked((ushort)value)));
+        public static ushort SwapEndian(this ushort value) {
+            return (ushort)((value << 8) | (value >> 8));
+        }
+
+        public static int SwapEndian(this int value) => unchecked((int)SwapEndian(unchecked((uint)value)));
+        public static uint SwapEndian(this uint value) {
+            value = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
+            return (value << 16) | (value >> 16);
+        }
+
+        public static long SwapEndian(this long value) => unchecked((long)SwapEndian(unchecked((ulong)value)));
+        public static ulong SwapEndian(this ulong value) {
+            value = ((value << 8) & 0xFF00FF00FF00FF00UL) | ((value >> 8) & 0x00FF00FF00FF00FFUL);
+            value = ((value << 16) & 0xFFFF0000FFFF0000UL) | ((value >> 16) & 0x0000FFFF0000FFFFUL);
+            return (value << 32) | (value >> 32);
+        }
+    }
 }

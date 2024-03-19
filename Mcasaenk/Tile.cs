@@ -95,7 +95,7 @@ namespace Mcasaenk
         }
         public void QueueGenUpdate() {
             map.quickTilePool.Queue(this, () => {
-                //Task.Delay(100).Wait();
+                Task.Delay(100).Wait();
                 this.image.Redraw();
             }, () => true);
         }

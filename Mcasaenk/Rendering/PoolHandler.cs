@@ -244,8 +244,8 @@ namespace Mcasaenk.Rendering {
 
             blockIdsInit = new RegArrayFactory<ushort>(true, 512 * 512, allocOptions);
             biomeIdsInit = new RegArrayFactory<ushort>(Settings.BIOMES, 512 * 512, allocOptions);
-            heightsInit = new RegArrayFactory<short>(Settings.WATER || Settings.SHADE3D || Settings.STATIC_SHADE, 512 * 512, allocOptions);
-            terrainHeightsInit = new RegArrayFactory<short>(Settings.WATER, 512 * 512, allocOptions);
+            heightsInit = new RegArrayFactory<short>(true || Settings.SHADE3D || Settings.STATIC_SHADE, 512 * 512, allocOptions);
+            terrainHeightsInit = new RegArrayFactory<short>(true, 512 * 512, allocOptions);
             shadeFrameInit = new RegArrayFactory<bool>(Settings.SHADE3D, (ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512), allocOptions);
             shadeValuesInit = new RegArrayFactory<bool>(Settings.SHADE3D, 512 * 512 * ShadeConstants.GLB.blockReachLenMax, allocOptions);
             shadeValuesLenInit = new RegArrayFactory<byte>(Settings.SHADE3D, 512 * 512, allocOptions);

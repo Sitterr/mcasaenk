@@ -64,7 +64,11 @@ namespace Mcasaenk {
             byte b2 = (byte)Math.Clamp(b + ab, 0, 255);
             return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
-        public static uint MultShade(uint color, float ar, float ag, float ab) {
+        public static uint MultShade(uint color, double ar, double ag, double ab) {
+            ar = Math.Clamp(ar, 0, 1);
+            ag = Math.Clamp(ar, 0, 1);
+            ab = Math.Clamp(ar, 0, 1);
+
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
             byte g = (byte)((color >> 8) & 0xFF);
@@ -75,19 +79,19 @@ namespace Mcasaenk {
             byte b2 = (byte)(b * ab);
             return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
-        public static uint Blend(uint color, uint other, float ratio) {
+        public static uint Blend(uint color, uint other, double ratio) {
             ratio = Math.Clamp(ratio, 0, 1);
 
-            uint aA = color >> 24 & 0xFF;
-            uint aR = color >> 16 & 0xFF;
-            uint aG = color >> 8 & 0xFF;
-            uint aB = color & 0xFF;
+            byte aA = (byte)(color >> 24 & 0xFF);
+            byte aR = (byte)(color >> 16 & 0xFF);
+            byte aG = (byte)(color >> 8 & 0xFF);
+            byte aB = (byte)(color & 0xFF);
 
-            float bratio = 1 - ratio;
-            uint bA = other >> 24 & 0xFF;
-            uint bR = other >> 16 & 0xFF;
-            uint bG = other >> 8 & 0xFF;
-            uint bB = other & 0xFF;
+            double bratio = 1 - ratio;
+            byte bA = (byte)(other >> 24 & 0xFF);
+            byte bR = (byte)(other >> 16 & 0xFF);
+            byte bG = (byte)(other >> 8 & 0xFF);
+            byte bB = (byte)(other & 0xFF);
 
             uint a = (uint)(aA * ratio + bA * bratio);
             uint r = (uint)(aR * ratio + bR * bratio);
@@ -227,6 +231,14 @@ namespace Mcasaenk {
 
     public static class Extentions {
 
+        public static Color ToColor(this uint color) {
+            byte aA = (byte)(color >> 24 & 0xFF);
+            byte aR = (byte)(color >> 16 & 0xFF);
+            byte aG = (byte)(color >> 8 & 0xFF);
+            byte aB = (byte)(color & 0xFF);
+
+            return Color.FromArgb(aA, aR, aG, aB);
+        }
         public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
             foreach(var el in list) {
                 if(el.p == p) return true;
@@ -330,33 +342,5 @@ namespace Mcasaenk {
 
             return new Dpi(VisualTreeHelper.GetDpi(Application.Current.MainWindow));
         }
-
-
-
-
-
-
-
-
-
-        public static short SwapEndian(this short value) => unchecked((short)SwapEndian(unchecked((ushort)value)));
-        public static ushort SwapEndian(this ushort value) {
-            return (ushort)((value << 8) | (value >> 8));
-        }
-
-        public static int SwapEndian(this int value) => unchecked((int)SwapEndian(unchecked((uint)value)));
-        public static uint SwapEndian(this uint value) {
-            value = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
-            return (value << 16) | (value >> 16);
-        }
-
-        public static long SwapEndian(this long value) => unchecked((long)SwapEndian(unchecked((ulong)value)));
-        public static ulong SwapEndian(this ulong value) {
-            value = ((value << 8) & 0xFF00FF00FF00FF00UL) | ((value >> 8) & 0x00FF00FF00FF00FFUL);
-            value = ((value << 16) & 0xFFFF0000FFFF0000UL) | ((value >> 16) & 0x0000FFFF0000FFFFUL);
-            return (value << 32) | (value >> 32);
-        }
-
-
     }
 }

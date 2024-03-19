@@ -160,10 +160,14 @@ namespace Mcasaenk.Rendering {
         private ISet<ushort> grassBlocks, foliageBlocks, waterBlocks;
         private IDictionary<ushort, (uint grassTint, uint foliageTint, uint waterTint)> tintMap;
 
+        private static uint WATERCOLOR = 0xff3359a2;
+
         public MeanColorMapping() {
             colorMap = new Dictionary<ushort, uint>();
             grassBlocks = new HashSet<ushort>(); foliageBlocks = new HashSet<ushort>(); waterBlocks = new HashSet<ushort>();
             tintMap = new Dictionary<ushort, (uint grassTint, uint foliageTint, uint waterTint)>();
+
+            //colorMap.Add(ColorMapping.Block.GetId("minecraft:water"), WATERCOLOR);
 
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.block_colors_mean, (group, parts) => {
                 switch(group) {
@@ -177,7 +181,7 @@ namespace Mcasaenk.Rendering {
                         string name = parts[0];
                         if(!name.Contains(":")) name = "minecraft:" + name;
                         uint color = Global.ToARGBInt(parts[1]);
-                        colorMap.Add(ColorMapping.Block.GetId(name), color);
+                        colorMap.TryAdd(ColorMapping.Block.GetId(name), color);
                         break;
                     }
                     case "GRASS": {
