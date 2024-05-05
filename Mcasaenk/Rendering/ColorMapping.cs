@@ -130,6 +130,8 @@ namespace Mcasaenk.Rendering {
 
     public interface IColorMapping {
         uint GetColor(ushort block, ushort biome);
+
+        ISet<ushort>[] GetTintGroups();
     }
 
     public class MapColorMapping : IColorMapping {
@@ -153,6 +155,8 @@ namespace Mcasaenk.Rendering {
             if(colorMap.TryGetValue(blockname, out var color)) return color;
             return 0x00000000;
         }
+
+        public ISet<ushort>[] GetTintGroups() => [];
     }
 
     public class MeanColorMapping : IColorMapping {
@@ -231,6 +235,11 @@ namespace Mcasaenk.Rendering {
             uint ng = (tint >> 8 & 0xFF) * (color >> 8 & 0xFF) >> 8;
             uint nb = (tint & 0xFF) * (color & 0xFF) >> 8;
             return color & 0xFF000000 | nr << 16 | ng << 8 | nb;
+        }
+
+
+        public ISet<ushort>[] GetTintGroups() {
+            return [grassBlocks, foliageBlocks];
         }
     }
 

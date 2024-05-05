@@ -21,29 +21,14 @@ using Accessibility;
 using Mcasaenk.Nbt;
 using CommunityToolkit.HighPerformance.Buffers;
 using Mcasaenk.Rendering.ChunkRenderData;
+using System.Buffers;
+using static System.Net.WebRequestMethods;
 
 namespace Mcasaenk.Rendering
 {
-    public class TileImage {
-        private readonly Tile tile;
-        private WriteableBitmap img;
-        public TileImage(Tile tile) {
-            this.tile = tile;
-        }
-        public ImageSource GetImage() {
-            return img;
-        }
-        public GenerateTilePool pool { get => tile.GetOrigin().generateTilePool; }
-
-        
-        public void Generate() {
-            if(Settings.SHADE3D) ShadeGenerate();
-            else StandartGenerate();
-        }
-
-        public unsafe void StandartGenerate() {
-            using var rawData = new RawData(pool);
-            using var pixelBuffer = pool.BorrowPixels();
+    public class TileGenerate {
+        public static unsafe GenData StandartGenerate(Tile tile) {
+            var rawData = new RawData();
 
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
@@ -57,25 +42,12 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            //for(int i = 0; i < 512; i++) {
-            //    for(int j = 0; j < 512; j++) {
-            //        for(int x = -Settings.BIOME_BLEND / 2; x <= Settings.BIOME_BLEND / 2; x++) {
-            //            for(int z = -Settings.BIOME_BLEND / 2; z <= Settings.BIOME_BLEND / 2; z++) {
-            //                int a = 23;
-            //                _ = Global.Blend(1235123, 1253, 0.4);
-            //            }
-            //        }
-            //    }
-            //}
-
-            DrawImage.FillPixels(pixelBuffer, new GenData(rawData, pool));
-
-            img = GenerateBitmap(pixelBuffer);
+            var genData = new GenData(rawData, ColorMapping.BLOCK_WATER);
+            return genData;
         }
 
-        public unsafe void ShadeGenerate() {
-            using var rawData = new RawData(pool);
-            using var pixelBuffer = pool.BorrowPixels();
+        public static unsafe GenData ShadeGenerate(Tile tile) {
+            var rawData = new RawData();
 
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
@@ -133,14 +105,10 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            using var freeRaw = rawData.Free();
-            var genData = new GenData(freeRaw, pool);
-
+            var genData = new GenData(rawData, ColorMapping.BLOCK_WATER);
             
             { // save shades 
-                tile.contgen.Safe(genData);
-
-                tile.shade.Construct(freeRaw);
+                tile.shade.Construct(rawData, genData);
 
                 // frame
                 {
@@ -173,7 +141,7 @@ namespace Mcasaenk.Rendering
                         for(int xx = offsetX; xx < offsetX + 512; xx++) {
                             for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
                                 int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                                arr[ai] |= freeRaw.shadeFrame[si];
+                                arr[ai] |= rawData.shadeFrame[si];
                             }
                         }
                         tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));
@@ -188,49 +156,18 @@ namespace Mcasaenk.Rendering
                         int _iz = p.p.Z, _ix = p.p.X;
                         //int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ), ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
 
-                        var t = tileMap.GetTile(this.tile.pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp));
+                        var t = tileMap.GetTile(tile.pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp));
 
                         if(t != null) {
-                            Array.Clear(freeRaw.shadeFrame);
-                            t.shade.UpdateSelf(freeRaw.shadeFrame); // reuse
+                            Array.Clear(rawData.shadeFrame);
+                            t.shade.UpdateSelf(rawData.shadeFrame); // reuse
                         }
                     }
                 }
             }
 
-            DrawImage.FillPixels(pixelBuffer, genData);
-            img = GenerateBitmap(pixelBuffer);
-
-            tile.contgen.FinishedSafe();
+            return genData;
         }
-
-        public unsafe void Redraw() {
-            if(tile.contgen.IsActive == false) return;
-            var img = this.img.Clone();
-            img.Lock();
-
-            uint* pixels = (uint*)img.BackBuffer;
-            DrawImage.FillPixels(new Span<uint>(pixels, 512 * 512), tile.contgen.genData);
-            tile.contgen.Redrawn();
-
-            img.Unlock();
-            img.Freeze();
-
-            this.img = img;
-        }
-        private static WriteableBitmap GenerateBitmap(uint[] pixels) {
-            WriteableBitmap output = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
-
-            if(pixels != null) {
-                int stride = (int)output.Width * (output.Format.BitsPerPixel / 8);
-                output.WritePixels(new Int32Rect(0, 0, 512, 512), pixels, stride, 0);
-                output.Freeze();
-            }
-            
-            
-            return output;
-        }
-
     }
 
 }

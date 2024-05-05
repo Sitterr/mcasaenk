@@ -1,0 +1,152 @@
+﻿<UserControl x:Class="Mcasaenk.UI.LeftOptionsMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mcasaenk.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="560">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <local:EButton x:Name="tab_config" Grid.Row="0" Grid.Column="0" Style="{StaticResource itemsControlItem}">
+            <TextBlock Text="Configurations"/>
+        </local:EButton>
+        <local:EButton x:Name="tab_about" Grid.Row="0" Grid.Column="1" Style="{StaticResource itemsControlItem}">
+            <TextBlock Text="About"/>
+        </local:EButton>
+
+        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderThickness="1 0 1 1" CornerRadius="0 0 3 3" BorderBrush="{StaticResource BORDER}">
+            <ScrollViewer x:Name="scroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                <Border Padding="20 30 20 30">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                <Setter Property="FontSize" Value="14" />
+                            </Style>
+                            <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                <Setter Property="FontSize" Value="14" />
+                            </Style>
+                            <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Setter Property="FontSize" Value="14" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </StackPanel.Resources>
+
+
+                        <Border x:Name="cont_config" Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <DockPanel>
+                                        <TextBlock Text="region concurrency"/>
+                                        <TextBlock Text="8" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Border Height="3"/>
+                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="16" TickFrequency="1"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <DockPanel>
+                                        <TextBlock Text="chunk concurrency"/>
+                                        <TextBlock Text="16" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Border Height="3"/>
+                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="24" TickFrequency="1"/>
+                                </StackPanel>
+
+
+                                <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="region grid"/>
+                                        <ComboBox Margin="10 0 0 0">
+                                            <ComboBoxItem Content="none"/>
+                                            <ComboBoxItem Content="straight"/>
+                                            <ComboBoxItem Content="dashed"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="2">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="chunk grid"/>
+                                        <ComboBox Margin="10 0 0 0">
+                                            <ComboBoxItem Content="none"/>
+                                            <ComboBoxItem Content="straight"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
+
+
+                                <StackPanel Grid.Row="4" Grid.Column="0" Orientation="Horizontal">
+                                    <TextBlock Text="background"/>
+                                    <ComboBox Margin="10 0 0 0"/>
+                                </StackPanel>
+
+                                
+                                <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
+
+
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                        <TextBlock Text="footer"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <TextBlock Text="debug overlays"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                        <TextBlock Text="unloaded reg."/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+                        <Border x:Name="cont_about" Visibility="Visible">
+                            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                                <TextBlock FontSize="16">
+                                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/Sitterr/mcasaenk">Github</Hyperlink>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+
+
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+        </Border>
+
+    </Grid>
+</UserControl>

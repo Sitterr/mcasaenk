@@ -45,17 +45,19 @@ namespace Mcasaenk.UI.Canvas {
                 var tile = tileMap.GetTile(pos);
                 if(tile == null) continue;
                 Rect rect = new Rect(tile.pos.X * 512 - screen.coord.X, tile.pos.Z * 512 - screen.coord.Y, 512, 512);
-                if(tile.GetImage() != null) {
-                    graphics.DrawImage(tile.GetImage(), rect);
+                if(tile.img != null) {
+                    graphics.DrawImage(tile.img, rect);
                 } else {
                     graphics.DrawImage(GetUnloadedOverlay(), rect);
                 }
 
                 if(tile.IsLoading()) {
                     graphics.DrawImage(GetLoadingOverlay(), rect);
+                } else if(tile.IsRedrawing()) {
+                    graphics.DrawImage(GetDrawingOverlay(), rect);
                 }
 
-                if(tile.contgen.IsActive) {
+                if(tile.shade.IsActive) {
                     graphics.DrawImage(GetRedOverlay(), rect);
                 }
             }
@@ -69,8 +71,8 @@ namespace Mcasaenk.UI.Canvas {
         }
         private static ImageSource GenerateUnloaded() {
             Drawing generateBrushDrawing() {
-                Pen pen1 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s0), 24);
-                Pen pen2 = new Pen(new SolidColorBrush(Global.ColorPallete.Pallete.s8), 24);
+                Pen pen1 = new Pen(new SolidColorBrush(Color.FromRgb(173, 216, 230)), 24);
+                Pen pen2 = new Pen(new SolidColorBrush(Color.FromRgb(90, 90, 90)), 24);
                 pen1.Freeze(); pen2.Freeze();
                 DrawingGroup brushDrawing = new DrawingGroup();
                 RenderOptions.SetEdgeMode(brushDrawing, EdgeMode.Aliased);
@@ -113,7 +115,7 @@ namespace Mcasaenk.UI.Canvas {
 
         private ImageSource _loadingOverlay = null;
         private ImageSource GetLoadingOverlay() {
-            _loadingOverlay ??= GenerateColorOverlay(Colors.Transparent, Global.ColorPallete.Pallete.s7, 0.65);
+            _loadingOverlay ??= GenerateColorOverlay(Colors.Transparent, Color.FromRgb(200, 200, 200), 0.65);
             return _loadingOverlay;
         }
         private static ImageSource GenerateColorOverlay(Color centerColor, Color outerColor, double alpha) {
@@ -123,7 +125,7 @@ namespace Mcasaenk.UI.Canvas {
             using(var graphics = drawingVisual.RenderOpen()) {
                 var radient = new RadialGradientBrush(centerColor, Global.FromArgb(alpha, outerColor)) {
                     Center = new Point(0.5, 0.5),
-                    RadiusX = 1.25, RadiusY = 1.25,
+                    RadiusX = 1.75, RadiusY = 1.75,
                     GradientOrigin = new Point(0.5, 0.5),
                 };
                 graphics.DrawRectangle(radient, null, new Rect(0, 0, 512, 512));
@@ -134,6 +136,11 @@ namespace Mcasaenk.UI.Canvas {
             return output;
         }
 
+        private ImageSource _drawingOverlay = null;
+        private ImageSource GetDrawingOverlay() {
+            _drawingOverlay ??= GenerateColorOverlay(Colors.Transparent, Colors.GreenYellow, 0.65);
+            return _drawingOverlay;
+        }
 
 
         private ImageSource _redOverlay = null;
@@ -245,7 +252,7 @@ namespace Mcasaenk.UI.Canvas {
         private Brush brush;
         public BackgroundPainter() {
             //brush = new LinearGradientBrush(new GradientStopCollection(new[] { new GradientStop(Colors.Yellow, 0), new GradientStop(Colors.Blue, 1) }));
-            if(Settings.CONTRAST < 0.90) brush = new SolidColorBrush(Global.ColorPallete.Pallete.s2);
+            if(Settings.CONTRAST < 0.90) brush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
             else brush = new SolidColorBrush(Colors.Black);
             brush.Freeze();
         }

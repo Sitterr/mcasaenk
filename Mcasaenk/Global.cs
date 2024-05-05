@@ -1,6 +1,7 @@
 ﻿using Mcasaenk.Nbt;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,9 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using static Mcasaenk.Rendering.GenerateTilePool;
 using static Mcasaenk.Shade3d.ShadeConstants;
 
@@ -47,22 +50,30 @@ namespace Mcasaenk {
         public static uint ToARGBInt(byte r, byte g, byte b, byte a = 255) {
             return (uint)((a << 24) | (r << 16) | (g << 8) | (b));
         }
+        public static (byte a, byte r, byte g, byte b) FromARGBInt(uint color) {
+            byte a = (byte)((color >> 24) & 0xFF);
+            byte r = (byte)((color >> 16) & 0xFF);
+            byte g = (byte)((color >> 8) & 0xFF);
+            byte b = (byte)(color & 0xFF);
+            return (a, r, g, b);
+        }
 
         public static Color FromArgb(double alpha, Color baseColor) {
             return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
         }
 
 
-        public static uint AddShade(uint color, int ar, int ag, int ab) {
+        public static uint AddShade(uint color, int ar, int ag, int ab, int aa = 255) {
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
             byte g = (byte)((color >> 8) & 0xFF);
             byte b = (byte)(color & 0xFF);
 
+            byte a2 = (byte)Math.Clamp(a + aa, 0, 255);
             byte r2 = (byte)Math.Clamp(r + ar, 0, 255);
             byte g2 = (byte)Math.Clamp(g + ag, 0, 255);
             byte b2 = (byte)Math.Clamp(b + ab, 0, 255);
-            return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
+            return (uint)((a2 << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
         public static uint MultShade(uint color, double ar, double ag, double ab) {
             ar = Math.Clamp(ar, 0, 1);
@@ -180,57 +191,20 @@ namespace Mcasaenk {
         }
 
 
-        public class ColorPallete {
-            public static readonly ColorPallete Pallete = new ColorPallete(2, (float)75/100);
-
-            private float ration_red;
-            private float ration_green;
-            private float ration_blue;
-
-            private ColorPallete(int mainColor, float mainRatio) {
-                ration_red = mainRatio;
-                ration_green = mainRatio;
-                ration_blue = mainRatio;
-                switch(mainColor) { 
-                    case 0:
-                    ration_red = 1 / ration_red;
-                    break;
-                    case 1:
-                    ration_green = 1 / ration_green;
-                    break;
-                    case 2:
-                    ration_blue = 1 / ration_blue;
-                    break;
-                }
-            }
-
-            private Color Color(int value) {
-                return System.Windows.Media.Color.FromRgb((byte)Math.Min(255, (value * ration_red)), (byte)Math.Min(255, (value * ration_green)), (byte)Math.Min(255, (value * ration_blue)));
-            }
-
-            public Color s0 { get { return Color(0); } }
-
-            public Color s1 { get { return Color(32); } }
-
-            public Color s2 { get { return Color(64); } }
-
-            public Color s3 { get { return Color(96); } }
-
-            public Color s4 { get { return Color(128); } }
-
-            public Color s5 { get { return Color(160); } }
-
-            public Color s6 { get { return Color(192); } }
-
-            public Color s7 { get { return Color(224); } }
-
-            public Color s8 { get { return Color(256); } }
-
-        }
     }
 
     public static class Extentions {
 
+        public static BitmapImage ToImage(this byte[] array) {
+            using(var ms = new System.IO.MemoryStream(array)) {
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad; // here
+                image.StreamSource = ms;
+                image.EndInit();
+                return image;
+            }
+        }
         public static Color ToColor(this uint color) {
             byte aA = (byte)(color >> 24 & 0xFF);
             byte aR = (byte)(color >> 16 & 0xFF);

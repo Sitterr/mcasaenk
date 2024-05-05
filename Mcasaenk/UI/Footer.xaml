@@ -9,8 +9,8 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="15" />
-            
-            
+
+
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="30" />
 
@@ -34,54 +34,47 @@
 
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
-            
+
             <ColumnDefinition Width="Auto" />
-            
-            
+
+
             <ColumnDefinition Width="15" />
         </Grid.ColumnDefinitions>
 
-        <Grid.Resources>
-            <SolidColorBrush x:Key="text">#FFAFAFAF</SolidColorBrush>
-            <SolidColorBrush x:Key="blue">#FF95ECF9</SolidColorBrush>
-            <SolidColorBrush x:Key="green">#FFB2FFB6</SolidColorBrush>
-            <SolidColorBrush x:Key="red">#FFDEAA</SolidColorBrush>
-        </Grid.Resources>
-
         <TextBlock Padding="0,4,0,0" Grid.Column="1">
-                <Run Text="fps: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_fps" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="" Foreground="{DynamicResource text}"/>
+                <Run Text="fps: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_fps" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
         <TextBlock Padding="0,4,0,0" Grid.Column="3">
-                <Run Text="redraw: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_redraw" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="ms" Foreground="{DynamicResource text}"/>
+                <Run Text="redraw: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_redraw" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="ms" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
         <TextBlock Padding="0,4,0,0" Grid.Column="5">
-                <Run Text="queue: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_queue" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="" Foreground="{DynamicResource text}"/>
+                <Run Text="queue: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_queue" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
         <TextBlock Padding="0,4,0,0" Grid.Column="7">
-                <Run Text="region: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_region" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="" Foreground="{DynamicResource text}"/>
+                <Run Text="region: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_region" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
         <TextBlock Padding="0,4,0,0" Grid.Column="9">
-                <Run Text="shade tiles: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_shadetiles" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="" Foreground="{DynamicResource text}"/>
+                <Run Text="shade tiles: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_shadetiles" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
         <TextBlock Padding="0,4,0,0" Grid.Column="11">
-                <Run Text="shade frames: " Foreground="{DynamicResource text}"/>
-                <Run x:Name="txt_shadeframes" Text="0" Foreground="{DynamicResource blue}"/>
-                <Run Text="" Foreground="{DynamicResource text}"/>
+                <Run Text="shade frames: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_shadeframes" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
     </Grid>

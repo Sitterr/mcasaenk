@@ -1,0 +1,245 @@
+﻿<UserControl x:Class="Mcasaenk.UI.LeftSettingsMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mcasaenk.UI"
+             xmlns:resx="clr-namespace:Mcasaenk.Resources"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="560">
+
+    <UserControl.Resources>
+        <local:RoundConverter x:Key="RoundConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <local:EButton x:Name="tab_general" Grid.Row="0" Grid.Column="0" Style="{StaticResource itemsControlItem}">
+                <TextBlock Text="General"/>
+            </local:EButton>
+            <local:EButton x:Name="tab_shades" Grid.Row="0" Grid.Column="1" Style="{StaticResource itemsControlItem}">
+                <TextBlock Text="Shades"/>
+            </local:EButton>
+            <local:EButton x:Name="tab_color" Grid.Row="0" Grid.Column="2" Style="{StaticResource itemsControlItem}">
+                <TextBlock Text="Colormap"/>
+            </local:EButton>
+
+            <Border Grid.Row="1" Grid.ColumnSpan="3" BorderThickness="1 0 1 0" BorderBrush="{StaticResource BORDER}">
+                <ScrollViewer x:Name="scroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                    <Border  Padding="20 30 20 30">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Setter Property="FontSize" Value="14" />
+                                </Style>
+                                <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                    <Setter Property="FontSize" Value="14" />
+                                </Style>
+                                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                                    <Setter Property="FontSize" Value="14" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                </Style>
+                            </StackPanel.Resources>
+
+                            
+                            
+                            <Border x:Name="cont_general" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                        <RowDefinition Height="40"/>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                        <RowDefinition Height="40"/>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                        <RowDefinition Height="40"/>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                    </Grid.RowDefinitions>
+
+
+
+                                    <DockPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock>
+                            <Run Text="Y"/><!--
+                            --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/><!--
+                                             --><Run Text=" ✶"/>
+                                        </TextBlock>
+                                        <TextBox Text="312" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="2" Grid.Column="0" Minimum="-64" Maximum="319" TickFrequency="16"/>
+
+
+
+                                    <DockPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock Text="land biomes"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <TextBlock HorizontalAlignment="Right">
+                                            <TextBlock.Text>
+                                                rge
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </DockPanel>
+                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" Value="5" TickFrequency="2"/>
+
+                                    <DockPanel Grid.Row="4" Grid.Column="2">
+                                        <TextBlock Text="water biomes"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <TextBlock Text="15 x 15" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="6" Grid.Column="2" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2"
+                                            Value="10"
+                                            IsEnabled="False"/>
+
+
+
+                                    <DockPanel Grid.Row="8" Grid.Column="0">
+                                        <TextBlock Text="contrast"/>
+                                        <TextBlock Text="0.5" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="1" Value="0.5" TickFrequency="0.1"/>
+
+                                    <DockPanel Grid.Row="8" Grid.Column="2">
+                                        <TextBlock Text="brightness"/>
+                                        <TextBlock Text="0.51" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"/>
+
+
+                                    <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="3">
+                                        <TextBlock Text="translucency mode: ✶" VerticalAlignment="Center"/>
+                                        <ComboBox Margin="10 0 0 0">
+                                            <ComboBoxItem Content="none"/>
+                                            <ComboBoxItem Content="linear"/>
+                                            <ComboBoxItem Content="exponential"/>
+                                            <ComboBoxItem Content="dotted" IsEnabled="False"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                </Grid>
+                            </Border>
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                        <RowDefinition Height="40"/>
+                                        <RowDefinition Height="auto"/>
+                                        <RowDefinition Height="2"/>
+                                        <RowDefinition Height="auto" MinHeight="10"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                                        <TextBlock Text="static shade"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
+                                        <TextBlock Text="3D shade ✶"/>
+                                        <ToggleButton Margin="10 0 0 0"/>
+                                    </StackPanel>
+
+                                    <DockPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock>
+                                            <Run Text="α"/><!--
+                                         --><Run Text="(horizontal angle)" FontSize="12" FontStyle="Italic"/><!--
+                                         --><Run Text=" ✶"/>
+                                        </TextBlock>
+                                        <TextBlock Text="45°" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="360" TickFrequency="15"/>
+
+                                    <DockPanel Grid.Row="4" Grid.Column="2">
+                                        <TextBlock>
+                                            <Run Text="β"/><!--
+                                         --><Run Text="(elevation angle)" FontSize="12" FontStyle="Italic"/><!--
+                                         --><Run Text=" ✶"/>
+                                        </TextBlock>
+                                        <TextBlock Text="10°" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="6" Grid.Column="2" Minimum="5" Maximum="90" Ticks="15 30 45 60 75"/>
+                                </Grid>
+                            </Border>
+                            <Border x:Name="cont_color" Visibility="Visible">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="basis: ✶" VerticalAlignment="Center"/>
+                                    <ComboBox Margin="10 0 0 0">
+                                        <ComboBoxItem Content="mean"/>
+                                        <ComboBoxItem Content="map"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Border>
+
+
+
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+        <Border Grid.Row="1" Height="50" VerticalAlignment="Bottom" BorderThickness="1 1 1 1" CornerRadius="0 0 3 3" BorderBrush="{StaticResource BORDER}" Background="{StaticResource BACKCTRL}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="10 0 0 0" Orientation="Vertical" VerticalAlignment="Center">
+                    <TextBlock>
+                            Update method:
+                    </TextBlock>
+                    <DockPanel Margin="0 0 0 0">
+                        <TextBlock VerticalAlignment="Center">
+                        <Hyperlink x:Name="upd_meth_link" Foreground="{StaticResource YELLOW_B}">
+                            Re-render
+                        </Hyperlink>
+                        </TextBlock>
+                    </DockPanel>
+                </StackPanel>
+
+                <local:EButton x:Name="btn_change" Grid.Column="0" Grid.ColumnSpan="2" Width="140" Margin="10 5 10 5">
+                    <TextBlock Text="Update" FontSize="16"/>
+                </local:EButton>
+
+                <local:EButton x:Name="btn_undo" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10 5 10 5">
+                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
+                </local:EButton>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

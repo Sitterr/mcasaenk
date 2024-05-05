@@ -22,7 +22,7 @@ namespace Mcasaenk.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class ResourceMapping {
+    public class ResourceMapping {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Mcasaenk.Resources {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Mcasaenk.Resources.ResourceMapping", typeof(ResourceMapping).Assembly);
@@ -51,12 +51,22 @@ namespace Mcasaenk.Resources {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ___ {
+            get {
+                object obj = ResourceManager.GetObject("___", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -98,7 +108,7 @@ namespace Mcasaenk.Resources {
         ///33;old_growth_spruce_taiga
         ///34;s [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string biome_names {
+        public static string biome_names {
             get {
                 return ResourceManager.GetString("biome_names", resourceCulture);
             }
@@ -124,7 +134,7 @@ namespace Mcasaenk.Resources {
         ///minecraft:jungle_planks;976d4d
         ///minecraft:acacia_planks; [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string block_colors_map {
+        public static string block_colors_map {
             get {
                 return ResourceManager.GetString("block_colors_map", resourceCulture);
             }
@@ -148,18 +158,202 @@ namespace Mcasaenk.Resources {
         ///deep_ocean;8eb971;71a74d;3f76e4
         ///desert;bfb [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string block_colors_mean {
+        public static string block_colors_mean {
             get {
                 return ResourceManager.GetString("block_colors_mean", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static string shade3d_filter {
+        public static byte[] capture {
+            get {
+                object obj = ResourceManager.GetObject("capture", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] discard {
+            get {
+                object obj = ResourceManager.GetObject("discard", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] end8 {
+            get {
+                object obj = ResourceManager.GetObject("end8", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] folder {
+            get {
+                object obj = ResourceManager.GetObject("folder", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] grass {
+            get {
+                object obj = ResourceManager.GetObject("grass", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] grass8 {
+            get {
+                object obj = ResourceManager.GetObject("grass8", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] icon {
+            get {
+                object obj = ResourceManager.GetObject("icon", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] icon01 {
+            get {
+                object obj = ResourceManager.GetObject("icon01", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] nether8 {
+            get {
+                object obj = ResourceManager.GetObject("nether8", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] question {
+            get {
+                object obj = ResourceManager.GetObject("question", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] rotate {
+            get {
+                object obj = ResourceManager.GetObject("rotate", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] rotate2 {
+            get {
+                object obj = ResourceManager.GetObject("rotate2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] settings {
+            get {
+                object obj = ResourceManager.GetObject("settings", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to allium
+        ///attached_melon_stem
+        ///attached_pumpkin_stem
+        ///azure_bluet
+        ///bamboo_sapling
+        ///beacon
+        ///beetroots
+        ///bell
+        ///black_candle
+        ///black_stained_glass_pane
+        ///blue_candle
+        ///blue_orchid
+        ///blue_stained_glass_pane
+        ///brown_candle
+        ///brown_mushroom
+        ///brown_stained_glass_pane
+        ///calibrated_sculk_sensor
+        ///candle
+        ///carrots
+        ///chain
+        ///cocoa
+        ///cornflower
+        ///crimson_fungus
+        ///cyan_candle
+        ///cyan_stained_glass_pane
+        ///dandelion
+        ///end_rod
+        ///flower_pot
+        ///glass
+        ///glass_pane
+        ///gray_candle
+        ///gray_stained_glass_pane
+        ///green_candle
+        ///green_stained_glass_pane
+        ///grindsto [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string shade3d_filter {
             get {
                 return ResourceManager.GetString("shade3d_filter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] undo {
+            get {
+                object obj = ResourceManager.GetObject("undo", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] wrench {
+            get {
+                object obj = ResourceManager.GetObject("wrench", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

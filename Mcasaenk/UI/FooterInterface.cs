@@ -47,6 +47,14 @@ namespace Mcasaenk.UI {
                 txt_redraw.Text = value.ToString();
             }
         }
+        public string HardDraw_Raw {
+            get {
+                return txt_redraw.Text;
+            }
+            set {
+                txt_redraw.Text = value;
+            }
+        }
 
         public Point2i Region {
             set {

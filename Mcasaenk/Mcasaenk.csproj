@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
+    <PackageReference Include="WPF.ImageEffects" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +25,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Resources\ResourceMapping.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ResourceMapping.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>

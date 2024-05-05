@@ -15,16 +15,16 @@ namespace Mcasaenk.Shade3d {
             this.tile = tile;
         }
 
-        private ManArray<short> heightMap; // 512x512 waterHeights
-        private ManArray<bool> shadeValues; // 512x512x20
-        private ManArray<byte> valuesLen; // 512x512
+        private bool[] shadeValues; // 512x512x20
+        private byte[] valuesLen; // 512x512
 
         private bool[] harvested;
 
-        public void Construct(RawData freeRaw) {
+        private GenData genData;
+        public void Construct(RawData freeRaw, GenData genData) {
             lock(locker) {
                 IsActive = true;
-                this.heightMap = freeRaw.heights;
+                this.genData = genData;
                 this.shadeValues = freeRaw.shadeValues;
                 this.valuesLen = freeRaw.shadeValuesLen;
 
@@ -45,15 +45,6 @@ namespace Mcasaenk.Shade3d {
                     i++;
                 }
 
-                //harvested = new bool[ShadeConstants.GLB.rZ * ShadeConstants.GLB.rZ];
-                //for(int _ix = 0; _ix < ShadeConstants.GLB.rX; _ix++) {
-                //    for(int _iz = 0; _iz < ShadeConstants.GLB.rZ; _iz++) {
-                //        if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[_iz * ShadeConstants.GLB.rX + _ix] = true;
-                //    }
-                //}
-                //harvested[0] = true;
-
-
 
                 CheckDestruct();
             }
@@ -63,9 +54,9 @@ namespace Mcasaenk.Shade3d {
             return harvested.Contains(false) == false;
         }
         protected override void Destruct() {
-            this.heightMap = null;
             this.shadeValues = null;
             this.valuesLen = null;
+            this.genData = null;
             harvested = null;
         }
 
@@ -94,11 +85,11 @@ namespace Mcasaenk.Shade3d {
                     for(int cx = 0; cx < 512; cx++) {
                         int regionIndex = cz * 512 + cx;
 
-                        int h = 319 - heightMap[regionIndex];
+                        int h = 319 - genData.heights(regionIndex);
                         double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 
-                        if(heightMap[regionIndex] != 0) {
+                        if(genData.heights(regionIndex) != 0) {
                             byte a = 3;
                             ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues, ref a, regionIndex, SHADEX, SHADEZ, x1, z1);
                             Debug.Assert(a == valuesLen[regionIndex]);
@@ -111,17 +102,17 @@ namespace Mcasaenk.Shade3d {
             }
         }
 
-        public override bool Recalc() {
+        public bool Recalc() {
             bool changes = false;
             for(int i = 0; i < shadeValues.Length / shadeStride; i++) {
-                if(genData.isShade[i]) continue;
+                if(genData.isShade(i)) continue;
                 int j;
                 for(j = 0; j < valuesLen[i]; j++) {
                     if(shadeValues[i * shadeStride + j] == false) break;
                 }
                 if(j == valuesLen[i]) {
                     changes = true;
-                    genData.isShade[i] = true;
+                    genData.Set_isShade(i, true);
                 }
             }
             return changes;

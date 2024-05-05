@@ -69,7 +69,7 @@ namespace Mcasaenk.UI.Canvas {
             tileMap.SetSettings();
 
             CompositionTarget.Rendering += OnFastTick;
-            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_100);
+            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_50);
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -111,15 +111,15 @@ namespace Mcasaenk.UI.Canvas {
                 if(tileMap.generateTilePool.HasLoaded(tile) == false && tileMap.generateTilePool.IsLoading(tile) == false) {
                     tile.QueueGenerate(screen);
                 }
-                if(tile.contgen.ShouldUpdate) {
-                    tile.QueueGenUpdate();
+                if(tile.ShouldRedraw) {
+                    tile.QueueDraw();
                 }
             }
 
             Dispatcher.BeginInvoke(new Action(() => { 
                 { // footer update
                     window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
-                    window.footer.HardDraw = (GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount);
+                    window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
                 }
@@ -145,6 +145,7 @@ namespace Mcasaenk.UI.Canvas {
         public void OnMouseDown(object sender, MouseButtonEventArgs e) {
             switch(e.ChangedButton) {
                 case MouseButton.Left:
+                    break;
                 case MouseButton.Middle:
                     mouseStart = screen.GetGlobalPos(e.GetPosition(this));
                     mousedown = true;
@@ -158,7 +159,10 @@ namespace Mcasaenk.UI.Canvas {
         public void OnMouseUp(object sender, MouseButtonEventArgs e) {
             switch(e?.ChangedButton) {
                 case null:
+                    break;
                 case MouseButton.Left:
+                    tileMap.GetTile(screen.GetTilePos(mousePos))?.QueueDraw();
+                    break;
                 case MouseButton.Middle:
                     mouseStart = default;
                     mousedown = false;
@@ -189,8 +193,8 @@ namespace Mcasaenk.UI.Canvas {
             //OnFastTick(null, null);
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
-            screen.ScreenWidth = (int)this.ActualWidth;
-            screen.ScreenHeight = (int)this.ActualHeight;
+            screen.ScreenWidth = (int)this.ActualWidth + 1;
+            screen.ScreenHeight = (int)this.ActualHeight + 1;
             //OnFastTick(null, null);
         }
         private void OnMouseLeave(object sender, MouseEventArgs e) {

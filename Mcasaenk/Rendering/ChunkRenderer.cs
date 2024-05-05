@@ -18,7 +18,7 @@ using System.Windows.Media.Media3D;
 namespace Mcasaenk.Rendering
 {
     public class ChunkRenderer {
-        public static void Extract(IChunkInterpreter data, int x, int z, GenerateTilePool.RawData rdata) {
+        public static void Extract(IChunkInterpreter data, int x, int z, RawData rdata) {
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -40,11 +40,11 @@ namespace Mcasaenk.Rendering
                     rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
                     rdata.terrainHeights[regionIndex] = waterHeight;
 
-                    if(!rdata.shadeFrame.IsNull() && !rdata.shadeValues.IsNull() && !rdata.shadeValuesLen.IsNull()) {
+                    if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {
                             int hs = 319 - airHeight;
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
-                            SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen.Get()[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
+                            SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                         }
 
                         short height = waterHeight;

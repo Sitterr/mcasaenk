@@ -11,7 +11,7 @@ namespace Mcasaenk {
         public static int MAXZOOM = 5, MINZOOM = -5;
 
 
-        public static bool REGIONGRID = false, CHUNKGRID = false, ALWAYSTHINREGIONGRID = false;
+        public static bool REGIONGRID = false, CHUNKGRID = false, ALWAYSTHINREGIONGRID = true;
 
 #if DEBUG
         public static int MAXCONCURRENCY = 1, CHUNKRENDERMAXCONCURRENCY = 1;
@@ -19,23 +19,22 @@ namespace Mcasaenk {
         public static int MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16;
 #endif
 
+
         public static ColorMappingMode COLOR_MAPPING_MODE = ColorMappingMode.Mean;
 
-
         public static bool WATERDEPTH = true;
-        public static bool BIOMES = true, WATERBIOMES = false;
+        public static double WATEROPACITY = 0.50;
 
-        public static double SUN_LIGHT = 0.99;
+        public static bool LANDBIOMES = false, WATERBIOMES = true; // da
+        public static int LAND_BLEND = 17, WATER_BLEND = 17; // da
 
-        public static double CONTRAST = 0.50;
+        public static double SUN_LIGHT = 0.99, CONTRAST = 0.70;
 
-        public static bool SHADE3D = true;
+        public static bool SHADE3D = true, STATIC_SHADE = true;
 
-        public static bool STATIC_SHADE = true;
+        public static double ADEG = 20, BDEG = 15;
 
-        public static double ADEG = 110, BDEG = 20;
 
-        public static int BIOME_BLEND = 5;
 
         public static FilterMode _AIR_FILTER = FilterMode.HeightmapAir;
         public static FilterMode _WATER_FILTER = FilterMode.HeightmapWater;

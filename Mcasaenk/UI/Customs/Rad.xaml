@@ -1,0 +1,180 @@
+﻿<UserControl x:Class="Mcasaenk.UI.Rad"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mcasaenk.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+
+        <Style TargetType="Button" x:Key="radbtn">
+            <Style.Setters>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border Background="{TemplateBinding Background}">
+                                <ContentPresenter IsEnabled="{TemplateBinding IsEnabled}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Background" Value="{StaticResource BACK}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style.Setters>
+            <Style.Triggers>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="Opacity" Value="1"/>
+                <Setter Property="Foreground" Value="{StaticResource FORE}"/>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.25"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border BorderBrush="{StaticResource BORDER}" BorderThickness="0 1 0 0" Background="{TemplateBinding Background}">
+                            <ContentPresenter IsEnabled="{TemplateBinding IsEnabled}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="true">
+                                <Setter Property="Background" Value="{StaticResource HOVER}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="ResTempl" DataType="local:Resolution">
+            <Border Background="Transparent" Height="38">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock FontSize="12" HorizontalAlignment="Center"
+                        Text="{Binding Path=Name}"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock FontSize="12" HorizontalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}x{1}">
+                                    <Binding Path="X" />
+                                    <Binding Path="Y" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <DataTemplate.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}" />
+            </DataTemplate.Resources>
+        </DataTemplate>
+
+        <Style x:Key="{x:Type local:AButton}" TargetType="{x:Type local:AButton}">
+            <!--<Setter Property="SnapsToDevicePixels" Value="true"/>-->
+            <Setter Property="OverridesDefaultStyle" Value="true"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+            <Setter Property="Background" Value="Transparent"/>
+
+            <Setter Property="IsEnabled" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type local:AButton}">
+                        <Border Background="{TemplateBinding Background}">
+                            <Grid>
+                                <ContentControl IsEnabled="{TemplateBinding IsEnabled}" VerticalAlignment="Center"
+                                                    ContentTemplate="{StaticResource ResTempl}"
+                                                    Content="{TemplateBinding SelectedItem}"
+                                                  />
+
+                                <Popup Visibility="Hidden" x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                    <Grid Name="DropDown" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                        <Border Background="{StaticResource BACK}" BorderThickness="0 0 0 1" BorderBrush="{StaticResource BORDER}"/>
+                                        <ScrollViewer Margin="0">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Popup>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+
+
+
+
+
+
+
+
+    </UserControl.Resources>
+
+
+    <Grid>
+        <Grid.Resources>
+            <SolidColorBrush x:Key="text">#FFAFAFAF</SolidColorBrush>
+            <SolidColorBrush x:Key="border">#FFAFAFAF</SolidColorBrush>
+            <SolidColorBrush x:Key="blue">#FF95ECF9</SolidColorBrush>
+            <SolidColorBrush x:Key="green">#FFB2FFB6</SolidColorBrush>
+            <SolidColorBrush x:Key="red">#FFDEAA</SolidColorBrush>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="2" />
+            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="2" />
+            <ColumnDefinition Width="80" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Grid.Column="0" BorderThickness="1 1 0 1" BorderBrush="{StaticResource BORDER}">
+            <local:AButton SelectedIndex="0" 
+                           ItemsSource="{Binding Source={x:Static local:Resolution.predefined}}" 
+                           ItemTemplate="{DynamicResource ResTempl}"
+                           x:Name="btn_pre">
+            </local:AButton>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="1" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
+            <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="4" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}">
+            <Button x:Name="btn_frame" Style="{StaticResource radbtn}">
+                <ContentControl 
+                    ContentTemplate="{StaticResource ResTempl}"
+                    Content="{x:Static local:Resolution.frame}"/>
+            </Button>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="3" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
+            <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="2" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
+            <Button x:Name="btn_custom" Style="{StaticResource radbtn}">
+                <ContentControl 
+                    ContentTemplate="{StaticResource ResTempl}" 
+                    Content="{x:Static local:Resolution.custom}"/>
+            </Button>
+        </Border>
+    </Grid>
+</UserControl>
