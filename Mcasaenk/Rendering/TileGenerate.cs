@@ -72,7 +72,7 @@ namespace Mcasaenk.Rendering
                             }
                         });
                         tasks.Add(task);
-                        if(tasks.Count >= Settings.CHUNKRENDERMAXCONCURRENCY) {
+                        if(tasks.Count >= Global.App.Settings.CHUNKRENDERMAXCONCURRENCY) {
                             Task.WaitAll(tasks.ToArray());
                             tasks.Clear();
                         }
@@ -95,7 +95,7 @@ namespace Mcasaenk.Rendering
                             }
                         });
                         tasks.Add(task);
-                        if(tasks.Count >= Settings.CHUNKRENDERMAXCONCURRENCY) {
+                        if(tasks.Count >= Global.App.Settings.CHUNKRENDERMAXCONCURRENCY) {
                             Task.WaitAll(tasks.ToArray());
                             tasks.Clear();
                         }

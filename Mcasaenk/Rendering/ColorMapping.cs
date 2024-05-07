@@ -114,7 +114,7 @@ namespace Mcasaenk.Rendering {
             Block.Reset();
             Biome.Reset();
             SetOldBiomeIds();
-            Current = FromEnum.Mapping(Settings.COLOR_MAPPING_MODE);
+            Current = FromEnum.Mapping(Global.App.Settings.COLOR_MAPPING_MODE);
             Block.Freeze();
             Biome.Freeze();
         }      

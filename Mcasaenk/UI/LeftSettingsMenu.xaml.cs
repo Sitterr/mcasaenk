@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mcasaenk.Shade3d;
+using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
@@ -27,7 +28,6 @@ namespace Mcasaenk.UI {
         {
             InitializeComponent();
 
-
             upd_meth_link.Click += (o, e) => {
                 var window = new UpdateMethodClarifyWindow();
                 window.Owner = Window.GetWindow(this);
@@ -35,6 +35,16 @@ namespace Mcasaenk.UI {
             };
 
 
+
+
+
+            btn_change.Click += (o, e) => {
+                Global.App.Settings.SetFromBack();
+            };
+
+            btn_undo.Click += (o, e) => {
+                Global.App.Settings.Reset();
+            };
 
 
             tabs = new[] { tab_general, tab_shades, tab_color };

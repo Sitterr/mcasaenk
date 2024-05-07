@@ -4,21 +4,74 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Mcasaenk.UI
 {
+
     public class RoundConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if(value is double doubleValue) {
-                // You can specify the number of decimal places here, e.g., 2 for two decimal places
-                return doubleValue.ToString("0.00");
+                if(parameter == null) parameter = 2;
+                else parameter = System.Convert.ToInt32(parameter);
+                return doubleValue.ToString("0." + new string('0', (int)parameter));
             }
             return value.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return Math.Round((double)value, System.Convert.ToInt32(parameter));
+        }
+    }
+
+    public class BitOrConverter : IMultiValueConverter {
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
+            return value.Select(o => (bool)o).Any(v => v);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
             throw new NotImplementedException();
+        }
+    }
+
+    public class DifferenceConverter : IMultiValueConverter {
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
+            return value[0].Equals(value[1]) ? (SolidColorBrush)Application.Current.FindResource("FORE") : (SolidColorBrush)Application.Current.FindResource("YELLOW_B");
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+    public class StarConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return (bool)value ? "✶" : "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class FooterConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return (bool)value ? new GridLength(25) : new GridLength(0);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
+    [ValueConversion(typeof(Enum), typeof(IEnumerable<ValueDescription>))]
+    public class EnumToCollectionConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return EnumHelper.GetAllValuesAndDescriptions(value.GetType());
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return null;
         }
     }
 }

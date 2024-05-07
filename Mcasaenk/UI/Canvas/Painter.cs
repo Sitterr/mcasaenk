@@ -48,17 +48,19 @@ namespace Mcasaenk.UI.Canvas {
                 if(tile.img != null) {
                     graphics.DrawImage(tile.img, rect);
                 } else {
-                    graphics.DrawImage(GetUnloadedOverlay(), rect);
+                    if(Global.App.Settings.UNLOADED) graphics.DrawImage(GetUnloadedOverlay(), rect);
                 }
 
-                if(tile.IsLoading()) {
-                    graphics.DrawImage(GetLoadingOverlay(), rect);
-                } else if(tile.IsRedrawing()) {
-                    graphics.DrawImage(GetDrawingOverlay(), rect);
-                }
+                if(Global.App.Settings.OVERLAYS) {
+                    if(tile.IsLoading()) {
+                        graphics.DrawImage(GetLoadingOverlay(), rect);
+                    } else if(tile.IsRedrawing()) {
+                        graphics.DrawImage(GetDrawingOverlay(), rect);
+                    }
 
-                if(tile.shade.IsActive) {
-                    graphics.DrawImage(GetRedOverlay(), rect);
+                    if(tile.shade.IsActive) {
+                        graphics.DrawImage(GetRedOverlay(), rect);
+                    }
                 }
             }
         }
@@ -197,7 +199,7 @@ namespace Mcasaenk.UI.Canvas {
     class RegionGridPainter : Painter {
         private Pen linePen, dashPen;
 
-        const int dashtickness = 4;
+        const int dashtickness = 2;
         const int dashsize = 32, linesize = 0;
         const double opacity = 0.75;
 
@@ -214,7 +216,7 @@ namespace Mcasaenk.UI.Canvas {
             double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
-            Pen pen = Settings.ALWAYSTHINREGIONGRID ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;
+            Pen pen = Global.App.Settings.REGIONGRID == RegionGridType.Straight ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;
             int pensize = pen == linePen ? linesize : dashsize;
 
             for(int zz = 0; zz < screen.ScreenHeight + tz; zz += (int)(512 * screen.zoom)) {
@@ -235,30 +237,34 @@ namespace Mcasaenk.UI.Canvas {
         }
     
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            if(Settings.CHUNKGRID) {
+            if(Global.App.Settings.CHUNKGRID == ChunkGridType.Straight) {
                 if(screen.ZoomScale >= 0) {
                     chunkPainter.Update(screen);
                     graphics.DrawDrawing(chunkPainter.GetDrawing());
                 }
             }
 
-            if(Settings.REGIONGRID) {
+            if(Global.App.Settings.REGIONGRID != RegionGridType.None) {
                 regionPainter.Update(screen);
                 graphics.DrawDrawing(regionPainter.GetDrawing());
             }
         }
     }
     public class BackgroundPainter : Painter {
-        private Brush brush;
+        private Brush solidColorBrush;
         public BackgroundPainter() {
             //brush = new LinearGradientBrush(new GradientStopCollection(new[] { new GradientStop(Colors.Yellow, 0), new GradientStop(Colors.Blue, 1) }));
-            if(Settings.CONTRAST < 0.90) brush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
-            else brush = new SolidColorBrush(Colors.Black);
-            brush.Freeze();
+            if(Global.App.Settings.CONTRAST < 0.90) solidColorBrush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
+            else solidColorBrush = new SolidColorBrush(Colors.Black);
+            solidColorBrush.Freeze();
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            graphics.DrawRectangle(brush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
+            switch(Global.App.Settings.BACKGROUND) {
+                case BackgroundType.None:
+                    graphics.DrawRectangle(solidColorBrush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
+                    break;
+            }
         }
     }
 }

@@ -4,13 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mcasaenk.UI"
+             xmlns:gl="clr-namespace:Mcasaenk"
              xmlns:resx="clr-namespace:Mcasaenk.Resources"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="560">
-
-    <UserControl.Resources>
-        <local:RoundConverter x:Key="RoundConverter"/>
-    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -87,11 +84,11 @@
 
                                     <DockPanel Grid.Row="0" Grid.Column="0">
                                         <TextBlock>
-                            <Run Text="Y"/><!--
-                            --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/><!--
-                                             --><Run Text=" ✶"/>
+                                             <Run Text="Y"/><!--
+                                          --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/><!--
+                                          --><Run Text=" ✶"/>
                                         </TextBlock>
-                                        <TextBox Text="312" HorizontalAlignment="Right"/>
+                                        <TextBox Text="312" Width="30" HorizontalAlignment="Right"/>
                                     </DockPanel>
                                     <Slider Grid.Row="2" Grid.Column="0" Minimum="-64" Maximum="319" TickFrequency="16"/>
 
@@ -99,52 +96,73 @@
 
                                     <DockPanel Grid.Row="4" Grid.Column="0">
                                         <TextBlock Text="land biomes"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
-                                        <TextBlock HorizontalAlignment="Right">
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}"/>
+                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}">
                                             <TextBlock.Text>
-                                                rge
+                                                <MultiBinding StringFormat="{}{0}x{1}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="LandBlend" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="LandBlend" />
+                                                </MultiBinding>
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" Value="5" TickFrequency="2"/>
+                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2" 
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=LandBlend}"
+                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}"/>
 
                                     <DockPanel Grid.Row="4" Grid.Column="2">
                                         <TextBlock Text="water biomes"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
-                                        <TextBlock Text="15 x 15" HorizontalAlignment="Right"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}"/>
+                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0}x{1}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="WaterBlend" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="WaterBlend" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
                                     </DockPanel>
                                     <Slider Grid.Row="6" Grid.Column="2" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2"
-                                            Value="10"
-                                            IsEnabled="False"/>
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBlend}"
+                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}"/>
 
 
 
                                     <DockPanel Grid.Row="8" Grid.Column="0">
                                         <TextBlock Text="contrast"/>
-                                        <TextBlock Text="0.5" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="1" Value="0.5" TickFrequency="0.1"/>
+                                    <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast}"/>
 
                                     <DockPanel Grid.Row="8" Grid.Column="2">
                                         <TextBlock Text="brightness"/>
-                                        <TextBlock Text="0.51" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding SunLight, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"/>
+                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}"/>
 
 
-                                    <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="3">
-                                        <TextBlock Text="translucency mode: ✶" VerticalAlignment="Center"/>
-                                        <ComboBox Margin="10 0 0 0">
+
+                                    <DockPanel Grid.Row="12" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="1">
+                                        <TextBlock Text="water mode: ✶" VerticalAlignment="Center"/>
+                                        <ComboBox Width="auto" VerticalAlignment="Center" Margin="10 0 0 0">
                                             <ComboBoxItem Content="none"/>
-                                            <ComboBoxItem Content="linear"/>
-                                            <ComboBoxItem Content="exponential"/>
+                                            <ComboBoxItem Content="translucent"/>
                                             <ComboBoxItem Content="dotted" IsEnabled="False"/>
                                         </ComboBox>
-                                    </StackPanel>
+                                    </DockPanel>
+
+                                    <DockPanel Grid.Row="12" Grid.Column="2">
+                                        <TextBlock Text="water opacity"/>
+                                        <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="14" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity}"/>
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -163,36 +181,82 @@
 
                                     <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
                                         <TextBlock Text="static shade"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=StaticShade}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
-                                        <TextBlock Text="3D shade ✶"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <TextBlock>
+                                            <Run Text="3D shade"/>
+                                            <Run Text="✶">
+                                                <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="Shade3d" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="SHADE3D" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>  
+                                            </Run>
+                                        </TextBlock>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Shade3d}"/>
                                     </StackPanel>
 
                                     <DockPanel Grid.Row="4" Grid.Column="0">
                                         <TextBlock>
                                             <Run Text="α"/><!--
-                                         --><Run Text="(horizontal angle)" FontSize="12" FontStyle="Italic"/><!--
-                                         --><Run Text=" ✶"/>
+                                         --><Run Text="(horizontal angle)" FontSize="12" FontStyle="Italic"/>
+                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D, Converter={StaticResource StarConverter}}">
+                                                <Run.Foreground> 
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="ADeg" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="ADEG" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>  
+                                            </Run>
                                         </TextBlock>
-                                        <TextBlock Text="45°" HorizontalAlignment="Right"/>
+                                        <TextBlock HorizontalAlignment="Right">
+                                            <TextBlock.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource BitOrConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="StaticShade" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="Shade3d" />
+                                                </MultiBinding>
+                                            </TextBlock.IsEnabled>
+                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=ADeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}"/><!--
+                                         --><Run Text="°"/>
+                                        </TextBlock>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="360" TickFrequency="15"/>
+                                    <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="360" TickFrequency="15"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=ADeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}">
+                                        <Slider.IsEnabled>
+                                            <MultiBinding Converter="{StaticResource BitOrConverter}">
+                                                <Binding Source="{x:Static gl:Global.Settings}" Path="StaticShade" />
+                                                <Binding Source="{x:Static gl:Global.Settings}" Path="Shade3d" />
+                                            </MultiBinding>
+                                        </Slider.IsEnabled>
+                                    </Slider>
 
                                     <DockPanel Grid.Row="4" Grid.Column="2">
                                         <TextBlock>
                                             <Run Text="β"/><!--
                                          --><Run Text="(elevation angle)" FontSize="12" FontStyle="Italic"/><!--
-                                         --><Run Text=" ✶"/>
+                                         --><Run Text=" ✶">
+                                                <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="BDeg" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="BDEG" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>  
+                                            </Run>
                                         </TextBlock>
-                                        <TextBlock Text="10°" HorizontalAlignment="Right"/>
+                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Shade3d}">
+                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=BDeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}"/><!--
+                                         --><Run Text="°"/>
+                                        </TextBlock>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="2" Minimum="5" Maximum="90" Ticks="15 30 45 60 75"/>
+                                    <Slider Grid.Row="6" Grid.Column="2" Minimum="5" Maximum="90" Ticks="15 30 45 60 75"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=BDeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}"
+                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Shade3d}"/>
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Visible">
+                            <Border x:Name="cont_color" Visibility="Collapsed">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="basis: ✶" VerticalAlignment="Center"/>
                                     <ComboBox Margin="10 0 0 0">

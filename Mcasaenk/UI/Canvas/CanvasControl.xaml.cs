@@ -25,8 +25,6 @@ namespace Mcasaenk.UI.Canvas {
     public partial class CanvasControl : UserControl {
 
         WorldPosition screen;
-        TileMap tileMap;
-        MainWindow window;
 
         List<Painter> painters;
         ScenePainter scenePainter;
@@ -58,17 +56,16 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseUp += OnMouseUp;
             this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
             this.MouseLeave += OnMouseLeave;
-        }
-        public void Init(MainWindow window) {
-            this.window = window;
-        }
-        public void SetTileMap(TileMap tileMap) { 
-            this.tileMap = tileMap;
-            scenePainter.SetTileMap(tileMap);
 
-            tileMap.SetSettings();
 
             CompositionTarget.Rendering += OnFastTick;
+        }
+
+        TileMap tileMap { get => Global.App.TileMap; }
+        MainWindow window { get => Global.App.Window; }
+        public void OnTilemapChanged() { 
+            scenePainter.SetTileMap(tileMap);
+
             secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_50);
         }
 
@@ -151,6 +148,7 @@ namespace Mcasaenk.UI.Canvas {
                     mousedown = true;
                     break;
                 case MouseButton.Right:
+                    Global.App.Settings.LAND_BLEND = 1;
                     break;
                 default: break;
             }
@@ -161,7 +159,7 @@ namespace Mcasaenk.UI.Canvas {
                 case null:
                     break;
                 case MouseButton.Left:
-                    tileMap.GetTile(screen.GetTilePos(mousePos))?.QueueDraw();
+                    tileMap?.GetTile(screen.GetTilePos(mousePos))?.QueueDraw();
                     break;
                 case MouseButton.Middle:
                     mouseStart = default;
@@ -182,7 +180,7 @@ namespace Mcasaenk.UI.Canvas {
         }
         public void OnMouseWheel(object sender, MouseWheelEventArgs e) {
             int delta = e.Delta > 0 ? 1 : -1;
-            if(screen.ZoomScale + delta < Settings.MINZOOM || screen.ZoomScale + delta > Settings.MAXZOOM) return;
+            if(screen.ZoomScale + delta < Global.App.Settings.MINZOOM || screen.ZoomScale + delta > Global.App.Settings.MAXZOOM) return;
 
             Point mouseRel = e.GetPosition((IInputElement)sender);
             Point mouseGl = screen.GetGlobalPos(mouseRel);

@@ -6,15 +6,16 @@
         xmlns:local="clr-namespace:Mcasaenk.UI" 
         xmlns:canvas="clr-namespace:Mcasaenk.UI.Canvas"
         xmlns:resx="clr-namespace:Mcasaenk.Resources"
+        xmlns:gl="clr-namespace:Mcasaenk"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="1500" MinHeight="400">
 
-    <Grid x:Name="grgr">
+    <Grid x:Name="mainGrid">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="25"/>
+            <RowDefinition Height="{Binding Source={x:Static gl:Global.Settings}, Path=Footer, Converter={StaticResource FooterConverter}}"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
@@ -34,7 +35,7 @@
         </DockPanel>-->
 
         
-        <canvas:CanvasControl x:Name="canvasControl" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
+        <canvas:CanvasControl x:Name="canvasControl" x:FieldModifier="public" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
         </canvas:CanvasControl>
 
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">

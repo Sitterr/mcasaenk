@@ -66,7 +66,7 @@ namespace Mcasaenk.Rendering {
     public class GenerateTilePool : TilePool {
         private ConcurrentDictionary<Tile, List<WorldPosition>> observers = new();
 
-        public GenerateTilePool() : base(Settings.MAXCONCURRENCY) {  }
+        public GenerateTilePool() : base(Global.App.Settings.MAXCONCURRENCY) {  }
 
         public static long redrawAcc = 0, redrawCount = 1;
         public void Queue(Tile tile, WorldPosition observer) {
@@ -74,14 +74,14 @@ namespace Mcasaenk.Rendering {
 
             if(observers[tile].Contains(observer) == false) observers[tile].Add(observer);
 
-            base.Queue(tile, () => {
-                Global.Time(() => {
-                    tile.genData = Settings.SHADE3D ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
-                }, out var time);
+            base.Queue(tile, (Action)(() => {
+                Global.Time((Action)(() => {
+                    tile.genData = Global.App.Settings.SHADE3D ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
+                }), out var time);
                 redrawAcc += time;
                 redrawCount++;
                 observers[tile].Clear();
-            }, () => {
+            }), () => {
                 bool atleastone = false;
                 foreach(var screen in observers[tile]) {
                     if(screen.IsVisible(tile)) {

@@ -45,6 +45,12 @@ namespace Mcasaenk
             //GC.Collect(2, GCCollectionMode.Forced);
         }
 
+        public void RedrawAll() {
+            foreach(var tile in tiles) {
+                tile.Value.ShouldRedraw = true;
+            }
+        }
+
         public Tile GetTile(Point2i point) {
             long pointL = point.AsLong();
             if(!possibleTiles.Contains(pointL)) return null;
@@ -130,7 +136,7 @@ namespace Mcasaenk
             }
             set {
                 _genData = value;
-                if(Settings.LAND_BLEND > 1) {
+                if(Global.App.Settings.LAND_BLEND > 1) {
                     for(int i = -1; i <= 1; i++) { // biome blend
                         for(int j = -1; j <= 1; j++) {
                             var tile = map.GetTile(pos + new Point2i(i, j));
@@ -161,7 +167,7 @@ namespace Mcasaenk
 
             uint* pixels = (uint*)img.BackBuffer;
             GenData[,] neighbours = null;
-            if(Settings.LAND_BLEND > 1 || Settings.WATER_BLEND > 1) {
+            if(Global.App.Settings.LAND_BLEND > 1 || Global.App.Settings.WATER_BLEND > 1) {
                 neighbours = new GenData[3, 3];
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {

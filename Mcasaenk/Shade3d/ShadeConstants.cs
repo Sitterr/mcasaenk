@@ -13,7 +13,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Mcasaenk.Shade3d {
     public class ShadeConstants {
         public const double MINB = 5;
-        public static ShadeConstants GLB = new ShadeConstants(Settings.ADEG, Settings.BDEG);
+        public static ShadeConstants GLB = new ShadeConstants(Global.App.Settings.ADEG, Global.App.Settings.BDEG);
 
         public readonly double Adeg, Bdeg;
         public readonly double A, B;
@@ -25,6 +25,13 @@ namespace Mcasaenk.Shade3d {
         public enum RegionDir { n, l, r, c }; 
         public readonly List<(RegionDir dir, Point2i p)> regionReach, blockReach;
         public readonly byte blockReachLenMax;
+
+        public ShadeConstants(double A_deg) {
+            Adeg = A_deg;
+            A = DegToRad(Adeg);
+            cosA = Round(Math.Cos(A));
+            sinA = Round(Math.Sin(A));
+        }
 
         public ShadeConstants(double A_deg, double B_deg) {
             Adeg = A_deg;

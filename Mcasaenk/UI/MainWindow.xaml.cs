@@ -24,28 +24,11 @@ namespace Mcasaenk.UI {
     /// </summary>
     public partial class MainWindow : Window {
         public FooterInterface footer;
-
-        private Save _openedSave;
-        public Save OpenedSave {
-            get {
-                return _openedSave;
-            }
-
-            set {
-                _openedSave = value;
-                canvasControl.SetTileMap(_openedSave.overworld.tileMap);
-            }
-        }
-
-
         public MainWindow() {
             InitializeComponent();
 
             footer = footerControl.@interface;
-            canvasControl.Init(this);
             footerControl.Init();
-            OpenedSave = new Save(App.WORLDPATH);
-
 
             this.resolution_reset.Click += (o, e) => {
                 rad.Reset();
@@ -59,7 +42,7 @@ namespace Mcasaenk.UI {
                 Resolution.custom.X++;
 
 
-                this.MinWidth = grgr.ColumnDefinitions[0].ActualWidth + 10 + 10;
+                this.MinWidth = mainGrid.ColumnDefinitions[0].ActualWidth + 10 + 10;
 
 
                 {
@@ -121,7 +104,7 @@ namespace Mcasaenk.UI {
                 LeftFileMenu leftFileMenu = new LeftFileMenu(opener_worlds);
                 LeftOptionsMenu leftOptionsMenu = new LeftOptionsMenu();
 
-                var leftsl = new Slider(this, true, true, () => (int)grgr.ColumnDefinitions[0].ActualWidth - (int)opener_worlds.ActualWidth - 10, 10,
+                var leftsl = new Slider(this, true, true, () => (int)mainGrid.ColumnDefinitions[0].ActualWidth - (int)opener_worlds.ActualWidth - 10, 10,
                     ss, settings_cont, [
                         (opener_sett, () => {
                             settings_cont.Child = leftSettingsMenu;

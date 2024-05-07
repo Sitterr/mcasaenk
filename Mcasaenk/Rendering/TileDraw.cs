@@ -25,16 +25,16 @@ namespace Mcasaenk.Rendering {
             var st = Stopwatch.StartNew();
 
             for(int i = 0; i < 512 * 512; i++) {
-                var biome = (Settings.LANDBIOMES) ? genData.biomeIds(i) : default;
+                var biome = (Global.App.Settings.LANDBIOMES) ? genData.biomeIds(i) : default;
                 pixels[i] = ColorMapping.Current.GetColor(genData.blockIds(i), biome);
             }
 
             uint[] tintcolors = very_temp.Rent(512 * 512);
 
-            if(Settings.LANDBIOMES && Settings.LAND_BLEND > 1) { // biome blend
+            if(Global.App.Settings.LANDBIOMES && Global.App.Settings.LAND_BLEND > 1) { // biome blend
                 foreach(var tintgroup in ColorMapping.Current.GetTintGroups()) {
                     if(tintgroup.Contains(ColorMapping.BLOCK_WATER)) continue;
-                    GausBlur.BoxBlur((Settings.LAND_BLEND - 1) / 2, tintcolors, tintgroup, neighbours);
+                    GausBlur.BoxBlur((Global.App.Settings.LAND_BLEND - 1) / 2, tintcolors, tintgroup, neighbours);
                     for(int i = 0; i < 512 * 512; i++) {
                         if(tintgroup.Contains(genData.terrainblock(i))) {
                             pixels[i] = tintcolors[i];
@@ -43,23 +43,23 @@ namespace Mcasaenk.Rendering {
                     tintcolors.AsSpan().Fill(default);
                 }
             }
-            if(Settings.WATERBIOMES && Settings.WATER_BLEND > 1) { // water blend
+            if(Global.App.Settings.WATERBIOMES && Global.App.Settings.WATER_BLEND > 1) { // water blend
                 tintcolors.AsSpan().Fill(default);
-                GausBlur.BoxBlur((Settings.WATER_BLEND - 1) / 2, tintcolors, new DummySingleBlockSet(ColorMapping.BLOCK_WATER), neighbours);
+                GausBlur.BoxBlur((Global.App.Settings.WATER_BLEND - 1) / 2, tintcolors, new DummySingleBlockSet(ColorMapping.BLOCK_WATER), neighbours);
             } else {
                 for(int i = 0; i < 512 * 512; i++) {
                     if(genData.terrainblock(i) == ColorMapping.BLOCK_WATER) {
-                        ushort waterbiome = Settings.WATERBIOMES ? genData.biomeIds(i) : default;
+                        ushort waterbiome = Global.App.Settings.WATERBIOMES ? genData.biomeIds(i) : default;
                         tintcolors[i] = ColorMapping.Current.GetColor(ColorMapping.BLOCK_WATER, waterbiome);
                     }
                 }
             }
 
             { // water
-                double l = Settings.CONTRAST;
+                double l = Global.App.Settings.CONTRAST;
                 double watercontrast = -50 * Math.Pow(l, 8) + -10 * l;
 
-                double k = Settings.WATEROPACITY;
+                double k = Global.App.Settings.WATEROPACITY;
                 double wateropacity = -30 * Math.Pow(k, 8) + -30 * k;
 
                 int i = 0;
@@ -68,8 +68,8 @@ namespace Mcasaenk.Rendering {
                         if(genData.terrainblock(i) == ColorMapping.BLOCK_WATER) {
                             int waterDepth = genData.heights(i) - genData.terrainHeights(i);
 
-                            if(Settings.WATERDEPTH) {
-                                pixels[i] = Global.Blend(tintcolors[i], pixels[i], I(waterDepth, Settings.WATEROPACITY, 1.5 * wateropacity));
+                            if(Global.App.Settings.WATERDEPTH) {
+                                pixels[i] = Global.Blend(tintcolors[i], pixels[i], I(waterDepth, Global.App.Settings.WATEROPACITY, 1.5 * wateropacity));
 
                                 double multintensity = 1 - I(waterDepth, 0, watercontrast);
                                 pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
@@ -82,22 +82,28 @@ namespace Mcasaenk.Rendering {
             }
 
 
-            if(Settings.STATIC_SHADE) {
-                double q = 8 * (2 * Settings.CONTRAST);
-                if(Settings.SHADE3D) q = q / 4;
+            if(Global.App.Settings.STATIC_SHADE) {
+                double q = 12 * Global.App.Settings.CONTRAST;
+                if(Global.App.Settings.SHADE3D) q = q / 3;
 
                 staticshade(pixels, genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             }
 
 
-            if(Settings.SHADE3D) {
+            if(Global.App.Settings.SHADE3D) {
                 int i = 0;
                 for(int z = 0; z < 512; z++) {
                     for(int x = 0; x < 512; x++, i++) {
                         if(genData.isShade(i)) {
-                            double multcontr = 1 - Settings.CONTRAST;
-                            int addcontr = (int)(-Settings.CONTRAST * 100);
-                            pixels[i] = Global.Blend(Global.MultShade(pixels[i], multcontr, multcontr, multcontr), Global.AddShade(pixels[i], addcontr, addcontr, addcontr), 1);
+                            double multcontr = 1 - Global.App.Settings.CONTRAST;
+                            //int addcontr = (int)(-Settings.CONTRAST * 100);
+
+                            int max = (int)(Global.App.Settings.CONTRAST * 150);
+                            var c = Global.FromARGBInt(pixels[i]);
+                            if(c.a < 255) pixels[i] = 0;
+                            else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
+
+                            //pixels[i] = Global.Blend(Global.MultShade(pixels[i], multcontr, multcontr, multcontr), Global.AddShade(pixels[i], addcontr, addcontr, addcontr), 0.75);
                         }
                     }
                 }
@@ -105,7 +111,7 @@ namespace Mcasaenk.Rendering {
 
 
             for(int i = 0; i < 512 * 512; i++) {
-                double l = Settings.SUN_LIGHT;
+                double l = Global.App.Settings.SUN_LIGHT;
                 pixels[i] = Global.MultShade(pixels[i], l, l, l);
             }
 

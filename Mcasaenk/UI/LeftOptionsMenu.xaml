@@ -4,8 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mcasaenk.UI"
+             xmlns:gl="clr-namespace:Mcasaenk"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="560">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -41,7 +43,7 @@
                         </StackPanel.Resources>
 
 
-                        <Border x:Name="cont_config" Visibility="Collapsed">
+                        <Border x:Name="cont_config" Visibility="Visible">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -60,48 +62,57 @@
 
                                 <StackPanel Grid.Row="0" Grid.Column="0">
                                     <DockPanel>
-                                        <TextBlock Text="region concurrency"/>
-                                        <TextBlock Text="8" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="region concurrency ✶"/>
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   Text="{Binding Source={x:Static gl:Global.Settings}, Path=RegionConcurrency}"/>
                                     </DockPanel>
                                     <Border Height="3"/>
-                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="16" TickFrequency="1"/>
+                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="16" TickFrequency="1"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=RegionConcurrency}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="0" Grid.Column="2">
                                     <DockPanel>
-                                        <TextBlock Text="chunk concurrency"/>
-                                        <TextBlock Text="16" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="chunk concurrency ✶"/>
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   Text="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkConcurrency}"/>
                                     </DockPanel>
                                     <Border Height="3"/>
-                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="24" TickFrequency="1"/>
+                                    <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="24" TickFrequency="1"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkConcurrency}"/>
                                 </StackPanel>
 
 
                                 <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="region grid"/>
-                                        <ComboBox Margin="10 0 0 0">
-                                            <ComboBoxItem Content="none"/>
-                                            <ComboBoxItem Content="straight"/>
-                                            <ComboBoxItem Content="dashed"/>
-                                        </ComboBox>
+                                        <TextBlock Text="region grid" VerticalAlignment="Center"/>
+                                        <ComboBox Margin="10 0 0 0"
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=RegionGrid, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedValuePath="Value"
+                                                  DisplayMemberPath="Description"
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=RegionGrid}"/>
                                     </StackPanel>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2" Grid.Column="2">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="chunk grid"/>
-                                        <ComboBox Margin="10 0 0 0">
-                                            <ComboBoxItem Content="none"/>
-                                            <ComboBoxItem Content="straight"/>
-                                        </ComboBox>
+                                        <TextBlock Text="chunk grid" VerticalAlignment="Center"/>
+                                        <ComboBox Margin="10 0 0 0" 
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkGrid, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedValuePath="Value"
+                                                  DisplayMemberPath="Description"
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkGrid}"/>
                                     </StackPanel>
                                 </StackPanel>
 
 
                                 <StackPanel Grid.Row="4" Grid.Column="0" Orientation="Horizontal">
-                                    <TextBlock Text="background"/>
-                                    <ComboBox Margin="10 0 0 0"/>
+                                    <TextBlock Text="background" VerticalAlignment="Center"/>
+                                    <ComboBox Margin="10 0 0 0"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Background, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Background}"/>
                                 </StackPanel>
 
                                 
@@ -117,17 +128,17 @@
 
                                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                                         <TextBlock Text="footer"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Footer}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                                         <TextBlock Text="debug overlays"/>
-                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Overlays}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="4" Orientation="Horizontal">
                                         <TextBlock Text="unloaded reg."/>
-                                        <ToggleButton Margin="10 0 0 0"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Unloaded}"/>
                                     </StackPanel>
                                 </Grid>
 

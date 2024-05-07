@@ -20,6 +20,8 @@ namespace Mcasaenk {
     public class Global {
         public static Random rand = new Random();
 
+        public static App App { get => (App)Application.Current; }
+        public static Settings Settings { get => App.Settings; } // i hate wpf
         
         static Global(){
             pows2 = new int[32];

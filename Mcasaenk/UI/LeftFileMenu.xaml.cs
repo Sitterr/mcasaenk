@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -106,7 +108,7 @@ namespace Mcasaenk.UI {
                     string filename = dialog.FileName;
 
                     // code here
-
+                    Global.App.OpenedSave = new Save(Path.GetDirectoryName(filename));
 
                     opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
