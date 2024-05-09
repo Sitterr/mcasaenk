@@ -31,7 +31,21 @@ namespace Mcasaenk
         None,
     }
 
-    public enum ColorMappingMode { Mean, Map }
+    public enum ColorMappingMode {
+        [Description("mean")]
+        Mean,
+        [Description("java map")]
+        Map,
+    }
+
+    public enum WaterMode {
+        [Description("translucient")]
+        Exponential,
+        [Description("java map")]
+        Map,
+    }
+
+
     public enum FilterMode { None, Air, Water, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
 
@@ -44,16 +58,18 @@ namespace Mcasaenk
             SHADE3D = shade3d_back;
             MAXCONCURRENCY = regionConcurrency_back;
             CHUNKRENDERMAXCONCURRENCY = chunkConcurrency_back;
+            COLOR_MAPPING_MODE = colorMapping_back;
 
             frozen = false;
             OnHardChange("");
         }
         public void Reset() {
-            ADeg = ADEG; 
-            BDeg = BDEG; 
+            ADeg = ADEG;
+            BDeg = BDEG;
             Shade3d = SHADE3D;
             RegionConcurrency = MAXCONCURRENCY;
             ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
+            ColorMapping = COLOR_MAPPING_MODE;
         }
 
 
@@ -75,13 +91,14 @@ namespace Mcasaenk
 
         public Settings() { }
 
-        public static Settings DEF() => new Settings() { 
+        public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
 
             COLOR_MAPPING_MODE = ColorMappingMode.Mean,
+            WATER_MODE = WaterMode.Exponential,
             WATEROPACITY = 0.50,
 
             LANDBIOMES = false, WATERBIOMES = true,
@@ -239,7 +256,7 @@ namespace Mcasaenk
                     OnAutoChange(nameof(ADeg));
                     OnLightChange(nameof(ADEG));
                 } else {
-                    OnLightChange(nameof(ADeg));
+                    OnAutoChange(nameof(ADeg));
                 }
             }
         }
@@ -266,11 +283,23 @@ namespace Mcasaenk
                 if(colorMapping_back == value) return;
 
                 colorMapping_back = value;
-                OnAutoChange(nameof(BDeg));
+                OnAutoChange(nameof(ColorMapping));
             }
         }
         public ColorMappingMode COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
 
+
+        private WaterMode waterMode;
+        public WaterMode WaterMode {
+            get => waterMode;
+            set {
+                if(waterMode == value) return;
+
+                waterMode = value;
+                OnLightChange(nameof(WaterMode));
+            }
+        }
+        public WaterMode WATER_MODE { get => WaterMode; set => WaterMode = value; }
 
 
 

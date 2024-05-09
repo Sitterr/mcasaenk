@@ -55,7 +55,7 @@
 
                             
                             
-                            <Border x:Name="cont_general" Visibility="Collapsed">
+                            <Border x:Name="cont_general" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -145,12 +145,12 @@
 
 
                                     <DockPanel Grid.Row="12" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="1">
-                                        <TextBlock Text="water mode: ✶" VerticalAlignment="Center"/>
-                                        <ComboBox Width="auto" VerticalAlignment="Center" Margin="10 0 0 0">
-                                            <ComboBoxItem Content="none"/>
-                                            <ComboBoxItem Content="translucent"/>
-                                            <ComboBoxItem Content="dotted" IsEnabled="False"/>
-                                        </ComboBox>
+                                        <TextBlock Text="water mode" VerticalAlignment="Center"/>
+                                        <ComboBox Width="auto" VerticalAlignment="Center" Margin="10 0 0 0"
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedValuePath="Value"
+                                                  DisplayMemberPath="Description"
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode}"/>
                                     </DockPanel>
 
                                     <DockPanel Grid.Row="12" Grid.Column="2">
@@ -162,7 +162,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Visible">
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -258,11 +258,22 @@
                             </Border>
                             <Border x:Name="cont_color" Visibility="Collapsed">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="basis: ✶" VerticalAlignment="Center"/>
-                                    <ComboBox Margin="10 0 0 0">
-                                        <ComboBoxItem Content="mean"/>
-                                        <ComboBoxItem Content="map"/>
-                                    </ComboBox>
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="basis"/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="ColorMapping" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="COLOR_MAPPING_MODE" />
+                                                </MultiBinding>
+                                            </Run.Foreground>  
+                                        </Run>
+                                    </TextBlock>
+                                    <ComboBox Margin="10 0 0 0"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
                                 </StackPanel>
                             </Border>
 
