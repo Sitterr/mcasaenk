@@ -52,9 +52,9 @@ namespace Mcasaenk.UI.Canvas {
                 }
 
                 if(Global.App.Settings.OVERLAYS) {
-                    if(tile.IsLoading()) {
+                    if(tileMap.generateTilePool.IsLoading(tile)) {
                         graphics.DrawImage(GetLoadingOverlay(), rect);
-                    } else if(tile.IsRedrawing()) {
+                    } else if(tileMap.drawTilePool.IsLoading(tile)) {
                         graphics.DrawImage(GetDrawingOverlay(), rect);
                     }
 

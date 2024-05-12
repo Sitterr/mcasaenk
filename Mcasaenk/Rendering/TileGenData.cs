@@ -14,7 +14,6 @@ namespace Mcasaenk.Rendering {
         }
 
         public bool IsActive { get; set; }
-        public bool ShouldRedraw { get; set; }
 
 
         protected object locker = new object();

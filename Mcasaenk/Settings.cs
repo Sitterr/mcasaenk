@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -53,17 +54,19 @@ namespace Mcasaenk
         public void SetFromBack() {
             frozen = true;
 
-            ADEG = adeg_back;
-            BDEG = bdeg_back;
-            SHADE3D = shade3d_back;
-            MAXCONCURRENCY = regionConcurrency_back;
-            CHUNKRENDERMAXCONCURRENCY = chunkConcurrency_back;
-            COLOR_MAPPING_MODE = colorMapping_back;
+            RENDERHEIGHT = Y;
+            ADEG = ADeg;
+            BDEG = BDeg;
+            SHADE3D = Shade3d;
+            MAXCONCURRENCY = RegionConcurrency;
+            CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
+            COLOR_MAPPING_MODE = ColorMapping;
 
             frozen = false;
             OnHardChange("");
         }
         public void Reset() {
+            Y = RENDERHEIGHT;
             ADeg = ADEG;
             BDeg = BDEG;
             Shade3d = SHADE3D;
@@ -92,6 +95,8 @@ namespace Mcasaenk
         public Settings() { }
 
         public static Settings DEF() => new Settings() {
+            Y = 319,
+
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16,
@@ -121,11 +126,28 @@ namespace Mcasaenk
 
 
 
+        private short y, y_back;
+        [JsonIgnore]
+        public short Y {
+            get => y_back;
+            set {
+                if(y_back == value) return;
+
+                y_back = value;
+                OnAutoChange(nameof(Y));
+                if(Global.App.OpenedSave == null) {
+                    y = value;
+                    OnAutoChange(nameof(RENDERHEIGHT));
+                }
+            }
+        }
+        public short RENDERHEIGHT { get => y; set { y = value; Y = value; OnHardChange(nameof(RENDERHEIGHT)); } }
 
 
 
 
         private int landBlend;
+        [JsonIgnore]
         public int LandBlend {
             get => landBlend;
             set {
@@ -139,6 +161,7 @@ namespace Mcasaenk
 
 
         private int waterBlend;
+        [JsonIgnore]
         public int WaterBlend {
             get => waterBlend;
             set {
@@ -152,6 +175,7 @@ namespace Mcasaenk
 
 
         private double contrast;
+        [JsonIgnore]
         public double Contrast {
             get => contrast;
             set {
@@ -165,6 +189,7 @@ namespace Mcasaenk
 
 
         private double sunlight;
+        [JsonIgnore]
         public double SunLight {
             get => sunlight;
             set {
@@ -178,6 +203,7 @@ namespace Mcasaenk
 
 
         private double waterOpacity;
+        [JsonIgnore]
         public double WaterOpacity {
             get => waterOpacity;
             set {
@@ -191,6 +217,7 @@ namespace Mcasaenk
 
 
         private bool landBiomes;
+        [JsonIgnore]
         public bool LandBiomes {
             get => landBiomes;
             set {
@@ -204,6 +231,7 @@ namespace Mcasaenk
 
 
         private bool waterBiomes;
+        [JsonIgnore]
         public bool WaterBiomes {
             get => waterBiomes;
             set {
@@ -217,6 +245,7 @@ namespace Mcasaenk
 
 
         private bool staticShade;
+        [JsonIgnore]
         public bool StaticShade {
             get => staticShade;
             set {
@@ -230,6 +259,7 @@ namespace Mcasaenk
 
 
         private bool shade3d, shade3d_back;
+        [JsonIgnore]
         public bool Shade3d {
             get => shade3d_back;
             set {
@@ -237,12 +267,17 @@ namespace Mcasaenk
 
                 shade3d_back = value;
                 OnAutoChange(nameof(Shade3d));
+                if(Global.App.OpenedSave == null) {
+                    shade3d = value;
+                    OnAutoChange(nameof(SHADE3D));
+                }
             }
         }
         public bool SHADE3D { get => shade3d; set { shade3d = value; Shade3d = value; OnHardChange(nameof(SHADE3D)); } }
 
 
         private double adeg, adeg_back;
+        [JsonIgnore]
         public double ADeg {
             get => adeg_back;
             set {
@@ -258,12 +293,18 @@ namespace Mcasaenk
                 } else {
                     OnAutoChange(nameof(ADeg));
                 }
+
+                if(Global.App.OpenedSave == null) {
+                    adeg = value;
+                    OnAutoChange(nameof(ADEG));
+                }
             }
         }
         public double ADEG { get => adeg; set { adeg = value; ADeg = value; OnHardChange(nameof(ADEG)); } }
 
 
         private double bdeg, bdeg_back;
+        [JsonIgnore]
         public double BDeg {
             get => bdeg_back;
             set {
@@ -271,12 +312,17 @@ namespace Mcasaenk
 
                 bdeg_back = value;
                 OnAutoChange(nameof(BDeg));
+                if(Global.App.OpenedSave == null) {
+                    bdeg = value;
+                    OnAutoChange(nameof(BDEG));
+                }
             }
         }
         public double BDEG { get => bdeg; set { bdeg = value; BDeg = value; OnHardChange(nameof(BDEG)); } }
 
 
         private ColorMappingMode colorMapping, colorMapping_back;
+        [JsonIgnore]
         public ColorMappingMode ColorMapping {
             get => colorMapping_back;
             set {
@@ -284,12 +330,17 @@ namespace Mcasaenk
 
                 colorMapping_back = value;
                 OnAutoChange(nameof(ColorMapping));
+                if(Global.App.OpenedSave == null) {
+                    colorMapping = value;
+                    OnAutoChange(nameof(COLOR_MAPPING_MODE));
+                }
             }
         }
         public ColorMappingMode COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
 
 
         private WaterMode waterMode;
+        [JsonIgnore]
         public WaterMode WaterMode {
             get => waterMode;
             set {
@@ -305,6 +356,7 @@ namespace Mcasaenk
 
 
         private bool footer;
+        [JsonIgnore]
         public bool Footer {
             get => footer;
             set {
@@ -318,6 +370,7 @@ namespace Mcasaenk
 
 
         private bool overlays;
+        [JsonIgnore]
         public bool Overlays {
             get => overlays;
             set {
@@ -331,6 +384,7 @@ namespace Mcasaenk
 
 
         private bool unloaded;
+        [JsonIgnore]
         public bool Unloaded {
             get => unloaded;
             set {
@@ -344,6 +398,7 @@ namespace Mcasaenk
 
 
         private ChunkGridType chunkgrid;
+        [JsonIgnore]
         public ChunkGridType ChunkGrid {
             get => chunkgrid;
             set {
@@ -357,6 +412,7 @@ namespace Mcasaenk
 
 
         private RegionGridType regiongrid;
+        [JsonIgnore]
         public RegionGridType RegionGrid {
             get => regiongrid;
             set {
@@ -370,6 +426,7 @@ namespace Mcasaenk
 
 
         private BackgroundType background;
+        [JsonIgnore]
         public BackgroundType Background {
             get => background;
             set {
@@ -383,6 +440,7 @@ namespace Mcasaenk
 
 
         private int regionConcurrency, regionConcurrency_back;
+        [JsonIgnore]
         public int RegionConcurrency {
             get => regionConcurrency_back;
             set {
@@ -390,12 +448,17 @@ namespace Mcasaenk
 
                 regionConcurrency_back = value;
                 OnAutoChange(nameof(RegionConcurrency));
+                if(Global.App.OpenedSave == null) {
+                    regionConcurrency = value;
+                    OnAutoChange(nameof(MAXCONCURRENCY));
+                }
             }
         }
         public int MAXCONCURRENCY { get => regionConcurrency; set { regionConcurrency = value; RegionConcurrency = value; OnHardChange(nameof(MAXCONCURRENCY)); } }
 
 
         private int chunkConcurrency,chunkConcurrency_back;
+        [JsonIgnore]
         public int ChunkConcurrency {
             get => chunkConcurrency_back;
             set {
@@ -403,12 +466,17 @@ namespace Mcasaenk
 
                 chunkConcurrency_back = value;
                 OnAutoChange(nameof(ChunkConcurrency));
+                if(Global.App.OpenedSave == null) {
+                    chunkConcurrency = value;
+                    OnAutoChange(nameof(CHUNKRENDERMAXCONCURRENCY));
+                }
             }
         }
         public int CHUNKRENDERMAXCONCURRENCY { get => chunkConcurrency; set { chunkConcurrency = value; ChunkConcurrency = value; OnHardChange(nameof(CHUNKRENDERMAXCONCURRENCY)); } }
 
 
         private int minZoom;
+        [JsonIgnore]
         public int MinZoom {
             get => minZoom;
             set {
@@ -422,6 +490,7 @@ namespace Mcasaenk
 
 
         private int maxZoom;
+        [JsonIgnore]
         public int MaxZoom {
             get => maxZoom;
             set {
@@ -435,9 +504,18 @@ namespace Mcasaenk
 
 
 
+        private string mcDir;
+        [JsonIgnore]
+        public string McDir {
+            get => mcDir;
+            set {
+                if(mcDir == value) return;
 
-
-
+                mcDir = value;
+                OnAutoChange(nameof(McDir));
+            }
+        }
+        public string MCDIR { get => McDir; set => McDir = value; }
 
         #region depr
         public bool WATERDEPTH { get => true; set { } }
@@ -445,13 +523,21 @@ namespace Mcasaenk
 
 
         #region static
-        public static FilterMode _AIR_FILTER = FilterMode.HeightmapAir;
-        public static FilterMode _WATER_FILTER = FilterMode.HeightmapWater;
-        public static FilterMode _SHADE3D_FILTER = FilterMode.Shade3d; // muss be >= airfilter & waterfilter
-        public static Filter.filter AIR_FILTER { get => FromEnum.Filter(_AIR_FILTER); }
-        public static Filter.filter WATER_FILTER { get => FromEnum.Filter(_WATER_FILTER); }
-        public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(_SHADE3D_FILTER); }
+        public static Filter.filter AIR_FILTER { 
+            get {
+                if(Global.App.Settings.Y == 319) return FromEnum.Filter(FilterMode.HeightmapAir);
+                else return FromEnum.Filter(FilterMode.Air);
+            }
+        }
+        public static Filter.filter WATER_FILTER {
+            get {
+                if(Global.App.Settings.Y == 319) return FromEnum.Filter(FilterMode.HeightmapWater);
+                else return FromEnum.Filter(FilterMode.Water);
+            }
+        }
+        public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(FilterMode.Shade3d); }
         #endregion
+
 
 
 

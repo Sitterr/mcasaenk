@@ -42,7 +42,7 @@ namespace Mcasaenk.UI {
                 Resolution.custom.X++;
 
 
-                this.MinWidth = mainGrid.ColumnDefinitions[0].ActualWidth + 10 + 10;
+                this.MinWidth = mainGrid.ColumnDefinitions[0].ActualWidth + 10 + 15;
 
 
                 {

@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Mcasaenk.UI"
+             xmlns:gl="clr-namespace:Mcasaenk"
+             xmlns:resx="clr-namespace:Mcasaenk.Resources"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="560">
     <Grid>
@@ -41,7 +43,15 @@
                         </StackPanel.Resources>
 
 
-                        <Border x:Name="cont_java" Visibility="Collapsed"/>
+                        <Border x:Name="cont_java" Visibility="Visible">
+                            <DockPanel>
+                                <TextBlock Text="Minecraft save dir:"/>
+                                <local:EButton DockPanel.Dock="Right" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}">
+                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.folder}}"/>
+                                </local:EButton>
+                                <TextBox Margin="10 0 10 0" Text="{Binding Source={x:Static gl:Global.Settings}, Path=McDir}"/>
+                            </DockPanel>
+                        </Border>
                         <Border x:Name="cont_folder" Visibility="Visible">
                             <local:EButton x:Name="btn_browse" Width="100" Height="40">
                                 <TextBlock Text="Browse" FontSize="14"/>

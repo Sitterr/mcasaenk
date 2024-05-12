@@ -32,11 +32,14 @@ namespace Mcasaenk.Rendering {
     }
 
     public class TilePool : Pool {
-        private readonly ConcurrentDictionary<Tile, byte> queued, loading, loaded;
+        private readonly ConcurrentDictionary<Tile, byte> queued, loading;
+        private ConcurrentDictionary<Tile, int> max, curr;
         public TilePool(int maxConcurrency) : base(maxConcurrency) {
             queued = new ConcurrentDictionary<Tile, byte>();
             loading = new ConcurrentDictionary<Tile, byte>();
-            loaded = new ConcurrentDictionary<Tile, byte>();
+
+            max = new ConcurrentDictionary<Tile, int>();
+            curr = new ConcurrentDictionary<Tile, int>();
         }
 
         public void Queue(Tile tile, Action f, Func<bool> finalCheck) {
@@ -47,20 +50,31 @@ namespace Mcasaenk.Rendering {
                     loading.TryAdd(tile, default);
                     if(!finalCheck()) return;
 
+                    int c = max[tile];
                     f();
-                    loaded.TryAdd(tile, default);
-                }
-                finally {
-                    loading.TryRemove(tile, out _);
+                    curr[tile] = c;
+                } finally {
                     queued.TryRemove(tile, out _);
+                    loading.TryRemove(tile, out _);
                 }
             });
             base.QueueTask(task);
         }
-
-        public bool IsLoading(Tile tile) => loading.ContainsKey(tile);
         public bool IsQueued(Tile tile) => queued.ContainsKey(tile);
-        public bool HasLoaded(Tile tile) => loaded.ContainsKey(tile);
+        public bool IsLoading(Tile tile) => loading.ContainsKey(tile);
+
+        public bool ShouldDo(Tile tile) {
+            if(curr.TryGetValue(tile, out var v) == false) return false;
+            return max[tile] > curr[tile];
+        }
+        public void RegisterRedo(Tile tile) {
+            if(curr.ContainsKey(tile)) {
+                max[tile] = max[tile] + 1;
+            } else { 
+                max.TryAdd(tile, 1);
+                curr.TryAdd(tile, 0);
+            }
+        }
     }
 
     public class GenerateTilePool : TilePool {
@@ -89,7 +103,6 @@ namespace Mcasaenk.Rendering {
                         break;
                     }
                 }
-                if(tile.IsRedrawing()) return false;
                 return atleastone;
             });
         }

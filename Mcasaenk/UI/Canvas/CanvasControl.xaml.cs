@@ -105,15 +105,17 @@ namespace Mcasaenk.UI.Canvas {
             foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
                 var tile = tileMap.GetTile(pos);
                 if(tile == null) continue;
-                if(tileMap.generateTilePool.HasLoaded(tile) == false && tileMap.generateTilePool.IsLoading(tile) == false) {
+                if(tileMap.generateTilePool.ShouldDo(tile)) {
                     tile.QueueGenerate(screen);
                 }
-                if(tile.ShouldRedraw) {
+                if(tileMap.drawTilePool.ShouldDo(tile)) {
                     tile.QueueDraw();
                 }
             }
 
-            Dispatcher.BeginInvoke(new Action(() => { 
+            Dispatcher.BeginInvoke(new Action(() => {
+                if(window == null) return;
+                if(window.footer == null) return;
                 { // footer update
                     window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                     window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";

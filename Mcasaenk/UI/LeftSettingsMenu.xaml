@@ -85,12 +85,21 @@
                                     <DockPanel Grid.Row="0" Grid.Column="0">
                                         <TextBlock>
                                              <Run Text="Y"/><!--
-                                          --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/><!--
-                                          --><Run Text=" ✶"/>
+                                          --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/>
+                                              <Run Text="✶">
+                                                  <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="Y" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="RENDERHEIGHT" />
+                                                    </MultiBinding>
+                                                  </Run.Foreground>
+                                              </Run>
                                         </TextBlock>
-                                        <TextBox Text="312" Width="30" HorizontalAlignment="Right"/>
+                                        <TextBox Width="30" HorizontalAlignment="Right"
+                                                 Text="{Binding Source={x:Static gl:Global.Settings}, Path=Y, Mode=TwoWay}"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="2" Grid.Column="0" Minimum="-64" Maximum="319" TickFrequency="16"/>
+                                    <Slider Grid.Row="2" Grid.Column="0" Minimum="-64" Maximum="319" TickFrequency="16"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
 
 
 

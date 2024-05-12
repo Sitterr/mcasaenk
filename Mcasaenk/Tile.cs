@@ -47,7 +47,7 @@ namespace Mcasaenk
 
         public void RedrawAll() {
             foreach(var tile in tiles) {
-                tile.Value.ShouldRedraw = true;
+                drawTilePool.RegisterRedo(tile.Value);
             }
         }
 
@@ -81,32 +81,19 @@ namespace Mcasaenk
         public TileShade shade;
         public List<GenDataEditor> editors;
 
-        private bool shouldRedraw;
-        public bool ShouldRedraw { 
-            get {
-                bool val = shouldRedraw;
-                foreach(var editor in editors) val = val || editor.ShouldRedraw;
-                val = val && map.generateTilePool.HasLoaded(this);
-                return val;
-            } 
-            set {
-                shouldRedraw = shouldRedraw || value;
-            } 
-        }
-        private void ResetShouldRedraw() {
-            shouldRedraw = false;
-            foreach(var editor in editors) editor.ShouldRedraw = false;
-        }
 
+        public void RegisterRedraw() { 
+            map.drawTilePool.RegisterRedo(this);
+        }
 
         public readonly Point2i pos;
         private readonly TileMap map;
         public Tile(TileMap tileMap, Point2i position) {
             this.map = tileMap;
             this.pos = position;
-            //image = new TileImage(this);
             shade = new TileShade(this);
 
+            map.generateTilePool.RegisterRedo(this);
             editors = [shade];
         }
 
@@ -115,12 +102,9 @@ namespace Mcasaenk
         }
         public void QueueDraw() {
             map.drawTilePool.Queue(this, () => {
-                //Task.Delay(100).Wait();
                 this.Redraw();
-            }, () => !this.IsLoading());
+            }, () => true);
         }
-        public bool IsLoading() => map.generateTilePool.IsLoading(this);
-        public bool IsRedrawing() => map.drawTilePool.IsLoading(this);
 
         public TileMap GetOrigin() { 
             return map;
@@ -136,15 +120,15 @@ namespace Mcasaenk
             }
             set {
                 _genData = value;
-                if(Global.App.Settings.LAND_BLEND > 1) {
+                if(Global.App.Settings.LAND_BLEND > 1 || Global.App.Settings.WATER_BLEND > 1) {
                     for(int i = -1; i <= 1; i++) { // biome blend
                         for(int j = -1; j <= 1; j++) {
                             var tile = map.GetTile(pos + new Point2i(i, j));
                             if(tile == null) continue;
-                            tile.ShouldRedraw = true;
+                            if(tile.genData != null) tile.RegisterRedraw();
                         }
                     }
-                } else this.ShouldRedraw = true;
+                } else this.RegisterRedraw();
             }
         }
         private WriteableBitmap _img;
@@ -162,6 +146,7 @@ namespace Mcasaenk
 
 
         public unsafe void Redraw() {
+            if(this.genData == null) return;
             var img = this.img == null ? new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null) : this.img.Clone();
             img.Lock();
 
@@ -183,7 +168,6 @@ namespace Mcasaenk
             img.Freeze();
 
             this.img = img;
-            ResetShouldRedraw();
         }
     }
 }

@@ -33,15 +33,9 @@ namespace Mcasaenk.UI {
                 window.Owner = Window.GetWindow(this);
                 window.ShowDialog();
             };
-
-
-
-
-
             btn_change.Click += (o, e) => {
                 Global.App.Settings.SetFromBack();
             };
-
             btn_undo.Click += (o, e) => {
                 Global.App.Settings.Reset();
             };
@@ -101,6 +95,7 @@ namespace Mcasaenk.UI {
                 }
 
                 tab_general.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+
 
                 btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_change.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
             };

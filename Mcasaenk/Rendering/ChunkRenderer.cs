@@ -32,7 +32,7 @@ namespace Mcasaenk.Rendering
                     int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
                     int regionIndex = (z + cz) * 512 + x + cx;
 
-                    short airHeight = Settings.AIR_FILTER(data, cx, cz, 319);
+                    short airHeight = Settings.AIR_FILTER(data, cx, cz, Global.App.Settings.RENDERHEIGHT);
                     rdata.heights[regionIndex] = airHeight;
                     rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
 
@@ -42,7 +42,7 @@ namespace Mcasaenk.Rendering
 
                     if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {
-                            int hs = 319 - airHeight;
+                            int hs = Global.App.Settings.RENDERHEIGHT - airHeight;
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
                             SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                         }
@@ -52,7 +52,7 @@ namespace Mcasaenk.Rendering
                             height = Settings.SHADE3D_FILTER(data, cx, cz, height);
                             if(height <= -64) break;
 
-                            int hs = 319 - height;
+                            int hs = Global.App.Settings.RENDERHEIGHT - height;
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
                             bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
                             if(!alreadyshade) {
