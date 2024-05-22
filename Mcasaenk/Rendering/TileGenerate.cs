@@ -42,7 +42,7 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, ColorMapping.BLOCK_WATER);
+            var genData = new GenData(rawData, Global.App.Colormap.depthBlock);
             return genData;
         }
 
@@ -105,7 +105,7 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, ColorMapping.BLOCK_WATER);
+            var genData = new GenData(rawData, Global.App.Colormap.depthBlock);
             
             { // save shades 
                 tile.shade.Construct(rawData, genData);

@@ -11,15 +11,17 @@ using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Rendering {
     public interface IGenData {
-        public ushort blockIds(int i);
+        public ushort terrainBlock(int i);
 
-        public ushort terrainblock(int i);
+        public ushort block(int i);
 
         public ushort biomeIds(int i);
 
         public short heights(int i);
 
         public short terrainHeights(int i);
+
+        public bool depth(int i);
 
         public bool isShade(int i);
         public void Set_isShade(int i, bool value);
@@ -43,9 +45,11 @@ namespace Mcasaenk.Rendering {
             this.depthblock = depthblock;
         }
 
-        public ushort blockIds(int i) => _blockIds[i];
+        public bool depth(int i) => heights(i) != terrainHeights(i);
 
-        public ushort terrainblock(int i) => heights(i) == terrainHeights(i) ? blockIds(i) : depthblock;
+        public ushort terrainBlock(int i) => _blockIds[i];
+
+        public ushort block(int i) => depth(i) ? depthblock : terrainBlock(i);
 
         public ushort biomeIds(int i) => _biomeIds[i];
 

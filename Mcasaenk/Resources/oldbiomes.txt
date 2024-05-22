@@ -7,7 +7,7 @@
 5;taiga
 6;swamp
 7;river
-8;nether
+8;nether_wastes
 9;the_end
 10;frozen_ocean
 11;frozen_river
@@ -83,5 +83,5 @@
 177;meadow
 178;grove
 179;snowy_slopes
-180;snowcapped_peaks
-181;lofty_peaks
+180;snowy_slopes
+181;jagged_peaks

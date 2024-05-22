@@ -96,7 +96,7 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                window.footer.Region = screen.GetTilePos(mousePos);
+                window.footer.Region = screen.GetRegionPos(mousePos);
             }
         }
 
@@ -121,6 +121,8 @@ namespace Mcasaenk.UI.Canvas {
                     window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
+
+                    window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
                 }
             }));
         }
@@ -146,7 +148,7 @@ namespace Mcasaenk.UI.Canvas {
                 case MouseButton.Left:
                     break;
                 case MouseButton.Middle:
-                    mouseStart = screen.GetGlobalPos(e.GetPosition(this));
+                    mouseStart = screen.GetGlobalPos(mousePos);
                     mousedown = true;
                     break;
                 case MouseButton.Right:
@@ -158,10 +160,9 @@ namespace Mcasaenk.UI.Canvas {
         }
         public void OnMouseUp(object sender, MouseButtonEventArgs e) {
             switch(e?.ChangedButton) {
-                case null:
-                    break;
                 case MouseButton.Left:
-                    tileMap?.GetTile(screen.GetTilePos(mousePos))?.QueueDraw();
+                    //tileMap?.GetTile(screen.GetRegionPos(mousePos))?.QueueDraw();
+                    tileMap?.GetTile(screen.GetRegionPos(mousePos))?.RegisterRedraw();
                     break;
                 case MouseButton.Middle:
                     mouseStart = default;

@@ -69,7 +69,7 @@
                                 <StackPanel Grid.Row="0" Grid.Column="0">
                                     <DockPanel>
                                         <TextBlock>
-                                            <Run Text="region concurrency"/>
+                                            <Run Text="generation concurrency"/>
                                             <Run Text="✶">
                                                 <Run.Foreground>
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
@@ -90,22 +90,22 @@
                                 <StackPanel Grid.Row="0" Grid.Column="2">
                                     <DockPanel>
                                         <TextBlock>
-                                            <Run Text="chunk concurrency"/>
+                                            <Run Text="render concurrency"/>
                                             <Run Text="✶">
                                                 <Run.Foreground>
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="ChunkConcurrency" />
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="CHUNKRENDERMAXCONCURRENCY" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DrawConcurrency" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DRAWMAXCONCURRENCY" />
                                                     </MultiBinding>
                                                 </Run.Foreground>
                                             </Run>
                                         </TextBlock>
                                         <TextBlock HorizontalAlignment="Right"
-                                                   Text="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkConcurrency}"/>
+                                                   Text="{Binding Source={x:Static gl:Global.Settings}, Path=DrawConcurrency}"/>
                                     </DockPanel>
                                     <Border Height="3"/>
                                     <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="24" TickFrequency="1"
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=ChunkConcurrency}"/>
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=DrawConcurrency}"/>
                                 </StackPanel>
 
 

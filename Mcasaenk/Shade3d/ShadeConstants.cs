@@ -19,7 +19,7 @@ namespace Mcasaenk.Shade3d {
         private static ShadeConstants _GLB;
         public static ShadeConstants GLB {
             get {
-                if(Global.App.Settings.ADEG != a || Global.App.Settings.BDEG != b) {
+                if(Global.App.Settings.ADEG != a || Global.App.Settings.BDEG != b || _GLB == null) {
                     a = Global.App.Settings.ADEG;
                     b = Global.App.Settings.BDEG;
                     _GLB = new ShadeConstants(a, b);

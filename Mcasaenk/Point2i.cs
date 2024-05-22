@@ -32,6 +32,8 @@ namespace Mcasaenk {
             return (long)X << 32 | Z & 0xFFFFFFFFL;
         }
 
+        public int ToRegionInt() => Z * 512 + X;
+
         public Point2i abs() => new Point2i(Math.Abs(this.X), Math.Abs(this.Z));
         public override string ToString() {
             return $"{X},{Z}";

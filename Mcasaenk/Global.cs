@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -15,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static Mcasaenk.Rendering.GenerateTilePool;
 using static Mcasaenk.Shade3d.ShadeConstants;
+using Mcasaenk.UI;
 
 namespace Mcasaenk {
     public class Global {
@@ -22,7 +25,9 @@ namespace Mcasaenk {
 
         public static App App { get => (App)Application.Current; }
         public static Settings Settings { get => App.Settings; } // i hate wpf
-        
+
+        public static ViewModel ViewModel;
+
         static Global(){
             pows2 = new int[32];
             pows2[0] = 1;
@@ -48,7 +53,6 @@ namespace Mcasaenk {
         public static uint ToARGBInt(string hex6) {
             return 0xFF000000 | (uint)Convert.ToInt32(hex6, 16);
         }
-
         public static uint ToARGBInt(byte r, byte g, byte b, byte a = 255) {
             return (uint)((a << 24) | (r << 16) | (g << 8) | (b));
         }
@@ -59,12 +63,19 @@ namespace Mcasaenk {
             byte b = (byte)(color & 0xFF);
             return (a, r, g, b);
         }
-
         public static Color FromArgb(double alpha, Color baseColor) {
             return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
         }
 
 
+        public static uint ColorAdd(uint color, uint other) {
+            byte oa = (byte)((other >> 24) & 0xFF);
+            byte or = (byte)((other >> 16) & 0xFF);
+            byte og = (byte)((other >> 8) & 0xFF);
+            byte ob = (byte)(other & 0xFF);
+
+            return AddShade(color, oa, or, og, ob);
+        }
         public static uint AddShade(uint color, int ar, int ag, int ab, int aa = 255) {
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
@@ -113,13 +124,11 @@ namespace Mcasaenk {
 
             return a << 24 | r << 16 | g << 8 | b;
         }
-        public static (byte r, byte g, byte b, byte a) GetARGB(uint color) {
-            byte aA = (byte)(color >> 24 & 0xFF);
-            byte aR = (byte)(color >> 16 & 0xFF);
-            byte aG = (byte)(color >> 8 & 0xFF);
-            byte aB = (byte)(color & 0xFF);
-
-            return (aR, aG, aB, aA);
+        public static uint ColorMult(uint color, uint other) {
+            uint nr = (other >> 16 & 0xFF) * (color >> 16 & 0xFF) >> 8;
+            uint ng = (other >> 8 & 0xFF) * (color >> 8 & 0xFF) >> 8;
+            uint nb = (other & 0xFF) * (color & 0xFF) >> 8;
+            return color & 0xFF000000 | nr << 16 | ng << 8 | nb;
         }
 
 
@@ -193,9 +202,61 @@ namespace Mcasaenk {
         }
 
 
+
+        public class HexConverter : JsonConverter<uint> {
+            public override uint Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+                string hexString = reader.GetString();
+                if(hexString.StartsWith("0x")) {
+                    hexString = hexString.Substring(2);
+                }
+                return Global.ToARGBInt(hexString);
+            }
+
+            public override void Write(Utf8JsonWriter writer, uint value, JsonSerializerOptions options) {
+                writer.WriteStringValue($"0x{value:X}");
+            }
+        }
     }
 
     public static class Extentions {
+
+        public static uint[,] ToUIntMatrix(this WriteableBitmap writeableBitmap) {
+            int width = writeableBitmap.PixelWidth;
+            int height = writeableBitmap.PixelHeight;
+
+            // Create a 2D array to hold the pixel data
+            uint[,] pixelArray = new uint[height, width];
+
+            // Calculate the stride (width of a single row of pixels in bytes)
+            int stride = width * (writeableBitmap.Format.BitsPerPixel / 8);
+
+            // Create a byte array to hold the pixel data
+            byte[] pixelData = new byte[height * stride];
+
+            // Copy the pixel data into the byte array
+            writeableBitmap.CopyPixels(pixelData, stride, 0);
+
+            // Loop through each pixel in the image
+            for(int y = 0; y < height; y++) {
+                for(int x = 0; x < width; x++) {
+                    int index = (y * stride) + (x * 4); // 4 bytes per pixel (BGRA format)
+
+                    // Extract color components from the byte array
+                    byte blue = pixelData[index];
+                    byte green = pixelData[index + 1];
+                    byte red = pixelData[index + 2];
+                    byte alpha = pixelData[index + 3];
+
+                    // Convert the color to a uint value
+                    uint pixelValue = (uint)((alpha << 24) | (red << 16) | (green << 8) | blue);
+
+                    // Store the uint value in the array
+                    pixelArray[y, x] = pixelValue;
+                }
+            }
+
+            return pixelArray;
+        }
 
         public static BitmapImage ToImage(this byte[] array) {
             using(var ms = new System.IO.MemoryStream(array)) {

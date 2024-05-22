@@ -29,7 +29,7 @@ namespace Mcasaenk.Rendering {
         }
 
         static bool IsEmpty(ushort blockid) {
-            if(blockid == ColorMapping.BLOCK_AIR) return true;
+            if(blockid == Colormap.BLOCK_AIR) return true;
             return false;
         }
     }
@@ -39,7 +39,7 @@ namespace Mcasaenk.Rendering {
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.shade3d_filter, (_, parts) => {
                 string name = parts[0];
                 if(!name.Contains(":")) name = "minecraft:" + name;
-                ushort id = ColorMapping.Block.GetId(name);
+                ushort id = Global.App.Colormap.Block.GetId(name);
                 ids.Add(id);
             });
             ids = ids.ToFrozenSet();
@@ -60,7 +60,7 @@ namespace Mcasaenk.Rendering {
                 short a = startY;
                 startY = AirFilter.List(data, x, z, startY);
                 startY = Inner(data, x, z, startY);
-                startY = WaterFilter.List(data, x, z, startY);
+                startY = DepthFilter.List(data, x, z, startY);
 
                 if(a == startY) break;
             }
@@ -68,12 +68,12 @@ namespace Mcasaenk.Rendering {
         }
     }
 
-    public static class WaterFilter {
+    public static class DepthFilter {
         public static short Def(IChunkInterpreter data, int x, int z, short startY) {
             for(int h = startY; h >= -64; h--) {
                 var block = data.GetBlock(x, z, h);
 
-                bool isWater = IsWater(block);
+                bool isWater = IsDepth(block);
                 if(!isWater) return (short)h;
             }
             return -64;
@@ -83,8 +83,8 @@ namespace Mcasaenk.Rendering {
             return Def(data, x, z, startY); // TODO
         }
 
-        static bool IsWater(ushort blockid) {
-            if(blockid == ColorMapping.BLOCK_WATER) return true;
+        static bool IsDepth(ushort blockid) {
+            if(blockid == Global.App.Colormap.depthBlock) return true;
             return false;
         }
     }

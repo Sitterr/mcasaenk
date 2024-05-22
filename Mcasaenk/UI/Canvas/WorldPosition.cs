@@ -59,9 +59,13 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-        public Point2i GetTilePos(Point rel) {
+        public Point2i GetRegionPos(Point rel) {
             var globalPos = GetGlobalPos(rel);
             return new Point2i(Global.Coord.absDev(globalPos.X, 512), Global.Coord.absDev(globalPos.Y, 512));
+        }
+        public Point2i GetRelBlockPos(Point rel) {
+            var globalPos = GetGlobalPos(rel);
+            return new Point2i(Global.Coord.absMod(globalPos.X, 512), Global.Coord.absMod(globalPos.Y, 512));
         }
 
         public Point GetGlobalPos(Point rel) {

@@ -59,7 +59,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                                 var p = (CompoundTag)_p;
 
                                 var name = (NumTag<string>)p["Name"];
-                                palettes[y][i] = ColorMapping.Block.GetId(name);
+                                palettes[y][i] = Global.App.Colormap.Block.GetId(name);
                                 i++;
                             }
                         }
@@ -91,7 +91,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
         public ushort GetBiome(int cx, int cz, int cy) {
             cy += 64;
-            return ColorMapping.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
+            return BiomeRegistry.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
         }
 
         public ushort GetBlock(int cx, int cz, int cy) {

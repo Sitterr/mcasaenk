@@ -115,7 +115,7 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2" 
+                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="15" TickFrequency="2" 
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=LandBlend}"
                                             IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}"/>
 
@@ -131,7 +131,7 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="2" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2"
+                                    <Slider Grid.Row="6" Grid.Column="2" IsSnapToTickEnabled="True" Minimum="1" Maximum="31" TickFrequency="2"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBlend}"
                                             IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}"/>
 
@@ -279,9 +279,7 @@
                                         </Run>
                                     </TextBlock>
                                     <ComboBox Margin="10 0 0 0"
-                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                              SelectedValuePath="Value"
-                                              DisplayMemberPath="Description"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.ViewModel}, Path=AllColormaps}"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
                                 </StackPanel>
                             </Border>

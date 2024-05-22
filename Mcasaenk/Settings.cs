@@ -31,14 +31,6 @@ namespace Mcasaenk
         [Description("monotone")]
         None,
     }
-
-    public enum ColorMappingMode {
-        [Description("mean")]
-        Mean,
-        [Description("java map")]
-        Map,
-    }
-
     public enum WaterMode {
         [Description("translucient")]
         Exponential,
@@ -47,7 +39,7 @@ namespace Mcasaenk
     }
 
 
-    public enum FilterMode { None, Air, Water, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
+    public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
 
     public class Settings : INotifyPropertyChanged {
@@ -60,6 +52,7 @@ namespace Mcasaenk
             SHADE3D = Shade3d;
             MAXCONCURRENCY = RegionConcurrency;
             CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
+            DRAWMAXCONCURRENCY = DrawConcurrency;
             COLOR_MAPPING_MODE = ColorMapping;
 
             frozen = false;
@@ -72,6 +65,7 @@ namespace Mcasaenk
             Shade3d = SHADE3D;
             RegionConcurrency = MAXCONCURRENCY;
             ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
+            DrawConcurrency = DRAWMAXCONCURRENCY;
             ColorMapping = COLOR_MAPPING_MODE;
         }
 
@@ -99,10 +93,10 @@ namespace Mcasaenk
 
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
 
-            COLOR_MAPPING_MODE = ColorMappingMode.Mean,
+            COLOR_MAPPING_MODE = "mean",
             WATER_MODE = WaterMode.Exponential,
             WATEROPACITY = 0.50,
 
@@ -321,9 +315,9 @@ namespace Mcasaenk
         public double BDEG { get => bdeg; set { bdeg = value; BDeg = value; OnHardChange(nameof(BDEG)); } }
 
 
-        private ColorMappingMode colorMapping, colorMapping_back;
+        private string colorMapping, colorMapping_back;
         [JsonIgnore]
-        public ColorMappingMode ColorMapping {
+        public string ColorMapping {
             get => colorMapping_back;
             set {
                 if(colorMapping_back == value) return;
@@ -336,7 +330,7 @@ namespace Mcasaenk
                 }
             }
         }
-        public ColorMappingMode COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
+        public string COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
 
 
         private WaterMode waterMode;
@@ -475,6 +469,24 @@ namespace Mcasaenk
         public int CHUNKRENDERMAXCONCURRENCY { get => chunkConcurrency; set { chunkConcurrency = value; ChunkConcurrency = value; OnHardChange(nameof(CHUNKRENDERMAXCONCURRENCY)); } }
 
 
+        private int drawConcurrency, drawConcurrency_back;
+        [JsonIgnore]
+        public int DrawConcurrency {
+            get => drawConcurrency_back;
+            set {
+                if(drawConcurrency_back == value) return;
+
+                drawConcurrency_back = value;
+                OnAutoChange(nameof(DrawConcurrency));
+                if(Global.App.OpenedSave == null) {
+                    drawConcurrency = value;
+                    OnAutoChange(nameof(DRAWMAXCONCURRENCY));
+                }
+            }
+        }
+        public int DRAWMAXCONCURRENCY { get => drawConcurrency; set { drawConcurrency = value; DrawConcurrency = value; OnHardChange(nameof(DRAWMAXCONCURRENCY)); } }
+
+
         private int minZoom;
         [JsonIgnore]
         public int MinZoom {
@@ -529,10 +541,10 @@ namespace Mcasaenk
                 else return FromEnum.Filter(FilterMode.Air);
             }
         }
-        public static Filter.filter WATER_FILTER {
+        public static Filter.filter DEPTH_FILTER {
             get {
-                if(Global.App.Settings.Y == 319) return FromEnum.Filter(FilterMode.HeightmapWater);
-                else return FromEnum.Filter(FilterMode.Water);
+                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depthBlock == Colormap.BLOCK_WATER) return FromEnum.Filter(FilterMode.HeightmapWater);
+                else return FromEnum.Filter(FilterMode.Depth);
             }
         }
         public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(FilterMode.Shade3d); }
@@ -563,19 +575,12 @@ namespace Mcasaenk
             return filter switch {
                 FilterMode.None => Rendering.Filter.NullFilter,
                 FilterMode.LightAir => AirFilter.Def,
-                FilterMode.LightWater => WaterFilter.Def,
+                FilterMode.LightWater => DepthFilter.Def,
                 FilterMode.Air => AirFilter.List,
-                FilterMode.Water => WaterFilter.List,
+                FilterMode.Depth => DepthFilter.List,
                 FilterMode.Shade3d => Shade3DFilter.List,
                 FilterMode.HeightmapAir => HeightmapFilter.FilterAir,
                 FilterMode.HeightmapWater => HeightmapFilter.FilterWater,
-            };
-        }
-
-        public static IColorMapping Mapping(ColorMappingMode mapping) {
-            return mapping switch {
-                ColorMappingMode.Map => new MapColorMapping(),
-                ColorMappingMode.Mean => new MeanColorMapping(),
             };
         }
     }

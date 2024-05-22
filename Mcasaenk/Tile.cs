@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
 using System.Collections.Frozen;
+using System.Buffers;
 
 namespace Mcasaenk
 {
@@ -38,11 +39,13 @@ namespace Mcasaenk
         }
 
         public void SetSettings() {
-            generateTilePool = new GenerateTilePool();
-            drawTilePool = new TilePool(8);
+            ColorGausBlur.pool = ArrayPool<ColorGausBlur.C>.Create((512 * 3) * (512 * 3), Global.Settings.DRAWMAXCONCURRENCY);
+            PrecGausBlur.pool = ArrayPool<ushort>.Create((512 * 3) * (512 * 3) * PrecGausBlur.MB, Global.Settings.DRAWMAXCONCURRENCY);
 
-            ColorMapping.Init();
-            //GC.Collect(2, GCCollectionMode.Forced);
+            generateTilePool = new GenerateTilePool();
+            drawTilePool = new TilePool(Global.Settings.DRAWMAXCONCURRENCY);
+            
+            GC.Collect(2, GCCollectionMode.Forced);
         }
 
         public void RedrawAll() {
@@ -162,7 +165,7 @@ namespace Mcasaenk
                     }
                 }
             }
-            TileDraw.FillPixels(new Span<uint>(pixels, 512 * 512), this.genData, neighbours);
+            TileDraw.FillPixels(pixels, Global.App.Colormap, this.genData, neighbours);
 
             img.Unlock();
             img.Freeze();

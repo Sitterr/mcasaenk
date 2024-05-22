@@ -77,5 +77,11 @@
                 <Run Text="" Foreground="{StaticResource FORE}"/>
         </TextBlock>
 
+        <TextBlock Padding="0,4,0,0" Grid.Column="13">
+                <Run Text="biome: " Foreground="{StaticResource FORE}"/>
+                <Run x:Name="txt_biome" Text="0" Foreground="{StaticResource LIGHT_BLUE_B}"/>
+                <Run Text="" Foreground="{StaticResource FORE}"/>
+        </TextBlock>
+
     </Grid>
 </UserControl>

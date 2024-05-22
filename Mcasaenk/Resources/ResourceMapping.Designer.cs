@@ -71,96 +71,41 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -1;plains
-        ///0;ocean
-        ///1;plains
-        ///2;desert
-        ///3;stony_shore
-        ///4;forest
-        ///5;taiga
-        ///6;swamp
-        ///7;river
-        ///8;nether
-        ///9;the_end
-        ///10;frozen_ocean
-        ///11;frozen_river
-        ///12;snowy_plains
-        ///13;frozen_peaks
-        ///14;mushroom_fields
-        ///15;mushroom_fields
-        ///16;beach
-        ///17;desert
-        ///18;forest
-        ///19;taiga
-        ///20;windswept_hills
-        ///21;jungle
-        ///22;jungle
-        ///23;sparse_jungle
-        ///24;deep_ocean
-        ///25;stony_shore
-        ///26;snowy_beach
-        ///27;birch_forest
-        ///28;birch_forest
-        ///29;dark_forest
-        ///30;snowy_taiga
-        ///31;snowy_taiga
-        ///32;old_growth_spruce_taiga
-        ///33;old_growth_spruce_taiga
-        ///34;s [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to the_void;0
+        ///plains;1
+        ///sunflower_plains;2
+        ///snowy_plains;3
+        ///ice_spikes;4
+        ///desert;5
+        ///swamp;6
+        ///mangrove_swamp;7
+        ///forest;8
+        ///flower_forest;9
+        ///birch_forest;10
+        ///dark_forest;11
+        ///old_growth_birch_forest;12
+        ///old_growth_pine_taiga;13
+        ///old_growth_spruce_taiga;14
+        ///taiga;15
+        ///snowy_taiga;16
+        ///savanna;17
+        ///savanna_plateau;18
+        ///windswept_hills;19
+        ///windswept_gravelly_hills;20
+        ///windswept_forest;21
+        ///windswept_savanna;22
+        ///jungle;23
+        ///sparse_jungle;24
+        ///bamboo_jungle;25
+        ///badlands;26
+        ///eroded_badlands;27
+        ///wooded_badlands;28
+        ///meadow;29
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string biome_names {
+        public static string biomes {
             get {
-                return ResourceManager.GetString("biome_names", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to minecraft:air;0
-        ///minecraft:stone;707070
-        ///minecraft:granite;976d4d
-        ///minecraft:polished_granite;976d4d
-        ///minecraft:diorite;fffcf5
-        ///minecraft:polished_diorite;fffcf5
-        ///minecraft:andesite;707070
-        ///minecraft:polished_andesite;707070
-        ///minecraft:grass_block;7fb238
-        ///minecraft:dirt;976d4d
-        ///minecraft:coarse_dirt;976d4d
-        ///minecraft:podzol;815631
-        ///minecraft:cobblestone;707070
-        ///minecraft:oak_planks;8f7748
-        ///minecraft:spruce_planks;815631
-        ///minecraft:birch_planks;f7e9a3
-        ///minecraft:jungle_planks;976d4d
-        ///minecraft:acacia_planks; [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string block_colors_map {
-            get {
-                return ResourceManager.GetString("block_colors_map", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to --BIOMES--
-        ///badlands;90814d;9e814d;3f76e4
-        ///bamboo_jungle;59c93c;30bb0b;3f76e4
-        ///basalt_deltas;bfb755;aea42a;3f76e4
-        ///beach;91bd59;77ab2f;3f76e4
-        ///birch_forest;88bb67;6ba941;3f76e4
-        ///cherry_grove;b6db61;b6db61;5db7ef
-        ///cold_ocean;8eb971;71a74d;3d57d6
-        ///crimson_forest;bfb755;aea42a;3f76e4
-        ///dark_forest;79c05a;59ae30;3f76e4
-        ///deep_cold_ocean;8eb971;71a74d;3d57d6
-        ///deep_dark;91bd59;77ab2f;3f76e4
-        ///deep_frozen_ocean;8eb971;71a74d;3938c9
-        ///deep_lukewarm_ocean;8eb971;71a74d;45adf2
-        ///deep_ocean;8eb971;71a74d;3f76e4
-        ///desert;bfb [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string block_colors_mean {
-            get {
-                return ResourceManager.GetString("block_colors_mean", resourceCulture);
+                return ResourceManager.GetString("biomes", resourceCulture);
             }
         }
         
@@ -247,10 +192,104 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] javamap_colormap {
+            get {
+                object obj = ResourceManager.GetObject("javamap_colormap", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] mean_colormap {
+            get {
+                object obj = ResourceManager.GetObject("mean_colormap", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] mean_foliage {
+            get {
+                object obj = ResourceManager.GetObject("mean_foliage", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] mean_grass {
+            get {
+                object obj = ResourceManager.GetObject("mean_grass", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] mean_water {
+            get {
+                object obj = ResourceManager.GetObject("mean_water", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] nether8 {
             get {
                 object obj = ResourceManager.GetObject("nether8", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -1;plains
+        ///0;ocean
+        ///1;plains
+        ///2;desert
+        ///3;stony_shore
+        ///4;forest
+        ///5;taiga
+        ///6;swamp
+        ///7;river
+        ///8;nether
+        ///9;the_end
+        ///10;frozen_ocean
+        ///11;frozen_river
+        ///12;snowy_plains
+        ///13;frozen_peaks
+        ///14;mushroom_fields
+        ///15;mushroom_fields
+        ///16;beach
+        ///17;desert
+        ///18;forest
+        ///19;taiga
+        ///20;windswept_hills
+        ///21;jungle
+        ///22;jungle
+        ///23;sparse_jungle
+        ///24;deep_ocean
+        ///25;stony_shore
+        ///26;snowy_beach
+        ///27;birch_forest
+        ///28;birch_forest
+        ///29;dark_forest
+        ///30;snowy_taiga
+        ///31;snowy_taiga
+        ///32;old_growth_spruce_taiga
+        ///33;old_growth_spruce_taiga
+        ///34;s [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string oldbiomes {
+            get {
+                return ResourceManager.GetString("oldbiomes", resourceCulture);
             }
         }
         
