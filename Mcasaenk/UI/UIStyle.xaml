@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Mcasaenk.UI"
+                    xmlns:base="clr-namespace:Mcasaenk"
                     xmlns:imageeffects="clr-namespace:WPF.ImageEffects;assembly=WPF.ImageEffects">
 
     <local:RoundConverter x:Key="RoundConverter"/>
@@ -13,7 +14,7 @@
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKCTRL">#dd2f2f2f</SolidColorBrush>
-    <SolidColorBrush x:Key="HOVER">#dd3f3f3f</SolidColorBrush>
+    <SolidColorBrush x:Key="HOVER">#dd444444</SolidColorBrush>
     <SolidColorBrush x:Key="PRESS">#dd353535</SolidColorBrush>
 
     <SolidColorBrush x:Key="FORE">#cccdcf</SolidColorBrush>
@@ -52,27 +53,26 @@
         <Style.Setters>
             <Setter Property="OverridesDefaultStyle" Value="True" />
             <Setter Property="Opacity" Value="1"/>
-            <Setter Property="Background" Value="{StaticResource BACKCTRL}"/>
+            <Setter Property="Background" Value="{StaticResource BACK}"/>
+            <Setter Property="Background2" Value="{StaticResource BACK}"/>
+            <Setter Property="BackgroundH" Value="{StaticResource HOVER}"/>
+            <Setter Property="BackgroundP" Value="{StaticResource PRESS}"/>
             <Setter Property="Foreground" Value="{StaticResource FORE}"/>
             <Setter Property="BorderColor" Value="{StaticResource BORDER}"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:EButton">
                         <Border x:Name="b" BorderBrush="{TemplateBinding BorderColor}" Padding="{TemplateBinding Padding}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
-                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}"/>
+                            <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Content="{TemplateBinding Content}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style.Setters>
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource HOVER}"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource PRESS}"/>
-            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.3"/>
             </Trigger>
@@ -83,7 +83,10 @@
         <Style.Setters>
             <Setter Property="OverridesDefaultStyle" Value="True" />
             <Setter Property="Opacity" Value="1"/>
-            <Setter Property="Background" Value="{StaticResource BACKCTRL}"/>
+            <Setter Property="Background" Value="{StaticResource BACK}"/>
+            <Setter Property="Background2" Value="{StaticResource BACK}"/>
+            <Setter Property="BackgroundH" Value="{StaticResource HOVER}"/>
+            <Setter Property="BackgroundP" Value="{StaticResource PRESS}"/>
             <Setter Property="Foreground" Value="{StaticResource FORE}"/>
             <Setter Property="BorderColor" Value="{StaticResource BORDER}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -98,12 +101,6 @@
             </Setter>
         </Style.Setters>
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource HOVER}"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource PRESS}"/>
-            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.25"/>
             </Trigger>
@@ -119,7 +116,9 @@
         <Setter Property="Margin" Value="-1 0 0 0"/>
         <Style.Triggers>
             <Trigger Property="IsActive" Value="True">
-                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BackgroundH" Value="Transparent"/>
+                <Setter Property="BackgroundP" Value="Transparent"/>
+                <Setter Property="Background2" Value="Transparent"/>
                 <!--<Setter Property="BorderThickness" Value="1 1 1 0"/>
         <Setter Property="TextBlock.TextDecorations" Value="Underline"/>-->
             </Trigger>
@@ -653,9 +652,9 @@ TargetType="{x:Type ScrollBar}">
                         <ScrollViewer 
                             Margin="0 0 0 -1"
                             x:Name="PART_ContentHost"
-                            BorderThickness="0" 
-                            IsTabStop="False"                                 
+                            BorderThickness="0"                               
                             Background="{x:Null}"
+                             Focusable="True"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="Bottom"
                             VerticalContentAlignment="Bottom"
@@ -674,5 +673,70 @@ TargetType="{x:Type ScrollBar}">
             </Setter.Value>
         </Setter>
     </Style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <DataTemplate x:Key="saveTemp" DataType="{x:Type base:LevelDat}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <local:EButton Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BackgroundH="{StaticResource BACK}" BackgroundP="{StaticResource BACK}" BorderBrush="{StaticResource BORDER}">
+                <Image Source="{Binding Path=imagepath, Mode=OneWay}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            </local:EButton>
+            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
+                <Run Text="{Binding Path=name, Mode=OneWay}" FontSize="16"/>
+                <Run Text="/" FontSize="10"/><!--
+             --><Run Text="{Binding Path=version, Mode=OneWay}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
+             --><Run Text="/" FontSize="10"/>
+            </TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">
+                <Run Text="{Binding Path=foldername, Mode=OneWay}"/>
+                <Run Text="("/><!--
+             --><Run Text="{Binding Path=lastopened, Mode=OneWay}"/><!--
+             --><Run Text=")"/>
+            </TextBlock>
+        </Grid>
+        <DataTemplate.Resources>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}" />
+        </DataTemplate.Resources>
+    </DataTemplate>
+
+
+
+
+
+
+
 
 </ResourceDictionary>

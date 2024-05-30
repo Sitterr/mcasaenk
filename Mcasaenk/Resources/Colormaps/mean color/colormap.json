@@ -1,114 +1,115 @@
 {
+  "depth_block": "water",
   "blocks": [
     {
       "id": "grass",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "919191"
       }
     },
     {
       "id": "grass_block",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "939393"
       }
     },
     {
       "id": "pumpkin_stem",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "9A9A9A"
       }
     },
     {
       "id": "tall_grass",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "808080"
       }
     },
     {
       "id": "melon_stem",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "999999"
       }
     },
     {
       "id": "large_fern",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "838383"
       }
     },
     {
       "id": "fern",
       "value": {
-        "tint": "GRASS",
+        "tint": "grass.png",
         "baseColor": "7C7C7C"
       }
     },
     {
       "id": "oak_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "909090"
       }
     },
     {
       "id": "spruce_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "7E7E7E"
       }
     },
     {
       "id": "birch_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "828182"
       }
     },
     {
       "id": "jungle_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "9C9A8F"
       }
     },
     {
       "id": "acacia_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "959494"
       }
     },
     {
       "id": "dark_oak_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "969696"
       }
     },
     {
       "id": "mangrove_leaves",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "818080"
       }
     },
     {
       "id": "vine",
       "value": {
-        "tint": "FOLIAGE",
+        "tint": "foliage.png",
         "baseColor": "747474"
       }
     },
     {
       "id": "water",
       "value": {
-        "tint": "WATER",
+        "tint": "water.png",
         "baseColor": "B1B1B1"
       }
     },
@@ -4056,32 +4057,5 @@
       "id": "zombie_wall_head",
       "value": "513E32"
     }
-  ],
-  "tints": [
-    {
-      "id": "GRASS",
-      "source": "grass.png",
-      "colorConvertMode": "multiply",
-      "blendingRadius": 7,
-      "yOffset": 0,
-      "on": true
-    },
-    {
-      "id": "FOLIAGE",
-      "source": "foliage.png",
-      "colorConvertMode": "multiply",
-      "blendingRadius": 7,
-      "yOffset": 0,
-      "on": true
-    },
-    {
-      "id": "WATER",
-      "source": "water.png",
-      "colorConvertMode": "multiply",
-      "blendingRadius": 7,
-      "yOffset": 0,
-      "on": true
-    }
-  ],
-  "depth_block": "water"
+  ]
 }

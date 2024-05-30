@@ -1,4 +1,5 @@
 {
+  "depth_block": "water",
   "blocks": [
     {
       "id": "air",
@@ -4012,7 +4013,5 @@
       "id": "decorated_pot",
       "value": "8E3C2E"
     }
-  ],
-  "tints": [],
-  "depth_block": "water"
+  ]
 }

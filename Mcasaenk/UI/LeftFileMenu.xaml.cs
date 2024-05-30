@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using Mcasaenk.Rendering.ChunkRenderData;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +26,9 @@ namespace Mcasaenk.UI {
 
         EButton[] tabs;
         FrameworkElement[] contents;
+        EButton opener_worlds;
         public LeftFileMenu(EButton opener_worlds) {
+            this.opener_worlds = opener_worlds;
             InitializeComponent();
 
             tabs = new[] { tab_java, tab_folder };
@@ -85,13 +88,6 @@ namespace Mcasaenk.UI {
             };
 
 
-
-
-
-
-
-
-
             btn_browse.Click += (o, e) => {
                 // Configure open file dialog box
                 var dialog = new Microsoft.Win32.OpenFileDialog();
@@ -113,6 +109,76 @@ namespace Mcasaenk.UI {
                     opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
             };
+
+            btn_browse_dim.Click += (o, e) => {
+                var dialog = new Microsoft.Win32.OpenFolderDialog();
+                dialog.Multiselect = false;
+
+                bool? result = dialog.ShowDialog();
+
+                if(result == true) {
+                    string path = dialog.FolderName;
+
+                    Global.App.OpenedSave = new DimensionSave(path);
+
+                    opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                }
+            };
+
+
+            btn_retry.Click += (o, e) => {
+                OnActive();
+            };
+
+            btn_fld.Click += (o, e) => {
+                var dialog = new Microsoft.Win32.OpenFolderDialog();
+                dialog.Multiselect = false;
+
+                bool? result = dialog.ShowDialog();
+
+                if(result == true) {
+                    string path = dialog.FolderName;
+
+                    Global.App.Settings.MCDIR = path;
+                    OnActive();
+                }
+            };
+        }
+
+        public void OnActive() {
+            var saveTemp = (DataTemplate)FindResource("saveTemp");
+            javaCont.Children.Clear();
+
+            int i = 0;
+            foreach(var _dir in Directory.GetDirectories(Global.Settings.McDir)) {
+                var dir = _dir;
+                var level = LevelDat.ReadWorld(dir);
+                if(level == null) continue;
+
+                var b = new Border();
+                b.BorderBrush = (Brush)FindResource("BORDER");
+                var f = new ContentControl() { ContentTemplate = saveTemp, Content = level };
+                f.Margin = new Thickness(0, 8, 0, 8);
+                var btn = new EButton() { Background2 = new SolidColorBrush(Colors.Transparent) };
+                btn.BorderThickness = new Thickness(0);
+                btn.HorizontalContentAlignment = HorizontalAlignment.Left; btn.VerticalContentAlignment = VerticalAlignment.Top;
+                btn.Content = f;
+
+                b.Child = btn;
+                b.BorderThickness = new Thickness(0, i == 0 ? 1 : 0, 0, 1);
+
+                btn.Click += (o, e) => {
+                    Global.App.OpenedSave = new Save(dir, level);
+
+                    opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                };
+
+                javaCont.Children.Add(b);
+                i++;
+            }
+
+            emptyCont.Visibility = i == 0 ? Visibility.Visible : Visibility.Collapsed;
+            //javaCont.Visibility = i != 0 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

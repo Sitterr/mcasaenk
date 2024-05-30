@@ -44,7 +44,7 @@ namespace Mcasaenk.UI.Canvas {
             foreach(var pos in screen.GetVisibleTilePositions()) {
                 var tile = tileMap.GetTile(pos);
                 if(tile == null) continue;
-                Rect rect = new Rect(tile.pos.X * 512 - screen.coord.X, tile.pos.Z * 512 - screen.coord.Y, 512, 512);
+                Rect rect = new Rect(tile.pos.X * 512 - screen.Start.X, tile.pos.Z * 512 - screen.Start.Y, 512, 512);
                 if(tile.img != null) {
                     graphics.DrawImage(tile.img, rect);
                 } else {
@@ -164,7 +164,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            double tx = Global.Coord.absMod(screen.coord.X, 16) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 16) * screen.zoom;
+            double tx = Global.Coord.absMod(screen.Start.X, 16) * screen.zoom, tz = Global.Coord.absMod(screen.Start.Y, 16) * screen.zoom;
 
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
             graphics.DrawRectangle(GetChunkBrush(screen.zoom), null, new Rect(0, 0, screen.ScreenWidth + tx, screen.ScreenHeight + tz));
@@ -213,7 +213,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            double tx = Global.Coord.absMod(screen.coord.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.coord.Y, 512) * screen.zoom;
+            double tx = Global.Coord.absMod(screen.Start.X, 512) * screen.zoom, tz = Global.Coord.absMod(screen.Start.Y, 512) * screen.zoom;
             graphics.PushTransform(new TranslateTransform(-tx, -tz));
 
             Pen pen = Global.App.Settings.REGIONGRID == RegionGridType.Straight ? linePen : screen.ZoomScale < 0 ? linePen : dashPen;

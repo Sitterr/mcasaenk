@@ -31,7 +31,7 @@ namespace Mcasaenk.UI.Canvas {
         GridPainter2 gridPainter;
         BackgroundPainter backgroundPainter;
 
-        Timer secondaryTimer;
+        DispatcherTimer secondaryTimer;
 
         public CanvasControl() {
             InitializeComponent();
@@ -57,7 +57,7 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
             this.MouseLeave += OnMouseLeave;
 
-
+            secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
             CompositionTarget.Rendering += OnFastTick;
         }
 
@@ -65,8 +65,6 @@ namespace Mcasaenk.UI.Canvas {
         MainWindow window { get => Global.App.Window; }
         public void OnTilemapChanged() { 
             scenePainter.SetTileMap(tileMap);
-
-            secondaryTimer = new Timer(OnSlowTick, null, 0_500, 0_50);
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -100,7 +98,7 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-        private void OnSlowTick(object a) {
+        private void OnSlowTick(object a, object b) {
             if(tileMap == null) return;
             foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
                 var tile = tileMap.GetTile(pos);
@@ -113,9 +111,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            Dispatcher.BeginInvoke(new Action(() => {
-                if(window == null) return;
-                if(window.footer == null) return;
+            if(window.footer != null) {
                 { // footer update
                     window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                     window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
@@ -124,12 +120,18 @@ namespace Mcasaenk.UI.Canvas {
 
                     window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
                 }
-            }));
+            }
         }
 
+        void UpdateUILocation() {
+            var mid = screen.Mid;
+            window.loc_x.Text = ((int)mid.X).ToString();
+            window.loc_z.Text = ((int)mid.Y).ToString();
+        }
 
-
-
+        public void GoTo(Point p) {
+            screen.Mid = p;
+        }
 
 
         #region INPUT
@@ -146,24 +148,19 @@ namespace Mcasaenk.UI.Canvas {
         public void OnMouseDown(object sender, MouseButtonEventArgs e) {
             switch(e.ChangedButton) {
                 case MouseButton.Left:
-                    break;
                 case MouseButton.Middle:
                     mouseStart = screen.GetGlobalPos(mousePos);
                     mousedown = true;
                     break;
                 case MouseButton.Right:
-                    Global.App.Settings.LAND_BLEND = 1;
                     break;
                 default: break;
             }
-            
+            this.Focus();
         }
         public void OnMouseUp(object sender, MouseButtonEventArgs e) {
             switch(e?.ChangedButton) {
                 case MouseButton.Left:
-                    //tileMap?.GetTile(screen.GetRegionPos(mousePos))?.QueueDraw();
-                    tileMap?.GetTile(screen.GetRegionPos(mousePos))?.RegisterRedraw();
-                    break;
                 case MouseButton.Middle:
                     mouseStart = default;
                     mousedown = false;
@@ -177,8 +174,8 @@ namespace Mcasaenk.UI.Canvas {
         public void OnMouseMove(Point point) {
             mousePos = point;
             if(mousedown) {             
-                screen.SetStart(mouseStart.Sub(mousePos.Dev(screen.zoom)));
-                //OnFastTick(null, null);
+                screen.Start = mouseStart.Sub(mousePos.Dev(screen.zoom));
+                UpdateUILocation();
             }
         }
         public void OnMouseWheel(object sender, MouseWheelEventArgs e) {
@@ -189,14 +186,13 @@ namespace Mcasaenk.UI.Canvas {
             Point mouseGl = screen.GetGlobalPos(mouseRel);
 
             screen.ZoomScale += delta;
-            screen.SetStart(mouseGl.Sub(mouseRel.Dev(screen.zoom)));
-
-            //OnFastTick(null, null);
+            screen.Start = mouseGl.Sub(mouseRel.Dev(screen.zoom));
+            UpdateUILocation();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
             screen.ScreenWidth = (int)this.ActualWidth + 1;
             screen.ScreenHeight = (int)this.ActualHeight + 1;
-            //OnFastTick(null, null);
+            UpdateUILocation();
         }
         private void OnMouseLeave(object sender, MouseEventArgs e) {
             //mousePos = default;

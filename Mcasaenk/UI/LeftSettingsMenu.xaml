@@ -55,7 +55,7 @@
 
                             
                             
-                            <Border x:Name="cont_general" Visibility="Visible">
+                            <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -103,57 +103,41 @@
 
 
 
+                                    <!--<DockPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock Text="biomes"/>
+                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}"/>
+                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0}x{1}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="Blend" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="Blend" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </DockPanel>
+                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2" 
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=Blend}"
+                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}"/>-->
+
+
+
                                     <DockPanel Grid.Row="4" Grid.Column="0">
-                                        <TextBlock Text="land biomes"/>
-                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}"/>
-                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0}x{1}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="LandBlend" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="LandBlend" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="15" TickFrequency="2" 
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=LandBlend}"
-                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=LandBiomes}"/>
-
-                                    <DockPanel Grid.Row="4" Grid.Column="2">
-                                        <TextBlock Text="water biomes"/>
-                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}"/>
-                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0}x{1}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="WaterBlend" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="WaterBlend" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="2" IsSnapToTickEnabled="True" Minimum="1" Maximum="31" TickFrequency="2"
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBlend}"
-                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=WaterBiomes}"/>
-
-
-
-                                    <DockPanel Grid.Row="8" Grid.Column="0">
                                         <TextBlock Text="contrast"/>
                                         <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                    <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast}"/>
 
-                                    <DockPanel Grid.Row="8" Grid.Column="2">
+                                    <DockPanel Grid.Row="4" Grid.Column="2">
                                         <TextBlock Text="brightness"/>
                                         <TextBlock Text="{Binding SunLight, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                    <Slider Grid.Row="6" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}"/>
 
 
 
-                                    <DockPanel Grid.Row="12" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="1">
+                                    <DockPanel Grid.Row="8" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="1">
                                         <TextBlock Text="water mode" VerticalAlignment="Center"/>
                                         <ComboBox Width="auto" VerticalAlignment="Center" Margin="10 0 0 0"
                                                   ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
@@ -162,11 +146,11 @@
                                                   SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode}"/>
                                     </DockPanel>
 
-                                    <DockPanel Grid.Row="12" Grid.Column="2">
+                                    <DockPanel Grid.Row="8" Grid.Column="2">
                                         <TextBlock Text="water opacity"/>
                                         <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="14" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity}"/>
 
                                 </Grid>
@@ -265,9 +249,10 @@
                                             IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Shade3d}"/>
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Collapsed">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock VerticalAlignment="Center">
+                            <Border x:Name="cont_color" Visibility="Visible">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock VerticalAlignment="Center">
                                         <Run Text="basis"/>
                                         <Run Text="✶">
                                             <Run.Foreground>
@@ -277,13 +262,27 @@
                                                 </MultiBinding>
                                             </Run.Foreground>  
                                         </Run>
-                                    </TextBlock>
-                                    <ComboBox Margin="10 0 0 0"
+                                        </TextBlock>
+                                        <ComboBox Margin="10 0 0 0"
                                               ItemsSource="{Binding Source={x:Static gl:Global.ViewModel}, Path=AllColormaps}"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
+
+                                        <local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="OnResetBasis">
+                                            <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
+                                        </local:EButton>
+                                    </StackPanel>
+
+                                    <Grid x:Name="tintGrid" Margin="0 60 0 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                        </Grid.RowDefinitions>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
-
 
 
                         </StackPanel>

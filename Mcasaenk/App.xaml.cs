@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Nbt;
+using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
@@ -43,7 +44,8 @@ namespace Mcasaenk {
                         TileMap?.RedrawAll();
                     },
                     () => {
-                        if(Global.App.OpenedSave != null) Global.App.OpenedSave = new Save(Global.App.OpenedSave.path);
+                        if(Global.App.OpenedSave is DimensionSave ds) Global.App.OpenedSave = new DimensionSave(ds.path);
+                        else if(Global.App.OpenedSave is Save) Global.App.OpenedSave = new Save(Global.App.OpenedSave.path);
                     });
             }
 
@@ -110,13 +112,25 @@ namespace Mcasaenk {
             }
 
             set {
+                if(value != null) if(!Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) return;
+
                 _openedSave = value;
 
-                TileMap = _openedSave.overworld.tileMap;
-                TileMap.SetSettings();
+                if(value != null) {
+                    TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
+                    TileMap.SetSettings();
 
-                Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE));
+                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE));
 
+                    foreach(var tint in Colormap.GetTints()) {
+                        tint.settings = DynamicTintSettings.DEF();
+                        tint.settings.SetActions(() => {
+                            TileMap?.RedrawAll();
+                        });
+                    }
+                }
+
+                Window.OnHardReset();
                 Window.canvasControl.OnTilemapChanged();
 
                 GC.Collect(2, GCCollectionMode.Forced);

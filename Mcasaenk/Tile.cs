@@ -123,7 +123,7 @@ namespace Mcasaenk
             }
             set {
                 _genData = value;
-                if(Global.App.Settings.LAND_BLEND > 1 || Global.App.Settings.WATER_BLEND > 1) {
+                if(Global.App.Colormap.HasActiveTints()) {
                     for(int i = -1; i <= 1; i++) { // biome blend
                         for(int j = -1; j <= 1; j++) {
                             var tile = map.GetTile(pos + new Point2i(i, j));
@@ -155,7 +155,7 @@ namespace Mcasaenk
 
             uint* pixels = (uint*)img.BackBuffer;
             GenData[,] neighbours = null;
-            if(Global.App.Settings.LAND_BLEND > 1 || Global.App.Settings.WATER_BLEND > 1) {
+            if(Global.App.Colormap.HasActiveTints()) {
                 neighbours = new GenData[3, 3];
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {

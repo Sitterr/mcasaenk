@@ -14,7 +14,12 @@ namespace Mcasaenk.UI {
         public ObservableCollection<string> AllColormaps {
             get { return _allColormaps; }
             set {
-                _allColormaps = value;
+                _allColormaps = new ObservableCollection<string>();
+                foreach(var dir in Directory.GetDirectories(Path.Combine(Global.App.APPFOLDER, "colormaps"))) {
+                    if(Colormap.IsColormap(dir)) {
+                        _allColormaps.Add(new DirectoryInfo(dir).Name);
+                    }
+                }
                 OnPropertyChanged(nameof(AllColormaps));
             }
         }
@@ -22,12 +27,7 @@ namespace Mcasaenk.UI {
         public ViewModel() {
             // folders
             {
-                AllColormaps = new ObservableCollection<string>();
-                foreach(var dir in Directory.GetDirectories(Path.Combine(Global.App.APPFOLDER, "colormaps"))) {
-                    if(Colormap.IsColormap(dir)) { 
-                        AllColormaps.Add(new DirectoryInfo(dir).Name);
-                    }
-                }
+                AllColormaps = null;
             }
         }
 

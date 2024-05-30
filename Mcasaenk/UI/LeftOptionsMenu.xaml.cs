@@ -100,6 +100,10 @@ namespace Mcasaenk.UI {
             };
         }
 
+        public void OnActive() { 
+        
+        }
+
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e) {
             var url = e.Uri.ToString();
             Process.Start(new ProcessStartInfo(url) {

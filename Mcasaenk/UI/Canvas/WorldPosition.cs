@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -9,16 +10,30 @@ using System.Windows.Media;
 namespace Mcasaenk.UI.Canvas {
     public class WorldPosition {
         private double _zoom;
+        private Rect coord;
 
-        public Rect coord;
         public WorldPosition(Point start, int screenWidth, int screenHeight, double zoom) {
             this.coord = new Rect(start.X, start.Y, screenWidth * zoom, screenHeight * zoom);
             _zoom = zoom;
         }
 
-        public void SetStart(Point p) {
-            coord.X = p.X;
-            coord.Y = p.Y;
+        public Point Start {
+            get {
+                return coord.Location;
+            }
+            set { 
+                coord.Location = value;
+            }
+        }
+
+        public Point Mid {
+            get {
+                return new Point(coord.X + coord.Width / 2, coord.Y + coord.Height / 2);
+            }
+            set { 
+                coord.X = value.X - coord.Width / 2;
+                coord.Y = value.Y - coord.Height / 2;
+            }
         }
 
         public int ScreenWidth {
@@ -82,10 +97,10 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-
         public bool IsVisible(Tile tile) {
             Rect tileArea = new Rect(tile.pos.X * 512, tile.pos.Z * 512, 512, 512);
             return coord.IntersectsWith(tileArea);
         }
+
     }
 }

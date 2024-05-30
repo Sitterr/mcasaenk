@@ -21,7 +21,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         private ArrTag<long>[] blockStates;
         private Global.Arr2DBox<ushort> palettes;
 
-        private bool oldChunk;
+        private bool oldChunk, endChunk;
 
         public ChunkDataInterpreter117(Tag _tag, bool error) {
             this.error = error;
@@ -33,7 +33,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                 biomes = (ArrTag<int>)level["Biomes"];
 
                 var heightmaps = (CompoundTag)level["Heightmaps"];
-                {
+                if(heightmaps != null) {
                     world_surface = (ArrTag<long>)heightmaps["WORLD_SURFACE"];
                     ocean_floor = (ArrTag<long>)heightmaps["OCEAN_FLOOR"];
                     motion_blocking = (ArrTag<long>)heightmaps["MOTION_BLOCKING"];
@@ -69,6 +69,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
             }
 
             oldChunk = biomes?.Length == 1024;
+            endChunk = biomes?.Length == 256;
 
             //} catch {
             //    this.error = true;
@@ -134,6 +135,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         }
         private int getBiomeAtBlock(int biomeX, int biomeY, int biomeZ) {
             if(biomes == null) return default;
+            if(endChunk) return biomes[getIndexXZ(biomeX / 4, biomeZ / 4, 4)];
             if(oldChunk) biomeY -= 64;
             if(biomeY <= -64) return default;
             return biomes[getIndexXYZ(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];

@@ -8,15 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Buffers;
+using System.Reflection;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public unsafe class ChunkInterpreterStartingPoint {
 
         public static IChunkInterpreter Read(Stream pointer) {
-            return ReadNbtDeterministically(pointer);
-        }
-
-        private static IChunkInterpreter ReadNbtDeterministically(Stream pointer) {
             if(pointer == null) return null;
             using var zlip = new ZLibStream(pointer, CompressionMode.Decompress);
             using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
@@ -36,7 +33,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             }
             catch {
                 throw new Exception("chunk version is strange");
-            }          
+            }
         }
+
     }
 }

@@ -123,7 +123,7 @@ namespace Mcasaenk.Rendering {
         public readonly DynamicNameToIdBiMap Block;
 
         private IDictionary<ushort, BlockValue> blocks;
-        private Tint2[] tints;
+        private List<Tint2> tints;
         public Colormap(string path) {
             var options = new JsonSerializerOptions { IncludeFields = true };
             options.Converters.Add(new Global.HexConverter());
@@ -141,10 +141,7 @@ namespace Mcasaenk.Rendering {
                 }
             });
 
-            tints = new Tint2[data.tints.Length];
-            for(int i=0;i<data.tints.Length;i++) {
-                tints[i] = new Tint2(path, data.tints[i]);
-            }
+            tints = new List<Tint2>();
 
             blocks = new Dictionary<ushort, BlockValue> {
                 { Block.GetId(blockname("minecraft:air")), new FixedBlock(0x00000000) }
@@ -158,10 +155,20 @@ namespace Mcasaenk.Rendering {
                     val = new FixedBlock(Global.ToARGBInt(jel.Deserialize<string>(options)));
                 } else if(jel.ValueKind == JsonValueKind.Object) {
                     var gridvalue = jel.Deserialize<JsonBlock.GridValue>(options);
-                    var tint = tints.FirstOrDefault(t => t.data.id == gridvalue.tint);
-                    if(tint == default) continue;
+                    var tint = tints.FirstOrDefault(t => t.name == gridvalue.tint);
 
-                    val = new GridBlock(tint, gridvalue.baseColor);
+                    bool error = false;
+                    if(tint == default) {
+                        if(File.Exists(Path.Combine(path, gridvalue.tint))) {
+                            tint = new Tint2(path, gridvalue.tint);
+                            tints.Add(tint);
+                        } else {
+                            error = true;
+                        }
+                    }
+
+                    if(error == false) val = new GridBlock(tint, gridvalue.baseColor);
+                    else val = new FixedBlock(gridvalue.baseColor);
                 }
 
                 blocks.TryAdd(Block.GetId(blockname(bl.id)), val);
@@ -178,13 +185,13 @@ namespace Mcasaenk.Rendering {
             }
         }
 
-        public Tint2[] GetTints() => tints;
+        public List<Tint2> GetTints() => tints;
+        public bool HasActiveTints() => tints.Any(t => t.settings.On && t.settings.Blend > 1);
 
         public BlockValue Value(ushort block) => blocks[block];
 
         public JsonColormap ToJson() {
             return new JsonColormap() {
-                tints = tints.Select(t => t.data).ToArray(),
                 blocks = this.blocks.Select(b => new JsonBlock() { id = Block.GetName(b.Key), value = b.Value.ToJson() }).ToArray(),
                 depth_block = Block.GetName(depthBlock),
             };
@@ -198,10 +205,6 @@ namespace Mcasaenk.Rendering {
                 options.Converters.Add(new Global.HexConverter());
                 options.Converters.Add(new JsonStringEnumConverter());
                 var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), options);
-
-                foreach(var tint in data.tints) {
-                    if(File.Exists(Path.Combine(path, tint.source)) == false) throw new Exception();
-                }
             }
             catch {
                 return false;
@@ -211,15 +214,19 @@ namespace Mcasaenk.Rendering {
         }
     }
 
+
+
     public class Tint2 {
-        public JsonTint data;
+        public readonly string name;
         private uint[,] sprite;
 
-        private bool biomeonly = false, heightonly = false;
-        public Tint2(string path, JsonTint data) {
-            this.data = data;
+        public DynamicTintSettings settings;
 
-            BitmapImage bitmapImage = new BitmapImage(new Uri(Path.Combine(path, data.source), UriKind.RelativeOrAbsolute));
+        private bool biomeonly = false, heightonly = false;
+        public Tint2(string path, string name) {
+            this.name = name;
+
+            BitmapImage bitmapImage = new BitmapImage(new Uri(Path.Combine(path, name), UriKind.RelativeOrAbsolute));
             var image = new WriteableBitmap(bitmapImage).ToUIntMatrix();
 
             sprite = new uint[383, BiomeRegistry.GetBiomeCount()];
@@ -266,32 +273,25 @@ namespace Mcasaenk.Rendering {
         }
 
         public uint GridColor(ushort biome, short height) {
-            height = (short)(height + (short)data.yOffset);
+            height = (short)(height + 0);
             if(height <= -65) return sprite[-64 + 64, biome];
             if(height > 319) return sprite[319 + 64, biome];
-            if(data.on) return sprite[height + 64, biome];
+            if(this.settings.On) return sprite[height + 64, biome];
             else return sprite[Colormap.DEFHEIGHT + 64, Colormap.DEFBIOME];
         }
 
         public uint MergeColors(uint color1, uint color2) {
-            if(data.colorConvertMode == ConvertMode.multiply)
-                return Global.ColorMult(color1, color2);
-            else if(data.colorConvertMode == ConvertMode.additive)
-                return Global.ColorAdd(color1, color2);
-            else return default;
+            return Global.ColorMult(color1, color2);
         }
 
         public Blending GetBlendMode() {
-            if(data.on == false || heightonly) return Blending.none;
+            if(this.settings.On == false) return Blending.none;
+            else if(heightonly || settings.Blend == 1) return Blending.simple;
             else if(biomeonly) return Blending.biomeonly;
             else return Blending.full;
         }
 
-        public JsonTint ToJson() {
-            return data;
-        }
-
-        public enum Blending { none, biomeonly, full }
+        public enum Blending { none, simple, biomeonly, full }
     }
     public interface BlockValue {
         public uint GetColor(ushort biome, short height);
@@ -313,7 +313,7 @@ namespace Mcasaenk.Rendering {
             return tint.MergeColors(baseColor, tint.GridColor(biome, height));
         }
 
-        public object ToJson() { return new JsonBlock.GridValue() { baseColor = this.baseColor, tint = this.tint.data.id }; }
+        public object ToJson() { return new JsonBlock.GridValue() { baseColor = this.baseColor, tint = this.tint.name }; }
     }
 
 
@@ -331,10 +331,8 @@ namespace Mcasaenk.Rendering {
 
 
     public class JsonColormap {
-        public JsonBlock[] blocks;
-        public JsonTint[] tints;
-
         public string depth_block;
+        public JsonBlock[] blocks;
     }
     public class JsonBlock {
         public string id;
@@ -344,14 +342,6 @@ namespace Mcasaenk.Rendering {
             public string tint;
             public uint baseColor;
         }
-    }
-    public class JsonTint {
-        public string id;
-        public string source;
-        public ConvertMode colorConvertMode;
-        public bool on;
-        public int blendingRadius;
-        public int yOffset;
     }
 
     public enum ConvertMode { multiply, additive }

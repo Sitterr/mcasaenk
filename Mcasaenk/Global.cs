@@ -18,6 +18,8 @@ using System.Windows.Media.Imaging;
 using static Mcasaenk.Rendering.GenerateTilePool;
 using static Mcasaenk.Shade3d.ShadeConstants;
 using Mcasaenk.UI;
+using Mcasaenk.Rendering.ChunkRenderData;
+using Mcasaenk.UI.Canvas;
 
 namespace Mcasaenk {
     public class Global {

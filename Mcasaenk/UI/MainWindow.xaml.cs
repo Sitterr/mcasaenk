@@ -24,6 +24,10 @@ namespace Mcasaenk.UI {
     /// </summary>
     public partial class MainWindow : Window {
         public FooterInterface footer;
+
+        LeftSettingsMenu leftSettingsMenu;
+        LeftFileMenu leftFileMenu;
+        LeftOptionsMenu leftOptionsMenu;
         public MainWindow() {
             InitializeComponent();
 
@@ -33,6 +37,42 @@ namespace Mcasaenk.UI {
             this.resolution_reset.Click += (o, e) => {
                 rad.Reset();
             };
+
+
+            overworld_fore = overworld_back;
+            overworld_fore.A = 160;
+            nether_fore = nether_back;
+            nether_fore.A = 220;
+            end_fore = end_back;
+            end_fore.A = 120;
+            {
+               void onchange() {
+                    if(Global.App.OpenedSave == null || Global.App.OpenedSave is DimensionSave) {
+                        dim_setNone();
+                        return;
+                    }
+                    switch(Global.Settings.DIMENSION) {
+                        case Dimension.Type.Overworld:
+                            dim_setOverworld(); break;
+                        case Dimension.Type.Nether:
+                            dim_setNether(); break;
+                        case Dimension.Type.End:
+                            dim_setEnd(); break;
+                    }
+                }
+                Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => { 
+                    if(e.PropertyName == nameof(Settings.DIMENSION)) onchange(); 
+                };
+                btn_overworld.Click += (o, e) => {
+                    Global.Settings.DIMENSION = Dimension.Type.Overworld;
+                };
+                btn_nether.Click += (o, e) => {
+                    Global.Settings.DIMENSION = Dimension.Type.Nether;
+                };
+                btn_end.Click += (o, e) => {
+                    Global.Settings.DIMENSION = Dimension.Type.End;
+                };
+            }
 
             this.Loaded += (o, e) => {
                 var res = Resolution.CurrentResolution(this);
@@ -45,75 +85,25 @@ namespace Mcasaenk.UI {
                 this.MinWidth = mainGrid.ColumnDefinitions[0].ActualWidth + 10 + 15;
 
 
-                {
-                    Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
-                    Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
-                    Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
+                leftSettingsMenu = new LeftSettingsMenu();
+                leftFileMenu = new LeftFileMenu(opener_worlds);
+                leftOptionsMenu = new LeftOptionsMenu();
 
-                    Color overworld_fore = overworld_back;
-                    overworld_fore.A = 160;
-                    Color nether_fore = nether_back;
-                    nether_fore.A = 220;
-                    Color end_fore = end_back;
-                    end_fore.A = 120;
-
-                    btn_overworld.Click += (o, e) => {
-                        LinearGradientBrush brush = new LinearGradientBrush();
-                        brush.StartPoint = new Point(0, 0.5);
-                        brush.EndPoint = new Point(1, 0.5);
-
-                        brush.GradientStops.Add(new GradientStop(overworld_fore, 0));
-                        brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
-                        brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
-                        //brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#bb723232"), 0.62));
-                        brush.GradientStops.Add(new GradientStop(end_back, 1));
-
-                        dim_bor.Background = brush;
-                    };
-                    btn_nether.Click += (o, e) => {
-                        LinearGradientBrush brush = new LinearGradientBrush();
-                        brush.StartPoint = new Point(0, 0.5);
-                        brush.EndPoint = new Point(1, 0.5);
-
-                        brush.GradientStops.Add(new GradientStop(overworld_back, 0));
-                        brush.GradientStops.Add(new GradientStop(nether_fore, 0.37));
-                        brush.GradientStops.Add(new GradientStop(nether_fore, 0.5));
-                        brush.GradientStops.Add(new GradientStop(nether_fore, 0.62));
-                        brush.GradientStops.Add(new GradientStop(end_back, 1));
-
-                        dim_bor.Background = brush;
-                    };
-                    btn_end.Click += (o, e) => {
-                        LinearGradientBrush brush = new LinearGradientBrush();
-                        brush.StartPoint = new Point(0, 0.5);
-                        brush.EndPoint = new Point(1, 0.5);
-
-                        brush.GradientStops.Add(new GradientStop(overworld_back, 0));
-                        // brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
-                        brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
-                        brush.GradientStops.Add(new GradientStop(end_fore, 0.62));
-                        brush.GradientStops.Add(new GradientStop(end_fore, 1));
-
-                        dim_bor.Background = brush;
-                    };
-                }
-
-
-                
-                LeftSettingsMenu leftSettingsMenu = new LeftSettingsMenu();
-                LeftFileMenu leftFileMenu = new LeftFileMenu(opener_worlds);
-                LeftOptionsMenu leftOptionsMenu = new LeftOptionsMenu();
-
-                var leftsl = new Slider(this, true, true, () => (int)mainGrid.ColumnDefinitions[0].ActualWidth - (int)opener_worlds.ActualWidth - 10, 10,
+                var leftsl = new PageSlider(this, true, true, () => (int)mainGrid.ColumnDefinitions[0].ActualWidth - (int)opener_worlds.ActualWidth - 10, 10,
                     ss, settings_cont, [
                         (opener_sett, () => {
                             settings_cont.Child = leftSettingsMenu;
-                        }), 
+                            leftSettingsMenu.OnActive();
+                        }
+                        ), 
                         (opener_post, () => {
                             settings_cont.Child = leftOptionsMenu;
-                        }), 
+                            leftOptionsMenu.OnActive();
+                        }
+                        ), 
                         (opener_worlds, () => {
                             settings_cont.Child = leftFileMenu;
+                            leftFileMenu.OnActive();
                         }
                         )]);
 
@@ -128,28 +118,100 @@ namespace Mcasaenk.UI {
                 //        }
                 //        )]);
 
+                Global.App.OpenedSave = null;
 
-                cvcvcvb.MouseEnter += (sender, e) => {
-                    cvcvcv.Source = ResourceMapping.folder.ToImage();
-                };
-                cvcvcvb.MouseLeave += (sender, e) => {
-                    cvcvcv.Source = ResourceMapping.icon.ToImage();
-                };
-                cvcvcvb.Click += (sender, e) => {
-                    if(leftsl.GetActive() != opener_worlds) {
-                        opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    }
-                };
+                opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
+
+            loc_go.Click += (o, e) => {
+                if(!int.TryParse(loc_x.Text, out int x)) return;
+                if(!int.TryParse(loc_z.Text, out int z)) return;
+                canvasControl.GoTo(new Point(x, z));
+            };
+        }
+
+        Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
+        Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
+        Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
+        Color overworld_fore, nether_fore, end_fore;
+        void dim_setOverworld() {
+            LinearGradientBrush brush = new LinearGradientBrush();
+            brush.StartPoint = new Point(0, 0.5);
+            brush.EndPoint = new Point(1, 0.5);
+
+            brush.GradientStops.Add(new GradientStop(overworld_fore, 0));
+            brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
+            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
+            //brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#bb723232"), 0.62));
+            brush.GradientStops.Add(new GradientStop(end_back, 1));
+
+            dim_bor.Background = brush;
+        }
+        void dim_setNether() {
+            LinearGradientBrush brush = new LinearGradientBrush();
+            brush.StartPoint = new Point(0, 0.5);
+            brush.EndPoint = new Point(1, 0.5);
+
+            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
+            brush.GradientStops.Add(new GradientStop(nether_fore, 0.37));
+            brush.GradientStops.Add(new GradientStop(nether_fore, 0.5));
+            brush.GradientStops.Add(new GradientStop(nether_fore, 0.62));
+            brush.GradientStops.Add(new GradientStop(end_back, 1));
+
+            dim_bor.Background = brush;
+        }
+        void dim_setEnd() {
+            LinearGradientBrush brush = new LinearGradientBrush();
+            brush.StartPoint = new Point(0, 0.5);
+            brush.EndPoint = new Point(1, 0.5);
+
+            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
+            // brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
+            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
+            brush.GradientStops.Add(new GradientStop(end_fore, 0.62));
+            brush.GradientStops.Add(new GradientStop(end_fore, 1));
+
+            dim_bor.Background = brush;
+        }
+        void dim_setNone() {
+            LinearGradientBrush brush = new LinearGradientBrush();
+            brush.StartPoint = new Point(0, 0.5);
+            brush.EndPoint = new Point(1, 0.5);
+
+            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
+            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
+            brush.GradientStops.Add(new GradientStop(end_back, 1));
+
+            dim_bor.Background = brush;
+        }
+
+
+
+
+
+        public void OnHardReset() {
+            leftSettingsMenu.SetUpTintGrid(Global.App.Colormap);
+
+            btn_overworld.IsEnabled = Global.App.OpenedSave?.overworld != null;
+            btn_nether.IsEnabled = Global.App.OpenedSave?.nether != null;
+            btn_end.IsEnabled = Global.App.OpenedSave?.end != null;
+
+            currs.Content = Global.App.OpenedSave?.levelDat;
+            wrldPanel.Visibility = Global.App.OpenedSave?.levelDat != null ? Visibility.Visible : Visibility.Collapsed;
+            //Grid.SetRow(screenshotPanel, Global.App.OpenedSave?.levelDat != null ? 2 : 0);
+
+            if(Global.App.OpenedSave is DimensionSave) {
+                dim_setNone();
+            }
         }
 
     }
 
 
     // noting here
-    class Slider {
+    class PageSlider {
         EButton opener_active;
-        public Slider(Window window, bool lefttoright, bool fixedw, Func<int> getW, int wM, FrameworkElement ss, FrameworkElement container, List<(EButton btn, Action onopen)> openers) {
+        public PageSlider(Window window, bool lefttoright, bool fixedw, Func<int> getW, int wM, FrameworkElement ss, FrameworkElement container, List<(EButton btn, Action onopen)> openers) {
             int w = getW();
             container.Width = w - wM;
             //container.Margin = new Thickness(0, 0, wM, 0);

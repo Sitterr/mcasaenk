@@ -8,7 +8,9 @@
         xmlns:resx="clr-namespace:Mcasaenk.Resources"
         xmlns:gl="clr-namespace:Mcasaenk"
         mc:Ignorable="d"
-        Title="Mcasaenk" Height="450" Width="1500" MinHeight="400">
+        
+        
+        Title="Mcasaenk" Height="625" Width="1000" MinHeight="400">
 
     <Grid x:Name="mainGrid">
 
@@ -35,17 +37,18 @@
         </DockPanel>-->
 
         
-        <canvas:CanvasControl x:Name="canvasControl" x:FieldModifier="public" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
+        <canvas:CanvasControl Focusable="True" x:Name="canvasControl" x:FieldModifier="public" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
         </canvas:CanvasControl>
 
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
             <Grid Margin="10 10 10 0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="10" />
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
-                    <Grid>
+                    <Grid x:Name="wrldPanel" Visibility="Collapsed">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="auto"/>
@@ -54,28 +57,7 @@
                             <ColumnDefinition Width="10"/>
                         </Grid.ColumnDefinitions>
 
-                        <Grid Grid.Column="1" VerticalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="48" />
-                                <ColumnDefinition Width="7" />
-                                <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-
-                            <local:EButton x:Name="cvcvcvb" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BorderBrush="{StaticResource BORDER}">
-                                <Image x:Name="cvcvcv" Source="{Binding Source={x:Static resx:ResourceMapping.icon}}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                            </local:EButton>
-                            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">
-                            <Run Text="Selata" FontSize="18"/>
-                            <Run Text="/1.17/" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/>
-                            </TextBlock>
-                            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" FontSize="10" 
-                                       Text="Niki2 29.11.2019"/>
-                        </Grid>
+                        <ContentControl x:Name="currs" Grid.Column="1" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
 
                         <Border x:Name="dim_bor" Grid.Column="3" HorizontalAlignment="Right" Height="48">
                             <Border.Background >
@@ -95,7 +77,7 @@
                                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.nether8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                 </local:EButton>
                                 <Border Width="15"/>
-                                <local:EButton IsEnabled="False" x:Name="btn_end" Width="34" Height="34" BorderThickness="2" BorderColor="#931054">
+                                <local:EButton x:Name="btn_end" Width="34" Height="34" BorderThickness="2" BorderColor="#931054">
                                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.end8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                 </local:EButton>
                                 <Border Width="7"/>
@@ -105,7 +87,8 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="2" Margin="0 10 0 0" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
+                <Border Grid.Row="1"/>
+                <Border x:Name="screenshotPanel" Grid.Row="2" VerticalAlignment="Top" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
                     <StackPanel Orientation="Horizontal">
                         <Border Background="Transparent" Width="10"/>
                         <local:Rad x:Name="rad" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -132,7 +115,7 @@
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontSize="18" Text="Location" Margin="0 0 10 0"/>
-                            <local:EButton Width="50">
+                            <local:EButton x:Name="loc_go" Width="50">
                                 <TextBlock FontSize="14" Text="Go"/>
                             </local:EButton>
                         </StackPanel>
@@ -152,10 +135,10 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Column="0" Grid.Row="0" FontSize="18" Text="x:"/>
-                            <TextBox Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" FontSize="18"/>
+                            <TextBox x:Name="loc_x" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" FontSize="18"/>
 
                             <TextBlock Grid.Column="0" Grid.Row="2" FontSize="18" Text="z:"/>
-                            <TextBox Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" FontSize="18"/>
+                            <TextBox x:Name="loc_z" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" FontSize="18"/>
 
                             <TextBlock Grid.Column="0" Grid.Row="4" FontSize="18" Text="y:"/>
                             <TextBox Grid.Column="2" Grid.Row="4" HorizontalAlignment="Left" IsEnabled="False" FontSize="18"

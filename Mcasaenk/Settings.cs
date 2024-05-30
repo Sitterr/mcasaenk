@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -89,19 +90,18 @@ namespace Mcasaenk
         public Settings() { }
 
         public static Settings DEF() => new Settings() {
+            DIMENSION = Dimension.Type.Overworld,
             Y = 319,
 
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
+            MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
 
             COLOR_MAPPING_MODE = "mean",
             WATER_MODE = WaterMode.Exponential,
             WATEROPACITY = 0.50,
-
-            LANDBIOMES = false, WATERBIOMES = true,
-            LAND_BLEND = 17, WATER_BLEND = 17,
 
             SUN_LIGHT = 1, CONTRAST = 0.50,
 
@@ -117,7 +117,17 @@ namespace Mcasaenk
             frozen = false;
         }
 
+        private Dimension.Type dimension;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public Dimension.Type DIMENSION {
+            get => dimension;
+            set {
+                if(dimension == value) return;
 
+                dimension = value;
+                OnHardChange(nameof(DIMENSION));
+            }
+        }
 
 
         private short y, y_back;
@@ -136,36 +146,6 @@ namespace Mcasaenk
             }
         }
         public short RENDERHEIGHT { get => y; set { y = value; Y = value; OnHardChange(nameof(RENDERHEIGHT)); } }
-
-
-
-
-        private int landBlend;
-        [JsonIgnore]
-        public int LandBlend {
-            get => landBlend;
-            set {
-                if(landBlend == value) return;
-
-                landBlend = value;
-                OnLightChange(nameof(LandBlend));
-            }
-        }
-        public int LAND_BLEND { get => LandBlend; set => LandBlend = value; }
-
-
-        private int waterBlend;
-        [JsonIgnore]
-        public int WaterBlend {
-            get => waterBlend;
-            set {
-                if(waterBlend == value) return;
-
-                waterBlend = value;
-                OnLightChange(nameof(WaterBlend));
-            }
-        }
-        public int WATER_BLEND { get => WaterBlend; set => WaterBlend = value; }
 
 
         private double contrast;
@@ -208,34 +188,6 @@ namespace Mcasaenk
             }
         }
         public double WATEROPACITY { get => WaterOpacity; set => WaterOpacity = value; }
-
-
-        private bool landBiomes;
-        [JsonIgnore]
-        public bool LandBiomes {
-            get => landBiomes;
-            set {
-                if(landBiomes == value) return;
-
-                landBiomes = value;
-                OnLightChange(nameof(LandBiomes));
-            }
-        }
-        public bool LANDBIOMES { get => LandBiomes; set => LandBiomes = value; }
-
-
-        private bool waterBiomes;
-        [JsonIgnore]
-        public bool WaterBiomes {
-            get => waterBiomes;
-            set {
-                if(waterBiomes == value) return;
-
-                waterBiomes = value;
-                OnLightChange(nameof(WaterBiomes));
-            }
-        }
-        public bool WATERBIOMES { get => WaterBiomes; set => WaterBiomes = value; }
 
 
         private bool staticShade;
@@ -537,20 +489,66 @@ namespace Mcasaenk
         #region static
         public static Filter.filter AIR_FILTER { 
             get {
-                if(Global.App.Settings.Y == 319) return FromEnum.Filter(FilterMode.HeightmapAir);
-                else return FromEnum.Filter(FilterMode.Air);
+                if(Global.App.Settings.Y == 319 && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterAir;
+                else return AirFilter.List;
             }
         }
         public static Filter.filter DEPTH_FILTER {
             get {
-                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depthBlock == Colormap.BLOCK_WATER) return FromEnum.Filter(FilterMode.HeightmapWater);
-                else return FromEnum.Filter(FilterMode.Depth);
+                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depthBlock == Colormap.BLOCK_WATER && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterWater;
+                else return DepthFilter.List;
             }
         }
-        public static Filter.filter SHADE3D_FILTER { get => FromEnum.Filter(FilterMode.Shade3d); }
+        public static Filter.filter SHADE3D_FILTER { get => Shade3DFilter.List; }
         #endregion
 
 
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class DynamicTintSettings : INotifyPropertyChanged {
+        bool frozen = true;
+        public void OnLightChange(string propertyName) {
+            if(frozen == false) onLightChange();
+            if(propertyName != "") OnPropertyChanged(propertyName);
+        }
+
+
+        private bool on;
+        public bool On {
+            get => on;
+            set {
+                if(value == on) return;
+
+                on = value;
+                OnLightChange(nameof(On));
+            } 
+        }
+        private int blend;
+        public int Blend {
+            get => blend;
+            set {
+                if(value == blend) return;
+
+                blend = value;
+                OnLightChange(nameof(Blend));
+            }
+        }
+
+        public DynamicTintSettings() { }
+        public static DynamicTintSettings DEF() => new DynamicTintSettings() { 
+            On = true, Blend = 7,
+        };
+        private Action onLightChange;
+        public void SetActions(Action onLightChange) {
+            this.onLightChange = onLightChange;
+            frozen = false;
+        }
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -569,21 +567,6 @@ namespace Mcasaenk
 
 
 
-
-    public static class FromEnum {
-        public static Filter.filter Filter(FilterMode filter) {
-            return filter switch {
-                FilterMode.None => Rendering.Filter.NullFilter,
-                FilterMode.LightAir => AirFilter.Def,
-                FilterMode.LightWater => DepthFilter.Def,
-                FilterMode.Air => AirFilter.List,
-                FilterMode.Depth => DepthFilter.List,
-                FilterMode.Shade3d => Shade3DFilter.List,
-                FilterMode.HeightmapAir => HeightmapFilter.FilterAir,
-                FilterMode.HeightmapWater => HeightmapFilter.FilterWater,
-            };
-        }
-    }
 
     public static class EnumHelper {
         public static string Description(this Enum value) {
