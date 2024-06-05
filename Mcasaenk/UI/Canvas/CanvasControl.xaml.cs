@@ -170,6 +170,17 @@ namespace Mcasaenk.UI.Canvas {
                     mouseStart = screen.GetGlobalPos(mousePos);
                     mousedown = true;
                     mousedownCursor = Mouse.OverrideCursor;
+
+                    if(mousedownCursor == Cursors.ScrollNW || mousedownCursor == Cursors.ScrollN) {
+                        screenshotManager.Rebase(true, true);
+                    } else if(mousedownCursor == Cursors.ScrollNE || mousedownCursor == Cursors.ScrollE) {
+                        screenshotManager.Rebase(true, false);
+                    } else if(mousedownCursor == Cursors.ScrollSW || mousedownCursor == Cursors.ScrollW) {
+                        screenshotManager.Rebase(false, true);
+                    } else if(mousedownCursor == Cursors.ScrollSE || mousedownCursor == Cursors.ScrollS) {
+                        screenshotManager.Rebase(false, false);
+                    }
+
                     Mouse.OverrideCursor = Cursors.Hand;
                     break;
                 case MouseButton.Middle:
@@ -206,56 +217,17 @@ namespace Mcasaenk.UI.Canvas {
                 } else {
                     var globalMousePos = screen.GetGlobalPos(mousePos).Floor();
 
-                    mouseStart = mouseStart.Floor();
-
                     if(mousedownCursor == Cursors.Cross) {
-                        screenshotManager.Location = screenshotManager.Location.Add(globalMousePos.Sub(mouseStart));
-                    } else if(mousedownCursor == Cursors.ScrollNW) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, offset.Y));
-                    } else if(mousedownCursor == Cursors.ScrollNE) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(-offset.X, offset.Y);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, offset.Y));
-                    } else if(mousedownCursor == Cursors.ScrollSW) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(offset.X, -offset.Y);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, 0));
-                    } else if(mousedownCursor == Cursors.ScrollSE) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(-offset.X, -offset.Y);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
-                    } else if(mousedownCursor == Cursors.ScrollN) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, offset.Y));
-                    } else if(mousedownCursor == Cursors.ScrollS) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(0, -offset.Y);
-                        screenshotManager.Resolution.Y += (int)offset.Y;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
-                    } else if(mousedownCursor == Cursors.ScrollW) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(offset.X, 0);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, 0));
-                    } else if(mousedownCursor == Cursors.ScrollE) {
-                        var offset = mouseStart.Sub(globalMousePos);
-                        offset = new Point(-offset.X, 0);
-                        screenshotManager.Resolution.X += (int)offset.X;
-                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
+                        mouseStart = mouseStart.Floor();
+                        screenshotManager.Move(globalMousePos.Sub(mouseStart));
+                        mouseStart = globalMousePos;
+                    } else if(mousedownCursor == Cursors.ScrollNW || mousedownCursor == Cursors.ScrollNE || mousedownCursor == Cursors.ScrollSW || mousedownCursor == Cursors.ScrollSE) {
+                        screenshotManager.ResizeCorner(globalMousePos);
+                    } else if(mousedownCursor == Cursors.ScrollW || mousedownCursor == Cursors.ScrollE) {
+                        screenshotManager.ResizeAxis((int)globalMousePos.X, true);
+                    } else if(mousedownCursor == Cursors.ScrollN || mousedownCursor == Cursors.ScrollS) {
+                        screenshotManager.ResizeAxis((int)globalMousePos.Y, false);
                     }
-
-                    mouseStart = globalMousePos;
-
                 }
 
 
@@ -303,16 +275,16 @@ namespace Mcasaenk.UI.Canvas {
         private void OnKeyDown(object sender, KeyEventArgs e) {
             if(screenshotManager != null) {
                 if(e.Key == Key.D || e.Key == Key.Right) {
-                    screenshotManager.Location.X++;
+                    screenshotManager.Move(new Point(1, 0));
                     e.Handled = true;
                 } else if(e.Key == Key.A || e.Key == Key.Left) {
-                    screenshotManager.Location.X--;
+                    screenshotManager.Move(new Point(-1, 0));
                     e.Handled = true;
                 } else if(e.Key == Key.W || e.Key == Key.Up) {
-                    screenshotManager.Location.Y--;
+                    screenshotManager.Move(new Point(0, -1));
                     e.Handled = true;
                 } else if(e.Key == Key.S || e.Key == Key.Down) {
-                    screenshotManager.Location.Y++;
+                    screenshotManager.Move(new Point(0, 1));
                     e.Handled = true;
                 }
             }

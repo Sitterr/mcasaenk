@@ -355,6 +355,13 @@ namespace Mcasaenk {
         public static Size Mult(this Size p, double mult) {
             return new Size(p.Width * mult, p.Height * mult);
         }
+        public static Point AsPoint(this Size p) {
+            return new Point(p.Width, p.Height);
+        }
+
+        public static Point Mid(this Rect r) {
+            return r.TopLeft.Add(r.Size.AsPoint().Dev(2));
+        }
 
 
         public readonly struct Dpi {

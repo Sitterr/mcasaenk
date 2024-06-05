@@ -164,7 +164,6 @@ namespace Mcasaenk.UI.Canvas {
         private Pen outlinePen;
         private ScreenshotManager manager;
         public ScreenshotPainer() {
-
             outlinePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
             backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.LightYellow));
         }
@@ -176,10 +175,10 @@ namespace Mcasaenk.UI.Canvas {
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             if(manager == null) return;
             
-            var rect = new Rect(screen.GetLocalPos(manager.Location), manager.Size.Mult(screen.zoom).AsSize());
+            var rect = manager.LocalRect(screen);
             graphics.DrawRectangle(backBrush, outlinePen, rect);
 
-            if(manager.CanResize) {
+            if(manager.canResize) {
                 int e = EdgeSize(screen.zoom);
                 var p = new Point(e, e).Dev(2);
                 var s = new Size(e, e);
@@ -194,7 +193,6 @@ namespace Mcasaenk.UI.Canvas {
                 graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Top).Sub(p), s));
                 graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Bottom).Sub(p), s));
             }
-            //manager.TileMapLoc
         }
     }
 
