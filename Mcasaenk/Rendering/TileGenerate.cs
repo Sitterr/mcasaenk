@@ -42,11 +42,11 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depthBlock);
+            var genData = new GenData(rawData, Global.App.Colormap.depth.block);
             return genData;
         }
 
-        public static unsafe GenData ShadeGenerate(Tile tile) {
+        public static unsafe GenData ShadeGenerate(Tile tile, TaskScheduler scheduler) {
             var rawData = new RawData();
 
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
@@ -62,7 +62,7 @@ namespace Mcasaenk.Rendering
                 for(int i = 0; i < 32; i++) {
                     for(int _c = 0; _c <= i; _c += g) {
                         int c = _c;
-                        var task = Task.Run(() => {
+                        var task = Task.Factory.StartNew(() => {
                             for(int cc = c; cc < c + g; cc++) {
                                 if(cc > i) break;
 
@@ -70,7 +70,7 @@ namespace Mcasaenk.Rendering
                                 int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
                                 doChunk(cx, cz);
                             }
-                        });
+                        }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, scheduler);
                         tasks.Add(task);
                         if(tasks.Count >= Global.App.Settings.CHUNKRENDERMAXCONCURRENCY) {
                             Task.WaitAll(tasks.ToArray());
@@ -105,7 +105,7 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depthBlock);
+            var genData = new GenData(rawData, Global.App.Colormap.depth.block);
             
             { // save shades 
                 tile.shade.Construct(rawData, genData);

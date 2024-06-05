@@ -128,6 +128,9 @@ namespace Mcasaenk {
                             TileMap?.RedrawAll();
                         });
                     }
+                    Colormap.depth.SetActions(() => {
+                        TileMap?.RedrawAll();
+                    });
                 }
 
                 Window.OnHardReset();

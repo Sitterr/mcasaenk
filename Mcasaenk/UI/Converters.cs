@@ -26,6 +26,19 @@ namespace Mcasaenk.UI
         }
     }
 
+    public class VisibilityConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value is bool visibility) {
+                return visibility ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
     public class BitOrConverter : IMultiValueConverter {
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
             return value.Select(o => (bool)o).Any(v => v);

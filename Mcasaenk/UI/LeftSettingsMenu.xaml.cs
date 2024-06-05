@@ -111,7 +111,7 @@ namespace Mcasaenk.UI {
         }
 
         
-        public void SetUpTintGrid(Colormap colormap) {
+        public void SetUpColormapSettings(Colormap colormap) {
             tintGrid.RowDefinitions.Clear();
             tintGrid.Children.Clear();
 
@@ -164,8 +164,58 @@ namespace Mcasaenk.UI {
 
                 i++;
             }
-
             if(tintGrid.RowDefinitions.Count > 0) tintGrid.RowDefinitions.RemoveAt(tintGrid.RowDefinitions.Count - 1);
+            tintGrid.Visibility = tintGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+
+            waterGrid.RowDefinitions.Clear();
+            if(colormap.depth is TranslucientDepth transl) {
+                waterGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                waterGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2) });
+                waterGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto, MinHeight = 10 });
+
+                var dockPanel = new DockPanel();
+                Grid.SetRow(dockPanel, 0);
+                Grid.SetColumn(dockPanel, 0);
+
+                dockPanel.Children.Add(new TextBlock() { Text = "water transparency" });
+
+                var txtNum = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
+                txtNum.SetBinding(TextBlock.TextProperty, new Binding("Transparency") { Source = transl, Converter = new RoundConverter() });
+                dockPanel.Children.Add(txtNum);
+
+                var slider = new Slider() {
+                    Minimum = 0,
+                    Maximum = 1,
+                    TickFrequency = 0.1
+                };
+                Grid.SetRow(slider, 2);
+                Grid.SetColumn(slider, 0);
+                slider.SetBinding(Slider.ValueProperty, new Binding("Transparency") { Source = transl });
+
+                waterGrid.Children.Add(dockPanel);
+                waterGrid.Children.Add(slider);
+
+
+
+
+
+
+                StackPanel c = new StackPanel() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetColumn(c, 2);
+                Grid.SetRow(c, 0);
+                Grid.SetRowSpan(c, 3);
+
+                c.Children.Add(new TextBlock() { Text = "smart water shade", Margin = new Thickness(0, 0, 10, 0) });
+                var toggleStrongBtn = new ToggleButton();
+                toggleStrongBtn.SetBinding(ToggleButton.IsCheckedProperty, new Binding("SmartShade") { Source = transl });
+                c.Children.Add(toggleStrongBtn);
+
+                waterGrid.Children.Add(c);
+            }
+            waterGrid.Visibility = waterGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+
         }
     }
 }

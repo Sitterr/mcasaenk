@@ -16,18 +16,23 @@ using static Mcasaenk.Rendering.GenerateTilePool;
 namespace Mcasaenk.Rendering {
     public class Pool {
         protected readonly int maxConcurrency;
-        private LimitedConcurrencyLevelTaskScheduler task_pool;
+        protected TaskScheduler task_pool;
         public Pool(int maxConcurrency) {
             this.maxConcurrency = maxConcurrency;
 
-            task_pool = new LimitedConcurrencyLevelTaskScheduler(maxConcurrency);
+            //task_pool = new LimitedConcurrencyLevelTaskScheduler(maxConcurrency);
+            task_pool = new ConcurrentExclusiveSchedulerPair(
+                TaskScheduler.Default,          // schedule work to the ThreadPool
+                maxConcurrency) // Schedule enough to keep all threads busy, with a queue to quickly replace completed work
+    .ConcurrentScheduler;
         }
 
         public void QueueTask(Task task) {
             task.Start(task_pool);
         }
         public int GetLoadingQueue() {
-            return task_pool.TaskCount();
+            if(task_pool is LimitedConcurrencyLevelTaskScheduler l) return l.TaskCount();
+            else return -1;
         }
     }
 
@@ -42,7 +47,7 @@ namespace Mcasaenk.Rendering {
             curr = new ConcurrentDictionary<Tile, int>();
         }
 
-        public void Queue(Tile tile, Action f, Func<bool> finalCheck) {
+        public void Queue(Tile tile, Action f, Func<bool> finalCheck, TaskCreationOptions taskCreationOptions = TaskCreationOptions.None) {
             if(queued.ContainsKey(tile)) return;
             queued.TryAdd(tile, default);
             Task task = new Task(() => {
@@ -57,7 +62,7 @@ namespace Mcasaenk.Rendering {
                     queued.TryRemove(tile, out _);
                     loading.TryRemove(tile, out _);
                 }
-            });
+            }, taskCreationOptions);
             base.QueueTask(task);
         }
         public bool IsQueued(Tile tile) => queued.ContainsKey(tile);
@@ -90,7 +95,7 @@ namespace Mcasaenk.Rendering {
 
             base.Queue(tile, (Action)(() => {
                 Global.Time((Action)(() => {
-                    tile.genData = Global.App.Settings.SHADE3D ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
+                    tile.genData = Global.App.Settings.SHADE3D ? TileGenerate.ShadeGenerate(tile, TaskScheduler.Default) : TileGenerate.StandartGenerate(tile);
                 }), out var time);
                 redrawAcc += time;
                 redrawCount++;
@@ -104,7 +109,7 @@ namespace Mcasaenk.Rendering {
                     }
                 }
                 return atleastone;
-            });
+            }, TaskCreationOptions.LongRunning);
         }
 
     }

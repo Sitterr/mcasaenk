@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -149,6 +150,51 @@ namespace Mcasaenk.UI.Canvas {
         private ImageSource GetRedOverlay() {
             _redOverlay ??= GenerateColorOverlay(Colors.Transparent, Colors.Red, 0.65);
             return _redOverlay;
+        }
+    }
+
+    public class ScreenshotPainer : Painter {
+        public static int EdgeSize(double zoom) {
+            if(zoom < 0.5) return 0;
+            return (int)Math.Round(10 + zoom);
+            //return (int)Math.Round(10 * zoom);
+        }
+
+        private Brush backBrush;
+        private Pen outlinePen;
+        private ScreenshotManager manager;
+        public ScreenshotPainer() {
+
+            outlinePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
+            backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.LightYellow));
+        }
+
+        public void SetManager(ScreenshotManager manager) {
+            this.manager = manager;
+        }
+
+        protected override void Render(DrawingContext graphics, WorldPosition screen) {
+            if(manager == null) return;
+            
+            var rect = new Rect(screen.GetLocalPos(manager.Location), manager.Size.Mult(screen.zoom).AsSize());
+            graphics.DrawRectangle(backBrush, outlinePen, rect);
+
+            if(manager.CanResize) {
+                int e = EdgeSize(screen.zoom);
+                var p = new Point(e, e).Dev(2);
+                var s = new Size(e, e);
+
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.TopLeft.Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.TopRight.Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.BottomLeft.Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.BottomRight.Sub(p), s));
+
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left, rect.Top + rect.Height / 2).Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Right, rect.Top + rect.Height / 2).Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Top).Sub(p), s));
+                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Bottom).Sub(p), s));
+            }
+            //manager.TileMapLoc
         }
     }
 

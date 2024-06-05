@@ -74,10 +74,6 @@
                                         <RowDefinition Height="auto"/>
                                         <RowDefinition Height="2"/>
                                         <RowDefinition Height="auto" MinHeight="10"/>
-                                        <RowDefinition Height="40"/>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition Height="2"/>
-                                        <RowDefinition Height="auto" MinHeight="10"/>
                                     </Grid.RowDefinitions>
 
 
@@ -135,23 +131,6 @@
                                     <Slider Grid.Row="6" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}"/>
 
-
-
-                                    <DockPanel Grid.Row="8" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="1">
-                                        <TextBlock Text="water mode" VerticalAlignment="Center"/>
-                                        <ComboBox Width="auto" VerticalAlignment="Center" Margin="10 0 0 0"
-                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                                  SelectedValuePath="Value"
-                                                  DisplayMemberPath="Description"
-                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=WaterMode}"/>
-                                    </DockPanel>
-
-                                    <DockPanel Grid.Row="8" Grid.Column="2">
-                                        <TextBlock Text="water opacity"/>
-                                        <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
-                                    </DockPanel>
-                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterOpacity}"/>
 
                                 </Grid>
                             </Border>
@@ -273,6 +252,16 @@
                                     </StackPanel>
 
                                     <Grid x:Name="tintGrid" Margin="0 60 0 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                        </Grid.RowDefinitions>
+                                    </Grid>
+
+                                    <Grid x:Name="waterGrid" Margin="0 60 0 0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" SharedSizeGroup="A"/>
                                             <ColumnDefinition Width="20"/>

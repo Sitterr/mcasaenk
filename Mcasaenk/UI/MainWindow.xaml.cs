@@ -34,10 +34,34 @@ namespace Mcasaenk.UI {
             footer = footerControl.@interface;
             footerControl.Init();
 
-            this.resolution_reset.Click += (o, e) => {
-                rad.Reset();
+            this.scr_capture.Click += (o, e) => {
+                canvasControl?.ScreenshotManager?.TakeAndSaveScreenShot();
             };
+            this.scr_stop.Click += (o, e) => {
+                rad.Reset(true);
+            };
+            this.scr_rotate.Click += (o, e) => {
+                canvasControl?.ScreenshotManager.Rotate();
+            };
+            this.rad.SetCallback(() => {
+                var res = this.rad.GetResolution();
+                if(res.type == Rad.ResolutionType.frame) {
+                    var canvasSize = canvasControl.ScreenSize();
+                    res.res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
+                    res.res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
+                }
 
+                canvasControl?.SetUpScreenShot(res.res, res.type == Rad.ResolutionType.resizeable);
+
+                scr_capture.IsEnabled = res.res != null;
+                scr_stop.IsEnabled = res.res != null;
+                scr_rotate.IsEnabled = res.res != null;
+
+                if(res.type == Rad.ResolutionType.frame) {
+                    scr_capture.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                }
+            });
 
             overworld_fore = overworld_back;
             overworld_fore.A = 160;
@@ -46,22 +70,8 @@ namespace Mcasaenk.UI {
             end_fore = end_back;
             end_fore.A = 120;
             {
-               void onchange() {
-                    if(Global.App.OpenedSave == null || Global.App.OpenedSave is DimensionSave) {
-                        dim_setNone();
-                        return;
-                    }
-                    switch(Global.Settings.DIMENSION) {
-                        case Dimension.Type.Overworld:
-                            dim_setOverworld(); break;
-                        case Dimension.Type.Nether:
-                            dim_setNether(); break;
-                        case Dimension.Type.End:
-                            dim_setEnd(); break;
-                    }
-                }
                 Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => { 
-                    if(e.PropertyName == nameof(Settings.DIMENSION)) onchange(); 
+                    if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange(); 
                 };
                 btn_overworld.Click += (o, e) => {
                     Global.Settings.DIMENSION = Dimension.Type.Overworld;
@@ -75,12 +85,7 @@ namespace Mcasaenk.UI {
             }
 
             this.Loaded += (o, e) => {
-                var res = Resolution.CurrentResolution(this);
-                Resolution.predefined[0].X = res.w;
-                Resolution.predefined[0].Y = res.h;
-
-                Resolution.custom.X++;
-
+                rad.PreDefined(Global.Settings.PREDEFINEDRES);
 
                 this.MinWidth = mainGrid.ColumnDefinitions[0].ActualWidth + 10 + 15;
 
@@ -184,13 +189,26 @@ namespace Mcasaenk.UI {
 
             dim_bor.Background = brush;
         }
-
+        void dim_onchange() {
+            if(Global.App.OpenedSave == null || Global.App.OpenedSave is DimensionSave) {
+                dim_setNone();
+                return;
+            }
+            switch(Global.Settings.DIMENSION) {
+                case Dimension.Type.Overworld:
+                    dim_setOverworld(); break;
+                case Dimension.Type.Nether:
+                    dim_setNether(); break;
+                case Dimension.Type.End:
+                    dim_setEnd(); break;
+            }
+        }
 
 
 
 
         public void OnHardReset() {
-            leftSettingsMenu.SetUpTintGrid(Global.App.Colormap);
+            leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
 
             btn_overworld.IsEnabled = Global.App.OpenedSave?.overworld != null;
             btn_nether.IsEnabled = Global.App.OpenedSave?.nether != null;
@@ -200,9 +218,11 @@ namespace Mcasaenk.UI {
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDat != null ? Visibility.Visible : Visibility.Collapsed;
             //Grid.SetRow(screenshotPanel, Global.App.OpenedSave?.levelDat != null ? 2 : 0);
 
-            if(Global.App.OpenedSave is DimensionSave) {
-                dim_setNone();
-            }
+            rad.Reset(Global.App.OpenedSave != null);
+
+            canvasControl.Focus();
+
+            dim_onchange();
         }
 
     }

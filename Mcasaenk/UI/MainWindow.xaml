@@ -93,15 +93,15 @@
                         <Border Background="Transparent" Width="10"/>
                         <local:Rad x:Name="rad" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <Border Background="Transparent" Width="10"/>
-                        <local:EButton IsEnabled="True" Width="34" Height="34" Grid.Column="3" BorderColor="{StaticResource GREEN_B}">
+                        <local:EButton x:Name="scr_capture" IsEnabled="True" Width="34" Height="34" Grid.Column="3" BorderColor="{StaticResource GREEN_B}">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.capture}}"/>
                         </local:EButton>
                         <Border Background="Transparent" Width="10"/>
-                        <local:EButton x:Name="resolution_reset" Width="34" Height="34" Grid.Column="5" BorderColor="{StaticResource RED_B}">
+                        <local:EButton x:Name="scr_stop" Width="34" Height="34" Grid.Column="5" BorderColor="{StaticResource RED_B}">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.discard}}"/>
                         </local:EButton>
                         <Border Background="Transparent" Width="10"/>
-                        <local:EButton x:Name="resolution_rotate" Width="34" Height="34" Grid.Column="7" BorderColor="{StaticResource BORDER}">
+                        <local:EButton x:Name="scr_rotate" Width="34" Height="34" Grid.Column="7" BorderColor="{StaticResource BORDER}">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.rotate2}}"/>
                         </local:EButton>
                         <Border Background="Transparent" Width="10"/>

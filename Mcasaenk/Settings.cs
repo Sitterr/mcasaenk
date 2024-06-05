@@ -1,5 +1,7 @@
 ﻿using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
+using Mcasaenk.UI;
+using Mcasaenk.UI.Canvas;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,12 +33,6 @@ namespace Mcasaenk
     public enum BackgroundType {
         [Description("monotone")]
         None,
-    }
-    public enum WaterMode {
-        [Description("translucient")]
-        Exponential,
-        [Description("java map")]
-        Map,
     }
 
 
@@ -98,10 +94,13 @@ namespace Mcasaenk
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
+            PREDEFINEDRES = [
+                new Resolution() { Name = "Full HD", X = 1920, Y = 1080 },
+                new Resolution() { Name = "WQHD", X = 2560, Y = 1440 },
+                new Resolution() { Name = "4K UHD", X = 3840, Y = 2160 },
+            ],
 
             COLOR_MAPPING_MODE = "mean",
-            WATER_MODE = WaterMode.Exponential,
-            WATEROPACITY = 0.50,
 
             SUN_LIGHT = 1, CONTRAST = 0.50,
 
@@ -174,20 +173,6 @@ namespace Mcasaenk
             }
         }
         public double SUN_LIGHT { get => SunLight; set => SunLight = value; }
-
-
-        private double waterOpacity;
-        [JsonIgnore]
-        public double WaterOpacity {
-            get => waterOpacity;
-            set {
-                if(waterOpacity == value) return;
-
-                waterOpacity = value;
-                OnLightChange(nameof(WaterOpacity));
-            }
-        }
-        public double WATEROPACITY { get => WaterOpacity; set => WaterOpacity = value; }
 
 
         private bool staticShade;
@@ -283,20 +268,6 @@ namespace Mcasaenk
             }
         }
         public string COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
-
-
-        private WaterMode waterMode;
-        [JsonIgnore]
-        public WaterMode WaterMode {
-            get => waterMode;
-            set {
-                if(waterMode == value) return;
-
-                waterMode = value;
-                OnLightChange(nameof(WaterMode));
-            }
-        }
-        public WaterMode WATER_MODE { get => WaterMode; set => WaterMode = value; }
 
 
 
@@ -481,6 +452,22 @@ namespace Mcasaenk
         }
         public string MCDIR { get => McDir; set => McDir = value; }
 
+
+
+        private Resolution[] predefined_reses;
+        [JsonIgnore]
+        public Resolution[] PredifinedReses {
+            get => predefined_reses;
+            set {
+                if(predefined_reses == value) return;
+
+                predefined_reses = value;
+                OnAutoChange(nameof(PredifinedReses));
+                Global.App.Window?.rad.PreDefined(value);
+            }
+        }
+        public Resolution[] PREDEFINEDRES { get => PredifinedReses; set => PredifinedReses = value; }
+
         #region depr
         public bool WATERDEPTH { get => true; set { } }
         #endregion
@@ -495,7 +482,7 @@ namespace Mcasaenk
         }
         public static Filter.filter DEPTH_FILTER {
             get {
-                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depthBlock == Colormap.BLOCK_WATER && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterWater;
+                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depth.block == Colormap.BLOCK_WATER && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterWater;
                 else return DepthFilter.List;
             }
         }
@@ -503,52 +490,6 @@ namespace Mcasaenk
         #endregion
 
 
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    public class DynamicTintSettings : INotifyPropertyChanged {
-        bool frozen = true;
-        public void OnLightChange(string propertyName) {
-            if(frozen == false) onLightChange();
-            if(propertyName != "") OnPropertyChanged(propertyName);
-        }
-
-
-        private bool on;
-        public bool On {
-            get => on;
-            set {
-                if(value == on) return;
-
-                on = value;
-                OnLightChange(nameof(On));
-            } 
-        }
-        private int blend;
-        public int Blend {
-            get => blend;
-            set {
-                if(value == blend) return;
-
-                blend = value;
-                OnLightChange(nameof(Blend));
-            }
-        }
-
-        public DynamicTintSettings() { }
-        public static DynamicTintSettings DEF() => new DynamicTintSettings() { 
-            On = true, Blend = 7,
-        };
-        private Action onLightChange;
-        public void SetActions(Action onLightChange) {
-            this.onLightChange = onLightChange;
-            frozen = false;
-        }
 
 
         public event PropertyChangedEventHandler PropertyChanged;

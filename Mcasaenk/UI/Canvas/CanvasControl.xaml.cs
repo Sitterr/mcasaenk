@@ -25,9 +25,11 @@ namespace Mcasaenk.UI.Canvas {
     public partial class CanvasControl : UserControl {
 
         WorldPosition screen;
+        ScreenshotManager screenshotManager;
 
         List<Painter> painters;
         ScenePainter scenePainter;
+        ScreenshotPainer screenshotPainer;
         GridPainter2 gridPainter;
         BackgroundPainter backgroundPainter;
 
@@ -42,11 +44,13 @@ namespace Mcasaenk.UI.Canvas {
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
             scenePainter = new ScenePainter();
+            screenshotPainer = new ScreenshotPainer();
             gridPainter = new GridPainter2();
             backgroundPainter = new BackgroundPainter();
             painters = [
                 backgroundPainter,
                 scenePainter,
+                screenshotPainer,
                 gridPainter,
             ];
         
@@ -57,6 +61,8 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
             this.MouseLeave += OnMouseLeave;
 
+            this.KeyDown += OnKeyDown;
+
             secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
             CompositionTarget.Rendering += OnFastTick;
         }
@@ -65,6 +71,7 @@ namespace Mcasaenk.UI.Canvas {
         MainWindow window { get => Global.App.Window; }
         public void OnTilemapChanged() { 
             scenePainter.SetTileMap(tileMap);
+            screenshotManager = null;
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
@@ -83,19 +90,19 @@ namespace Mcasaenk.UI.Canvas {
                 painter.Update(screen);
             }
 
-            { // footer update
-                double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
-                double t = elapsed - tick_lastElapsed;
-                tick_accumulation += t;
-                tick_lastElapsed = elapsed;
-                tick_count++;
-                if(tick_accumulation > 1000) {
-                    window.footer.Fps = tick_count;
-                    tick_accumulation = 0;
-                    tick_count = 0;
-                }
-                window.footer.Region = screen.GetRegionPos(mousePos);
-            }
+            //{ // footer update
+            //    double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
+            //    double t = elapsed - tick_lastElapsed;
+            //    tick_accumulation += t;
+            //    tick_lastElapsed = elapsed;
+            //    tick_count++;
+            //    if(tick_accumulation > 1000) {
+            //        window.footer.Fps = tick_count;
+            //        tick_accumulation = 0;
+            //        tick_count = 0;
+            //    }
+            //    window.footer.Region = screen.GetRegionPos(mousePos);
+            //}
         }
 
         private void OnSlowTick(object a, object b) {
@@ -111,26 +118,37 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            if(window.footer != null) {
-                { // footer update
-                    window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
-                    window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
-                    window.footer.ShadeTiles = tileMap.ShadeTiles();
-                    window.footer.ShadeFrames = tileMap.ShadeFrames();
+            //if(window.footer != null && false) {
+            //    { // footer update
+            //        window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
+            //        window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
+            //        window.footer.ShadeTiles = tileMap.ShadeTiles();
+            //        window.footer.ShadeFrames = tileMap.ShadeFrames();
 
-                    window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
-                }
-            }
+            //        window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
+            //    }
+            //}
         }
 
         void UpdateUILocation() {
             var mid = screen.Mid;
             window.loc_x.Text = ((int)mid.X).ToString();
             window.loc_z.Text = ((int)mid.Y).ToString();
-        }
 
+            Resolution.frame.X = (int)Math.Ceiling(screen.Width) + 1;
+            Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
+        }
+        public void SetUpScreenShot(Resolution res, bool canresize) {
+            screenshotManager = res != null ? new ScreenshotManager(tileMap, res, canresize, screen.Mid.Floor().Sub(new Point(res.X / 2, res.Y / 2).Floor())) : null;
+            screenshotPainer.SetManager(screenshotManager);
+            //this.InvalidateVisual();
+        }
+        public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }
         public void GoTo(Point p) {
             screen.Mid = p;
+        }
+        public Size ScreenSize() {
+            return new Size(screen.Width, screen.Height);
         }
 
 
@@ -144,14 +162,19 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         private Point mousePos = default, mouseStart = default;
-        public bool mousedown = false;
+        public bool mousedown = false, mousemiddle, mousescreenshot = false;
+        public Cursor mousedownCursor;
         public void OnMouseDown(object sender, MouseButtonEventArgs e) {
             switch(e.ChangedButton) {
                 case MouseButton.Left:
-                case MouseButton.Middle:
                     mouseStart = screen.GetGlobalPos(mousePos);
                     mousedown = true;
+                    mousedownCursor = Mouse.OverrideCursor;
+                    Mouse.OverrideCursor = Cursors.Hand;
                     break;
+                case MouseButton.Middle:
+                    mousemiddle = true;
+                    goto case MouseButton.Left;
                 case MouseButton.Right:
                     break;
                 default: break;
@@ -161,21 +184,96 @@ namespace Mcasaenk.UI.Canvas {
         public void OnMouseUp(object sender, MouseButtonEventArgs e) {
             switch(e?.ChangedButton) {
                 case MouseButton.Left:
-                case MouseButton.Middle:
                     mouseStart = default;
                     mousedown = false;
+                    Mouse.OverrideCursor = null;
                     break;
+                case MouseButton.Middle:
+                    mousemiddle = false;
+                    goto case MouseButton.Left;
                 case MouseButton.Right:
                     GC.Collect(2, GCCollectionMode.Aggressive);
+                    //screenshotManager.Rotate();
                     break;
                 default: break;
             }
         }
         public void OnMouseMove(Point point) {
             mousePos = point;
-            if(mousedown) {             
-                screen.Start = mouseStart.Sub(mousePos.Dev(screen.zoom));
+            if(mousedown) {
+                if(mousemiddle || !mousescreenshot) {
+                    screen.Start = mouseStart.Sub(mousePos.Dev(screen.zoom));
+                } else {
+                    var globalMousePos = screen.GetGlobalPos(mousePos).Floor();
+
+                    mouseStart = mouseStart.Floor();
+
+                    if(mousedownCursor == Cursors.Cross) {
+                        screenshotManager.Location = screenshotManager.Location.Add(globalMousePos.Sub(mouseStart));
+                    } else if(mousedownCursor == Cursors.ScrollNW) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, offset.Y));
+                    } else if(mousedownCursor == Cursors.ScrollNE) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(-offset.X, offset.Y);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, offset.Y));
+                    } else if(mousedownCursor == Cursors.ScrollSW) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(offset.X, -offset.Y);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, 0));
+                    } else if(mousedownCursor == Cursors.ScrollSE) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(-offset.X, -offset.Y);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
+                    } else if(mousedownCursor == Cursors.ScrollN) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, offset.Y));
+                    } else if(mousedownCursor == Cursors.ScrollS) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(0, -offset.Y);
+                        screenshotManager.Resolution.Y += (int)offset.Y;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
+                    } else if(mousedownCursor == Cursors.ScrollW) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(offset.X, 0);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(offset.X, 0));
+                    } else if(mousedownCursor == Cursors.ScrollE) {
+                        var offset = mouseStart.Sub(globalMousePos);
+                        offset = new Point(-offset.X, 0);
+                        screenshotManager.Resolution.X += (int)offset.X;
+                        screenshotManager.Location = screenshotManager.Location.Sub(new Point(0, 0));
+                    }
+
+                    mouseStart = globalMousePos;
+
+                }
+
+
                 UpdateUILocation();
+            } else {
+                Cursor newcursor = null;
+                mousescreenshot = false;
+
+                if(screenshotManager != null) {
+                    newcursor = screenshotManager.MouseOverWhat(screen, mousePos);
+
+                    
+                    if(newcursor != null) {
+                        mousescreenshot = true;
+                    }
+                }
+
+                if(newcursor != Mouse.OverrideCursor) Mouse.OverrideCursor = newcursor;
             }
         }
         public void OnMouseWheel(object sender, MouseWheelEventArgs e) {
@@ -198,6 +296,26 @@ namespace Mcasaenk.UI.Canvas {
             //mousePos = default;
             //mouseStart = default;
             //origScreenPos = default;
+
+            Mouse.OverrideCursor = null;
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e) {
+            if(screenshotManager != null) {
+                if(e.Key == Key.D || e.Key == Key.Right) {
+                    screenshotManager.Location.X++;
+                    e.Handled = true;
+                } else if(e.Key == Key.A || e.Key == Key.Left) {
+                    screenshotManager.Location.X--;
+                    e.Handled = true;
+                } else if(e.Key == Key.W || e.Key == Key.Up) {
+                    screenshotManager.Location.Y--;
+                    e.Handled = true;
+                } else if(e.Key == Key.S || e.Key == Key.Down) {
+                    screenshotManager.Location.Y++;
+                    e.Handled = true;
+                }
+            }
         }
         #endregion
     }

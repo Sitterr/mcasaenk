@@ -84,7 +84,7 @@ namespace Mcasaenk.Rendering {
         }
 
         static bool IsDepth(ushort blockid) {
-            if(blockid == Global.App.Colormap.depthBlock) return true;
+            if(blockid == Global.App.Colormap.depth.block) return true;
             return false;
         }
     }

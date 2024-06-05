@@ -133,7 +133,6 @@ namespace Mcasaenk {
             return color & 0xFF000000 | nr << 16 | ng << 8 | nb;
         }
 
-
         public static class Coord {
             public static int fairDev(int a, int b) {
                 int res = (int)a / b;
@@ -337,6 +336,12 @@ namespace Mcasaenk {
         public static Point Mult(this Point p, double mult) {
             return new Point(p.X * mult, p.Y * mult);
         }
+        public static Point Floor(this Point p) {
+            return new Point(Math.Floor(p.X), Math.Floor(p.Y));
+        }
+        public static Size AsSize(this Point p) {
+            return new Size(p.X, p.Y);
+        }
 
         public static Size Add(this Size p, Size p2) {
             return new Size(p.Width + p2.Width, p.Height + p2.Height);
@@ -350,7 +355,6 @@ namespace Mcasaenk {
         public static Size Mult(this Size p, double mult) {
             return new Size(p.Width * mult, p.Height * mult);
         }
-
 
 
         public readonly struct Dpi {

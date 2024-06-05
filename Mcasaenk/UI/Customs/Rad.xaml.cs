@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mcasaenk.UI.Canvas;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,12 +58,20 @@ namespace Mcasaenk.UI {
             };
         }
 
+        public enum ResolutionType { frame, resizeable, pre, nul }
 
         private Resolution selected;
+        private ResolutionType selectedType;
         private Control selectedc;
 
-        public Resolution GetResolution() {
-            return selected;
+
+        private Action onSelect;
+        public void SetCallback(Action onSelect) {
+            this.onSelect = onSelect;
+        }
+
+        public (Resolution res, ResolutionType type) GetResolution() {
+            return (selected, selectedType);
         }
 
         Brush transp = new SolidColorBrush(Colors.Transparent);
@@ -88,18 +97,40 @@ namespace Mcasaenk.UI {
             else btn_pre.Background = transp;
             //}
 
-            if(control is ToggleButton tg) {
-                selected = (Resolution)((ContentControl)(tg.Content)).DataContext;
+            if(control is Button b) {
+                selected = (Resolution)((ContentControl)(b.Content)).Content;
             } else if(control is AButton ab) {
                 selected = (Resolution)(ab.SelectedItem);
             }
+
             selectedc = control;
+            if(control == btn_custom) selectedType = ResolutionType.resizeable;
+            else if(control == btn_frame) selectedType = ResolutionType.frame;
+            else if(control == btn_pre) selectedType = ResolutionType.pre;
+            else selectedType = ResolutionType.nul;
+
+            onSelect();
         }
 
-        public void Reset() {
+        public void Reset(bool tilemap) {
             RecalcSelected(null);
+
             selected = null;
+            selectedType = ResolutionType.nul;
+            onSelect();
+
             btn_pre.clicked = false;
+        }
+
+        public void PreDefined(Resolution[] resolutions) {
+            if(resolutions == null) resolutions = [];
+            if(this.IsLoaded == false) return;
+            var screenres = Resolution.CurrentResolution(this);
+            Resolution.screen.X = screenres.w; Resolution.screen.Y = screenres.h;
+
+            var list = resolutions.ToList();
+            list.Insert(0, Resolution.screen);
+            btn_pre.ItemsSource = list;
         }
     }
 

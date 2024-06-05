@@ -1,5 +1,6 @@
 {
   "depth_block": "water",
+  "depth_mode": "translucient",
   "blocks": [
     {
       "id": "grass",

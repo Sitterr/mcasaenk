@@ -46,9 +46,6 @@ namespace Mcasaenk.Rendering {
                 }
             }
 
-            double watercontrast = -45 * Math.Pow(Global.App.Settings.CONTRAST, 8) + -15 * Global.App.Settings.CONTRAST;
-            double wateropacity = -30 * Math.Pow(Global.App.Settings.WATEROPACITY, 8) + -30 * Global.App.Settings.WATEROPACITY;
-
             for(int i = 0; i < 512 * 512; i++) {
                 var block = genData.block(i);
                 var value = colormap.Value(block);
@@ -62,17 +59,30 @@ namespace Mcasaenk.Rendering {
                         pixels[i] = gb.GetColor(genData.biomeIds(i), genData.heights(i));
                     }
                 }
+            }
 
-                if(Global.App.Settings.WATERDEPTH) {
-                    if(block == colormap.depthBlock) {
-                        int waterDepth = genData.heights(i) - genData.terrainHeights(i);
+            double[] fd = ArrayPool<double>.Shared.Rent(512 * 512);
+            Array.Fill<double>(fd, 1);
+            if(colormap.depth is TranslucientDepth depth) {
+                double watercontrast = -45 * Math.Pow(Global.App.Settings.CONTRAST, 8) + -15 * Global.App.Settings.CONTRAST;
+                double wateropacity = -30 * Math.Pow(depth.Transparency, 8) + -30 * depth.Transparency;
 
-                        uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
+                for(int i = 0; i < 512 * 512; i++) {
+                    var block = genData.block(i);
 
-                        pixels[i] = Global.Blend(pixels[i], terrainColor, I(waterDepth, Global.App.Settings.WATEROPACITY, 1.5 * wateropacity));
+                    if(Global.App.Settings.WATERDEPTH) {
+                        if(block == colormap.depth.block) {
+                            int waterDepth = genData.heights(i) - genData.terrainHeights(i);
 
-                        double multintensity = 1 - I(waterDepth, 0, watercontrast);
-                        pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
+                            uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
+
+                            double ratio = I(waterDepth, depth.Transparency, 1.5 * wateropacity);
+                            if(depth.SmartShade) fd[i] = (1 - ratio) * 1 + ratio * 0.3;
+                            pixels[i] = Global.Blend(pixels[i], terrainColor, ratio);
+
+                            double multintensity = 1 - I(waterDepth, 0, watercontrast);
+                            pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
+                        }
                     }
                 }
             }
@@ -90,7 +100,7 @@ namespace Mcasaenk.Rendering {
                 for(int z = 0; z < 512; z++) {
                     for(int x = 0; x < 512; x++, i++) {
                         if(genData.isShade(i)) {
-                            double multcontr = 1 - Global.App.Settings.CONTRAST;
+                            double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
                             //int addcontr = (int)(-Settings.CONTRAST * 100);
 
                             int max = (int)(Global.App.Settings.CONTRAST * 150);
@@ -103,6 +113,7 @@ namespace Mcasaenk.Rendering {
                     }
                 }
             }
+            ArrayPool<double>.Shared.Return(fd);
 
             if(Global.App.Settings.SUN_LIGHT != 1) {
                 for(int i = 0; i < 512 * 512; i++) {

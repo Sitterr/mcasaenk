@@ -18,6 +18,7 @@ using System.IO;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.Windows.Media.Media3D;
+using System.ComponentModel;
 
 namespace Mcasaenk.Rendering {
     public class DynamicNameToIdBiMap {
@@ -117,7 +118,7 @@ namespace Mcasaenk.Rendering {
         public const ushort DEFBIOME = 0;
         public const int DEFHEIGHT = 70;
 
-        public readonly ushort depthBlock;
+        public readonly Depth depth;
 
         public static ushort BLOCK_AIR, BLOCK_WATER;
         public readonly DynamicNameToIdBiMap Block;
@@ -175,7 +176,14 @@ namespace Mcasaenk.Rendering {
             }
             blocks = blocks.ToFrozenDictionary();
 
-            depthBlock = Block.GetId(blockname(data.depth_block));
+            switch(data.depth_mode) {
+                case DepthMode.translucient:
+                    depth = TranslucientDepth.DEF(Block.GetId(blockname(data.depth_block)));
+                    break;
+                case DepthMode.map:
+                    depth = new MapDepth() { block = Block.GetId(blockname(data.depth_block)) };
+                    break;
+            }
 
             Block.Freeze();
 
@@ -193,7 +201,8 @@ namespace Mcasaenk.Rendering {
         public JsonColormap ToJson() {
             return new JsonColormap() {
                 blocks = this.blocks.Select(b => new JsonBlock() { id = Block.GetName(b.Key), value = b.Value.ToJson() }).ToArray(),
-                depth_block = Block.GetName(depthBlock),
+                depth_block = Block.GetName(depth.block),
+                depth_mode = depth.GetMode(),
             };
         }
 
@@ -213,6 +222,118 @@ namespace Mcasaenk.Rendering {
             return true;
         }
     }
+
+    public class Depth {
+        public ushort block;
+
+        public DepthMode GetMode() {
+            if(this is TranslucientDepth) return DepthMode.translucient;
+            if(this is MapDepth) return DepthMode.map;
+            return default;
+        }
+
+
+
+
+        protected bool frozen = true;
+        protected Action onLightChange;
+        public void SetActions(Action onLightChange) {
+            this.onLightChange = onLightChange;
+            frozen = false;
+        }
+    }
+    public class TranslucientDepth : Depth, INotifyPropertyChanged {
+
+        private double transparency;
+        public double Transparency {
+            get => transparency;
+            set {
+                if(value == transparency) return;
+
+                transparency = value;
+                OnLightChange(nameof(Transparency));
+            }
+        }
+
+        private bool smartshade;
+        public bool SmartShade {
+            get => smartshade;
+            set {
+                if(value == smartshade) return;
+
+                smartshade = value;
+                OnLightChange(nameof(SmartShade));
+            }
+        }
+
+
+
+        public void OnLightChange(string propertyName) {
+            if(frozen == false) onLightChange();
+            if(propertyName != "") OnPropertyChanged(propertyName);
+        }
+        public TranslucientDepth() { }
+        public static TranslucientDepth DEF(ushort block) => new TranslucientDepth() {
+            block = block,
+            Transparency = 0.5,
+            SmartShade = true,
+        };
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+    public class MapDepth : Depth {
+    }
+
+    public class DynamicTintSettings : INotifyPropertyChanged {
+
+        private bool on;
+        public bool On {
+            get => on;
+            set {
+                if(value == on) return;
+
+                on = value;
+                OnLightChange(nameof(On));
+            }
+        }
+        private int blend;
+        public int Blend {
+            get => blend;
+            set {
+                if(value == blend) return;
+
+                blend = value;
+                OnLightChange(nameof(Blend));
+            }
+        }
+
+
+
+        bool frozen = true;
+        public void OnLightChange(string propertyName) {
+            if(frozen == false) onLightChange();
+            if(propertyName != "") OnPropertyChanged(propertyName);
+        }
+        public DynamicTintSettings() { }
+        public static DynamicTintSettings DEF() => new DynamicTintSettings() {
+            On = true,
+            Blend = 7,
+        };
+        private Action onLightChange;
+        public void SetActions(Action onLightChange) {
+            this.onLightChange = onLightChange;
+            frozen = false;
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
 
 
 
@@ -332,6 +453,7 @@ namespace Mcasaenk.Rendering {
 
     public class JsonColormap {
         public string depth_block;
+        public DepthMode depth_mode;
         public JsonBlock[] blocks;
     }
     public class JsonBlock {
@@ -345,4 +467,5 @@ namespace Mcasaenk.Rendering {
     }
 
     public enum ConvertMode { multiply, additive }
+    public enum DepthMode { translucient, map }
 }

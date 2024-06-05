@@ -52,6 +52,12 @@ namespace Mcasaenk.UI.Canvas {
                 coord.Height = value / zoom;
             }
         }
+        public double Width {
+            get { return coord.Width; }
+        }
+        public double Height {
+            get { return coord.Height; }
+        }
         public double zoom {
             get {
                 return _zoom;
@@ -74,17 +80,11 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-        public Point2i GetRegionPos(Point rel) {
-            var globalPos = GetGlobalPos(rel);
-            return new Point2i(Global.Coord.absDev(globalPos.X, 512), Global.Coord.absDev(globalPos.Y, 512));
-        }
-        public Point2i GetRelBlockPos(Point rel) {
-            var globalPos = GetGlobalPos(rel);
-            return new Point2i(Global.Coord.absMod(globalPos.X, 512), Global.Coord.absMod(globalPos.Y, 512));
-        }
-
         public Point GetGlobalPos(Point rel) {
             return new Point(coord.X + rel.X / zoom, coord.Y + rel.Y / zoom);
+        }
+        public Point GetLocalPos(Point gl) {
+            return (gl.Sub(this.Start)).Mult(this.zoom);
         }
 
         public IEnumerable<Point2i> GetVisibleTilePositions() {

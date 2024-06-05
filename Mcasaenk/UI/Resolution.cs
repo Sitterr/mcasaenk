@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
+using System.Windows;
 
-namespace Mcasaenk.UI
-{
+namespace Mcasaenk.UI {
     public class Resolution : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName) { PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); }
@@ -27,7 +26,7 @@ namespace Mcasaenk.UI
 
         private int _x;
         public int X {
-            get { return _x; }
+            get { return Math.Abs(_x); }
             set {
                 if(_x != value) {
                     _x = value;
@@ -38,7 +37,7 @@ namespace Mcasaenk.UI
 
         private int _y;
         public int Y {
-            get { return _y; }
+            get { return Math.Abs(_y); }
             set {
                 if(_y != value) {
                     _y = value;
@@ -47,18 +46,33 @@ namespace Mcasaenk.UI
             }
         }
 
-        public static List<Resolution> predefined = new() {
-            new Resolution() { Name = "-screen1-", X = 0, Y = 0 },
-            new Resolution() { Name = "WXGA", X = 1280, Y = 720 },
-            new Resolution() { Name = "HD", X = 1366, Y = 768 },
-            new Resolution() { Name = "Full HD", X = 1920, Y = 1080 },
-            new Resolution() { Name = "Quad HD", X = 2560, Y = 1440 },
-            new Resolution() { Name = "4K UHD", X = 3840, Y = 2160 },
-        };
-        public static Resolution custom = new Resolution() { Name = "Custom", X = 100, Y = 100 };
-        public static Resolution frame = new Resolution() { Name = "Frame", X = 5000, Y = 3000 };
+        private bool _displaysize = true;
+        [JsonIgnore]
+        public bool DisplaySize {
+            get { return _displaysize; }
+            set {
+                if(_displaysize != value) {
+                    _displaysize = value;
+                    OnPropertyChanged(nameof(DisplaySize));
+                }
+            }
+        }
 
+        private FontStyle _fontstyle = FontStyles.Normal;
+        [JsonIgnore]
+        public FontStyle FontStyle {
+            get { return _fontstyle; }
+            set {
+                if(_fontstyle != value) {
+                    _fontstyle = value;
+                    OnPropertyChanged(nameof(FontStyle));
+                }
+            }
+        }
 
+        public static Resolution screen = new Resolution() { Name = "Screen1", FontStyle = FontStyles.Oblique };
+        public static Resolution custom = new Resolution() { Name = "Custom", X = 64, Y = 64, FontStyle = FontStyles.Oblique };
+        public static Resolution frame = new Resolution() { Name = "Frame", X = 5000, Y = 3000, FontStyle = FontStyles.Oblique };
 
 
         public static (int w, int h) CurrentResolution(Control control) {

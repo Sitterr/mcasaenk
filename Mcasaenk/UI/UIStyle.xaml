@@ -10,6 +10,7 @@
     <local:EnumToCollectionConverter x:Key="EnumToCollectionConverter"/>
     <local:DifferenceConverter x:Key="DifferenceConverter"/>
     <local:StarConverter x:Key="StarConverter"/>
+    <local:VisibilityConverter x:Key="VisibilityConverter"/>
 
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
@@ -62,6 +63,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Arrow"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:EButton">
