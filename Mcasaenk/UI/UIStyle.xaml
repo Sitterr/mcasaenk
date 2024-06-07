@@ -630,6 +630,14 @@ TargetType="{x:Type ScrollBar}">
                             <Setter Property="Text" TargetName="t_r" Value="Off"/>
                             <Setter Property="Text" TargetName="t_g" Value=""/>
                         </Trigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" TargetName="b_r" Value="0.3"/>
+                            <Setter Property="Opacity" TargetName="b_g" Value="0.3"/>
+
+                            <Setter Property="Text" TargetName="t_r" Value=""/>
+                            <Setter Property="Text" TargetName="t_g" Value=""/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -657,7 +665,7 @@ TargetType="{x:Type ScrollBar}">
                             BorderThickness="0"                               
                             Background="{x:Null}"
                              Focusable="True"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"
                             VerticalContentAlignment="Bottom"
                             TextElement.Foreground="{TemplateBinding Foreground}"

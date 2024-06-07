@@ -327,6 +327,9 @@ namespace Mcasaenk {
         public static Point Sub(this Point p, Point p2) {
             return new Point(p.X - p2.X, p.Y - p2.Y);
         }
+        public static Point Sub(this Point p, int a) {
+            return new Point(p.X - a, p.Y - a);
+        }
         public static Point Sub(this Point p, Size s) {
             return new Point(p.X - s.Width, p.Y - s.Height);
         }

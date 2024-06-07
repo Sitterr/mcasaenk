@@ -34,7 +34,10 @@ namespace Mcasaenk
         [Description("monotone")]
         None,
     }
-
+    public enum ScreenshotType {
+        [Description("standard")]
+        None,
+    }
 
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
@@ -90,7 +93,7 @@ namespace Mcasaenk
             Y = 319,
 
             MAXZOOM = 5, MINZOOM = -5,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None, Screenshot = ScreenshotType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
@@ -354,6 +357,20 @@ namespace Mcasaenk
             }
         }
         public BackgroundType BACKGROUND { get => Background; set => Background = value; }
+
+
+        private ScreenshotType screenshot;
+        [JsonIgnore]
+        public ScreenshotType Screenshot {
+            get => screenshot;
+            set {
+                if(screenshot == value) return;
+
+                screenshot = value;
+                OnAutoChange(nameof(Background));
+            }
+        }
+        public ScreenshotType SCREENSHOT { get => Screenshot; set => Screenshot = value; }
 
 
         private int regionConcurrency, regionConcurrency_back;

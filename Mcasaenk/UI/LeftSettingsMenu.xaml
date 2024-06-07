@@ -206,7 +206,7 @@
                                     </Slider>
 
                                     <DockPanel Grid.Row="4" Grid.Column="2">
-                                        <TextBlock>
+                                        <TextBlock IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Shade3d}">
                                             <Run Text="β"/><!--
                                          --><Run Text="(elevation angle)" FontSize="12" FontStyle="Italic"/><!--
                                          --><Run Text=" ✶">

@@ -169,6 +169,7 @@ namespace Mcasaenk.UI {
 
 
             waterGrid.RowDefinitions.Clear();
+            waterGrid.Children.Clear();
             if(colormap.depth is TranslucientDepth transl) {
                 waterGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
                 waterGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2) });
@@ -206,9 +207,12 @@ namespace Mcasaenk.UI {
                 Grid.SetRow(c, 0);
                 Grid.SetRowSpan(c, 3);
 
-                c.Children.Add(new TextBlock() { Text = "smart water shade", Margin = new Thickness(0, 0, 10, 0) });
+                var t = new TextBlock() { Text = "smart water shade", Margin = new Thickness(0, 0, 10, 0) };
+                t.SetBinding(TextBlock.IsEnabledProperty, new Binding("SHADE3D") { Source = Global.Settings });
+                c.Children.Add(t);
                 var toggleStrongBtn = new ToggleButton();
                 toggleStrongBtn.SetBinding(ToggleButton.IsCheckedProperty, new Binding("SmartShade") { Source = transl });
+                toggleStrongBtn.SetBinding(ToggleButton.IsEnabledProperty, new Binding("SHADE3D") { Source = Global.Settings });
                 c.Children.Add(toggleStrongBtn);
 
                 waterGrid.Children.Add(c);

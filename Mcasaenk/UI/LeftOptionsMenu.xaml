@@ -131,7 +131,6 @@
                                     </StackPanel>
                                 </StackPanel>
 
-
                                 <StackPanel Grid.Row="4" Grid.Column="0" Orientation="Horizontal">
                                     <TextBlock Text="background" VerticalAlignment="Center"/>
                                     <ComboBox Margin="10 0 0 0"
@@ -139,6 +138,15 @@
                                               SelectedValuePath="Value"
                                               DisplayMemberPath="Description"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Background}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">
+                                    <TextBlock Text="screenshot" VerticalAlignment="Center"/>
+                                    <ComboBox Margin="10 0 0 0"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Screenshot, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Screenshot}"/>
                                 </StackPanel>
 
                                 

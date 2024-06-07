@@ -59,6 +59,23 @@ namespace Mcasaenk.Rendering {
 
         public bool isShade(int i) => _isShade[i];
         public void Set_isShade(int i, bool value) { _isShade[i] = value; }
+
+
+
+        int empty = 0;
+        public bool ContainsEmpty() {
+            if(empty == 0) {
+                empty = 2;
+                for(int i = 0; i < 512 * 512; i++) {
+                    if(block(i) == default) {
+                        empty = 1; 
+                        break;
+                    }
+                }
+            }
+            if(empty == 2) return false;
+            else return true;
+        }
     }
 
     public class RawData {

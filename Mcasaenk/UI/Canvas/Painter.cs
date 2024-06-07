@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
@@ -155,17 +156,19 @@ namespace Mcasaenk.UI.Canvas {
 
     public class ScreenshotPainer : Painter {
         public static int EdgeSize(double zoom) {
-            if(zoom < 0.5) return 0;
             return (int)Math.Round(10 + zoom);
-            //return (int)Math.Round(10 * zoom);
         }
 
         private Brush backBrush;
-        private Pen outlinePen;
+        private Pen greenPen, orangePen, yellowPen, redPen;
         private ScreenshotManager manager;
         public ScreenshotPainer() {
-            outlinePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
-            backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.LightYellow));
+            greenPen = new Pen(new SolidColorBrush(Colors.Green), 2);
+            orangePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
+            yellowPen = new Pen(new SolidColorBrush(Colors.Yellow), 2);
+            redPen = new Pen(new SolidColorBrush(Colors.Red), 2);
+
+            backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.White));
         }
 
         public void SetManager(ScreenshotManager manager) {
@@ -174,24 +177,80 @@ namespace Mcasaenk.UI.Canvas {
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             if(manager == null) return;
-            
-            var rect = manager.LocalRect(screen);
-            graphics.DrawRectangle(backBrush, outlinePen, rect);
+
+
+            Pen outline = greenPen;
+            var glrect = manager.Rect();
+            var tilemap = manager.tileMap;
+            if(glrect.Width == 0 || glrect.Height == 0 || glrect.Width > 16384 || glrect.Height > 16384) {
+                outline = redPen;
+            } else if(tilemap == null) {
+                outline = orangePen;
+            } else {
+                for(int x = Global.Coord.fairDev((int)glrect.X, 512); x <= Global.Coord.fairDev((int)glrect.X + (int)glrect.Width, 512); x++) {
+                    for(int z = Global.Coord.fairDev((int)glrect.Y, 512); z <= Global.Coord.fairDev((int)glrect.Y + (int)glrect.Height, 512); z++) {
+                        var tile = tilemap.GetTile(new Point2i(x, z));
+                        if(tile == null || tile?.genData == null) {
+                            outline = orangePen;
+                            x = int.MaxValue - 1;
+                            break;
+                        }
+                        if(tile.shade.IsActive || tilemap.drawTilePool.IsLoading(tile)) {
+                            outline = yellowPen;
+                        }
+                        if(tile.genData.ContainsEmpty() == false) {
+                            continue;
+                        }
+
+
+                        var interSect = new Rect(new Point(x, z).Mult(512), new Point(x + 1, z + 1).Mult(512).Sub(1));
+                        interSect.Intersect(glrect);
+
+                        int xxst = Global.Coord.absMod((int)interSect.X, 512), zzst = Global.Coord.absMod((int)interSect.Y, 512);
+                        int xxend = (int)Global.Coord.absMod((int)interSect.X + interSect.Width, 512), zzend = (int)Global.Coord.absMod((int)interSect.Y + interSect.Height, 512);
+                        if(Global.Settings.StaticShade) {
+                            if(Global.Settings.ADEG != 0 && Global.Settings.ADEG != 180 && Global.Settings.ADEG != 360) {
+                                if(zzst > 0) zzst--;
+                                if(zzend < 512) zzend++;
+                            }
+                            if(Global.Settings.ADEG != 90 && Global.Settings.ADEG != 270) {
+                                if(xxst > 0) xxst--;
+                                if(xxend < 512) xxend++;
+                            }
+                        }
+                        for(int xx = xxst; xx < xxend; xx++) {
+                            for(int zz = zzst; zz < zzend; zz++) {
+                                if(tile.genData.block(zz * 512 + xx) == default) {
+                                    outline = orangePen;
+                                    z = int.MaxValue - 1;
+                                    x = int.MaxValue - 1;
+                                    xx = int.MaxValue - 1;
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            var locrect = manager.LocalRect(screen);
+            graphics.DrawRectangle(backBrush, outline, locrect);
 
             if(manager.canResize) {
                 int e = EdgeSize(screen.zoom);
                 var p = new Point(e, e).Dev(2);
                 var s = new Size(e, e);
 
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.TopLeft.Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.TopRight.Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.BottomLeft.Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(rect.BottomRight.Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(locrect.TopLeft.Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(locrect.TopRight.Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(locrect.BottomLeft.Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(locrect.BottomRight.Sub(p), s));
 
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left, rect.Top + rect.Height / 2).Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Right, rect.Top + rect.Height / 2).Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Top).Sub(p), s));
-                graphics.DrawRectangle(outlinePen.Brush, null, new Rect(new Point(rect.Left + rect.Width / 2, rect.Bottom).Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(new Point(locrect.Left, locrect.Top + locrect.Height / 2).Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(new Point(locrect.Right, locrect.Top + locrect.Height / 2).Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(new Point(locrect.Left + locrect.Width / 2, locrect.Top).Sub(p), s));
+                graphics.DrawRectangle(outline.Brush, null, new Rect(new Point(locrect.Left + locrect.Width / 2, locrect.Bottom).Sub(p), s));
             }
         }
     }

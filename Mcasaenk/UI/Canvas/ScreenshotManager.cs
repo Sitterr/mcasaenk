@@ -17,7 +17,7 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace Mcasaenk.UI.Canvas {
     public class ScreenshotManager {
-        private TileMap tileMap;
+        public readonly TileMap tileMap;
         private Resolution resolution;
         private bool rotated;
         private Point Loc1;
@@ -103,29 +103,31 @@ namespace Mcasaenk.UI.Canvas {
         public RenderTargetBitmap TakeScreenshot() {
             try {
                 var Size = Rect().Size.AsPoint();
+                var NW = Rect().TopLeft;
 
                 var renderBitmap = new RenderTargetBitmap((int)Size.X, (int)Size.Y, 96, 96, PixelFormats.Pbgra32);
-
-                var drawing = new DrawingVisual();
-                RenderOptions.SetEdgeMode(drawing, EdgeMode.Aliased);
-                using(DrawingContext graphics = drawing.RenderOpen()) {
-                    int xoff = Global.Coord.absMod((int)Loc1.X, 512), zoff = Global.Coord.absMod((int)Loc1.Y, 512);
-                    int stX = Global.Coord.fairDev((int)Loc1.X, 512), stZ = Global.Coord.fairDev((int)Loc1.Y, 512);
-                    for(int x = stX; x <= Global.Coord.fairDev((int)Loc1.X + (int)Size.X, 512); x++) {
-                        for(int z = stZ; z <= Global.Coord.fairDev((int)Loc1.Y + (int)Size.Y, 512); z++) {
-                            var tile = tileMap.GetTile(new Point2i(x, z));
-                            if(tile == null) continue;
-                            if(tile.img == null) continue;
-                            graphics.DrawImage(tileMap.GetTile(new Point2i(x, z)).img, new Rect((x - stX) * 512 - xoff, (z - stZ) * 512 - zoff, 512, 512));
+                if(tileMap != null) {
+                    var drawing = new DrawingVisual();
+                    RenderOptions.SetEdgeMode(drawing, EdgeMode.Aliased);
+                    using(DrawingContext graphics = drawing.RenderOpen()) {
+                        int xoff = Global.Coord.absMod((int)NW.X, 512), zoff = Global.Coord.absMod((int)NW.Y, 512);
+                        int stX = Global.Coord.fairDev((int)NW.X, 512), stZ = Global.Coord.fairDev((int)NW.Y, 512);
+                        for(int x = stX; x <= Global.Coord.fairDev((int)NW.X + (int)Size.X, 512); x++) {
+                            for(int z = stZ; z <= Global.Coord.fairDev((int)NW.Y + (int)Size.Y, 512); z++) {
+                                var tile = tileMap.GetTile(new Point2i(x, z));
+                                if(tile == null) continue;
+                                if(tile.img == null) continue;
+                                graphics.DrawImage(tileMap.GetTile(new Point2i(x, z)).img, new Rect((x - stX) * 512 - xoff, (z - stZ) * 512 - zoff, 512, 512));
+                            }
                         }
                     }
+                    renderBitmap.Render(drawing);
                 }
-                renderBitmap.Render(drawing);
 
                 return renderBitmap;
             }
             catch {
-                MessageBox.Show("The image couldn't have been generated\nThis often occurs if the image size was too big");
+                MessageBox.Show("The image couldn't generate\nThis often occurs if the image size was too big");
                 return null;
             }
         }
@@ -156,15 +158,17 @@ namespace Mcasaenk.UI.Canvas {
             var LocNW = Rect().TopLeft;
             var Size = Rect().Size.AsPoint();
 
-            if(new Rect(screen.GetLocalPos(LocNW).Sub(p), s).Contains(mousePos)) return Cursors.ScrollNW;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, 0))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollNE;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(0, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollSW;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollSE;
+            if(canResize) {
+                if(new Rect(screen.GetLocalPos(LocNW).Sub(p), s).Contains(mousePos)) return Cursors.ScrollNW;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, 0))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollNE;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(0, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollSW;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollSE;
 
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X / 2, 0))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollN;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X / 2, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollS;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(0, Size.Y / 2))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollW;
-            if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, Size.Y / 2))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollE;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X / 2, 0))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollN;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X / 2, Size.Y))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollS;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(0, Size.Y / 2))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollW;
+                if(new Rect(screen.GetLocalPos(LocNW.Add(new Point(Size.X, Size.Y / 2))).Sub(p), s).Contains(mousePos)) return Cursors.ScrollE;
+            }
 
             if(new Rect(screen.GetLocalPos(LocNW), Size.Mult(screen.zoom).AsSize()).Contains(mousePos)) return Cursors.Cross;
 

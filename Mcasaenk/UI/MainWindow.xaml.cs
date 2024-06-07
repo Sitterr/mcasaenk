@@ -35,6 +35,16 @@ namespace Mcasaenk.UI {
             footerControl.Init();
 
             this.scr_capture.Click += (o, e) => {
+                var screenshottaker = canvasControl?.ScreenshotManager;
+                if(screenshottaker == null) return;
+                if(screenshottaker.Rect().Width == 0 || screenshottaker.Rect().Height == 0) {
+                    MessageBox.Show("Cannot make screenshot with no widht/height :(");
+                    return;
+                }
+                if(screenshottaker.Rect().Width > 16384 || screenshottaker.Rect().Height > 16384) {
+                    MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
+                    return;
+                }
                 canvasControl?.ScreenshotManager?.TakeAndSaveScreenShot();
             };
             this.scr_stop.Click += (o, e) => {
