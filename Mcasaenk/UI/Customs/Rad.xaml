@@ -136,17 +136,15 @@
             <SolidColorBrush x:Key="red">#FFDEAA</SolidColorBrush>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="85" />
             <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="80" />
-            <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="85" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Grid.Column="2" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
+        <Border Grid.Row="0" Grid.Column="0" BorderThickness="1 1 0 1" BorderBrush="{StaticResource BORDER}">
             <local:AButton SelectedIndex="0" 
                            ItemTemplate="{DynamicResource ResTempl}"
                            x:Name="btn_pre">
@@ -157,19 +155,7 @@
             <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
         </Border>
 
-        <Border Grid.Row="0" Grid.Column="0" BorderThickness="1 1 0 1" BorderBrush="{StaticResource BORDER}">
-            <Button x:Name="btn_frame" Style="{StaticResource radbtn}">
-                <ContentControl 
-                    ContentTemplate="{StaticResource ResTempl}"
-                    Content="{x:Static ui:Resolution.frame}"/>
-            </Button>
-        </Border>
-
-        <Border Grid.Row="0" Grid.Column="3" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
-            <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-        </Border>
-
-        <Border Grid.Row="0" Grid.Column="4" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}">
+        <Border Grid.Row="0" Grid.Column="2" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}">
             <Button x:Name="btn_custom" Style="{StaticResource radbtn}">
                 <ContentControl 
                     ContentTemplate="{StaticResource ResTempl}" 

@@ -138,8 +138,8 @@ namespace Mcasaenk.UI.Canvas {
             Resolution.frame.X = (int)Math.Ceiling(screen.Width) + 1;
             Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
         }
-        public void SetUpScreenShot(Resolution res, bool canresize) {
-            screenshotManager = res != null ? new ScreenshotManager(tileMap, res, canresize, screen.Mid.Floor().Sub(new Point(res.X / 2, res.Y / 2).Floor())) : null;
+        public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
+            screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
             screenshotPainer.SetManager(screenshotManager);
             //this.InvalidateVisual();
         }

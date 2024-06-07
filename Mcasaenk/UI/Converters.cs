@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -36,6 +37,55 @@ namespace Mcasaenk.UI
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             throw new NotImplementedException();
+        }
+    }
+
+    public class ResolutionScaleTextToDouble : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value is double fr) return ConvertToFraction(fr);
+            return "yes:yes";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+
+            if(((ComboBoxItem)value).Content is string str) {
+                var parts = str.Split(':');
+                return double.Parse(parts[0].Trim()) / double.Parse(parts[1].Trim());
+            }
+            return -1;
+
+        }
+
+
+        static string ConvertToFraction(double number) {
+            int sign = Math.Sign(number);
+            number = Math.Abs(number);
+
+            const double epsilon = 1e-10; // A small tolerance to account for floating point inaccuracies
+            double numerator = number;
+            double denominator = 1;
+
+            while(Math.Abs(number * denominator - Math.Round(number * denominator)) > epsilon) {
+                denominator++;
+            }
+
+            numerator = Math.Round(number * denominator);
+
+            int gcd = GCD((int)numerator, (int)denominator);
+
+            numerator /= gcd;
+            denominator /= gcd;
+
+            return $"{sign * (int)numerator}:{(int)denominator}";
+        }
+
+        static int GCD(int a, int b) {
+            while(b != 0) {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
         }
     }
 

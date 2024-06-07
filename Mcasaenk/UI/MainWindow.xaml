@@ -92,7 +92,13 @@
                     <StackPanel Orientation="Horizontal">
                         <Border Background="Transparent" Width="10"/>
                         <local:Rad x:Name="rad" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Border Background="Transparent" Width="10"/>
+                        <Border Background="Transparent" Width="15"/>
+                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" HorizontalContentAlignment="Center">
+                            <ComboBoxItem>1:1</ComboBoxItem>
+                            <ComboBoxItem>2:1</ComboBoxItem>
+                            <ComboBoxItem>4:1</ComboBoxItem>
+                        </ComboBox>
+                        <Border Background="Transparent" Width="15"/>
                         <local:EButton x:Name="scr_capture" Width="34" Height="34" Grid.Column="3" BorderColor="{StaticResource GREEN_B}">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.capture}}"/>
                         </local:EButton>

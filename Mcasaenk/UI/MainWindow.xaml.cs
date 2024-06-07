@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Linq;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -28,6 +29,9 @@ namespace Mcasaenk.UI {
         LeftSettingsMenu leftSettingsMenu;
         LeftFileMenu leftFileMenu;
         LeftOptionsMenu leftOptionsMenu;
+
+        ResolutionScale resScale = new ResolutionScale();
+
         public MainWindow() {
             InitializeComponent();
 
@@ -60,8 +64,14 @@ namespace Mcasaenk.UI {
                     res.res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
                     res.res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
                 }
+                if(res.type == Rad.ResolutionType.resizeable) {
+                    scale.SelectedIndex = 0;
+                    scale.IsEnabled = false;
+                } else {
+                    scale.IsEnabled = true;
+                }
 
-                canvasControl?.SetUpScreenShot(res.res, res.type == Rad.ResolutionType.resizeable);
+                canvasControl?.SetUpScreenShot(res.res, resScale, res.type == Rad.ResolutionType.resizeable);
 
                 scr_capture.IsEnabled = res.res != null;
                 scr_stop.IsEnabled = res.res != null;
@@ -72,6 +82,13 @@ namespace Mcasaenk.UI {
                     scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
             });
+            scale.SetBinding(ComboBox.SelectedItemProperty, new Binding("Scale") { Source = resScale, Converter = new ResolutionScaleTextToDouble() });
+            scale.SelectedIndex = 0;
+            this.resScale.PropertyChanged += (o, e) => {
+                if(e.PropertyName == "Scale") {
+                    canvasControl.ScreenshotManager?.Rescale();
+                }
+            };
 
             overworld_fore = overworld_back;
             overworld_fore.A = 160;

@@ -71,7 +71,7 @@ namespace Mcasaenk.UI {
         }
 
         public static Resolution screen = new Resolution() { Name = "Screen1", FontStyle = FontStyles.Oblique };
-        public static Resolution custom = new Resolution() { Name = "Custom", X = 64, Y = 64, FontStyle = FontStyles.Oblique };
+        public static Resolution custom = new Resolution() { Name = "Custom", X = 120, Y = 120, FontStyle = FontStyles.Oblique };
         public static Resolution frame = new Resolution() { Name = "Frame", X = 5000, Y = 3000, FontStyle = FontStyles.Oblique };
 
 
@@ -89,6 +89,23 @@ namespace Mcasaenk.UI {
             int screenHeight = (int)Math.Round(screenHeightDIP * dpiY / 96.0);
 
             return (screenWidth, screenHeight);
+        }
+    }
+
+    public class ResolutionScale : INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) { PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); }
+
+
+        private double _scale;
+        public double Scale {
+            get { return _scale; }
+            set {
+                if(_scale != value) {
+                    _scale = value;
+                    OnPropertyChanged(nameof(Scale));
+                }
+            }
         }
     }
 }

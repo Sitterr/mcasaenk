@@ -26,25 +26,11 @@ namespace Mcasaenk.UI {
             btn_pre.Clicked += (o, e) => {
                 RecalcSelected(btn_pre);
             };
-            btn_frame.Click += (o, e) => {
-                RecalcSelected(btn_frame);
-            };
             btn_custom.Click += (o, e) => {
                 RecalcSelected(btn_custom);
             };
 
 
-            btn_frame.MouseEnter += (o, e) => {
-                if(selectedc == btn_frame) return;
-                btn_frame.Background = this.TryFindResource("HOVER") as Brush;
-            };
-            btn_frame.MouseLeave += (o, e) => {
-                if(selectedc == btn_frame) {
-                    //btn_frame.Background = this.TryFindResource("PRESS") as Brush;
-                } else {
-                    btn_frame.Background = transp;
-                }
-            };
             btn_custom.MouseEnter += (o, e) => {
                 if(selectedc == btn_custom) return;
                 btn_custom.Background = this.TryFindResource("HOVER") as Brush;
@@ -78,18 +64,13 @@ namespace Mcasaenk.UI {
         private void RecalcSelected(Control control) {
             if(control != null) {
                 btn_pre.IsEnabled = control == btn_pre;
-                btn_frame.IsEnabled = control == btn_frame;
                 btn_custom.IsEnabled = control == btn_custom;
             } else {
                 btn_pre.IsEnabled = true;
-                btn_frame.IsEnabled = true;
                 btn_custom.IsEnabled = true;
             }
 
             //if(control != null) { 
-            if(control == btn_frame) btn_frame.Background = this.TryFindResource("PRESS") as Brush;
-            else btn_frame.Background = transp;
-
             if(control == btn_custom) btn_custom.Background = this.TryFindResource("PRESS") as Brush;
             else btn_custom.Background = transp;
 
@@ -105,7 +86,6 @@ namespace Mcasaenk.UI {
 
             selectedc = control;
             if(control == btn_custom) selectedType = ResolutionType.resizeable;
-            else if(control == btn_frame) selectedType = ResolutionType.frame;
             else if(control == btn_pre) selectedType = ResolutionType.pre;
             else selectedType = ResolutionType.nul;
 

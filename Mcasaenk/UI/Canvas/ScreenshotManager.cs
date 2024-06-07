@@ -14,24 +14,27 @@ using System.IO;
 using System.Text.Json.Serialization;
 using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
+using System.Reflection;
 
 namespace Mcasaenk.UI.Canvas {
     public class ScreenshotManager {
         public readonly TileMap tileMap;
         private Resolution resolution;
+        private ResolutionScale scale;
         private bool rotated;
         private Point Loc1;
         private Point Loc2;
         
 
         public readonly bool canResize;
-        public ScreenshotManager(TileMap tileMap, Resolution resolution, bool canResize, Point startLocation = default) {
+        public ScreenshotManager(TileMap tileMap, Resolution resolution, ResolutionScale scale, bool canResize, Point startLocation = default) {
             this.tileMap = tileMap;
             this.resolution = resolution;
+            this.scale = scale;
             this.canResize = canResize;
             {
                 Loc1 = startLocation;
-                Loc2 = startLocation.Add(new Point(resolution.X, resolution.Y));
+                Loc2 = startLocation.Add(new Point(resolution.X, resolution.Y).Dev(scale.Scale)).Floor();
             }
             rotated = false;
         }
@@ -54,18 +57,24 @@ namespace Mcasaenk.UI.Canvas {
 
             ResizeCorner(Loc1);
         }
+        public void Rescale() {
+            var mid = Rect().Mid();
+
+            Loc1 = mid.Sub(new Point(resolution.X / scale.Scale, resolution.Y / scale.Scale).Dev(2)).Floor();
+            Loc2 = mid.Add(new Point(resolution.X / scale.Scale, resolution.Y / scale.Scale).Dev(2)).Floor();
+        }
         public void ResizeCorner(Point p) {
             Loc1 = p;
-            resolution.X = (int)Math.Abs(Loc1.X - Loc2.X);
-            resolution.Y = (int)Math.Abs(Loc1.Y - Loc2.Y);
+            resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
+            resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
         }
         public void ResizeAxis(int a, bool x) {
             if(x) {
                 Loc1.X = a;
-                resolution.X = (int)Math.Abs(Loc1.X - Loc2.X);
+                resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
             } else {
                 Loc1.Y = a;
-                resolution.Y = (int)Math.Abs(Loc1.Y - Loc2.Y);
+                resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
             }
         }
         public void Move(Point byHow) {
@@ -93,8 +102,8 @@ namespace Mcasaenk.UI.Canvas {
 
             Loc1 = new1;
             Loc2 = new2;
-            resolution.X = (int)Math.Abs(Loc1.X - Loc2.X);
-            resolution.Y = (int)Math.Abs(Loc1.Y - Loc2.Y);
+            resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
+            resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
         }
 
 
@@ -105,11 +114,30 @@ namespace Mcasaenk.UI.Canvas {
                 var Size = Rect().Size.AsPoint();
                 var NW = Rect().TopLeft;
 
-                var renderBitmap = new RenderTargetBitmap((int)Size.X, (int)Size.Y, 96, 96, PixelFormats.Pbgra32);
+                var renderBitmap = new RenderTargetBitmap(resolution.X, resolution.Y, 96, 96, PixelFormats.Pbgra32);
                 if(tileMap != null) {
                     var drawing = new DrawingVisual();
-                    RenderOptions.SetEdgeMode(drawing, EdgeMode.Aliased);
+
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+                    {
+                        /* totally not bugged as fuck
+                                RenderOptions.SetBitmapScalingMode(drawing, BitmapScalingMode.NearestNeighbor);
+                                RenderOptions.SetEdgeMode(drawing, EdgeMode.Aliased);
+                         */
+
+                        drawing.GetType().GetProperty("VisualEdgeMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, EdgeMode.Aliased);
+                        drawing.GetType().GetProperty("VisualBitmapScalingMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, BitmapScalingMode.NearestNeighbor);
+                    }
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+                    // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
+
                     using(DrawingContext graphics = drawing.RenderOpen()) {
+                        var scaleTransform = new ScaleTransform(scale.Scale, scale.Scale);
+                        graphics.PushTransform(scaleTransform);
+
                         int xoff = Global.Coord.absMod((int)NW.X, 512), zoff = Global.Coord.absMod((int)NW.Y, 512);
                         int stX = Global.Coord.fairDev((int)NW.X, 512), stZ = Global.Coord.fairDev((int)NW.Y, 512);
                         for(int x = stX; x <= Global.Coord.fairDev((int)NW.X + (int)Size.X, 512); x++) {
