@@ -33,6 +33,8 @@ namespace Mcasaenk
     public enum BackgroundType {
         [Description("monotone")]
         None,
+        [Description("checker")]
+        Checker,
     }
     public enum ScreenshotType {
         [Description("standard")]
@@ -93,9 +95,9 @@ namespace Mcasaenk
             Y = 319,
 
             MAXZOOM = 5, MINZOOM = -5,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.None, Screenshot = ScreenshotType.None,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, Screenshot = ScreenshotType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
-            FOOTER = true, OVERLAYS = true, UNLOADED = true,
+            FOOTER = true, OVERLAYS = false, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
                 new Resolution() { Name = "Full HD", X = 1920, Y = 1080 },
@@ -105,7 +107,9 @@ namespace Mcasaenk
 
             COLOR_MAPPING_MODE = "mean",
 
-            SUN_LIGHT = 1, CONTRAST = 0.50,
+            SUN_LIGHT = 15, BLOCK_LIGHT = 0,
+
+            CONTRAST = 0.50,
 
             SHADE3D = true, STATIC_SHADE = true,
 
@@ -164,9 +168,9 @@ namespace Mcasaenk
         public double CONTRAST { get => Contrast; set => Contrast = value; }
 
 
-        private double sunlight;
+        private int sunlight;
         [JsonIgnore]
-        public double SunLight {
+        public int SunLight {
             get => sunlight;
             set {
                 if(sunlight == value) return;
@@ -175,7 +179,21 @@ namespace Mcasaenk
                 OnLightChange(nameof(SunLight));
             }
         }
-        public double SUN_LIGHT { get => SunLight; set => SunLight = value; }
+        public int SUN_LIGHT { get => SunLight; set => SunLight = value; }
+
+
+        private int blocklight;
+        [JsonIgnore]
+        public int BlockLight {
+            get => blocklight;
+            set {
+                if(blocklight == value) return;
+
+                blocklight = value;
+                OnLightChange(nameof(BlockLight));
+            }
+        }
+        public int BLOCK_LIGHT { get => BlockLight; set => BlockLight = value; }
 
 
         private bool staticShade;

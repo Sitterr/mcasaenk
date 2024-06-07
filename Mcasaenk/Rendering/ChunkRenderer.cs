@@ -40,6 +40,8 @@ namespace Mcasaenk.Rendering
                     rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
                     rdata.terrainHeights[regionIndex] = waterHeight;
 
+                    rdata.blockLights[regionIndex] = data.GetBlockLight(cx, cz, airHeight + 1);
+
                     if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {
                             int hs = 319 - airHeight;

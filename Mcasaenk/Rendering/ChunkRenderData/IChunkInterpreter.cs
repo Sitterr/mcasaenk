@@ -21,6 +21,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         short GetMotionHeight(int cx, int cz);
         short GetTerrainHeight(int cx, int cz);
 
+        byte GetBlockLight(int cx, int cz, int cy);
+
         bool CanSkipSection(int i);
         bool ContainsInformation();
         bool ContainsHeightmaps();

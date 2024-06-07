@@ -95,34 +95,30 @@ namespace Mcasaenk.Rendering {
             }
 
 
-            if(Global.App.Settings.SHADE3D) {
-                int i = 0;
-                for(int z = 0; z < 512; z++) {
-                    for(int x = 0; x < 512; x++, i++) {
-                        if(genData.isShade(i)) {
-                            double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
-                            //int addcontr = (int)(-Settings.CONTRAST * 100);
+            for(int i = 0; i < 512 * 512; i++) {
+                double sh = 0;
 
-                            int max = (int)(Global.App.Settings.CONTRAST * 150);
-                            var c = Global.FromARGBInt(pixels[i]);
-                            if(c.a < 255) pixels[i] = 0;
-                            else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
+                sh += Global.App.Settings.SUN_LIGHT;
+                if(genData.isShade(i)) {
+                    double max = (Global.App.Settings.CONTRAST * 150);
+                    var c = Global.FromARGBInt(pixels[i]);
+                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * fd[i])), ((c.r + c.g + c.b) / 3 - max) / 256), 0, 15);
 
-                            //pixels[i] = Global.Blend(Global.MultShade(pixels[i], multcontr, multcontr, multcontr), Global.AddShade(pixels[i], addcontr, addcontr, addcontr), 0.75);
-                        }
-                    }
+                    //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
+                    //int addcontr = (int)(-Settings.CONTRAST * 100);
+
+
+                    //if(c.a < 255) pixels[i] = 0;
+                    //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
                 }
+                sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
+
+                sh = sh / 15;
+                pixels[i] = Global.MultShade(pixels[i], sh, sh, sh);
             }
+
+
             ArrayPool<double>.Shared.Return(fd);
-
-            if(Global.App.Settings.SUN_LIGHT != 1) {
-                for(int i = 0; i < 512 * 512; i++) {
-                    pixels[i] = Global.MultShade(pixels[i], Global.App.Settings.SUN_LIGHT, Global.App.Settings.SUN_LIGHT, Global.App.Settings.SUN_LIGHT);
-                }
-            }
-
-            //very_temp.Return(tintcolors, true);
-
             st.Stop();
             drawTime += st.ElapsedMilliseconds;
             drawCount++;

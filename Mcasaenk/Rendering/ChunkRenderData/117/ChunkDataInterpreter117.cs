@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Mcasaenk.Rendering.ChunkRenderData._117 {
     public class ChunkDataInterpreter117 : IChunkInterpreter {
         private static ArrayPool<ushort> pallattePool = ArrayPool<ushort>.Shared;
         private static Global.ArrPointerObjectPool<ushort> palettesPointersPool = new Global.ArrPointerObjectPool<ushort>(24);
         private static ArrayPool<ArrTag<long>> blockStatesPool = ArrayPool<ArrTag<long>>.Shared;
+        private static ArrayPool<ArrTag<byte>> lightsPool = ArrayPool<ArrTag<byte>>.Shared;
 
         private CompoundTag tag;
 
@@ -20,6 +22,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
         private ArrTag<long>[] blockStates;
         private Global.Arr2DBox<ushort> palettes;
+
+        private ArrTag<byte>[] blocklights;
 
         private bool oldChunk, endChunk;
 
@@ -40,6 +44,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                 }
 
                 blockStates = blockStatesPool.Rent(24);
+                blocklights = lightsPool.Rent(24);
                 palettes = palettesPointersPool.Get();
                 var sections = (ListTag)level["Sections"];
                 if(sections != null) {
@@ -49,6 +54,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                         sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + 4);
                         if(y < 0) continue;
                         blockStates[y] = (ArrTag<long>)section["BlockStates"];
+                        blocklights[y] = (ArrTag<byte>)section["BlockLight"];
+
 
                         var palette = (ListTag)section["Palette"];
                         if(palette != null) {
@@ -118,6 +125,21 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         }
 
 
+        public byte GetBlockLight(int cx, int cz, int cy) {
+            cy += 64;
+            if(cy < 0) return 0;
+            int i = cy / 16;
+            if(blocklights[i] == null) return 0;
+
+            int p = getIndexXYZ(cx, cy % 16, cz, 16);
+            byte val = blocklights[i][p / 2];
+            if(p % 2 == 1) {
+                return (byte)(val >> 4);
+            } else {
+                return (byte)(val & 0x0F);
+            }
+        }
+
 
 
         private short getHeight(ArrTag<long> heightmap, int cx, int cz) {
@@ -151,6 +173,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
             }
             palettesPointersPool.Return(palettes);
             blockStatesPool.Return(blockStates);
+            lightsPool.Return(blocklights);
         }
     }
 }

@@ -55,7 +55,7 @@
 
                             
                             
-                            <Border x:Name="cont_general" Visibility="Collapsed">
+                            <Border x:Name="cont_general" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -97,26 +97,6 @@
                                     <Slider Grid.Row="2" Grid.Column="0" Minimum="-64" Maximum="319" TickFrequency="16"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
 
-
-
-                                    <!--<DockPanel Grid.Row="4" Grid.Column="0">
-                                        <TextBlock Text="biomes"/>
-                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}"/>
-                                        <TextBlock HorizontalAlignment="Right" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0}x{1}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="Blend" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="Blend" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="0" IsSnapToTickEnabled="True" Minimum="1" Maximum="33" TickFrequency="2" 
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=Blend}"
-                                            IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=Biomes}"/>-->
-
-
-
                                     <DockPanel Grid.Row="4" Grid.Column="0">
                                         <TextBlock Text="contrast"/>
                                         <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
@@ -124,12 +104,22 @@
                                     <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast}"/>
 
-                                    <DockPanel Grid.Row="4" Grid.Column="2">
-                                        <TextBlock Text="brightness"/>
-                                        <TextBlock Text="{Binding SunLight, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                    
+                                    
+                                    <DockPanel Grid.Row="8" Grid.Column="0">
+                                        <TextBlock Text="sky light"/>
+                                        <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}" HorizontalAlignment="Right"/>
                                     </DockPanel>
-                                    <Slider Grid.Row="6" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                    <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}"/>
+
+                                    
+                                    <DockPanel Grid.Row="8" Grid.Column="2">
+                                        <TextBlock Text="artificial light"/>
+                                        <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=BlockLight}" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=BlockLight}"/>
 
 
                                 </Grid>
@@ -232,7 +222,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
-                                        <Run Text="basis"/>
+                                        <Run Text="colormap"/>
                                         <Run Text="✶">
                                             <Run.Foreground>
                                                 <MultiBinding Converter="{StaticResource DifferenceConverter}">

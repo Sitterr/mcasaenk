@@ -190,12 +190,12 @@ namespace Mcasaenk.UI.Canvas {
                 for(int x = Global.Coord.fairDev((int)glrect.X, 512); x <= Global.Coord.fairDev((int)glrect.X + (int)glrect.Width, 512); x++) {
                     for(int z = Global.Coord.fairDev((int)glrect.Y, 512); z <= Global.Coord.fairDev((int)glrect.Y + (int)glrect.Height, 512); z++) {
                         var tile = tilemap.GetTile(new Point2i(x, z));
-                        if(tile == null || tile?.genData == null) {
+                        if(tile == null || tile?.genData == null || tilemap.drawTilePool.IsQueued(tile) || tilemap.drawTilePool.IsLoading(tile) || tilemap.drawTilePool.ShouldDo(tile)) {
                             outline = orangePen;
                             x = int.MaxValue - 1;
                             break;
                         }
-                        if(tile.shade.IsActive || tilemap.drawTilePool.IsLoading(tile)) {
+                        if(tile.shade.IsActive) {
                             outline = yellowPen;
                         }
                         if(tile.genData.ContainsEmpty() == false) {
@@ -354,18 +354,45 @@ namespace Mcasaenk.UI.Canvas {
         }
     }
     public class BackgroundPainter : Painter {
-        private Brush solidColorBrush;
+        private Brush solidBrush, checkerBrush;
         public BackgroundPainter() {
-            //brush = new LinearGradientBrush(new GradientStopCollection(new[] { new GradientStop(Colors.Yellow, 0), new GradientStop(Colors.Blue, 1) }));
-            if(Global.App.Settings.CONTRAST < 0.90) solidColorBrush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
-            else solidColorBrush = new SolidColorBrush(Colors.Black);
-            solidColorBrush.Freeze();
+            {
+                if(Global.App.Settings.CONTRAST < 0.90) solidBrush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
+                else solidBrush = new SolidColorBrush(Colors.Black);
+                solidBrush.Freeze();
+            }
+
+            {
+                const double squareSize = 16;
+                Brush darkBrush = new SolidColorBrush(Color.FromRgb(10, 10, 10));
+                Brush lightBrush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
+
+                DrawingGroup checkerDrawingGroup = new DrawingGroup();
+                for(int y = 0; y < 2; y++) {
+                    for(int x = 0; x < 2; x++) {
+                        var brush = ((x + y) % 2 == 0) ? darkBrush : lightBrush;
+                        var squareDrawing = new GeometryDrawing(brush, null, new RectangleGeometry(new Rect(x * squareSize, y * squareSize, squareSize, squareSize)));
+                        checkerDrawingGroup.Children.Add(squareDrawing);
+                    }
+                }
+
+                checkerBrush = new DrawingBrush(checkerDrawingGroup) {
+                    Viewport = new Rect(0, 0, squareSize * 2, squareSize * 2),
+                    ViewportUnits = BrushMappingMode.Absolute,
+                    TileMode = TileMode.Tile
+                };
+                checkerBrush.Freeze();
+            }
+
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             switch(Global.App.Settings.BACKGROUND) {
                 case BackgroundType.None:
-                    graphics.DrawRectangle(solidColorBrush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
+                    graphics.DrawRectangle(solidBrush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
+                    break;
+                case BackgroundType.Checker:
+                    graphics.DrawRectangle(checkerBrush, null, new Rect(0, 0, screen.ScreenWidth, screen.ScreenHeight));
                     break;
             }
         }
