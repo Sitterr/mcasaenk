@@ -118,5 +118,6 @@ wither_rose
 yellow_candle
 yellow_stained_glass_pane
 grass
+short_grass
 tall_grass
 tall_seagrass

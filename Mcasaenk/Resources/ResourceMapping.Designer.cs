@@ -71,6 +71,46 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] bedrock_colormap {
+            get {
+                object obj = ResourceManager.GetObject("bedrock_colormap", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] bedrock_foliage {
+            get {
+                object obj = ResourceManager.GetObject("bedrock_foliage", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] bedrock_grass {
+            get {
+                object obj = ResourceManager.GetObject("bedrock_grass", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] bedrock_water {
+            get {
+                object obj = ResourceManager.GetObject("bedrock_water", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to the_void;0
         ///plains;1
         ///sunflower_plains;2
@@ -192,6 +232,16 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] Icon2 {
+            get {
+                object obj = ResourceManager.GetObject("Icon2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] javamap_colormap {
             get {
                 object obj = ResourceManager.GetObject("javamap_colormap", resourceCulture);
@@ -259,7 +309,7 @@ namespace Mcasaenk.Resources {
         ///5;taiga
         ///6;swamp
         ///7;river
-        ///8;nether
+        ///8;nether_wastes
         ///9;the_end
         ///10;frozen_ocean
         ///11;frozen_river
@@ -284,8 +334,7 @@ namespace Mcasaenk.Resources {
         ///30;snowy_taiga
         ///31;snowy_taiga
         ///32;old_growth_spruce_taiga
-        ///33;old_growth_spruce_taiga
-        ///34;s [rest of string was truncated]&quot;;.
+        ///33;old_growth_spruce_taig [rest of string was truncated]&quot;;.
         /// </summary>
         public static string oldbiomes {
             get {
@@ -373,6 +422,15 @@ namespace Mcasaenk.Resources {
         public static string shade3d_filter {
             get {
                 return ResourceManager.GetString("shade3d_filter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to grass;short_grass.
+        /// </summary>
+        public static string synonymblocks {
+            get {
+                return ResourceManager.GetString("synonymblocks", resourceCulture);
             }
         }
         

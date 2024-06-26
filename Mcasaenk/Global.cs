@@ -133,6 +133,13 @@ namespace Mcasaenk {
             return color & 0xFF000000 | nr << 16 | ng << 8 | nb;
         }
 
+        public static JsonSerializerOptions ColormapJsonOptions() {
+            var options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
+            options.Converters.Add(new Global.HexConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
+            return options;
+        }
+
         public static class Coord {
             public static int fairDev(int a, int b) {
                 int res = (int)a / b;
@@ -220,6 +227,24 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+        public static string blockname(this string name) {
+            if(name.Contains(":") == false) name = "minecraft:" + name;
+            return name;
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(
+    this IDictionary<TKey, TValue> dictionary,
+    TKey key,
+    TValue defaultValue) {
+            return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(
+            this IDictionary<TKey, TValue> dictionary,
+            TKey key,
+            Func<TValue> defaultValueProvider) {
+            return dictionary.TryGetValue(key, out var value) ? value : defaultValueProvider();
+        }
 
         public static uint[,] ToUIntMatrix(this WriteableBitmap writeableBitmap) {
             int width = writeableBitmap.PixelWidth;

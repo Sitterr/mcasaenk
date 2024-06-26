@@ -13,7 +13,6 @@ using Mcasaenk.Rendering;
 using CommunityToolkit.HighPerformance.Buffers;
 using System.Buffers;
 using Mcasaenk.Rendering.ChunkRenderData;
-using Mcasaenk.Rendering.ChunkRenderData._117;
 
 namespace Mcasaenk.Nbt {
 

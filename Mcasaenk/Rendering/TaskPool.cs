@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,10 +22,7 @@ namespace Mcasaenk.Rendering {
             this.maxConcurrency = maxConcurrency;
 
             //task_pool = new LimitedConcurrencyLevelTaskScheduler(maxConcurrency);
-            task_pool = new ConcurrentExclusiveSchedulerPair(
-                TaskScheduler.Default,          // schedule work to the ThreadPool
-                maxConcurrency) // Schedule enough to keep all threads busy, with a queue to quickly replace completed work
-    .ConcurrentScheduler;
+            task_pool = new ConcurrentExclusiveSchedulerPair(TaskScheduler.Current, maxConcurrency).ConcurrentScheduler;
         }
 
         public void QueueTask(Task task) {

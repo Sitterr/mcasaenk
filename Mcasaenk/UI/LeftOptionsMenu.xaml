@@ -176,9 +176,55 @@
                                     </StackPanel>
                                 </Grid>
 
+
+                                <StackPanel Grid.Row="10" Grid.Column="0" Orientation="Horizontal">
+                                    <TextBlock>
+                                        <Run Text="height range "/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MinY" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MINY" />
+                                                </MultiBinding>
+                                            </Run.Foreground>
+                                        </Run>
+                                    </TextBlock>
+                                    <TextBox Width="30" Text="{Binding Source={x:Static gl:Global.Settings}, Path=MinY}"/>
+                                    <Border Width="10"/>
+                                    <TextBlock>
+                                        <Run Text="to "/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MaxY" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MAXY" />
+                                                </MultiBinding>
+                                            </Run.Foreground>
+                                        </Run>
+                                    </TextBlock>
+                                    <TextBox Width="30" Text="{Binding Source={x:Static gl:Global.Settings}, Path=MaxY}"/>
+                                </StackPanel>
+
+
+                                <StackPanel Grid.Row="10" Grid.Column="2" Orientation="Horizontal">
+                                    <TextBlock>
+                                        <Run Text="prefer heightmap filter"/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PreferHeightmap" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PREFERHEIGHTMAPS" />
+                                                </MultiBinding>
+                                            </Run.Foreground>
+                                        </Run>
+                                    </TextBlock>
+                                    <Border Width="6"/>
+                                    <ToggleButton IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=PreferHeightmap}"/>
+                                </StackPanel>
+
                             </Grid>
                         </Border>
-                        <Border x:Name="cont_about" Visibility="Visible">
+                        <Border x:Name="cont_about" Visibility="Collapsed">
                             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                                 <TextBlock FontSize="16">
                                 <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/Sitterr/mcasaenk">Github</Hyperlink>

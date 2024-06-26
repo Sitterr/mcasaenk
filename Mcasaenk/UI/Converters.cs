@@ -31,6 +31,8 @@ namespace Mcasaenk.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if(value is bool visibility) {
                 return visibility ? Visibility.Visible : Visibility.Collapsed;
+            } else { 
+                return value.Equals(parameter) ? Visibility.Visible : Visibility.Collapsed;
             }
             return Visibility.Visible;
         }

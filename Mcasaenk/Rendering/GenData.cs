@@ -99,7 +99,7 @@ namespace Mcasaenk.Rendering {
             biomeIds = new ushort[512 * 512];
             heights = new short[512 * 512];
             terrainHeights = new short[512 * 512];
-            if(Global.App.Settings.SHADE3D) {
+            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
                 shadeFrame = new bool[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
                 shadeValues = new bool[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
                 shadeValuesLen = new byte[512 * 512];

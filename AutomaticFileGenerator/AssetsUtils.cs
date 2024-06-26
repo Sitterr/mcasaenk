@@ -10,9 +10,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Utils {
-    internal class CompileMeanBlockColors {
-        public static string Do(string vers_assets) {
+    internal class AssetsUtils {
 
+        public static List<(string id, string texture)> GetBlockNames(string vers_assets) {
             List<(string id, string model)> idtomodel = new();
             foreach(var file in Directory.GetFiles(Path.Combine(vers_assets, "minecraft", "blockstates"))) { // blockstates
                 string jsonString = File.ReadAllText(file);
@@ -48,7 +48,7 @@ namespace Utils {
                     } else {
 
                         foreach(var type in texturesEl.EnumerateObject()) {
-                            if(type.Name == "top") { 
+                            if(type.Name == "top") {
                                 texturename = type.Value.GetString();
                                 goto _endofloop;
                             }
@@ -63,6 +63,11 @@ namespace Utils {
                 idtotexture.Add((pair.id, namespaceToLocation(vers_assets, "textures", texturename)));
             }
 
+            return idtotexture;
+        }
+
+        public static string GenerateMeanBlockColors(string vers_assets) {
+            var idtotexture = GetBlockNames(vers_assets);
 
             const double q = 1.01;
             string @return = "";
@@ -100,6 +105,8 @@ namespace Utils {
 
             return @return;
         }
+
+
         static string namespaceToLocation(string vers_assets, string subfolder, string @namespace) {
             if(!@namespace.Contains(":")) @namespace = "minecraft:" + @namespace;
             Regex modelNameRegex = new Regex("(.+):(.+)\\/(.+)");

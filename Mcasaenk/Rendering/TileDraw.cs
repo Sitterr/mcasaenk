@@ -63,21 +63,21 @@ namespace Mcasaenk.Rendering {
 
             double[] fd = ArrayPool<double>.Shared.Rent(512 * 512);
             Array.Fill<double>(fd, 1);
-            if(colormap.depth is TranslucientDepth depth) {
+            if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
                 double watercontrast = -45 * Math.Pow(Global.App.Settings.CONTRAST, 8) + -15 * Global.App.Settings.CONTRAST;
-                double wateropacity = -30 * Math.Pow(depth.Transparency, 8) + -30 * depth.Transparency;
+                double wateropacity = -30 * Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 8) + -30 * Global.App.Settings.WATER_TRANSPARENCY;
 
                 for(int i = 0; i < 512 * 512; i++) {
                     var block = genData.block(i);
 
                     if(Global.App.Settings.WATERDEPTH) {
-                        if(block == colormap.depth.block) {
+                        if(block == colormap.depth) {
                             int waterDepth = genData.heights(i) - genData.terrainHeights(i);
 
                             uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
 
-                            double ratio = I(waterDepth, depth.Transparency, 1.5 * wateropacity);
-                            if(depth.SmartShade) fd[i] = (1 - ratio) * 1 + ratio * 0.3;
+                            double ratio = I(waterDepth, Global.App.Settings.WATER_TRANSPARENCY, 1.5 * wateropacity);
+                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = (1 - ratio) * 1 + ratio * 0.3;
                             pixels[i] = Global.Blend(pixels[i], terrainColor, ratio);
 
                             double multintensity = 1 - I(waterDepth, 0, watercontrast);
@@ -87,11 +87,11 @@ namespace Mcasaenk.Rendering {
                 }
             }
 
-            if(Global.App.Settings.STATIC_SHADE) {
+            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE) {
                 double q = 12 * Global.App.Settings.CONTRAST;
-                if(Global.App.Settings.SHADE3D) q = q / 3;
+                if(Global.App.Settings.SHADE3D) q = q / 2;
 
-                staticshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+                embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             }
 
 
@@ -128,7 +128,7 @@ namespace Mcasaenk.Rendering {
             return m + (1 - Math.Pow(10.0, b * ((double)x / (319 + 64)))) * (1 - m);
         }
 
-        private static void staticshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
+        private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
             cosA = Math.Round(cosA, 2);
             sinA = Math.Round(sinA, 2);
 

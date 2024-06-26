@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Formats.Asn1;
+
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -19,9 +20,18 @@ using System.Windows.Media.Imaging;
 using System.Windows;
 using System.Windows.Media.Media3D;
 using System.ComponentModel;
+using Mcasaenk.Resources;
+using CommunityToolkit.HighPerformance;
 
 namespace Mcasaenk.Rendering {
     public class DynamicNameToIdBiMap {
+        private static List<string[]> synonyms = new List<string[]>();
+        static DynamicNameToIdBiMap(){
+            TxtFormatReader.ReadStandartFormat(ResourceMapping.synonymblocks, (_, parts) => {
+                synonyms.Add(parts.Select(w => w.blockname()).ToArray());
+            });
+        }
+
         private IDictionary<string, ushort> nameToId = new Dictionary<string, ushort>();
         private IDictionary<ushort, string> idToName = new Dictionary<ushort, string>();
         private ushort counter;
@@ -35,7 +45,7 @@ namespace Mcasaenk.Rendering {
         public ushort GetId(string name) {
             if(nameToId.TryGetValue(name, out var id)) return id;
             else if(frozen == false) return assignNew(name);
-            else return 0;
+            else return ushort.MaxValue;
         }
 
         public string GetName(ushort id) {
@@ -43,6 +53,16 @@ namespace Mcasaenk.Rendering {
         }
 
         private ushort assignNew(string name) {
+            foreach(var synGroup in synonyms) {
+                if(synGroup.Contains(name)) {
+                    foreach(var syn in synGroup) {
+                        nameToId.Add(syn, counter);                       
+                        onAdd(syn, counter);
+                    }
+                    idToName.Add(counter, name);
+                    return counter++;
+                }
+            }
             nameToId.Add(name, counter);
             idToName.Add(counter, name);
             onAdd(name, counter);
@@ -99,6 +119,7 @@ namespace Mcasaenk.Rendering {
 
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.biomes, (_, parts) => {
                 string name = parts[0];
+                if(name.Contains(":") == false) name = "minecraft:" + name;
                 ushort id = Convert.ToUInt16(parts[1]);
                 biomeNameToId.Add(name, id);
             });
@@ -108,6 +129,7 @@ namespace Mcasaenk.Rendering {
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.oldbiomes, (_, parts) => {
                 int id = Convert.ToInt32(parts[0]);
                 string name = parts[1];
+                if(name.Contains(":") == false) name = "minecraft:" + name;
                 oldBiomeIdToId.Add(id, biomeNameToId[name]);
             });
             oldBiomeIdToId = oldBiomeIdToId.ToFrozenDictionary();
@@ -118,18 +140,18 @@ namespace Mcasaenk.Rendering {
         public const ushort DEFBIOME = 0;
         public const int DEFHEIGHT = 70;
 
-        public readonly Depth depth;
+        public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1;
 
-        public static ushort BLOCK_AIR, BLOCK_WATER;
+        public readonly ushort depth;
+
+        public static ushort BLOCK_AIR = ushort.MaxValue, BLOCK_WATER = ushort.MaxValue;
         public readonly DynamicNameToIdBiMap Block;
 
         private IDictionary<ushort, BlockValue> blocks;
         private List<Tint2> tints;
         public Colormap(string path) {
-            var options = new JsonSerializerOptions { IncludeFields = true };
-            options.Converters.Add(new Global.HexConverter());
-            options.Converters.Add(new JsonStringEnumConverter());
-            var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), options);
+            var jsonOptions = Global.ColormapJsonOptions();
+            var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), jsonOptions);
 
             Block = new((name, id) => {
                 switch(name) {
@@ -145,7 +167,7 @@ namespace Mcasaenk.Rendering {
             tints = new List<Tint2>();
 
             blocks = new Dictionary<ushort, BlockValue> {
-                { Block.GetId(blockname("minecraft:air")), new FixedBlock(0x00000000) }
+                { Block.GetId("minecraft:air"), new FixedBlock(0x00000000) }
             };
 
             foreach(var bl in data.blocks) {
@@ -153,9 +175,9 @@ namespace Mcasaenk.Rendering {
 
                 BlockValue val = null;
                 if(jel.ValueKind == JsonValueKind.String) {
-                    val = new FixedBlock(Global.ToARGBInt(jel.Deserialize<string>(options)));
+                    val = new FixedBlock(Global.ToARGBInt(jel.Deserialize<string>(jsonOptions)));
                 } else if(jel.ValueKind == JsonValueKind.Object) {
-                    var gridvalue = jel.Deserialize<JsonBlock.GridValue>(options);
+                    var gridvalue = jel.Deserialize<JsonBlock.GridValue>(jsonOptions);
                     var tint = tints.FirstOrDefault(t => t.name == gridvalue.tint);
 
                     bool error = false;
@@ -171,38 +193,27 @@ namespace Mcasaenk.Rendering {
                     if(error == false) val = new GridBlock(tint, gridvalue.baseColor);
                     else val = new FixedBlock(gridvalue.baseColor);
                 }
-
-                blocks.TryAdd(Block.GetId(blockname(bl.id)), val);
+                blocks.TryAdd(Block.GetId(bl.id.blockname()), val);
             }
+
             blocks = blocks.ToFrozenDictionary();
-
-            switch(data.depth_mode) {
-                case DepthMode.translucient:
-                    depth = TranslucientDepth.DEF(Block.GetId(blockname(data.depth_block)));
-                    break;
-                case DepthMode.map:
-                    depth = new MapDepth() { block = Block.GetId(blockname(data.depth_block)) };
-                    break;
-            }
-
             Block.Freeze();
 
-            string blockname(string name) {
-                if(name.Contains(":") == false) name = "minecraft:" + name;
-                return name;
-            }
+            def = blocks[0];
+            tints = tints.OrderBy(t => t.name).ToList();
+            depth = Block.GetId(data.depth_block.blockname());
         }
 
         public List<Tint2> GetTints() => tints;
         public bool HasActiveTints() => tints.Any(t => t.settings.On && t.settings.Blend > 1);
 
-        public BlockValue Value(ushort block) => blocks[block];
+        private BlockValue def;
+        public BlockValue Value(ushort block) => blocks.GetValueOrDefault(block, def);
 
         public JsonColormap ToJson() {
             return new JsonColormap() {
                 blocks = this.blocks.Select(b => new JsonBlock() { id = Block.GetName(b.Key), value = b.Value.ToJson() }).ToArray(),
-                depth_block = Block.GetName(depth.block),
-                depth_mode = depth.GetMode(),
+                depth_block = Block.GetName(depth),
             };
         }
 
@@ -210,10 +221,7 @@ namespace Mcasaenk.Rendering {
 
         public static bool IsColormap(string path) {
             try {
-                var options = new JsonSerializerOptions { IncludeFields = true };
-                options.Converters.Add(new Global.HexConverter());
-                options.Converters.Add(new JsonStringEnumConverter());
-                var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), options);
+                var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), Global.ColormapJsonOptions());
             }
             catch {
                 return false;
@@ -222,70 +230,6 @@ namespace Mcasaenk.Rendering {
             return true;
         }
     }
-
-    public class Depth {
-        public ushort block;
-
-        public DepthMode GetMode() {
-            if(this is TranslucientDepth) return DepthMode.translucient;
-            if(this is MapDepth) return DepthMode.map;
-            return default;
-        }
-
-
-
-
-        protected bool frozen = true;
-        protected Action onLightChange;
-        public void SetActions(Action onLightChange) {
-            this.onLightChange = onLightChange;
-            frozen = false;
-        }
-    }
-    public class TranslucientDepth : Depth, INotifyPropertyChanged {
-
-        private double transparency;
-        public double Transparency {
-            get => transparency;
-            set {
-                if(value == transparency) return;
-
-                transparency = value;
-                OnLightChange(nameof(Transparency));
-            }
-        }
-
-        private bool smartshade;
-        public bool SmartShade {
-            get => smartshade;
-            set {
-                if(value == smartshade) return;
-
-                smartshade = value;
-                OnLightChange(nameof(SmartShade));
-            }
-        }
-
-
-
-        public void OnLightChange(string propertyName) {
-            if(frozen == false) onLightChange();
-            if(propertyName != "") OnPropertyChanged(propertyName);
-        }
-        public TranslucientDepth() { }
-        public static TranslucientDepth DEF(ushort block) => new TranslucientDepth() {
-            block = block,
-            Transparency = 0.5,
-            SmartShade = true,
-        };
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-    public class MapDepth : Depth {
-    }
-
     public class DynamicTintSettings : INotifyPropertyChanged {
 
         private bool on;
@@ -350,14 +294,14 @@ namespace Mcasaenk.Rendering {
             BitmapImage bitmapImage = new BitmapImage(new Uri(Path.Combine(path, name), UriKind.RelativeOrAbsolute));
             var image = new WriteableBitmap(bitmapImage).ToUIntMatrix();
 
-            sprite = new uint[383, BiomeRegistry.GetBiomeCount()];
+            sprite = new uint[384, BiomeRegistry.GetBiomeCount()];
 
             if(image.GetLength(0) == 1) { // biome only
                 biomeonly = true;
                 for(int i = 0; i < image.GetLength(1); i++) {
                     sprite[0, i] = image[0, i];
                 }
-                for(int j = 0; j < 383; j++) {
+                for(int j = 0; j < 384; j++) {
                     for(int i = 0; i < sprite.GetLength(1); i++) {
                         sprite[j, i] = sprite[0, i];
                     }
@@ -368,7 +312,7 @@ namespace Mcasaenk.Rendering {
                     sprite[j, 0] = image[j, 0];
                 }
                 for(int i = 0; i < sprite.GetLength(1); i++) {
-                    for(int j = 0; j < 383; j++) {
+                    for(int j = 0; j < 384; j++) {
                         sprite[j, i] = sprite[j, 0];
                     }
                 }
@@ -453,7 +397,6 @@ namespace Mcasaenk.Rendering {
 
     public class JsonColormap {
         public string depth_block;
-        public DepthMode depth_mode;
         public JsonBlock[] blocks;
     }
     public class JsonBlock {

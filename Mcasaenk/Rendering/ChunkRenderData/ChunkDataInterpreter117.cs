@@ -8,10 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Mcasaenk.Rendering.ChunkRenderData._117 {
+namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter117 : IChunkInterpreter {
         private static ArrayPool<ushort> pallattePool = ArrayPool<ushort>.Shared;
-        private static Global.ArrPointerObjectPool<ushort> palettesPointersPool = new Global.ArrPointerObjectPool<ushort>(24);
         private static ArrayPool<ArrTag<long>> blockStatesPool = ArrayPool<ArrTag<long>>.Shared;
         private static ArrayPool<ArrTag<byte>> lightsPool = ArrayPool<ArrTag<byte>>.Shared;
 
@@ -21,17 +20,25 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         private ArrTag<long> world_surface, ocean_floor, motion_blocking;
 
         private ArrTag<long>[] blockStates;
-        private Global.Arr2DBox<ushort> palettes;
+        private ushort[][] palettes;
 
         private ArrTag<byte>[] blocklights;
 
         private bool oldChunk, endChunk;
 
-        public ChunkDataInterpreter117(Tag _tag, bool error) {
+        int maxy, negy, negys;
+        public int MaxHeight() => maxy;
+        public int MinHeight() => -negy;
+        public ChunkDataInterpreter117(Tag _tag, int miny, int maxy, bool error) {
+            int SECTIONS = (int)Math.Ceiling((-miny + maxy + 1) / (double)16);
+            this.negy = -miny;
+            this.negys = negy / 16;
+            this.maxy = maxy;
+
             this.error = error;
 
             //try {
-            this.tag = (CompoundTag)_tag;
+            tag = (CompoundTag)_tag;
             var level = (CompoundTag)tag["Level"];
             {
                 biomes = (ArrTag<int>)level["Biomes"];
@@ -43,15 +50,15 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                     motion_blocking = (ArrTag<long>)heightmaps["MOTION_BLOCKING"];
                 }
 
-                blockStates = blockStatesPool.Rent(24);
-                blocklights = lightsPool.Rent(24);
-                palettes = palettesPointersPool.Get();
+                blockStates = blockStatesPool.Rent(SECTIONS);
+                blocklights = lightsPool.Rent(SECTIONS);
+                palettes = new ushort[SECTIONS][];
                 var sections = (ListTag)level["Sections"];
                 if(sections != null) {
                     foreach(var _section in (List<Tag>)sections) {
                         var section = (CompoundTag)_section;
 
-                        sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + 4);
+                        sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + negys);
                         if(y < 0) continue;
                         blockStates[y] = (ArrTag<long>)section["BlockStates"];
                         blocklights[y] = (ArrTag<byte>)section["BlockLight"];
@@ -60,8 +67,10 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                         var palette = (ListTag)section["Palette"];
                         if(palette != null) {
                             //palettes[y] = new ushort[palette.Length];
-                            palettes[y] = pallattePool.Rent(palette.Length);
-                            int i = 0;
+                            palettes[y] = pallattePool.Rent(palette.Length + 1);
+                            if(blockStates[y] != null) palettes[y][0] = (ushort)(blockStates[y].Length >> 6);
+                            else palettes[y][0] = 0;
+                            int i = 1;
                             foreach(var _p in (List<Tag>)palette) {
                                 var p = (CompoundTag)_p;
 
@@ -70,9 +79,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                                 i++;
                             }
                         }
-
                     }
                 }
+
             }
 
             oldChunk = biomes?.Length == 1024;
@@ -90,27 +99,27 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         public bool ContainsHeightmaps() {
             return world_surface != null && ocean_floor != null;
         }
-        public bool CanSkipSection(int i) {
-            if(blockStates[i + 4] == null || palettes[i + 4] == null) return true;
-            return false;
+        public ushort SingleBlockSection(int i) {
+            if(blockStates[i + negys] == null && palettes[i + negys] == null) return Colormap.BLOCK_AIR;
+            return Colormap.NONEBLOCK;
         }
 
 
 
         public ushort GetBiome(int cx, int cz, int cy) {
-            cy += 64;
+            cy += negy;
             return BiomeRegistry.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
         }
 
         public ushort GetBlock(int cx, int cz, int cy) {
-            cy += 64;
+            cy += negy;
             if(cy < 0) return default;
             int i = cy / 16;
-            if(blockStates[i] == null || palettes[i] == null) return default;
-            int bits = blockStates[i].Length >> 6;
+            if(blockStates[i] == null || palettes[i] == null) return Colormap.BLOCK_AIR;
+            if(blockStates[i] == null) return palettes[i][0 + 1];
 
-            int paletteIndex = (this as IChunkInterpreter).GetValueFromBitArray(getIndexXYZ(cx, cy % 16, cz, 16), blockStates[i], bits);
-            return palettes[i][paletteIndex];
+            int paletteIndex = (this as IChunkInterpreter).GetValueFromBitArray(getIndexXYZ(cx, cy % 16, cz, 16), blockStates[i], palettes[i][0]);
+            return palettes[i][paletteIndex + 1];
         }
 
         public short GetHeight(int cx, int cz) {
@@ -126,7 +135,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
 
         public byte GetBlockLight(int cx, int cz, int cy) {
-            cy += 64;
+            cy += negy;
             if(cy < 0) return 0;
             int i = cy / 16;
             if(blocklights[i] == null) return 0;
@@ -143,9 +152,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
 
 
         private short getHeight(ArrTag<long> heightmap, int cx, int cz) {
-            if(heightmap == null) return -64;
+            if(heightmap == null) return (short)-negy;
             short val = (short)((this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), heightmap, 9) - 1);
-            if(!oldChunk) val = (short)(val - 64);
+            if(!oldChunk) val = (short)(val - negy);
             return val;
         }
 
@@ -158,8 +167,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
         private int getBiomeAtBlock(int biomeX, int biomeY, int biomeZ) {
             if(biomes == null) return default;
             if(endChunk) return biomes[getIndexXZ(biomeX / 4, biomeZ / 4, 4)];
-            if(oldChunk) biomeY -= 64;
-            if(biomeY <= -64) return default;
+            if(oldChunk) biomeY -= negy;
+            if(biomeY <= -negy) return default;
             return biomes[getIndexXYZ(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
         }
 
@@ -171,7 +180,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData._117 {
                     pallattePool.Return(palettes[i]);
                 }
             }
-            palettesPointersPool.Return(palettes);
             blockStatesPool.Return(blockStates);
             lightsPool.Return(blocklights);
         }

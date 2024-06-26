@@ -1,5 +1,6 @@
 ﻿using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
+using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
@@ -25,11 +26,14 @@ namespace Mcasaenk {
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "mcasaenk");
 
-
         [STAThread]
         protected override void OnStartup(StartupEventArgs e) {
             Debug.WriteLine("int main()?");
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+
+            Thread.CurrentThread.Name = "app?";
+            Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
+
 
             if(!Directory.Exists(APPFOLDER)) Directory.CreateDirectory(APPFOLDER);
 
@@ -53,34 +57,53 @@ namespace Mcasaenk {
             {
                 BiomeRegistry.Initialize();
 
-                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "mean")) == false) {
-                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "mean"))) 
-                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "mean"));
+                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "texture")) == false) {
+                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "texture"))) 
+                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "texture"));
                 }
                 if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
                     if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")))
                         Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "java map"));
                 }
+                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "bedrock map")) == false) {
+                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "bedrock map")))
+                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
+                }
 
                 Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "java map"));
-                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "mean"));
+                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "texture"));
+                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
 
                 string path;
 
                 path = Path.Combine(APPFOLDER, "colormaps", "java map", "colormap.json");
                 if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.javamap_colormap);
 
-                path = Path.Combine(APPFOLDER, "colormaps", "mean", "colormap.json");
+
+                path = Path.Combine(APPFOLDER, "colormaps", "texture", "colormap.json");
                 if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_colormap);
 
-                path = Path.Combine(APPFOLDER, "colormaps", "mean", "foliage.png");
+                path = Path.Combine(APPFOLDER, "colormaps", "texture", "foliage.png");
                 if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_foliage);
 
-                path = Path.Combine(APPFOLDER, "colormaps", "mean", "grass.png");
+                path = Path.Combine(APPFOLDER, "colormaps", "texture", "grass.png");
                 if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_grass);
 
-                path = Path.Combine(APPFOLDER, "colormaps", "mean", "water.png");
+                path = Path.Combine(APPFOLDER, "colormaps", "texture", "water.png");
                 if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_water);
+
+
+                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "colormap.json");
+                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_colormap);
+
+                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "foliage.png");
+                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_foliage);
+
+                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "grass.png");
+                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_grass);
+
+                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "water.png");
+                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_water);
             }
 
             Global.ViewModel = new ViewModel();
@@ -121,6 +144,7 @@ namespace Mcasaenk {
                     TileMap.SetSettings();
 
                     Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE));
+                    Shade3DFilter.ReInit(Colormap);
 
                     foreach(var tint in Colormap.GetTints()) {
                         tint.settings = DynamicTintSettings.DEF();
@@ -128,9 +152,6 @@ namespace Mcasaenk {
                             TileMap?.RedrawAll();
                         });
                     }
-                    Colormap.depth.SetActions(() => {
-                        TileMap?.RedrawAll();
-                    });
                 }
 
                 Window.OnHardReset();

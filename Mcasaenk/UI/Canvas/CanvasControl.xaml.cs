@@ -39,7 +39,9 @@ namespace Mcasaenk.UI.Canvas {
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
 
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
@@ -90,19 +92,19 @@ namespace Mcasaenk.UI.Canvas {
                 painter.Update(screen);
             }
 
-            //{ // footer update
-            //    double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
-            //    double t = elapsed - tick_lastElapsed;
-            //    tick_accumulation += t;
-            //    tick_lastElapsed = elapsed;
-            //    tick_count++;
-            //    if(tick_accumulation > 1000) {
-            //        window.footer.Fps = tick_count;
-            //        tick_accumulation = 0;
-            //        tick_count = 0;
-            //    }
-            //    window.footer.Region = screen.GetRegionPos(mousePos);
-            //}
+            { // footer update
+                double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
+                double t = elapsed - tick_lastElapsed;
+                tick_accumulation += t;
+                tick_lastElapsed = elapsed;
+                tick_count++;
+                if(tick_accumulation > 1000) {
+                    window.footer.Fps = tick_count;
+                    tick_accumulation = 0;
+                    tick_count = 0;
+                }
+                //window.footer.Region = screen.GetGlobalPos(mousePos);
+            }
         }
 
         private void OnSlowTick(object a, object b) {
@@ -118,16 +120,17 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            //if(window.footer != null && false) {
-            //    { // footer update
-            //        window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
-            //        window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
-            //        window.footer.ShadeTiles = tileMap.ShadeTiles();
-            //        window.footer.ShadeFrames = tileMap.ShadeFrames();
+            if(window.footer != null
+                ) {
+                { // footer update
+                    window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
+                    window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
+                    window.footer.ShadeTiles = tileMap.ShadeTiles();
+                    window.footer.ShadeFrames = tileMap.ShadeFrames();
 
-            //        window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
-            //    }
-            //}
+                    //window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
+                }
+            }
         }
 
         void UpdateUILocation() {

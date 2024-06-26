@@ -38,11 +38,11 @@ namespace Mcasaenk.Rendering
                     using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[i]);
                     if(chunkdata == null) continue;
 
-                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Math.Clamp(Global.Settings.RENDERHEIGHT, chunkdata.MinHeight(), chunkdata.MaxHeight()), rawData);
                 }
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depth.block);
+            var genData = new GenData(rawData, Global.App.Colormap.depth);
             return genData;
         }
 
@@ -54,7 +54,8 @@ namespace Mcasaenk.Rendering
 
                 void doChunk(int cx, int cz) {
                     using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[cz * 32 + cx]);
-                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, rawData);
+                    if(chunkdata == null) return;
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Math.Clamp(Global.Settings.RENDERHEIGHT, chunkdata.MinHeight(), chunkdata.MaxHeight()), rawData);
                 }
 
                 const int g = 5;
@@ -105,7 +106,7 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depth.block);
+            var genData = new GenData(rawData, Global.App.Colormap.depth);
             
             { // save shades 
                 tile.shade.Construct(rawData, genData);

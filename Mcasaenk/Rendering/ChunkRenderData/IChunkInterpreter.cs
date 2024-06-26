@@ -23,10 +23,12 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         byte GetBlockLight(int cx, int cz, int cy);
 
-        bool CanSkipSection(int i);
+        int MaxHeight();
+        int MinHeight();
+
+        ushort SingleBlockSection(int i);
         bool ContainsInformation();
         bool ContainsHeightmaps();
-
 
         int GetValueFromBitArrayUninterrupted(int index, long[] blockStates, int bits) {
             throw new NotImplementedException();

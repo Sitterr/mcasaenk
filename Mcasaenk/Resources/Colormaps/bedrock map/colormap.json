@@ -2,4067 +2,3762 @@
   "depth_block": "water",
   "blocks": [
     {
-      "id": "grass",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "919191"
-      }
+      "id": "acacia_door",
+      "value": "ba6d2c"
     },
     {
-      "id": "short_grass",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "919191"
-      }
+      "id": "acacia_fence",
+      "value": "ba6d2c"
     },
     {
-      "id": "grass_block",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "939393"
-      }
+      "id": "acacia_fence_gate",
+      "value": "ba6d2c"
     },
     {
-      "id": "pumpkin_stem",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "9A9A9A"
-      }
-    },
-    {
-      "id": "tall_grass",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "808080"
-      }
-    },
-    {
-      "id": "melon_stem",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "999999"
-      }
-    },
-    {
-      "id": "large_fern",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "838383"
-      }
-    },
-    {
-      "id": "fern",
-      "value": {
-        "tint": "grass.png",
-        "baseColor": "7C7C7C"
-      }
-    },
-    {
-      "id": "oak_leaves",
-      "value": {
-        "tint": "foliage.png",
-        "baseColor": "909090"
-      }
-    },
-    {
-      "id": "spruce_leaves",
-      "value": {
-        "tint": "foliage.png",
-        "baseColor": "7E7E7E"
-      }
-    },
-    {
-      "id": "birch_leaves",
-      "value": {
-        "tint": "foliage.png",
-        "baseColor": "828182"
-      }
-    },
-    {
-      "id": "jungle_leaves",
-      "value": {
-        "tint": "foliage.png",
-        "baseColor": "9C9A8F"
-      }
+      "id": "acacia_hanging_sign",
+      "value": "ba6d2c"
     },
     {
       "id": "acacia_leaves",
       "value": {
         "tint": "foliage.png",
-        "baseColor": "959494"
+        "baseColor": "0xFF757573"
       }
+    },
+    {
+      "id": "acacia_log",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_planks",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_pressure_plate",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "acacia_sign",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_slab",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_stairs",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_trapdoor",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_wall_hanging_sign",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_wall_sign",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "acacia_wood",
+      "value": "414141"
+    },
+    {
+      "id": "allium",
+      "value": "006a00"
+    },
+    {
+      "id": "amethyst_block",
+      "value": "844db0"
+    },
+    {
+      "id": "amethyst_cluster",
+      "value": "844db0"
+    },
+    {
+      "id": "ancient_debris",
+      "value": "151515"
+    },
+    {
+      "id": "andesite",
+      "value": "606060"
+    },
+    {
+      "id": "andesite_slab",
+      "value": "606060"
+    },
+    {
+      "id": "andesite_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "andesite_wall",
+      "value": "606060"
+    },
+    {
+      "id": "anvil",
+      "value": "909090"
+    },
+    {
+      "id": "attached_melon_stem",
+      "value": "006a00"
+    },
+    {
+      "id": "attached_pumpkin_stem",
+      "value": "006a00"
+    },
+    {
+      "id": "azalea",
+      "value": "006a00"
+    },
+    {
+      "id": "azalea_leaves",
+      "value": "006a00"
+    },
+    {
+      "id": "azure_bluet",
+      "value": "006a00"
+    },
+    {
+      "id": "bamboo",
+      "value": "006a00"
+    },
+    {
+      "id": "bamboo_block",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_door",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_fence",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_fence_gate",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_hanging_sign",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_mosaic",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_mosaic_slab",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_mosaic_stairs",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_planks",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_pressure_plate",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_sapling",
+      "value": "7b663e"
+    },
+    {
+      "id": "bamboo_sign",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_slab",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_stairs",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_trapdoor",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_wall_hanging_sign",
+      "value": "c5c52c"
+    },
+    {
+      "id": "bamboo_wall_sign",
+      "value": "c5c52c"
+    },
+    {
+      "id": "barrel",
+      "value": "7b663e"
+    },
+    {
+      "id": "basalt",
+      "value": "151515"
+    },
+    {
+      "id": "beacon",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "bedrock",
+      "value": "606060"
+    },
+    {
+      "id": "bee_nest",
+      "value": "c5c52c"
+    },
+    {
+      "id": "beehive",
+      "value": "7b663e"
+    },
+    {
+      "id": "beetroots",
+      "value": "006a00"
+    },
+    {
+      "id": "bell",
+      "value": "d7cd42"
+    },
+    {
+      "id": "big_dripleaf",
+      "value": "006a00"
+    },
+    {
+      "id": "big_dripleaf_stem",
+      "value": "006a00"
+    },
+    {
+      "id": "birch_door",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_fence",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_fence_gate",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_hanging_sign",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_leaves",
+      "value": "3b4d27"
+    },
+    {
+      "id": "birch_log",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_planks",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_pressure_plate",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "birch_sign",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_slab",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_stairs",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_trapdoor",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_wall_hanging_sign",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_wall_sign",
+      "value": "d5c98c"
+    },
+    {
+      "id": "birch_wood",
+      "value": "d5c98c"
+    },
+    {
+      "id": "black_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "black_bed",
+      "value": "151515"
+    },
+    {
+      "id": "black_candle",
+      "value": "151515"
+    },
+    {
+      "id": "black_carpet",
+      "value": "151515"
+    },
+    {
+      "id": "black_concrete",
+      "value": "151515"
+    },
+    {
+      "id": "black_concrete_powder",
+      "value": "151515"
+    },
+    {
+      "id": "black_glazed_terracotta",
+      "value": "151515"
+    },
+    {
+      "id": "black_shulker_box",
+      "value": "151515"
+    },
+    {
+      "id": "black_stained_glass",
+      "value": "151515"
+    },
+    {
+      "id": "black_terracotta",
+      "value": "1f120d"
+    },
+    {
+      "id": "black_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "black_wool",
+      "value": "151515"
+    },
+    {
+      "id": "blackstone",
+      "value": "151515"
+    },
+    {
+      "id": "blackstone_slab",
+      "value": "151515"
+    },
+    {
+      "id": "blackstone_stairs",
+      "value": "151515"
+    },
+    {
+      "id": "blackstone_wall",
+      "value": "151515"
+    },
+    {
+      "id": "blast_furnace",
+      "value": "606060"
+    },
+    {
+      "id": "blue_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "blue_bed",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_candle",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_carpet",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_concrete",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_concrete_powder",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_glazed_terracotta",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_ice",
+      "value": "8a8adc"
+    },
+    {
+      "id": "blue_orchid",
+      "value": "006a00"
+    },
+    {
+      "id": "blue_shulker_box",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_stained_glass",
+      "value": "2c4199"
+    },
+    {
+      "id": "blue_terracotta",
+      "value": "41354f"
+    },
+    {
+      "id": "blue_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "blue_wool",
+      "value": "2c4199"
+    },
+    {
+      "id": "bone_block",
+      "value": "d5c98c"
+    },
+    {
+      "id": "bookshelf",
+      "value": "7b663e"
+    },
+    {
+      "id": "brain_coral",
+      "value": "7da24b"
+    },
+    {
+      "id": "brain_coral_block",
+      "value": "d06d8e"
+    },
+    {
+      "id": "brain_coral_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "brain_coral_wall_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "brewing_stand",
+      "value": "909090"
+    },
+    {
+      "id": "brick_slab",
+      "value": "842c2c"
+    },
+    {
+      "id": "brick_stairs",
+      "value": "842c2c"
+    },
+    {
+      "id": "brick_wall",
+      "value": "842c2c"
+    },
+    {
+      "id": "bricks",
+      "value": "842c2c"
+    },
+    {
+      "id": "brown_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "brown_bed",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_candle",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_carpet",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_concrete",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_concrete_powder",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_glazed_terracotta",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_mushroom",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_mushroom_block",
+      "value": "825e42"
+    },
+    {
+      "id": "brown_shulker_box",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_stained_glass",
+      "value": "58412c"
+    },
+    {
+      "id": "brown_terracotta",
+      "value": "412b1e"
+    },
+    {
+      "id": "brown_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "brown_wool",
+      "value": "58412c"
+    },
+    {
+      "id": "bubble_column",
+      "value": "3737dc"
+    },
+    {
+      "id": "bubble_coral",
+      "value": "7da24b"
+    },
+    {
+      "id": "bubble_coral_block",
+      "value": "844db0"
+    },
+    {
+      "id": "bubble_coral_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "bubble_coral_wall_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "budding_amethyst",
+      "value": "844db0"
+    },
+    {
+      "id": "cactus",
+      "value": "006a00"
+    },
+    {
+      "id": "calcite",
+      "value": "b4988a"
+    },
+    {
+      "id": "calibrated_sculk_sensor",
+      "value": "0b0f13"
+    },
+    {
+      "id": "campfire",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "candle",
+      "value": "d5c98c"
+    },
+    {
+      "id": "carrots",
+      "value": "006a00"
+    },
+    {
+      "id": "cartography_table",
+      "value": "7b663e"
+    },
+    {
+      "id": "carved_pumpkin",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cauldron",
+      "value": "606060"
+    },
+    {
+      "id": "cave_vines",
+      "value": "006a00"
+    },
+    {
+      "id": "cave_vines_plant",
+      "value": "006a00"
+    },
+    {
+      "id": "chain_command_block",
+      "value": "586d2c"
+    },
+    {
+      "id": "cherry_door",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_fence",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_fence_gate",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_hanging_sign",
+      "value": "8a4243"
+    },
+    {
+      "id": "cherry_leaves",
+      "value": "d06d8e"
+    },
+    {
+      "id": "cherry_log",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_planks",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_pressure_plate",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_sapling",
+      "value": "d06d8e"
+    },
+    {
+      "id": "cherry_sign",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_slab",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_stairs",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_trapdoor",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_wall_hanging_sign",
+      "value": "8a4243"
+    },
+    {
+      "id": "cherry_wall_sign",
+      "value": "b4988a"
+    },
+    {
+      "id": "cherry_wood",
+      "value": "31231e"
+    },
+    {
+      "id": "chest",
+      "value": "7b663e"
+    },
+    {
+      "id": "chipped_anvil",
+      "value": "909090"
+    },
+    {
+      "id": "chiseled_bookshelf",
+      "value": "7b663e"
+    },
+    {
+      "id": "chiseled_copper",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "chiseled_deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "chiseled_nether_bricks",
+      "value": "600100"
+    },
+    {
+      "id": "chiseled_polished_blackstone",
+      "value": "151515"
+    },
+    {
+      "id": "chiseled_quartz_block",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "chiseled_red_sandstone",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "chiseled_sandstone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "chiseled_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "chiseled_tuff",
+      "value": "31231e"
+    },
+    {
+      "id": "chiseled_tuff_bricks",
+      "value": "31231e"
+    },
+    {
+      "id": "chorus_flower",
+      "value": "844db0"
+    },
+    {
+      "id": "chorus_plant",
+      "value": "844db0"
+    },
+    {
+      "id": "clay",
+      "value": "8d909e"
+    },
+    {
+      "id": "coal_block",
+      "value": "151515"
+    },
+    {
+      "id": "coal_ore",
+      "value": "606060"
+    },
+    {
+      "id": "coarse_dirt",
+      "value": "825e42"
+    },
+    {
+      "id": "cobbled_deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "cobbled_deepslate_slab",
+      "value": "565656"
+    },
+    {
+      "id": "cobbled_deepslate_stairs",
+      "value": "565656"
+    },
+    {
+      "id": "cobbled_deepslate_wall",
+      "value": "565656"
+    },
+    {
+      "id": "cobblestone",
+      "value": "606060"
+    },
+    {
+      "id": "cobblestone_slab",
+      "value": "606060"
+    },
+    {
+      "id": "cobblestone_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "cobblestone_wall",
+      "value": "606060"
+    },
+    {
+      "id": "cobweb",
+      "value": "ababab"
+    },
+    {
+      "id": "cocoa",
+      "value": "006a00"
+    },
+    {
+      "id": "command_block",
+      "value": "58412c"
+    },
+    {
+      "id": "composter",
+      "value": "7b663e"
+    },
+    {
+      "id": "conduit",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "copper_block",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "copper_bulb",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "copper_door",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "copper_grate",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "copper_ore",
+      "value": "606060"
+    },
+    {
+      "id": "copper_trapdoor",
+      "value": "909090"
+    },
+    {
+      "id": "cornflower",
+      "value": "006a00"
+    },
+    {
+      "id": "cracked_deepslate_bricks",
+      "value": "565656"
+    },
+    {
+      "id": "cracked_deepslate_tiles",
+      "value": "565656"
+    },
+    {
+      "id": "cracked_nether_bricks",
+      "value": "600100"
+    },
+    {
+      "id": "cracked_polished_blackstone_bricks",
+      "value": "151515"
+    },
+    {
+      "id": "cracked_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "crafter",
+      "value": "606060"
+    },
+    {
+      "id": "crafting_table",
+      "value": "7b663e"
+    },
+    {
+      "id": "crimson_door",
+      "value": "7f3653"
+    },
+    {
+      "id": "crimson_fence",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_fence_gate",
+      "value": "7f3653"
+    },
+    {
+      "id": "crimson_fungus",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_hanging_sign",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_hyphae",
+      "value": "4f1519"
+    },
+    {
+      "id": "crimson_nylium",
+      "value": "a3292a"
+    },
+    {
+      "id": "crimson_planks",
+      "value": "7f3653"
+    },
+    {
+      "id": "crimson_pressure_plate",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_roots",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_sign",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_slab",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_stairs",
+      "value": "7f3653"
+    },
+    {
+      "id": "crimson_stem",
+      "value": "7f3653"
+    },
+    {
+      "id": "crimson_trapdoor",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_wall_hanging_sign",
+      "value": "600100"
+    },
+    {
+      "id": "crimson_wall_sign",
+      "value": "600100"
+    },
+    {
+      "id": "crying_obsidian",
+      "value": "151515"
+    },
+    {
+      "id": "cut_copper",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cut_copper_slab",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cut_copper_stairs",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cut_red_sandstone",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cut_red_sandstone_slab",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "cut_sandstone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "cut_sandstone_slab",
+      "value": "d5c98c"
+    },
+    {
+      "id": "cyan_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "cyan_bed",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_candle",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_carpet",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_concrete",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_concrete_powder",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_glazed_terracotta",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_shulker_box",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_stained_glass",
+      "value": "416d84"
+    },
+    {
+      "id": "cyan_terracotta",
+      "value": "4b4f4f"
+    },
+    {
+      "id": "cyan_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "cyan_wool",
+      "value": "416d84"
+    },
+    {
+      "id": "damaged_anvil",
+      "value": "909090"
+    },
+    {
+      "id": "dandelion",
+      "value": "006a00"
+    },
+    {
+      "id": "dark_oak_door",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_fence",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_fence_gate",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_hanging_sign",
+      "value": "58412c"
     },
     {
       "id": "dark_oak_leaves",
       "value": {
         "tint": "foliage.png",
-        "baseColor": "969696"
+        "baseColor": "0xFF757573"
       }
+    },
+    {
+      "id": "dark_oak_log",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_planks",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_pressure_plate",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "dark_oak_sign",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_slab",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_stairs",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_trapdoor",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_wall_hanging_sign",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_wall_sign",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_oak_wood",
+      "value": "58412c"
+    },
+    {
+      "id": "dark_prismarine",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "dark_prismarine_slab",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "dark_prismarine_stairs",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "daylight_detector",
+      "value": "7b663e"
+    },
+    {
+      "id": "dead_brain_coral",
+      "value": "414141"
+    },
+    {
+      "id": "dead_brain_coral_block",
+      "value": "414141"
+    },
+    {
+      "id": "dead_brain_coral_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_brain_coral_wall_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_bubble_coral",
+      "value": "414141"
+    },
+    {
+      "id": "dead_bubble_coral_block",
+      "value": "414141"
+    },
+    {
+      "id": "dead_bubble_coral_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_bubble_coral_wall_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_bush",
+      "value": "7b663e"
+    },
+    {
+      "id": "dead_fire_coral",
+      "value": "414141"
+    },
+    {
+      "id": "dead_fire_coral_block",
+      "value": "414141"
+    },
+    {
+      "id": "dead_fire_coral_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_fire_coral_wall_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_horn_coral",
+      "value": "414141"
+    },
+    {
+      "id": "dead_horn_coral_block",
+      "value": "414141"
+    },
+    {
+      "id": "dead_horn_coral_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_horn_coral_wall_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_tube_coral",
+      "value": "414141"
+    },
+    {
+      "id": "dead_tube_coral_block",
+      "value": "414141"
+    },
+    {
+      "id": "dead_tube_coral_fan",
+      "value": "414141"
+    },
+    {
+      "id": "dead_tube_coral_wall_fan",
+      "value": "414141"
+    },
+    {
+      "id": "decorated_pot",
+      "value": "7a3327"
+    },
+    {
+      "id": "deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_brick_slab",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_brick_stairs",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_brick_wall",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_bricks",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_coal_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_copper_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_diamond_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_emerald_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_gold_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_iron_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_lapis_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_redstone_ore",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_tile_slab",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_tile_stairs",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_tile_wall",
+      "value": "565656"
+    },
+    {
+      "id": "deepslate_tiles",
+      "value": "565656"
+    },
+    {
+      "id": "diamond_block",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "diamond_ore",
+      "value": "606060"
+    },
+    {
+      "id": "diorite",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "diorite_slab",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "diorite_stairs",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "diorite_wall",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "dirt",
+      "value": "825e42"
+    },
+    {
+      "id": "dirt_path",
+      "value": "825e42"
+    },
+    {
+      "id": "dispenser",
+      "value": "606060"
+    },
+    {
+      "id": "dragon_egg",
+      "value": "151515"
+    },
+    {
+      "id": "dried_kelp_block",
+      "value": "586d2c"
+    },
+    {
+      "id": "dripstone_block",
+      "value": "412b1e"
+    },
+    {
+      "id": "dropper",
+      "value": "606060"
+    },
+    {
+      "id": "emerald_block",
+      "value": "00bb32"
+    },
+    {
+      "id": "emerald_ore",
+      "value": "606060"
+    },
+    {
+      "id": "enchanting_table",
+      "value": "842c2c"
+    },
+    {
+      "id": "end_gateway",
+      "value": "151515"
+    },
+    {
+      "id": "end_portal",
+      "value": "151515"
+    },
+    {
+      "id": "end_portal_frame",
+      "value": "586d2c"
+    },
+    {
+      "id": "end_stone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "end_stone_brick_slab",
+      "value": "d5c98c"
+    },
+    {
+      "id": "end_stone_brick_stairs",
+      "value": "d5c98c"
+    },
+    {
+      "id": "end_stone_brick_wall",
+      "value": "d5c98c"
+    },
+    {
+      "id": "end_stone_bricks",
+      "value": "d5c98c"
+    },
+    {
+      "id": "ender_chest",
+      "value": "606060"
+    },
+    {
+      "id": "exposed_chiseled_copper",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_copper",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_copper_bulb",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_copper_door",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_copper_grate",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_copper_trapdoor",
+      "value": "909090"
+    },
+    {
+      "id": "exposed_cut_copper",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_cut_copper_slab",
+      "value": "745c54"
+    },
+    {
+      "id": "exposed_cut_copper_stairs",
+      "value": "745c54"
+    },
+    {
+      "id": "farmland",
+      "value": "825e42"
+    },
+    {
+      "id": "fern",
+      "value": {
+        "tint": "grass.png",
+        "baseColor": "0xFFD9D9D8"
+      }
+    },
+    {
+      "id": "fire",
+      "value": "dc0000"
+    },
+    {
+      "id": "fire_coral",
+      "value": "7da24b"
+    },
+    {
+      "id": "fire_coral_block",
+      "value": "842c2c"
+    },
+    {
+      "id": "fire_coral_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "fire_coral_wall_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "fletching_table",
+      "value": "7b663e"
+    },
+    {
+      "id": "flowering_azalea",
+      "value": "006a00"
+    },
+    {
+      "id": "flowering_azalea_leaves",
+      "value": "006a00"
+    },
+    {
+      "id": "frogspawn",
+      "value": "3737dc"
+    },
+    {
+      "id": "frosted_ice",
+      "value": "8a8adc"
+    },
+    {
+      "id": "furnace",
+      "value": "606060"
+    },
+    {
+      "id": "gilded_blackstone",
+      "value": "151515"
+    },
+    {
+      "id": "glow_lichen",
+      "value": "6d9081"
+    },
+    {
+      "id": "glowstone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "gold_block",
+      "value": "d7cd42"
+    },
+    {
+      "id": "gold_ore",
+      "value": "606060"
+    },
+    {
+      "id": "granite",
+      "value": "825e42"
+    },
+    {
+      "id": "granite_slab",
+      "value": "825e42"
+    },
+    {
+      "id": "granite_stairs",
+      "value": "825e42"
+    },
+    {
+      "id": "granite_wall",
+      "value": "825e42"
+    },
+    {
+      "id": "grass_block",
+      "value": {
+        "tint": "grass.png",
+        "baseColor": "0xFFD9D9D8"
+      }
+    },
+    {
+      "id": "gravel",
+      "value": "606060"
+    },
+    {
+      "id": "gray_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "gray_bed",
+      "value": "414141"
+    },
+    {
+      "id": "gray_candle",
+      "value": "414141"
+    },
+    {
+      "id": "gray_carpet",
+      "value": "414141"
+    },
+    {
+      "id": "gray_concrete",
+      "value": "414141"
+    },
+    {
+      "id": "gray_concrete_powder",
+      "value": "414141"
+    },
+    {
+      "id": "gray_glazed_terracotta",
+      "value": "414141"
+    },
+    {
+      "id": "gray_shulker_box",
+      "value": "414141"
+    },
+    {
+      "id": "gray_stained_glass",
+      "value": "414141"
+    },
+    {
+      "id": "gray_terracotta",
+      "value": "31231e"
+    },
+    {
+      "id": "gray_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "gray_wool",
+      "value": "414141"
+    },
+    {
+      "id": "green_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "green_bed",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_candle",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_carpet",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_concrete",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_concrete_powder",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_glazed_terracotta",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_shulker_box",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_stained_glass",
+      "value": "586d2c"
+    },
+    {
+      "id": "green_terracotta",
+      "value": "414624"
+    },
+    {
+      "id": "green_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "green_wool",
+      "value": "586d2c"
+    },
+    {
+      "id": "grindstone",
+      "value": "909090"
+    },
+    {
+      "id": "hanging_roots",
+      "value": "006a00"
+    },
+    {
+      "id": "hay_block",
+      "value": "c5c52c"
+    },
+    {
+      "id": "heavy_core",
+      "value": "909090"
+    },
+    {
+      "id": "heavy_weighted_pressure_plate",
+      "value": "909090"
+    },
+    {
+      "id": "honey_block",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "honeycomb_block",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "hopper",
+      "value": "606060"
+    },
+    {
+      "id": "horn_coral",
+      "value": "7da24b"
+    },
+    {
+      "id": "horn_coral_block",
+      "value": "c5c52c"
+    },
+    {
+      "id": "horn_coral_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "horn_coral_wall_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "ice",
+      "value": "8a8adc"
+    },
+    {
+      "id": "infested_chiseled_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "infested_cobblestone",
+      "value": "606060"
+    },
+    {
+      "id": "infested_cracked_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "infested_deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "infested_mossy_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "infested_stone",
+      "value": "606060"
+    },
+    {
+      "id": "infested_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "iron_block",
+      "value": "909090"
+    },
+    {
+      "id": "iron_door",
+      "value": "909090"
+    },
+    {
+      "id": "iron_ore",
+      "value": "606060"
+    },
+    {
+      "id": "iron_trapdoor",
+      "value": "909090"
+    },
+    {
+      "id": "jack_o_lantern",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "jigsaw",
+      "value": "848484"
+    },
+    {
+      "id": "jukebox",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_door",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_fence",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_fence_gate",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_hanging_sign",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_leaves",
+      "value": {
+        "tint": "foliage.png",
+        "baseColor": "0xFF757573"
+      }
+    },
+    {
+      "id": "jungle_log",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_planks",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_pressure_plate",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "jungle_sign",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_slab",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_stairs",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_trapdoor",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_wall_hanging_sign",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_wall_sign",
+      "value": "825e42"
+    },
+    {
+      "id": "jungle_wood",
+      "value": "825e42"
+    },
+    {
+      "id": "kelp",
+      "value": "3737dc"
+    },
+    {
+      "id": "kelp_plant",
+      "value": "3737dc"
+    },
+    {
+      "id": "lantern",
+      "value": "909090"
+    },
+    {
+      "id": "lapis_block",
+      "value": "3f6edc"
+    },
+    {
+      "id": "lapis_ore",
+      "value": "606060"
+    },
+    {
+      "id": "large_amethyst_bud",
+      "value": "844db0"
+    },
+    {
+      "id": "large_fern",
+      "value": "006a00"
+    },
+    {
+      "id": "lava",
+      "value": "dc0000"
+    },
+    {
+      "id": "lava_cauldron",
+      "value": "606060"
+    },
+    {
+      "id": "lectern",
+      "value": "7b663e"
+    },
+    {
+      "id": "light_blue_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "light_blue_bed",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_candle",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_carpet",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_concrete",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_concrete_powder",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_glazed_terracotta",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_shulker_box",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_stained_glass",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_blue_terracotta",
+      "value": "605d77"
+    },
+    {
+      "id": "light_blue_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "light_blue_wool",
+      "value": "5884ba"
+    },
+    {
+      "id": "light_gray_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "light_gray_bed",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_candle",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_carpet",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_concrete",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_concrete_powder",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_glazed_terracotta",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_shulker_box",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_stained_glass",
+      "value": "848484"
+    },
+    {
+      "id": "light_gray_terracotta",
+      "value": "745c54"
+    },
+    {
+      "id": "light_gray_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "light_gray_wool",
+      "value": "848484"
+    },
+    {
+      "id": "light_weighted_pressure_plate",
+      "value": "d7cd42"
+    },
+    {
+      "id": "lightning_rod",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "lilac",
+      "value": "006a00"
+    },
+    {
+      "id": "lily_of_the_valley",
+      "value": "006a00"
+    },
+    {
+      "id": "lily_pad",
+      "value": "006a00"
+    },
+    {
+      "id": "lime_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "lime_bed",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_candle",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_carpet",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_concrete",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_concrete_powder",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_glazed_terracotta",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_shulker_box",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_stained_glass",
+      "value": "6db015"
+    },
+    {
+      "id": "lime_terracotta",
+      "value": "58642d"
+    },
+    {
+      "id": "lime_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "lime_wool",
+      "value": "6db015"
+    },
+    {
+      "id": "lodestone",
+      "value": "dcdcdc"
+    },
+    {
+      "id": "loom",
+      "value": "7b663e"
+    },
+    {
+      "id": "magenta_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "magenta_bed",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_candle",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_carpet",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_concrete",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_concrete_powder",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_glazed_terracotta",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_shulker_box",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_stained_glass",
+      "value": "9941ba"
+    },
+    {
+      "id": "magenta_terracotta",
+      "value": "804b5d"
+    },
+    {
+      "id": "magenta_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "magenta_wool",
+      "value": "9941ba"
+    },
+    {
+      "id": "magma_block",
+      "value": "600100"
+    },
+    {
+      "id": "mangrove_door",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_fence",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_fence_gate",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_hanging_sign",
+      "value": "842c2c"
     },
     {
       "id": "mangrove_leaves",
       "value": {
         "tint": "foliage.png",
-        "baseColor": "818080"
+        "baseColor": "0xFF757573"
       }
+    },
+    {
+      "id": "mangrove_log",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_planks",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_pressure_plate",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_propagule",
+      "value": "006a00"
+    },
+    {
+      "id": "mangrove_roots",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "mangrove_sign",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_slab",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_stairs",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_trapdoor",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_wall_hanging_sign",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_wall_sign",
+      "value": "842c2c"
+    },
+    {
+      "id": "mangrove_wood",
+      "value": "842c2c"
+    },
+    {
+      "id": "medium_amethyst_bud",
+      "value": "844db0"
+    },
+    {
+      "id": "melon",
+      "value": "6db015"
+    },
+    {
+      "id": "melon_stem",
+      "value": "006a00"
+    },
+    {
+      "id": "moss_block",
+      "value": "586d2c"
+    },
+    {
+      "id": "moss_carpet",
+      "value": "586d2c"
+    },
+    {
+      "id": "mossy_cobblestone",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_cobblestone_slab",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_cobblestone_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_cobblestone_wall",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_stone_brick_slab",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_stone_brick_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_stone_brick_wall",
+      "value": "606060"
+    },
+    {
+      "id": "mossy_stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "moving_piston",
+      "value": "606060"
+    },
+    {
+      "id": "mud",
+      "value": "4b4f4f"
+    },
+    {
+      "id": "mud_brick_slab",
+      "value": "745c54"
+    },
+    {
+      "id": "mud_brick_stairs",
+      "value": "745c54"
+    },
+    {
+      "id": "mud_brick_wall",
+      "value": "745c54"
+    },
+    {
+      "id": "mud_bricks",
+      "value": "745c54"
+    },
+    {
+      "id": "muddy_mangrove_roots",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "mushroom_stem",
+      "value": "ababab"
+    },
+    {
+      "id": "mycelium",
+      "value": "844db0"
+    },
+    {
+      "id": "nether_brick_fence",
+      "value": "600100"
+    },
+    {
+      "id": "nether_brick_slab",
+      "value": "600100"
+    },
+    {
+      "id": "nether_brick_stairs",
+      "value": "600100"
+    },
+    {
+      "id": "nether_brick_wall",
+      "value": "600100"
+    },
+    {
+      "id": "nether_bricks",
+      "value": "600100"
+    },
+    {
+      "id": "nether_gold_ore",
+      "value": "600100"
+    },
+    {
+      "id": "nether_quartz_ore",
+      "value": "600100"
+    },
+    {
+      "id": "nether_sprouts",
+      "value": "416d84"
+    },
+    {
+      "id": "nether_wart",
+      "value": "842c2c"
+    },
+    {
+      "id": "nether_wart_block",
+      "value": "842c2c"
+    },
+    {
+      "id": "netherite_block",
+      "value": "151515"
+    },
+    {
+      "id": "netherrack",
+      "value": "600100"
+    },
+    {
+      "id": "note_block",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_door",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_fence",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_fence_gate",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_hanging_sign",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_leaves",
+      "value": {
+        "tint": "foliage.png",
+        "baseColor": "0xFF757573"
+      }
+    },
+    {
+      "id": "oak_log",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_planks",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_pressure_plate",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "oak_sign",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_slab",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_stairs",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_trapdoor",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_wall_hanging_sign",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_wall_sign",
+      "value": "7b663e"
+    },
+    {
+      "id": "oak_wood",
+      "value": "7b663e"
+    },
+    {
+      "id": "observer",
+      "value": "606060"
+    },
+    {
+      "id": "obsidian",
+      "value": "151515"
+    },
+    {
+      "id": "ochre_froglight",
+      "value": "d5c98c"
+    },
+    {
+      "id": "orange_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "orange_bed",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_candle",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_carpet",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_concrete",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_concrete_powder",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_glazed_terracotta",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_shulker_box",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_stained_glass",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "orange_terracotta",
+      "value": "89461f"
+    },
+    {
+      "id": "orange_tulip",
+      "value": "006a00"
+    },
+    {
+      "id": "orange_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "orange_wool",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "oxeye_daisy",
+      "value": "006a00"
+    },
+    {
+      "id": "oxidized_chiseled_copper",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_copper",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_copper_bulb",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_copper_door",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_copper_grate",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_copper_trapdoor",
+      "value": "909090"
+    },
+    {
+      "id": "oxidized_cut_copper",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_cut_copper_slab",
+      "value": "126c73"
+    },
+    {
+      "id": "oxidized_cut_copper_stairs",
+      "value": "126c73"
+    },
+    {
+      "id": "packed_ice",
+      "value": "8a8adc"
+    },
+    {
+      "id": "packed_mud",
+      "value": "825e42"
+    },
+    {
+      "id": "pearlescent_froglight",
+      "value": "d06d8e"
+    },
+    {
+      "id": "peony",
+      "value": "006a00"
+    },
+    {
+      "id": "petrified_oak_slab",
+      "value": "7b663e"
+    },
+    {
+      "id": "pink_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "pink_bed",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_candle",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_carpet",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_concrete",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_concrete_powder",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_glazed_terracotta",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_shulker_box",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_stained_glass",
+      "value": "d06d8e"
+    },
+    {
+      "id": "pink_terracotta",
+      "value": "8a4243"
+    },
+    {
+      "id": "pink_tulip",
+      "value": "006a00"
+    },
+    {
+      "id": "pink_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "pink_wool",
+      "value": "d06d8e"
+    },
+    {
+      "id": "piston",
+      "value": "606060"
+    },
+    {
+      "id": "piston_head",
+      "value": "606060"
+    },
+    {
+      "id": "pitcher_crop",
+      "value": "006a00"
+    },
+    {
+      "id": "pitcher_plant",
+      "value": "006a00"
+    },
+    {
+      "id": "podzol",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "polished_andesite",
+      "value": "606060"
+    },
+    {
+      "id": "polished_andesite_slab",
+      "value": "606060"
+    },
+    {
+      "id": "polished_andesite_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "polished_basalt",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_brick_slab",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_brick_stairs",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_brick_wall",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_bricks",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_pressure_plate",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_slab",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_stairs",
+      "value": "151515"
+    },
+    {
+      "id": "polished_blackstone_wall",
+      "value": "151515"
+    },
+    {
+      "id": "polished_deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "polished_deepslate_slab",
+      "value": "565656"
+    },
+    {
+      "id": "polished_deepslate_stairs",
+      "value": "565656"
+    },
+    {
+      "id": "polished_deepslate_wall",
+      "value": "565656"
+    },
+    {
+      "id": "polished_diorite",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "polished_diorite_slab",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "polished_diorite_stairs",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "polished_granite",
+      "value": "825e42"
+    },
+    {
+      "id": "polished_granite_slab",
+      "value": "825e42"
+    },
+    {
+      "id": "polished_granite_stairs",
+      "value": "825e42"
+    },
+    {
+      "id": "polished_tuff",
+      "value": "31231e"
+    },
+    {
+      "id": "polished_tuff_slab",
+      "value": "31231e"
+    },
+    {
+      "id": "polished_tuff_stairs",
+      "value": "31231e"
+    },
+    {
+      "id": "polished_tuff_wall",
+      "value": "31231e"
+    },
+    {
+      "id": "poppy",
+      "value": "006a00"
+    },
+    {
+      "id": "potatoes",
+      "value": "006a00"
+    },
+    {
+      "id": "powder_snow",
+      "value": "dcdcdc"
+    },
+    {
+      "id": "powder_snow_cauldron",
+      "value": "606060"
+    },
+    {
+      "id": "prismarine",
+      "value": "416d84"
+    },
+    {
+      "id": "prismarine_brick_slab",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "prismarine_brick_stairs",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "prismarine_bricks",
+      "value": "4fbcb7"
+    },
+    {
+      "id": "prismarine_slab",
+      "value": "416d84"
+    },
+    {
+      "id": "prismarine_stairs",
+      "value": "416d84"
+    },
+    {
+      "id": "prismarine_wall",
+      "value": "416d84"
+    },
+    {
+      "id": "pumpkin",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "pumpkin_stem",
+      "value": "006a00"
+    },
+    {
+      "id": "purple_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "purple_bed",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_candle",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_carpet",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_concrete",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_concrete_powder",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_glazed_terracotta",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_shulker_box",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_stained_glass",
+      "value": "844db0"
+    },
+    {
+      "id": "purple_terracotta",
+      "value": "693e4b"
+    },
+    {
+      "id": "purple_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "purple_wool",
+      "value": "844db0"
+    },
+    {
+      "id": "purpur_block",
+      "value": "9941ba"
+    },
+    {
+      "id": "purpur_pillar",
+      "value": "9941ba"
+    },
+    {
+      "id": "purpur_slab",
+      "value": "9941ba"
+    },
+    {
+      "id": "purpur_stairs",
+      "value": "9941ba"
+    },
+    {
+      "id": "quartz_block",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "quartz_bricks",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "quartz_pillar",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "quartz_slab",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "quartz_stairs",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "raw_copper_block",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "raw_gold_block",
+      "value": "d7cd42"
+    },
+    {
+      "id": "raw_iron_block",
+      "value": "ba967e"
+    },
+    {
+      "id": "red_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "red_bed",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_candle",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_carpet",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_concrete",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_concrete_powder",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_glazed_terracotta",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_mushroom",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_mushroom_block",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_nether_brick_slab",
+      "value": "600100"
+    },
+    {
+      "id": "red_nether_brick_stairs",
+      "value": "600100"
+    },
+    {
+      "id": "red_nether_brick_wall",
+      "value": "600100"
+    },
+    {
+      "id": "red_nether_bricks",
+      "value": "600100"
+    },
+    {
+      "id": "red_sand",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "red_sandstone",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "red_sandstone_slab",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "red_sandstone_stairs",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "red_sandstone_wall",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "red_shulker_box",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_stained_glass",
+      "value": "842c2c"
+    },
+    {
+      "id": "red_terracotta",
+      "value": "7a3327"
+    },
+    {
+      "id": "red_tulip",
+      "value": "006a00"
+    },
+    {
+      "id": "red_wall_banner",
+      "value": "7b663e"
+    },
+    {
+      "id": "red_wool",
+      "value": "842c2c"
+    },
+    {
+      "id": "redstone_block",
+      "value": "dc0000"
+    },
+    {
+      "id": "redstone_ore",
+      "value": "606060"
+    },
+    {
+      "id": "reinforced_deepslate",
+      "value": "565656"
+    },
+    {
+      "id": "repeating_command_block",
+      "value": "844db0"
+    },
+    {
+      "id": "respawn_anchor",
+      "value": "151515"
+    },
+    {
+      "id": "rooted_dirt",
+      "value": "825e42"
+    },
+    {
+      "id": "rose_bush",
+      "value": "006a00"
+    },
+    {
+      "id": "sand",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sandstone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sandstone_slab",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sandstone_stairs",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sandstone_wall",
+      "value": "d5c98c"
+    },
+    {
+      "id": "scaffolding",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sculk",
+      "value": "0b0f13"
+    },
+    {
+      "id": "sculk_catalyst",
+      "value": "0b0f13"
+    },
+    {
+      "id": "sculk_sensor",
+      "value": "0b0f13"
+    },
+    {
+      "id": "sculk_shrieker",
+      "value": "0b0f13"
+    },
+    {
+      "id": "sculk_vein",
+      "value": "0b0f13"
+    },
+    {
+      "id": "sea_lantern",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "sea_pickle",
+      "value": "586d2c"
+    },
+    {
+      "id": "seagrass",
+      "value": "3737dc"
+    },
+    {
+      "id": "short_grass",
+      "value": {
+        "tint": "grass.png",
+        "baseColor": "0xFFD9D9D8"
+      }
+    },
+    {
+      "id": "shroomlight",
+      "value": "842c2c"
+    },
+    {
+      "id": "shulker_box",
+      "value": "844db0"
+    },
+    {
+      "id": "slime_block",
+      "value": "6d9930"
+    },
+    {
+      "id": "small_amethyst_bud",
+      "value": "844db0"
+    },
+    {
+      "id": "small_dripleaf",
+      "value": "006a00"
+    },
+    {
+      "id": "smithing_table",
+      "value": "7b663e"
+    },
+    {
+      "id": "smoker",
+      "value": "606060"
+    },
+    {
+      "id": "smooth_basalt",
+      "value": "151515"
+    },
+    {
+      "id": "smooth_quartz",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "smooth_quartz_slab",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "smooth_quartz_stairs",
+      "value": "dcd9d3"
+    },
+    {
+      "id": "smooth_red_sandstone",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "smooth_red_sandstone_slab",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "smooth_red_sandstone_stairs",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "smooth_sandstone",
+      "value": "d5c98c"
+    },
+    {
+      "id": "smooth_sandstone_slab",
+      "value": "d5c98c"
+    },
+    {
+      "id": "smooth_sandstone_stairs",
+      "value": "d5c98c"
+    },
+    {
+      "id": "smooth_stone",
+      "value": "606060"
+    },
+    {
+      "id": "smooth_stone_slab",
+      "value": "606060"
+    },
+    {
+      "id": "sniffer_egg",
+      "value": "842c2c"
+    },
+    {
+      "id": "snow",
+      "value": "dcdcdc"
+    },
+    {
+      "id": "snow_block",
+      "value": "dcdcdc"
+    },
+    {
+      "id": "soul_campfire",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "soul_fire",
+      "value": "5884ba"
+    },
+    {
+      "id": "soul_lantern",
+      "value": "909090"
+    },
+    {
+      "id": "soul_sand",
+      "value": "58412c"
+    },
+    {
+      "id": "soul_soil",
+      "value": "58412c"
+    },
+    {
+      "id": "spawner",
+      "value": "606060"
+    },
+    {
+      "id": "sponge",
+      "value": "c5c52c"
+    },
+    {
+      "id": "spore_blossom",
+      "value": "006a00"
+    },
+    {
+      "id": "spruce_door",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_fence",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_fence_gate",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_hanging_sign",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_leaves",
+      "value": "2d472d"
+    },
+    {
+      "id": "spruce_log",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_planks",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_pressure_plate",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_sapling",
+      "value": "006a00"
+    },
+    {
+      "id": "spruce_sign",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_slab",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_stairs",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_trapdoor",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_wall_hanging_sign",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_wall_sign",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "spruce_wood",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "sticky_piston",
+      "value": "606060"
+    },
+    {
+      "id": "stone",
+      "value": "606060"
+    },
+    {
+      "id": "stone_brick_slab",
+      "value": "606060"
+    },
+    {
+      "id": "stone_brick_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "stone_brick_wall",
+      "value": "606060"
+    },
+    {
+      "id": "stone_bricks",
+      "value": "606060"
+    },
+    {
+      "id": "stone_pressure_plate",
+      "value": "606060"
+    },
+    {
+      "id": "stone_slab",
+      "value": "606060"
+    },
+    {
+      "id": "stone_stairs",
+      "value": "606060"
+    },
+    {
+      "id": "stonecutter",
+      "value": "606060"
+    },
+    {
+      "id": "stripped_acacia_log",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "stripped_acacia_wood",
+      "value": "414141"
+    },
+    {
+      "id": "stripped_bamboo_block",
+      "value": "c5c52c"
+    },
+    {
+      "id": "stripped_birch_log",
+      "value": "d5c98c"
+    },
+    {
+      "id": "stripped_birch_wood",
+      "value": "d5c98c"
+    },
+    {
+      "id": "stripped_cherry_log",
+      "value": "b4988a"
+    },
+    {
+      "id": "stripped_cherry_wood",
+      "value": "8a4243"
+    },
+    {
+      "id": "stripped_crimson_hyphae",
+      "value": "4f1519"
+    },
+    {
+      "id": "stripped_crimson_stem",
+      "value": "7f3653"
+    },
+    {
+      "id": "stripped_dark_oak_log",
+      "value": "58412c"
+    },
+    {
+      "id": "stripped_dark_oak_wood",
+      "value": "58412c"
+    },
+    {
+      "id": "stripped_jungle_log",
+      "value": "825e42"
+    },
+    {
+      "id": "stripped_jungle_wood",
+      "value": "825e42"
+    },
+    {
+      "id": "stripped_mangrove_log",
+      "value": "842c2c"
+    },
+    {
+      "id": "stripped_mangrove_wood",
+      "value": "842c2c"
+    },
+    {
+      "id": "stripped_oak_log",
+      "value": "7b663e"
+    },
+    {
+      "id": "stripped_oak_wood",
+      "value": "7b663e"
+    },
+    {
+      "id": "stripped_spruce_log",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "stripped_spruce_wood",
+      "value": "6f4a2a"
+    },
+    {
+      "id": "stripped_warped_hyphae",
+      "value": "4a2535"
+    },
+    {
+      "id": "stripped_warped_stem",
+      "value": "327a78"
+    },
+    {
+      "id": "structure_block",
+      "value": "848484"
+    },
+    {
+      "id": "sugar_cane",
+      "value": "006a00"
+    },
+    {
+      "id": "sunflower",
+      "value": "006a00"
+    },
+    {
+      "id": "suspicious_gravel",
+      "value": "606060"
+    },
+    {
+      "id": "suspicious_sand",
+      "value": "d5c98c"
+    },
+    {
+      "id": "sweet_berry_bush",
+      "value": "006a00"
+    },
+    {
+      "id": "tall_grass",
+      "value": "006a00"
+    },
+    {
+      "id": "tall_seagrass",
+      "value": "3737dc"
+    },
+    {
+      "id": "target",
+      "value": "dcdcdc"
+    },
+    {
+      "id": "terracotta",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "tinted_glass",
+      "value": "414141"
+    },
+    {
+      "id": "tnt",
+      "value": "dc0000"
+    },
+    {
+      "id": "torchflower",
+      "value": "006a00"
+    },
+    {
+      "id": "torchflower_crop",
+      "value": "006a00"
+    },
+    {
+      "id": "trapped_chest",
+      "value": "7b663e"
+    },
+    {
+      "id": "trial_spawner",
+      "value": "606060"
+    },
+    {
+      "id": "tube_coral",
+      "value": "7da24b"
+    },
+    {
+      "id": "tube_coral_block",
+      "value": "2c4199"
+    },
+    {
+      "id": "tube_coral_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "tube_coral_wall_fan",
+      "value": "7da24b"
+    },
+    {
+      "id": "tuff",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_brick_slab",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_brick_stairs",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_brick_wall",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_bricks",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_slab",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_stairs",
+      "value": "31231e"
+    },
+    {
+      "id": "tuff_wall",
+      "value": "31231e"
+    },
+    {
+      "id": "turtle_egg",
+      "value": "d5c98c"
+    },
+    {
+      "id": "twisting_vines",
+      "value": "416d84"
+    },
+    {
+      "id": "twisting_vines_plant",
+      "value": "416d84"
+    },
+    {
+      "id": "vault",
+      "value": "606060"
+    },
+    {
+      "id": "verdant_froglight",
+      "value": "6d9081"
     },
     {
       "id": "vine",
       "value": {
         "tint": "foliage.png",
-        "baseColor": "747474"
+        "baseColor": "0xFF90918E"
       }
+    },
+    {
+      "id": "warped_door",
+      "value": "327a78"
+    },
+    {
+      "id": "warped_fence",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_fence_gate",
+      "value": "327a78"
+    },
+    {
+      "id": "warped_fungus",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_hanging_sign",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_hyphae",
+      "value": "4a2535"
+    },
+    {
+      "id": "warped_nylium",
+      "value": "126c73"
+    },
+    {
+      "id": "warped_planks",
+      "value": "327a78"
+    },
+    {
+      "id": "warped_pressure_plate",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_roots",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_sign",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_slab",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_stairs",
+      "value": "327a78"
+    },
+    {
+      "id": "warped_stem",
+      "value": "327a78"
+    },
+    {
+      "id": "warped_trapdoor",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_wall_hanging_sign",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_wall_sign",
+      "value": "416d84"
+    },
+    {
+      "id": "warped_wart_block",
+      "value": "119b72"
     },
     {
       "id": "water",
       "value": {
         "tint": "water.png",
-        "baseColor": "B1B1B1"
+        "baseColor": "0xFFFFFFFF"
       }
     },
     {
-      "id": "acacia_button",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_door",
-      "value": "A75F3C"
-    },
-    {
-      "id": "acacia_fence",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_fence_gate",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_hanging_sign",
-      "value": "6C6D6D"
-    },
-    {
-      "id": "acacia_log",
-      "value": "965837"
-    },
-    {
-      "id": "acacia_planks",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_pressure_plate",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_sapling",
-      "value": "767517"
-    },
-    {
-      "id": "acacia_sign",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_slab",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_stairs",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_trapdoor",
-      "value": "9C5733"
-    },
-    {
-      "id": "acacia_wall_hanging_sign",
-      "value": "6C6D6D"
-    },
-    {
-      "id": "acacia_wall_sign",
-      "value": "A85A32"
-    },
-    {
-      "id": "acacia_wood",
-      "value": "676056"
-    },
-    {
-      "id": "activator_rail",
-      "value": "73574A"
-    },
-    {
-      "id": "allium",
-      "value": "9E89B7"
-    },
-    {
-      "id": "amethyst_block",
-      "value": "8561BF"
-    },
-    {
-      "id": "amethyst_cluster",
-      "value": "A37ECF"
-    },
-    {
-      "id": "ancient_debris",
-      "value": "5E423A"
-    },
-    {
-      "id": "andesite",
-      "value": "888888"
-    },
-    {
-      "id": "andesite_slab",
-      "value": "888888"
-    },
-    {
-      "id": "andesite_stairs",
-      "value": "888888"
-    },
-    {
-      "id": "andesite_wall",
-      "value": "888888"
-    },
-    {
-      "id": "anvil",
-      "value": "484848"
-    },
-    {
-      "id": "attached_melon_stem",
-      "value": "999999"
-    },
-    {
-      "id": "attached_pumpkin_stem",
-      "value": "9A9A9A"
-    },
-    {
-      "id": "azalea",
-      "value": "5B5B5B"
-    },
-    {
-      "id": "azalea_leaves",
-      "value": "5A722C"
-    },
-    {
-      "id": "azure_bluet",
-      "value": "A9CC7F"
-    },
-    {
-      "id": "bamboo",
-      "value": "5D9013"
-    },
-    {
-      "id": "bamboo_block",
-      "value": "8B8D3E"
-    },
-    {
-      "id": "bamboo_button",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_door",
-      "value": "BFAB51"
-    },
-    {
-      "id": "bamboo_fence",
-      "value": "CEBA59"
-    },
-    {
-      "id": "bamboo_fence_gate",
-      "value": "CFBB58"
-    },
-    {
-      "id": "bamboo_hanging_sign",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_mosaic",
-      "value": "BEAA4E"
-    },
-    {
-      "id": "bamboo_mosaic_slab",
-      "value": "BEAA4E"
-    },
-    {
-      "id": "bamboo_mosaic_stairs",
-      "value": "BEAA4E"
-    },
-    {
-      "id": "bamboo_planks",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_pressure_plate",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_sapling",
-      "value": "5C5923"
-    },
-    {
-      "id": "bamboo_sign",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_slab",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_stairs",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_trapdoor",
-      "value": "C6B355"
-    },
-    {
-      "id": "bamboo_wall_hanging_sign",
-      "value": "C1AD50"
-    },
-    {
-      "id": "bamboo_wall_sign",
-      "value": "C1AD50"
-    },
-    {
-      "id": "barrel",
-      "value": "86643A"
-    },
-    {
-      "id": "barrier",
-      "value": "D40000"
-    },
-    {
-      "id": "basalt",
-      "value": "505156"
-    },
-    {
-      "id": "beacon",
-      "value": "AFD5DB"
-    },
-    {
-      "id": "bedrock",
-      "value": "555555"
-    },
-    {
-      "id": "beehive",
-      "value": "B4925A"
-    },
-    {
-      "id": "beetroots",
-      "value": "418929"
-    },
-    {
-      "id": "bee_nest",
-      "value": "CAA04A"
-    },
-    {
-      "id": "bell",
-      "value": "BC942A"
-    },
-    {
-      "id": "big_dripleaf",
-      "value": "6F8D33"
-    },
-    {
-      "id": "big_dripleaf_stem",
-      "value": "5B732D"
-    },
-    {
-      "id": "birch_button",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_door",
-      "value": "DCD1B0"
-    },
-    {
-      "id": "birch_fence",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_fence_gate",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_hanging_sign",
-      "value": "A3A4A4"
-    },
-    {
-      "id": "birch_log",
-      "value": "C1B387"
-    },
-    {
-      "id": "birch_planks",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_pressure_plate",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_sapling",
-      "value": "7FA04F"
-    },
-    {
-      "id": "birch_sign",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_slab",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_stairs",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_trapdoor",
-      "value": "CFC29D"
-    },
-    {
-      "id": "birch_wall_hanging_sign",
-      "value": "A3A4A4"
-    },
-    {
-      "id": "birch_wall_sign",
-      "value": "C0AF79"
-    },
-    {
-      "id": "birch_wood",
-      "value": "D8D7D2"
-    },
-    {
-      "id": "blackstone",
-      "value": "2A2429"
-    },
-    {
-      "id": "blackstone_slab",
-      "value": "2A2429"
-    },
-    {
-      "id": "blackstone_stairs",
-      "value": "2A2429"
-    },
-    {
-      "id": "blackstone_wall",
-      "value": "2A2328"
-    },
-    {
-      "id": "black_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "black_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "black_candle",
-      "value": "262439"
-    },
-    {
-      "id": "black_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "black_carpet",
-      "value": "161616"
-    },
-    {
-      "id": "black_concrete",
-      "value": "0B0B0B"
-    },
-    {
-      "id": "black_concrete_powder",
-      "value": "1B1C1B"
-    },
-    {
-      "id": "black_glazed_terracotta",
-      "value": "2F2C2C"
-    },
-    {
-      "id": "black_shulker_box",
-      "value": "1A1A1A"
-    },
-    {
-      "id": "black_stained_glass",
-      "value": "191919"
-    },
-    {
-      "id": "black_stained_glass_pane",
-      "value": "181818"
-    },
-    {
-      "id": "black_terracotta",
-      "value": "251610"
-    },
-    {
-      "id": "black_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "black_wool",
-      "value": "161616"
-    },
-    {
-      "id": "blast_furnace",
-      "value": "505051"
-    },
-    {
-      "id": "blue_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "blue_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "blue_candle",
-      "value": "394CA1"
-    },
-    {
-      "id": "blue_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "blue_carpet",
-      "value": "595959"
-    },
-    {
-      "id": "blue_concrete",
-      "value": "4E4E4E"
-    },
-    {
-      "id": "blue_concrete_powder",
-      "value": "676767"
-    },
-    {
-      "id": "blue_glazed_terracotta",
-      "value": "515353"
-    },
-    {
-      "id": "blue_ice",
-      "value": "74A7FD"
-    },
-    {
-      "id": "blue_orchid",
-      "value": "2FA2A8"
-    },
-    {
-      "id": "blue_shulker_box",
-      "value": "4C4C4D"
-    },
-    {
-      "id": "blue_stained_glass",
-      "value": "334CB2"
-    },
-    {
-      "id": "blue_stained_glass_pane",
-      "value": "3049AB"
-    },
-    {
-      "id": "blue_terracotta",
-      "value": "4A3B5B"
-    },
-    {
-      "id": "blue_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "blue_wool",
-      "value": "595959"
-    },
-    {
-      "id": "bone_block",
-      "value": "D1CEB3"
-    },
-    {
-      "id": "bookshelf",
-      "value": "A2824E"
-    },
-    {
-      "id": "brain_coral",
-      "value": "C55498"
-    },
-    {
-      "id": "brain_coral_block",
-      "value": "CF5B9F"
-    },
-    {
-      "id": "brain_coral_fan",
-      "value": "CA5499"
-    },
-    {
-      "id": "brain_coral_wall_fan",
-      "value": "CA5499"
-    },
-    {
-      "id": "brewing_stand",
-      "value": "7A6450"
-    },
-    {
-      "id": "bricks",
-      "value": "966153"
-    },
-    {
-      "id": "brick_slab",
-      "value": "966153"
-    },
-    {
-      "id": "brick_stairs",
-      "value": "966153"
-    },
-    {
-      "id": "brick_wall",
-      "value": "966153"
-    },
-    {
-      "id": "brown_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "brown_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "brown_candle",
-      "value": "6F4629"
-    },
-    {
-      "id": "brown_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "brown_carpet",
-      "value": "4B4B4B"
-    },
-    {
-      "id": "brown_concrete",
-      "value": "3E3E3E"
-    },
-    {
-      "id": "brown_concrete_powder",
-      "value": "585858"
-    },
-    {
-      "id": "brown_glazed_terracotta",
-      "value": "6A6867"
-    },
-    {
-      "id": "brown_mushroom",
-      "value": "99745C"
-    },
-    {
-      "id": "brown_mushroom_block",
-      "value": "956F51"
-    },
-    {
-      "id": "brown_shulker_box",
-      "value": "454545"
-    },
-    {
-      "id": "brown_stained_glass",
-      "value": "664C33"
-    },
-    {
-      "id": "brown_stained_glass_pane",
-      "value": "614930"
-    },
-    {
-      "id": "brown_terracotta",
-      "value": "4D3323"
-    },
-    {
-      "id": "brown_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "brown_wool",
-      "value": "4B4B4B"
-    },
-    {
-      "id": "bubble_column",
-      "value": "B1B1B1"
-    },
-    {
-      "id": "bubble_coral",
-      "value": "A1179F"
-    },
-    {
-      "id": "bubble_coral_block",
-      "value": "A51AA2"
-    },
-    {
-      "id": "bubble_coral_fan",
-      "value": "A0209F"
-    },
-    {
-      "id": "bubble_coral_wall_fan",
-      "value": "A0209F"
-    },
-    {
-      "id": "budding_amethyst",
-      "value": "8460BA"
-    },
-    {
-      "id": "cactus",
-      "value": "557F2B"
-    },
-    {
-      "id": "cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "calcite",
-      "value": "DFE0DC"
-    },
-    {
-      "id": "calibrated_sculk_sensor",
-      "value": "087A7E"
-    },
-    {
-      "id": "campfire",
-      "value": "4F4A43"
-    },
-    {
-      "id": "candle",
-      "value": "E8C899"
-    },
-    {
-      "id": "candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "carrots",
-      "value": "2C6E27"
-    },
-    {
-      "id": "cartography_table",
-      "value": "422B14"
-    },
-    {
-      "id": "carved_pumpkin",
-      "value": "C67618"
-    },
-    {
-      "id": "cauldron",
-      "value": "49484A"
-    },
-    {
-      "id": "cave_vines",
-      "value": "5A6D28"
-    },
-    {
-      "id": "cave_vines_plant",
-      "value": "586526"
-    },
-    {
-      "id": "chain",
-      "value": "33394A"
-    },
-    {
-      "id": "chain_command_block",
-      "value": "829D91"
-    },
-    {
-      "id": "cherry_button",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_door",
-      "value": "DFAAA4"
-    },
-    {
-      "id": "cherry_fence",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_fence_gate",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_hanging_sign",
-      "value": "A9A9A9"
-    },
-    {
-      "id": "cherry_leaves",
-      "value": "E5ACC2"
-    },
-    {
-      "id": "cherry_log",
-      "value": "B98D89"
-    },
-    {
-      "id": "cherry_planks",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_pressure_plate",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_sapling",
-      "value": "A4758F"
-    },
-    {
-      "id": "cherry_sign",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_slab",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_stairs",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_trapdoor",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_wall_hanging_sign",
-      "value": "A9A9A9"
-    },
-    {
-      "id": "cherry_wall_sign",
-      "value": "E2B2AC"
-    },
-    {
-      "id": "cherry_wood",
-      "value": "36212C"
-    },
-    {
-      "id": "chest",
-      "value": "A2824E"
-    },
-    {
-      "id": "chipped_anvil",
-      "value": "484848"
-    },
-    {
-      "id": "chiseled_bookshelf",
-      "value": "8B8987"
-    },
-    {
-      "id": "chiseled_deepslate",
-      "value": "363636"
-    },
-    {
-      "id": "chiseled_nether_bricks",
-      "value": "2F171C"
-    },
-    {
-      "id": "chiseled_polished_blackstone",
-      "value": "353038"
-    },
-    {
-      "id": "chiseled_quartz_block",
-      "value": "E7E2D9"
-    },
-    {
-      "id": "chiseled_red_sandstone",
-      "value": "B5611F"
-    },
-    {
-      "id": "chiseled_sandstone",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "chiseled_stone_bricks",
-      "value": "777677"
-    },
-    {
-      "id": "chorus_flower",
-      "value": "977897"
-    },
-    {
-      "id": "chorus_plant",
-      "value": "5D395D"
-    },
-    {
-      "id": "clay",
-      "value": "A0A6B3"
-    },
-    {
-      "id": "coal_block",
-      "value": "100F0F"
-    },
-    {
-      "id": "coal_ore",
-      "value": "696969"
-    },
-    {
-      "id": "coarse_dirt",
-      "value": "77553B"
-    },
-    {
-      "id": "cobbled_deepslate",
-      "value": "4D4D50"
-    },
-    {
-      "id": "cobbled_deepslate_slab",
-      "value": "4D4D50"
-    },
-    {
-      "id": "cobbled_deepslate_stairs",
-      "value": "4D4D50"
-    },
-    {
-      "id": "cobbled_deepslate_wall",
-      "value": "4D4D50"
-    },
-    {
-      "id": "cobblestone",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "cobblestone_slab",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "cobblestone_stairs",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "cobblestone_wall",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "cobweb",
-      "value": "E4E9EA"
-    },
-    {
-      "id": "cocoa",
-      "value": "85863E"
-    },
-    {
-      "id": "command_block",
-      "value": "AD836A"
-    },
-    {
-      "id": "comparator",
-      "value": "A6A19F"
-    },
-    {
-      "id": "composter",
-      "value": "986233"
-    },
-    {
-      "id": "conduit",
-      "value": "9F8B71"
-    },
-    {
-      "id": "copper_block",
-      "value": "C06B4F"
-    },
-    {
-      "id": "copper_ore",
-      "value": "7C7D78"
-    },
-    {
-      "id": "cornflower",
-      "value": "4F7992"
-    },
-    {
-      "id": "cracked_deepslate_bricks",
-      "value": "404041"
-    },
-    {
-      "id": "cracked_deepslate_tiles",
-      "value": "343434"
-    },
-    {
-      "id": "cracked_nether_bricks",
-      "value": "281417"
-    },
-    {
-      "id": "cracked_polished_blackstone_bricks",
-      "value": "2C252B"
-    },
-    {
-      "id": "cracked_stone_bricks",
-      "value": "767576"
-    },
-    {
-      "id": "crafting_table",
-      "value": "A2824E"
-    },
-    {
-      "id": "creeper_head",
-      "value": "513E32"
-    },
-    {
-      "id": "creeper_wall_head",
-      "value": "513E32"
-    },
-    {
-      "id": "crimson_button",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_door",
-      "value": "72364F"
-    },
-    {
-      "id": "crimson_fence",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_fence_gate",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_fungus",
-      "value": "8D2C1D"
-    },
-    {
-      "id": "crimson_hanging_sign",
-      "value": "89395A"
-    },
-    {
-      "id": "crimson_hyphae",
-      "value": "5C191D"
-    },
-    {
-      "id": "crimson_nylium",
-      "value": "821F1F"
-    },
-    {
-      "id": "crimson_planks",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_pressure_plate",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_roots",
-      "value": "7E0829"
-    },
-    {
-      "id": "crimson_sign",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_slab",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_stairs",
-      "value": "653046"
-    },
-    {
-      "id": "crimson_stem",
-      "value": "703146"
-    },
-    {
-      "id": "crimson_trapdoor",
-      "value": "673248"
-    },
-    {
-      "id": "crimson_wall_hanging_sign",
-      "value": "89395A"
-    },
-    {
-      "id": "crimson_wall_sign",
-      "value": "653046"
-    },
-    {
-      "id": "crying_obsidian",
-      "value": "200A3C"
-    },
-    {
-      "id": "cut_copper",
-      "value": "BF6A50"
-    },
-    {
-      "id": "cut_copper_slab",
-      "value": "BF6A50"
-    },
-    {
-      "id": "cut_copper_stairs",
-      "value": "BF6A50"
-    },
-    {
-      "id": "cut_red_sandstone",
-      "value": "B5611F"
-    },
-    {
-      "id": "cut_red_sandstone_slab",
-      "value": "B5611F"
-    },
-    {
-      "id": "cut_sandstone",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "cut_sandstone_slab",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "cyan_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "cyan_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "cyan_candle",
-      "value": "117B7B"
-    },
-    {
-      "id": "cyan_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "cyan_carpet",
-      "value": "656565"
-    },
-    {
-      "id": "cyan_concrete",
-      "value": "5C5C5C"
-    },
-    {
-      "id": "cyan_concrete_powder",
-      "value": "727171"
-    },
-    {
-      "id": "cyan_glazed_terracotta",
-      "value": "656260"
-    },
-    {
-      "id": "cyan_shulker_box",
-      "value": "5B5D5C"
-    },
-    {
-      "id": "cyan_stained_glass",
-      "value": "4C7F99"
-    },
-    {
-      "id": "cyan_stained_glass_pane",
-      "value": "497A93"
-    },
-    {
-      "id": "cyan_terracotta",
-      "value": "565B5B"
-    },
-    {
-      "id": "cyan_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "cyan_wool",
-      "value": "656565"
-    },
-    {
-      "id": "damaged_anvil",
-      "value": "484848"
-    },
-    {
-      "id": "dandelion",
-      "value": "93AC2B"
-    },
-    {
-      "id": "dark_oak_button",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_door",
-      "value": "4C3319"
-    },
-    {
-      "id": "dark_oak_fence",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_fence_gate",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_hanging_sign",
-      "value": "363737"
-    },
-    {
-      "id": "dark_oak_log",
-      "value": "2D2D2C"
-    },
-    {
-      "id": "dark_oak_planks",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_pressure_plate",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_sapling",
-      "value": "3D5A1E"
-    },
-    {
-      "id": "dark_oak_sign",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_slab",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_stairs",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_trapdoor",
-      "value": "4B3117"
-    },
-    {
-      "id": "dark_oak_wall_hanging_sign",
-      "value": "363737"
-    },
-    {
-      "id": "dark_oak_wall_sign",
-      "value": "422B14"
-    },
-    {
-      "id": "dark_oak_wood",
-      "value": "3C2E1A"
-    },
-    {
-      "id": "dark_prismarine",
-      "value": "335B4B"
-    },
-    {
-      "id": "dark_prismarine_slab",
-      "value": "335B4B"
-    },
-    {
-      "id": "dark_prismarine_stairs",
-      "value": "335B4B"
-    },
-    {
-      "id": "daylight_detector",
-      "value": "82745E"
-    },
-    {
-      "id": "dead_brain_coral",
-      "value": "857D78"
-    },
-    {
-      "id": "dead_brain_coral_block",
-      "value": "7C7572"
-    },
-    {
-      "id": "dead_brain_coral_fan",
-      "value": "847D79"
-    },
-    {
-      "id": "dead_brain_coral_wall_fan",
-      "value": "847D79"
-    },
-    {
-      "id": "dead_bubble_coral",
-      "value": "847C78"
-    },
-    {
-      "id": "dead_bubble_coral_block",
-      "value": "837B77"
-    },
-    {
-      "id": "dead_bubble_coral_fan",
-      "value": "8C8682"
-    },
-    {
-      "id": "dead_bubble_coral_wall_fan",
-      "value": "8C8682"
-    },
-    {
-      "id": "dead_bush",
-      "value": "6B4E28"
-    },
-    {
-      "id": "dead_fire_coral",
-      "value": "88807C"
-    },
-    {
-      "id": "dead_fire_coral_block",
-      "value": "837B77"
-    },
-    {
-      "id": "dead_fire_coral_fan",
-      "value": "7C7672"
-    },
-    {
-      "id": "dead_fire_coral_wall_fan",
-      "value": "7C7672"
-    },
-    {
-      "id": "dead_horn_coral",
-      "value": "8E8781"
-    },
-    {
-      "id": "dead_horn_coral_block",
-      "value": "857E7A"
-    },
-    {
-      "id": "dead_horn_coral_fan",
-      "value": "867D79"
-    },
-    {
-      "id": "dead_horn_coral_wall_fan",
-      "value": "867D79"
-    },
-    {
-      "id": "dead_tube_coral",
-      "value": "766F6B"
-    },
-    {
-      "id": "dead_tube_coral_block",
-      "value": "827B77"
-    },
-    {
-      "id": "dead_tube_coral_fan",
-      "value": "807A76"
-    },
-    {
-      "id": "dead_tube_coral_wall_fan",
-      "value": "807A76"
-    },
-    {
-      "id": "decorated_pot",
-      "value": "985E43"
-    },
-    {
-      "id": "deepslate",
-      "value": "575759"
-    },
-    {
-      "id": "deepslate_bricks",
-      "value": "464647"
-    },
-    {
-      "id": "deepslate_brick_slab",
-      "value": "464647"
-    },
-    {
-      "id": "deepslate_brick_stairs",
-      "value": "464647"
-    },
-    {
-      "id": "deepslate_brick_wall",
-      "value": "464647"
-    },
-    {
-      "id": "deepslate_coal_ore",
-      "value": "4A4A4C"
-    },
-    {
-      "id": "deepslate_copper_ore",
-      "value": "5C5D59"
-    },
-    {
-      "id": "deepslate_diamond_ore",
-      "value": "536A6A"
-    },
-    {
-      "id": "deepslate_emerald_ore",
-      "value": "4E6857"
-    },
-    {
-      "id": "deepslate_gold_ore",
-      "value": "73664E"
-    },
-    {
-      "id": "deepslate_iron_ore",
-      "value": "6A635E"
-    },
-    {
-      "id": "deepslate_lapis_ore",
-      "value": "4F5A73"
-    },
-    {
-      "id": "deepslate_redstone_ore",
-      "value": "68494A"
-    },
-    {
-      "id": "deepslate_tiles",
-      "value": "363637"
-    },
-    {
-      "id": "deepslate_tile_slab",
-      "value": "363637"
-    },
-    {
-      "id": "deepslate_tile_stairs",
-      "value": "363637"
-    },
-    {
-      "id": "deepslate_tile_wall",
-      "value": "363637"
-    },
-    {
-      "id": "detector_rail",
-      "value": "7B685A"
-    },
-    {
-      "id": "diamond_block",
-      "value": "62EDE4"
-    },
-    {
-      "id": "diamond_ore",
-      "value": "798D8C"
-    },
-    {
-      "id": "diorite",
-      "value": "BCBCBC"
-    },
-    {
-      "id": "diorite_slab",
-      "value": "BCBCBC"
-    },
-    {
-      "id": "diorite_stairs",
-      "value": "BCBCBC"
-    },
-    {
-      "id": "diorite_wall",
-      "value": "BCBCBC"
-    },
-    {
-      "id": "dirt",
-      "value": "866043"
-    },
-    {
-      "id": "dirt_path",
-      "value": "947941"
-    },
-    {
-      "id": "dispenser",
-      "value": "626161"
-    },
-    {
-      "id": "dragon_egg",
-      "value": "0C090F"
-    },
-    {
-      "id": "dragon_head",
-      "value": "513E32"
-    },
-    {
-      "id": "dragon_wall_head",
-      "value": "513E32"
-    },
-    {
-      "id": "dried_kelp_block",
-      "value": "26301D"
-    },
-    {
-      "id": "dripstone_block",
-      "value": "866B5C"
-    },
-    {
-      "id": "dropper",
-      "value": "616060"
-    },
-    {
-      "id": "emerald_block",
-      "value": "2ACB57"
-    },
-    {
-      "id": "emerald_ore",
-      "value": "6C8873"
-    },
-    {
-      "id": "enchanting_table",
-      "value": "804B55"
-    },
-    {
-      "id": "ender_chest",
-      "value": "0F0A18"
-    },
-    {
-      "id": "end_gateway",
-      "value": "0F0A18"
-    },
-    {
-      "id": "end_portal",
-      "value": "0F0A18"
-    },
-    {
-      "id": "end_portal_frame",
-      "value": "5B7861"
-    },
-    {
-      "id": "end_rod",
-      "value": "CFC6BB"
-    },
-    {
-      "id": "end_stone",
-      "value": "DBDE9E"
-    },
-    {
-      "id": "end_stone_bricks",
-      "value": "DAE0A2"
-    },
-    {
-      "id": "end_stone_brick_slab",
-      "value": "DAE0A2"
-    },
-    {
-      "id": "end_stone_brick_stairs",
-      "value": "DAE0A2"
-    },
-    {
-      "id": "end_stone_brick_wall",
-      "value": "DAE0A2"
-    },
-    {
-      "id": "exposed_copper",
-      "value": "A17D67"
-    },
-    {
-      "id": "exposed_cut_copper",
-      "value": "9A7965"
-    },
-    {
-      "id": "exposed_cut_copper_slab",
-      "value": "9A7965"
-    },
-    {
-      "id": "exposed_cut_copper_stairs",
-      "value": "9A7965"
-    },
-    {
-      "id": "farmland",
-      "value": "8F6646"
-    },
-    {
-      "id": "fire",
-      "value": "D38C35"
-    },
-    {
-      "id": "fire_coral",
-      "value": "A6252E"
-    },
-    {
-      "id": "fire_coral_block",
-      "value": "A3232E"
-    },
-    {
-      "id": "fire_coral_fan",
-      "value": "9E222D"
-    },
-    {
-      "id": "fire_coral_wall_fan",
-      "value": "9E222D"
-    },
-    {
-      "id": "fletching_table",
-      "value": "C0AF79"
-    },
-    {
-      "id": "flowering_azalea",
-      "value": "636163"
-    },
-    {
-      "id": "flowering_azalea_leaves",
-      "value": "636F3C"
-    },
-    {
-      "id": "flower_pot",
-      "value": "7C4435"
-    },
-    {
-      "id": "frogspawn",
-      "value": "6E5F56"
-    },
-    {
-      "id": "frosted_ice",
-      "value": "8CB5FC"
-    },
-    {
-      "id": "furnace",
-      "value": "6E6D6D"
-    },
-    {
-      "id": "gilded_blackstone",
-      "value": "372A26"
-    },
-    {
-      "id": "glass",
-      "value": "AFD5DB"
-    },
-    {
-      "id": "glass_pane",
-      "value": "AAD2D9"
-    },
-    {
-      "id": "glowstone",
-      "value": "AB8354"
-    },
-    {
-      "id": "glow_item_frame",
-      "value": "C0AF79"
-    },
-    {
-      "id": "glow_lichen",
-      "value": "708279"
-    },
-    {
-      "id": "gold_block",
-      "value": "F6D03D"
-    },
-    {
-      "id": "gold_ore",
-      "value": "91856A"
-    },
-    {
-      "id": "granite",
-      "value": "956755"
-    },
-    {
-      "id": "granite_slab",
-      "value": "956755"
-    },
-    {
-      "id": "granite_stairs",
-      "value": "956755"
-    },
-    {
-      "id": "granite_wall",
-      "value": "956755"
-    },
-    {
-      "id": "gravel",
-      "value": "837F7E"
-    },
-    {
-      "id": "gray_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "gray_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "gray_candle",
-      "value": "505E60"
-    },
-    {
-      "id": "gray_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "gray_carpet",
-      "value": "434343"
-    },
-    {
-      "id": "gray_concrete",
-      "value": "393939"
-    },
-    {
-      "id": "gray_concrete_powder",
-      "value": "505150"
-    },
-    {
-      "id": "gray_glazed_terracotta",
-      "value": "595859"
-    },
-    {
-      "id": "gray_shulker_box",
-      "value": "3B3B3A"
-    },
-    {
-      "id": "gray_stained_glass",
-      "value": "4C4C4C"
-    },
-    {
-      "id": "gray_stained_glass_pane",
-      "value": "494949"
-    },
-    {
-      "id": "gray_terracotta",
-      "value": "392A23"
-    },
-    {
-      "id": "gray_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "gray_wool",
-      "value": "434343"
-    },
-    {
-      "id": "green_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "green_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "green_candle",
-      "value": "486014"
-    },
-    {
-      "id": "green_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "green_carpet",
-      "value": "4A4949"
-    },
-    {
-      "id": "green_concrete",
-      "value": "434343"
-    },
-    {
-      "id": "green_concrete_powder",
-      "value": "565656"
-    },
-    {
-      "id": "green_glazed_terracotta",
-      "value": "6F6B69"
-    },
-    {
-      "id": "green_shulker_box",
-      "value": "474645"
-    },
-    {
-      "id": "green_stained_glass",
-      "value": "667F33"
-    },
-    {
-      "id": "green_stained_glass_pane",
-      "value": "617A30"
-    },
-    {
-      "id": "green_terracotta",
-      "value": "4C532A"
-    },
-    {
-      "id": "green_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "green_wool",
-      "value": "4A4949"
-    },
-    {
-      "id": "grindstone",
-      "value": "492D15"
-    },
-    {
-      "id": "hanging_roots",
-      "value": "A1735B"
-    },
-    {
-      "id": "hay_block",
-      "value": "A58B0C"
-    },
-    {
-      "id": "heavy_weighted_pressure_plate",
-      "value": "DCDCDC"
-    },
-    {
-      "id": "honeycomb_block",
-      "value": "E5941D"
-    },
-    {
-      "id": "honey_block",
-      "value": "FBB934"
-    },
-    {
-      "id": "hopper",
-      "value": "4B4A4B"
-    },
-    {
-      "id": "horn_coral",
-      "value": "D1BA3E"
-    },
-    {
-      "id": "horn_coral_block",
-      "value": "D8C742"
-    },
-    {
-      "id": "horn_coral_fan",
-      "value": "CDB73D"
-    },
-    {
-      "id": "horn_coral_wall_fan",
-      "value": "CDB73D"
-    },
-    {
-      "id": "ice",
-      "value": "91B7FD"
-    },
-    {
-      "id": "infested_chiseled_stone_bricks",
-      "value": "777677"
-    },
-    {
-      "id": "infested_cobblestone",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "infested_cracked_stone_bricks",
-      "value": "767576"
-    },
-    {
-      "id": "infested_deepslate",
-      "value": "575759"
-    },
-    {
-      "id": "infested_mossy_stone_bricks",
-      "value": "737969"
-    },
-    {
-      "id": "infested_stone",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "infested_stone_bricks",
-      "value": "7A797A"
-    },
-    {
-      "id": "iron_bars",
-      "value": "888B87"
-    },
-    {
-      "id": "iron_block",
-      "value": "DCDCDC"
-    },
-    {
-      "id": "iron_door",
-      "value": "C2C1C1"
-    },
-    {
-      "id": "iron_ore",
-      "value": "88817A"
-    },
-    {
-      "id": "iron_trapdoor",
-      "value": "CACACA"
-    },
-    {
-      "id": "item_frame",
-      "value": "C0AF79"
-    },
-    {
-      "id": "jack_o_lantern",
-      "value": "C67618"
-    },
-    {
-      "id": "jigsaw",
-      "value": "3E353F"
-    },
-    {
-      "id": "jukebox",
-      "value": "5D402F"
-    },
-    {
-      "id": "jungle_button",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_door",
-      "value": "A37754"
-    },
-    {
-      "id": "jungle_fence",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_fence_gate",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_hanging_sign",
-      "value": "AB8454"
-    },
-    {
-      "id": "jungle_log",
-      "value": "956D46"
-    },
-    {
-      "id": "jungle_planks",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_pressure_plate",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_sapling",
-      "value": "2F5110"
-    },
-    {
-      "id": "jungle_sign",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_slab",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_stairs",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_trapdoor",
-      "value": "986E4D"
-    },
-    {
-      "id": "jungle_wall_hanging_sign",
-      "value": "AB8454"
-    },
-    {
-      "id": "jungle_wall_sign",
-      "value": "A07350"
-    },
-    {
-      "id": "jungle_wood",
-      "value": "554319"
-    },
-    {
-      "id": "kelp",
-      "value": "578C2C"
-    },
-    {
-      "id": "kelp_plant",
-      "value": "56822A"
-    },
-    {
-      "id": "ladder",
-      "value": "7C6036"
-    },
-    {
-      "id": "lantern",
-      "value": "6A5B53"
-    },
-    {
-      "id": "lapis_block",
-      "value": "1E438C"
-    },
-    {
-      "id": "lapis_ore",
-      "value": "6B758D"
-    },
-    {
-      "id": "large_amethyst_bud",
-      "value": "A17ECA"
-    },
-    {
-      "id": "lava",
-      "value": "d45a12"
-    },
-    {
-      "id": "lava_cauldron",
-      "value": "49484A"
-    },
-    {
-      "id": "lectern",
-      "value": "AD8953"
-    },
-    {
-      "id": "lever",
-      "value": "7F7F7F"
-    },
-    {
-      "id": "light",
-      "value": "889185"
-    },
-    {
-      "id": "lightning_rod",
-      "value": "C46F53"
-    },
-    {
-      "id": "light_blue_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_blue_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_blue_candle",
-      "value": "2289C4"
-    },
-    {
-      "id": "light_blue_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "light_blue_carpet",
-      "value": "969696"
-    },
-    {
-      "id": "light_blue_concrete",
-      "value": "7B7B7B"
-    },
-    {
-      "id": "light_blue_concrete_powder",
-      "value": "9B9B9C"
-    },
-    {
-      "id": "light_blue_glazed_terracotta",
-      "value": "A29B97"
-    },
-    {
-      "id": "light_blue_shulker_box",
-      "value": "8E8E8D"
-    },
-    {
-      "id": "light_blue_stained_glass",
-      "value": "6699D8"
-    },
-    {
-      "id": "light_blue_stained_glass_pane",
-      "value": "6193D0"
-    },
-    {
-      "id": "light_blue_terracotta",
-      "value": "716C89"
-    },
-    {
-      "id": "light_blue_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_blue_wool",
-      "value": "969696"
-    },
-    {
-      "id": "light_gray_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_gray_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_gray_candle",
-      "value": "767870"
-    },
-    {
-      "id": "light_gray_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "light_gray_carpet",
-      "value": "8B8B8B"
-    },
-    {
-      "id": "light_gray_concrete",
-      "value": "797979"
-    },
-    {
-      "id": "light_gray_concrete_powder",
-      "value": "979898"
-    },
-    {
-      "id": "light_gray_glazed_terracotta",
-      "value": "A09F9F"
-    },
-    {
-      "id": "light_gray_shulker_box",
-      "value": "797A79"
-    },
-    {
-      "id": "light_gray_stained_glass",
-      "value": "999999"
-    },
-    {
-      "id": "light_gray_stained_glass_pane",
-      "value": "939393"
-    },
-    {
-      "id": "light_gray_terracotta",
-      "value": "876A61"
-    },
-    {
-      "id": "light_gray_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "light_gray_wool",
-      "value": "8B8B8B"
-    },
-    {
-      "id": "light_weighted_pressure_plate",
-      "value": "F6D03D"
-    },
-    {
-      "id": "lilac",
-      "value": "897C7E"
-    },
-    {
-      "id": "lily_of_the_valley",
-      "value": "7BAE5F"
-    },
-    {
-      "id": "lily_pad",
-      "value": "858585"
-    },
-    {
-      "id": "lime_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "lime_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "lime_candle",
-      "value": "62AB16"
-    },
-    {
-      "id": "lime_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "lime_carpet",
-      "value": "6B6B6B"
-    },
-    {
-      "id": "lime_concrete",
-      "value": "5F5F5F"
-    },
-    {
-      "id": "lime_concrete_powder",
-      "value": "767776"
-    },
-    {
-      "id": "lime_glazed_terracotta",
-      "value": "888B8B"
-    },
-    {
-      "id": "lime_shulker_box",
-      "value": "636361"
-    },
-    {
-      "id": "lime_stained_glass",
-      "value": "7FCC19"
-    },
-    {
-      "id": "lime_stained_glass_pane",
-      "value": "7AC418"
-    },
-    {
-      "id": "lime_terracotta",
-      "value": "677534"
-    },
-    {
-      "id": "lime_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "lime_wool",
-      "value": "6B6B6B"
-    },
-    {
-      "id": "lodestone",
-      "value": "939598"
-    },
-    {
-      "id": "loom",
-      "value": "8E775B"
-    },
-    {
-      "id": "magenta_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "magenta_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "magenta_candle",
-      "value": "A02D99"
-    },
-    {
-      "id": "magenta_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "magenta_carpet",
-      "value": "919291"
-    },
-    {
-      "id": "magenta_concrete",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "magenta_concrete_powder",
-      "value": "999A99"
-    },
-    {
-      "id": "magenta_glazed_terracotta",
-      "value": "A3A7A6"
-    },
-    {
-      "id": "magenta_shulker_box",
-      "value": "838282"
-    },
-    {
-      "id": "magenta_stained_glass",
-      "value": "B24CD8"
-    },
-    {
-      "id": "magenta_stained_glass_pane",
-      "value": "AB49D0"
-    },
-    {
-      "id": "magenta_terracotta",
-      "value": "95586C"
-    },
-    {
-      "id": "magenta_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "magenta_wool",
-      "value": "919291"
-    },
-    {
-      "id": "magma_block",
-      "value": "8E3F1F"
-    },
-    {
-      "id": "mangrove_button",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_door",
-      "value": "454646"
-    },
-    {
-      "id": "mangrove_fence",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_fence_gate",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_hanging_sign",
-      "value": "77362F"
-    },
-    {
-      "id": "mangrove_log",
-      "value": "66302A"
-    },
-    {
-      "id": "mangrove_planks",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_pressure_plate",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_propagule",
-      "value": "60AE53"
-    },
-    {
-      "id": "mangrove_roots",
-      "value": "4A3B26"
-    },
-    {
-      "id": "mangrove_sign",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_slab",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_stairs",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_trapdoor",
-      "value": "6E2E2A"
-    },
-    {
-      "id": "mangrove_wall_hanging_sign",
-      "value": "77362F"
-    },
-    {
-      "id": "mangrove_wall_sign",
-      "value": "753630"
-    },
-    {
-      "id": "mangrove_wood",
-      "value": "534229"
-    },
-    {
-      "id": "medium_amethyst_bud",
-      "value": "9E78C9"
-    },
-    {
-      "id": "melon",
-      "value": "6F901E"
-    },
-    {
-      "id": "mossy_cobblestone",
-      "value": "6E765E"
-    },
-    {
-      "id": "mossy_cobblestone_slab",
-      "value": "6E765E"
-    },
-    {
-      "id": "mossy_cobblestone_stairs",
-      "value": "6E765E"
-    },
-    {
-      "id": "mossy_cobblestone_wall",
-      "value": "6E765E"
-    },
-    {
-      "id": "mossy_stone_bricks",
-      "value": "737969"
-    },
-    {
-      "id": "mossy_stone_brick_slab",
-      "value": "737969"
-    },
-    {
-      "id": "mossy_stone_brick_stairs",
-      "value": "737969"
-    },
-    {
-      "id": "mossy_stone_brick_wall",
-      "value": "737969"
-    },
-    {
-      "id": "moss_block",
-      "value": "505051"
-    },
-    {
-      "id": "moss_carpet",
-      "value": "505051"
-    },
-    {
-      "id": "moving_piston",
-      "value": "6D6860"
-    },
-    {
-      "id": "mud",
-      "value": "3C393C"
-    },
-    {
-      "id": "muddy_mangrove_roots",
-      "value": "463A2D"
-    },
-    {
-      "id": "mud_bricks",
-      "value": "89674F"
-    },
-    {
-      "id": "mud_brick_slab",
-      "value": "89674F"
-    },
-    {
-      "id": "mud_brick_stairs",
-      "value": "89674F"
-    },
-    {
-      "id": "mud_brick_wall",
-      "value": "89674F"
-    },
-    {
-      "id": "mushroom_stem",
-      "value": "CBC4B9"
-    },
-    {
-      "id": "mycelium",
-      "value": "6F6265"
-    },
-    {
-      "id": "netherite_block",
-      "value": "423D3F"
-    },
-    {
-      "id": "netherrack",
-      "value": "612626"
-    },
-    {
-      "id": "nether_bricks",
-      "value": "2C151A"
-    },
-    {
-      "id": "nether_brick_fence",
-      "value": "2C151A"
-    },
-    {
-      "id": "nether_brick_slab",
-      "value": "2C151A"
-    },
-    {
-      "id": "nether_brick_stairs",
-      "value": "2C151A"
-    },
-    {
-      "id": "nether_brick_wall",
-      "value": "2C151A"
-    },
-    {
-      "id": "nether_gold_ore",
-      "value": "73362A"
-    },
-    {
-      "id": "nether_portal",
-      "value": "570ABF"
-    },
-    {
-      "id": "nether_quartz_ore",
-      "value": "75413E"
-    },
-    {
-      "id": "nether_sprouts",
-      "value": "139785"
-    },
-    {
-      "id": "nether_wart",
-      "value": "751215"
-    },
-    {
-      "id": "nether_wart_block",
-      "value": "720202"
-    },
-    {
-      "id": "note_block",
-      "value": "583A28"
-    },
-    {
-      "id": "oak_button",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_door",
-      "value": "8C6E42"
-    },
-    {
-      "id": "oak_fence",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_fence_gate",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_hanging_sign",
-      "value": "878787"
-    },
-    {
-      "id": "oak_log",
-      "value": "977949"
-    },
-    {
-      "id": "oak_planks",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_pressure_plate",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_sapling",
-      "value": "4D6A28"
-    },
-    {
-      "id": "oak_sign",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_slab",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_stairs",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_trapdoor",
-      "value": "7C6338"
-    },
-    {
-      "id": "oak_wall_hanging_sign",
-      "value": "878787"
-    },
-    {
-      "id": "oak_wall_sign",
-      "value": "A2824E"
-    },
-    {
-      "id": "oak_wood",
-      "value": "6D5532"
-    },
-    {
-      "id": "observer",
-      "value": "615F63"
-    },
-    {
-      "id": "obsidian",
-      "value": "0F0A18"
-    },
-    {
-      "id": "ochre_froglight",
-      "value": "EAE9E9"
-    },
-    {
-      "id": "orange_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "orange_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "orange_candle",
-      "value": "DB6409"
-    },
-    {
-      "id": "orange_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "orange_carpet",
-      "value": "7E7E7D"
-    },
-    {
-      "id": "orange_concrete",
-      "value": "466E8C"
-    },
-    {
-      "id": "orange_concrete_powder",
-      "value": "828182"
-    },
-    {
-      "id": "orange_glazed_terracotta",
-      "value": "808E87"
-    },
-    {
-      "id": "orange_shulker_box",
-      "value": "69767F"
-    },
-    {
-      "id": "orange_stained_glass",
-      "value": "D87F33"
-    },
-    {
-      "id": "orange_stained_glass_pane",
-      "value": "D07A30"
-    },
-    {
-      "id": "orange_terracotta",
-      "value": "A15325"
-    },
-    {
-      "id": "orange_tulip",
-      "value": "5D8E1E"
-    },
-    {
-      "id": "orange_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "orange_wool",
-      "value": "7E7E7D"
-    },
-    {
-      "id": "oxeye_daisy",
-      "value": "B3CA8F"
-    },
-    {
-      "id": "oxidized_copper",
-      "value": "52A284"
-    },
-    {
-      "id": "oxidized_cut_copper",
-      "value": "4F997E"
-    },
-    {
-      "id": "oxidized_cut_copper_slab",
-      "value": "4F997E"
-    },
-    {
-      "id": "oxidized_cut_copper_stairs",
-      "value": "4F997E"
-    },
-    {
-      "id": "packed_ice",
-      "value": "BEBEBE"
-    },
-    {
-      "id": "packed_mud",
-      "value": "8E6A4F"
-    },
-    {
-      "id": "pearlescent_froglight",
-      "value": "F1F1F2"
-    },
-    {
-      "id": "peony",
-      "value": "56655D"
-    },
-    {
-      "id": "petrified_oak_slab",
-      "value": "A2824E"
-    },
-    {
-      "id": "piglin_head",
-      "value": "513E32"
-    },
-    {
-      "id": "piglin_wall_head",
-      "value": "513E32"
-    },
-    {
-      "id": "pink_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "pink_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "pink_candle",
-      "value": "D0658E"
-    },
-    {
-      "id": "pink_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "pink_carpet",
-      "value": "B7B8B7"
-    },
-    {
-      "id": "pink_concrete",
-      "value": "989898"
-    },
-    {
-      "id": "pink_concrete_powder",
-      "value": "BCBBBB"
-    },
-    {
-      "id": "pink_glazed_terracotta",
-      "value": "BDBDBF"
-    },
-    {
-      "id": "pink_petals",
-      "value": "F6B4DA"
-    },
-    {
-      "id": "pink_shulker_box",
-      "value": "AAAAA9"
-    },
-    {
-      "id": "pink_stained_glass",
-      "value": "F27FA5"
-    },
-    {
-      "id": "pink_stained_glass_pane",
-      "value": "E97A9F"
-    },
-    {
-      "id": "pink_terracotta",
-      "value": "A14E4E"
-    },
-    {
-      "id": "pink_tulip",
-      "value": "639D4E"
-    },
-    {
-      "id": "pink_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "pink_wool",
-      "value": "B7B8B7"
-    },
-    {
-      "id": "piston",
-      "value": "616060"
-    },
-    {
-      "id": "piston_head",
-      "value": "997F55"
-    },
-    {
-      "id": "pitcher_crop",
-      "value": "C1A567"
-    },
-    {
-      "id": "pitcher_plant",
-      "value": "687E5D"
-    },
-    {
-      "id": "player_head",
-      "value": "513E32"
-    },
-    {
-      "id": "player_wall_head",
-      "value": "513E32"
-    },
-    {
-      "id": "podzol",
-      "value": "5B3F18"
-    },
-    {
-      "id": "pointed_dripstone",
-      "value": "816659"
-    },
-    {
-      "id": "polished_andesite",
-      "value": "848685"
-    },
-    {
-      "id": "polished_andesite_slab",
-      "value": "848685"
-    },
-    {
-      "id": "polished_andesite_stairs",
-      "value": "848685"
-    },
-    {
-      "id": "polished_basalt",
-      "value": "636264"
-    },
-    {
-      "id": "polished_blackstone",
-      "value": "353038"
-    },
-    {
-      "id": "polished_blackstone_bricks",
-      "value": "302A31"
-    },
-    {
-      "id": "polished_blackstone_brick_slab",
-      "value": "302A31"
-    },
-    {
-      "id": "polished_blackstone_brick_stairs",
-      "value": "302A31"
-    },
-    {
-      "id": "polished_blackstone_brick_wall",
-      "value": "302A31"
-    },
-    {
-      "id": "polished_blackstone_button",
-      "value": "353038"
-    },
-    {
-      "id": "polished_blackstone_pressure_plate",
-      "value": "353038"
-    },
-    {
-      "id": "polished_blackstone_slab",
-      "value": "353038"
-    },
-    {
-      "id": "polished_blackstone_stairs",
-      "value": "353038"
-    },
-    {
-      "id": "polished_blackstone_wall",
-      "value": "353038"
-    },
-    {
-      "id": "polished_deepslate",
-      "value": "484849"
-    },
-    {
-      "id": "polished_deepslate_slab",
-      "value": "484849"
-    },
-    {
-      "id": "polished_deepslate_stairs",
-      "value": "484849"
-    },
-    {
-      "id": "polished_deepslate_wall",
-      "value": "484849"
-    },
-    {
-      "id": "polished_diorite",
-      "value": "C0C1C2"
-    },
-    {
-      "id": "polished_diorite_slab",
-      "value": "C0C1C2"
-    },
-    {
-      "id": "polished_diorite_stairs",
-      "value": "C0C1C2"
-    },
-    {
-      "id": "polished_granite",
-      "value": "9A6A59"
-    },
-    {
-      "id": "polished_granite_slab",
-      "value": "9A6A59"
-    },
-    {
-      "id": "polished_granite_stairs",
-      "value": "9A6A59"
-    },
-    {
-      "id": "poppy",
-      "value": "804025"
-    },
-    {
-      "id": "potatoes",
-      "value": "3A8128"
-    },
-    {
-      "id": "potted_acacia_sapling",
-      "value": "767517"
-    },
-    {
-      "id": "potted_allium",
-      "value": "9E89B7"
-    },
-    {
-      "id": "potted_azalea_bush",
-      "value": "647A2F"
-    },
-    {
-      "id": "potted_azure_bluet",
-      "value": "A9CC7F"
-    },
-    {
-      "id": "potted_bamboo",
-      "value": "7C4435"
-    },
-    {
-      "id": "potted_birch_sapling",
-      "value": "7FA04F"
-    },
-    {
-      "id": "potted_blue_orchid",
-      "value": "2FA2A8"
-    },
-    {
-      "id": "potted_brown_mushroom",
-      "value": "99745C"
-    },
-    {
-      "id": "potted_cactus",
-      "value": "7C4435"
-    },
-    {
-      "id": "potted_cherry_sapling",
-      "value": "A4758F"
-    },
-    {
-      "id": "potted_cornflower",
-      "value": "4F7992"
-    },
-    {
-      "id": "potted_crimson_fungus",
-      "value": "8D2C1D"
-    },
-    {
-      "id": "potted_crimson_roots",
-      "value": "7F0829"
-    },
-    {
-      "id": "potted_dandelion",
-      "value": "93AC2B"
-    },
-    {
-      "id": "potted_dark_oak_sapling",
-      "value": "3D5A1E"
-    },
-    {
-      "id": "potted_dead_bush",
-      "value": "6B4E28"
-    },
-    {
-      "id": "potted_fern",
-      "value": "7C7C7C"
-    },
-    {
-      "id": "potted_flowering_azalea_bush",
-      "value": "727746"
-    },
-    {
-      "id": "potted_jungle_sapling",
-      "value": "2F5110"
-    },
-    {
-      "id": "potted_lily_of_the_valley",
-      "value": "7BAE5F"
-    },
-    {
-      "id": "potted_mangrove_propagule",
-      "value": "7C4435"
-    },
-    {
-      "id": "potted_oak_sapling",
-      "value": "4D6A28"
-    },
-    {
-      "id": "potted_orange_tulip",
-      "value": "5D8E1E"
-    },
-    {
-      "id": "potted_oxeye_daisy",
-      "value": "B3CA8F"
-    },
-    {
-      "id": "potted_pink_tulip",
-      "value": "639D4E"
-    },
-    {
-      "id": "potted_poppy",
-      "value": "804025"
-    },
-    {
-      "id": "potted_red_mushroom",
-      "value": "D84B43"
-    },
-    {
-      "id": "potted_red_tulip",
-      "value": "598020"
-    },
-    {
-      "id": "potted_spruce_sapling",
-      "value": "2C3C24"
-    },
-    {
-      "id": "potted_torchflower",
-      "value": "64654D"
-    },
-    {
-      "id": "potted_warped_fungus",
-      "value": "4A6D57"
-    },
-    {
-      "id": "potted_warped_roots",
-      "value": "14887B"
-    },
-    {
-      "id": "potted_white_tulip",
-      "value": "5DA447"
-    },
-    {
-      "id": "potted_wither_rose",
-      "value": "292C17"
-    },
-    {
-      "id": "powder_snow",
-      "value": "F8FDFD"
-    },
-    {
-      "id": "powder_snow_cauldron",
-      "value": "49484A"
-    },
-    {
-      "id": "powered_rail",
-      "value": "896D4A"
-    },
-    {
-      "id": "prismarine",
-      "value": "639C97"
-    },
-    {
-      "id": "prismarine_bricks",
-      "value": "63AB9E"
-    },
-    {
-      "id": "prismarine_brick_slab",
-      "value": "63AB9E"
-    },
-    {
-      "id": "prismarine_brick_stairs",
-      "value": "63AB9E"
-    },
-    {
-      "id": "prismarine_slab",
-      "value": "639C97"
-    },
-    {
-      "id": "prismarine_stairs",
-      "value": "639C97"
-    },
-    {
-      "id": "prismarine_wall",
-      "value": "639C97"
-    },
-    {
-      "id": "pumpkin",
-      "value": "C67618"
-    },
-    {
-      "id": "purple_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "purple_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "purple_candle",
-      "value": "69229F"
-    },
-    {
-      "id": "purple_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "purple_carpet",
-      "value": "70706F"
-    },
-    {
-      "id": "purple_concrete",
+      "id": "water_cauldron",
       "value": "606060"
     },
     {
-      "id": "purple_concrete_powder",
-      "value": "787A79"
-    },
-    {
-      "id": "purple_glazed_terracotta",
-      "value": "636A64"
-    },
-    {
-      "id": "purple_shulker_box",
-      "value": "616161"
-    },
-    {
-      "id": "purple_stained_glass",
-      "value": "7F3FB2"
-    },
-    {
-      "id": "purple_stained_glass_pane",
-      "value": "7A3DAB"
-    },
-    {
-      "id": "purple_terracotta",
-      "value": "764656"
-    },
-    {
-      "id": "purple_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "purple_wool",
-      "value": "70706F"
-    },
-    {
-      "id": "purpur_block",
-      "value": "A97DA9"
-    },
-    {
-      "id": "purpur_pillar",
-      "value": "020102"
-    },
-    {
-      "id": "purpur_slab",
-      "value": "A97DA9"
-    },
-    {
-      "id": "purpur_stairs",
-      "value": "A97DA9"
-    },
-    {
-      "id": "quartz_block",
-      "value": "EBE5DE"
-    },
-    {
-      "id": "quartz_bricks",
-      "value": "EAE5DD"
-    },
-    {
-      "id": "quartz_pillar",
-      "value": "EBE5DE"
-    },
-    {
-      "id": "quartz_slab",
-      "value": "EBE5DE"
-    },
-    {
-      "id": "quartz_stairs",
-      "value": "EBE5DE"
-    },
-    {
-      "id": "rail",
-      "value": "7D6F58"
-    },
-    {
-      "id": "raw_copper_block",
-      "value": "9A694F"
-    },
-    {
-      "id": "raw_gold_block",
-      "value": "DDA92E"
-    },
-    {
-      "id": "raw_iron_block",
-      "value": "A6876B"
-    },
-    {
-      "id": "redstone_block",
-      "value": "AF1805"
-    },
-    {
-      "id": "redstone_lamp",
-      "value": "5F361E"
-    },
-    {
-      "id": "redstone_ore",
-      "value": "8C6D6D"
-    },
-    {
-      "id": "redstone_torch",
-      "value": "65452B"
-    },
-    {
-      "id": "redstone_wall_torch",
-      "value": "65452B"
-    },
-    {
-      "id": "redstone_wire",
-      "value": "F0F0F0"
-    },
-    {
-      "id": "red_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "red_bed",
-      "value": "A2824E"
-    },
-    {
-      "id": "red_candle",
-      "value": "992624"
-    },
-    {
-      "id": "red_candle_cake",
-      "value": "F8DED6"
-    },
-    {
-      "id": "red_carpet",
-      "value": "4E4E4E"
-    },
-    {
-      "id": "red_concrete",
-      "value": "454545"
-    },
-    {
-      "id": "red_concrete_powder",
-      "value": "5A5B5B"
-    },
-    {
-      "id": "red_glazed_terracotta",
-      "value": "626161"
-    },
-    {
-      "id": "red_mushroom",
-      "value": "D84B43"
-    },
-    {
-      "id": "red_mushroom_block",
-      "value": "C82E2D"
-    },
-    {
-      "id": "red_nether_bricks",
-      "value": "450709"
-    },
-    {
-      "id": "red_nether_brick_slab",
-      "value": "450709"
-    },
-    {
-      "id": "red_nether_brick_stairs",
-      "value": "450709"
-    },
-    {
-      "id": "red_nether_brick_wall",
-      "value": "450709"
-    },
-    {
-      "id": "red_sand",
-      "value": "BE6621"
-    },
-    {
-      "id": "red_sandstone",
-      "value": "B5611F"
-    },
-    {
-      "id": "red_sandstone_slab",
-      "value": "B5611F"
-    },
-    {
-      "id": "red_sandstone_stairs",
-      "value": "B5611F"
-    },
-    {
-      "id": "red_sandstone_wall",
-      "value": "BA631D"
-    },
-    {
-      "id": "red_shulker_box",
-      "value": "444242"
-    },
-    {
-      "id": "red_stained_glass",
-      "value": "993333"
-    },
-    {
-      "id": "red_stained_glass_pane",
-      "value": "933030"
-    },
-    {
-      "id": "red_terracotta",
-      "value": "8F3D2E"
-    },
-    {
-      "id": "red_tulip",
-      "value": "598020"
-    },
-    {
-      "id": "red_wall_banner",
-      "value": "A2824E"
-    },
-    {
-      "id": "red_wool",
-      "value": "4E4E4E"
-    },
-    {
-      "id": "reinforced_deepslate",
-      "value": "50524E"
-    },
-    {
-      "id": "repeater",
-      "value": "A09D9C"
-    },
-    {
-      "id": "repeating_command_block",
-      "value": "806DA6"
-    },
-    {
-      "id": "respawn_anchor",
-      "value": "211534"
-    },
-    {
-      "id": "rooted_dirt",
-      "value": "90674C"
-    },
-    {
-      "id": "rose_bush",
-      "value": "615325"
-    },
-    {
-      "id": "sand",
-      "value": "DBCFA3"
-    },
-    {
-      "id": "sandstone",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "sandstone_slab",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "sandstone_stairs",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "sandstone_wall",
-      "value": "D8CB9B"
-    },
-    {
-      "id": "scaffolding",
-      "value": "AA8349"
-    },
-    {
-      "id": "sculk",
-      "value": "0C1D24"
-    },
-    {
-      "id": "sculk_catalyst",
-      "value": "0F1F26"
-    },
-    {
-      "id": "sculk_sensor",
-      "value": "087A7E"
-    },
-    {
-      "id": "sculk_shrieker",
-      "value": "C6CDA9"
-    },
-    {
-      "id": "sculk_vein",
-      "value": "073039"
-    },
-    {
-      "id": "seagrass",
-      "value": "327E08"
-    },
-    {
-      "id": "sea_lantern",
-      "value": "ACC7BE"
-    },
-    {
-      "id": "sea_pickle",
-      "value": "5A6127"
-    },
-    {
-      "id": "shroomlight",
-      "value": "F09246"
-    },
-    {
-      "id": "shulker_box",
-      "value": "0C0C0C"
-    },
-    {
-      "id": "skeleton_skull",
-      "value": "513E32"
-    },
-    {
-      "id": "skeleton_wall_skull",
-      "value": "513E32"
-    },
-    {
-      "id": "slime_block",
-      "value": "6FC05B"
-    },
-    {
-      "id": "small_amethyst_bud",
-      "value": "8363C0"
-    },
-    {
-      "id": "small_dripleaf",
-      "value": "5E7A2D"
-    },
-    {
-      "id": "smithing_table",
-      "value": "401C17"
-    },
-    {
-      "id": "smoker",
-      "value": "555351"
-    },
-    {
-      "id": "smooth_basalt",
-      "value": "48484E"
-    },
-    {
-      "id": "smooth_quartz",
-      "value": "ECE6DF"
-    },
-    {
-      "id": "smooth_quartz_slab",
-      "value": "ECE6DF"
-    },
-    {
-      "id": "smooth_quartz_stairs",
-      "value": "ECE6DF"
-    },
-    {
-      "id": "smooth_red_sandstone",
-      "value": "B5611F"
-    },
-    {
-      "id": "smooth_red_sandstone_slab",
-      "value": "B5611F"
-    },
-    {
-      "id": "smooth_red_sandstone_stairs",
-      "value": "B5611F"
-    },
-    {
-      "id": "smooth_sandstone",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "smooth_sandstone_slab",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "smooth_sandstone_stairs",
-      "value": "DFD6AA"
-    },
-    {
-      "id": "smooth_stone",
-      "value": "9E9E9E"
-    },
-    {
-      "id": "smooth_stone_slab",
-      "value": "9E9E9E"
-    },
-    {
-      "id": "sniffer_egg",
-      "value": "876943"
-    },
-    {
-      "id": "snow",
-      "value": "F9FEFE"
-    },
-    {
-      "id": "snow_block",
-      "value": "F9FEFE"
-    },
-    {
-      "id": "soul_campfire",
-      "value": "4F4A43"
-    },
-    {
-      "id": "soul_fire",
-      "value": "33C0C5"
-    },
-    {
-      "id": "soul_lantern",
-      "value": "476372"
-    },
-    {
-      "id": "soul_sand",
-      "value": "513E32"
-    },
-    {
-      "id": "soul_soil",
-      "value": "4B392E"
-    },
-    {
-      "id": "soul_torch",
-      "value": "6D7359"
-    },
-    {
-      "id": "soul_wall_torch",
-      "value": "6D7359"
-    },
-    {
-      "id": "spawner",
-      "value": "242E3E"
-    },
-    {
-      "id": "sponge",
-      "value": "C3C04A"
-    },
-    {
-      "id": "spore_blossom",
-      "value": "CE609E"
-    },
-    {
-      "id": "spruce_button",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_door",
-      "value": "4E4D50"
-    },
-    {
-      "id": "spruce_fence",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_fence_gate",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_hanging_sign",
-      "value": "565555"
-    },
-    {
-      "id": "spruce_log",
-      "value": "6C502E"
-    },
-    {
-      "id": "spruce_planks",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_pressure_plate",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_sapling",
-      "value": "2C3C24"
-    },
-    {
-      "id": "spruce_sign",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_slab",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_stairs",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_trapdoor",
-      "value": "674F2F"
-    },
-    {
-      "id": "spruce_wall_hanging_sign",
-      "value": "565555"
-    },
-    {
-      "id": "spruce_wall_sign",
-      "value": "725430"
-    },
-    {
-      "id": "spruce_wood",
-      "value": "3A2510"
-    },
-    {
-      "id": "sticky_piston",
-      "value": "616060"
-    },
-    {
-      "id": "stone",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "stonecutter",
-      "value": "7B766F"
-    },
-    {
-      "id": "stone_bricks",
-      "value": "7A797A"
-    },
-    {
-      "id": "stone_brick_slab",
-      "value": "7A797A"
-    },
-    {
-      "id": "stone_brick_stairs",
-      "value": "7A797A"
-    },
-    {
-      "id": "stone_brick_wall",
-      "value": "7A797A"
-    },
-    {
-      "id": "stone_button",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "stone_pressure_plate",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "stone_slab",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "stone_stairs",
-      "value": "7D7D7D"
-    },
-    {
-      "id": "stripped_acacia_log",
-      "value": "A65B33"
-    },
-    {
-      "id": "stripped_acacia_wood",
-      "value": "6C6D6D"
-    },
-    {
-      "id": "stripped_bamboo_block",
-      "value": "B29E48"
-    },
-    {
-      "id": "stripped_birch_log",
-      "value": "BFAB74"
-    },
-    {
-      "id": "stripped_birch_wood",
-      "value": "A3A4A4"
-    },
-    {
-      "id": "stripped_cherry_log",
-      "value": "DDA49D"
-    },
-    {
-      "id": "stripped_cherry_wood",
-      "value": "A9A9A9"
-    },
-    {
-      "id": "stripped_crimson_hyphae",
-      "value": "89395A"
-    },
-    {
-      "id": "stripped_crimson_stem",
-      "value": "020202"
-    },
-    {
-      "id": "stripped_dark_oak_log",
-      "value": "412C16"
-    },
-    {
-      "id": "stripped_dark_oak_wood",
-      "value": "363737"
-    },
-    {
-      "id": "stripped_jungle_log",
-      "value": "A57A51"
-    },
-    {
-      "id": "stripped_jungle_wood",
-      "value": "AB8454"
-    },
-    {
-      "id": "stripped_mangrove_log",
-      "value": "424140"
-    },
-    {
-      "id": "stripped_mangrove_wood",
-      "value": "77362F"
-    },
-    {
-      "id": "stripped_oak_log",
-      "value": "A0814D"
-    },
-    {
-      "id": "stripped_oak_wood",
-      "value": "878787"
-    },
-    {
-      "id": "stripped_spruce_log",
-      "value": "69502E"
-    },
-    {
-      "id": "stripped_spruce_wood",
-      "value": "565555"
-    },
-    {
-      "id": "stripped_warped_hyphae",
-      "value": "399693"
-    },
-    {
-      "id": "stripped_warped_stem",
-      "value": "020202"
-    },
-    {
-      "id": "structure_block",
-      "value": "443945"
-    },
-    {
-      "id": "structure_void",
-      "value": "18565D"
-    },
-    {
-      "id": "sugar_cane",
-      "value": "94C065"
-    },
-    {
-      "id": "sunflower",
-      "value": "38871E"
-    },
-    {
-      "id": "suspicious_gravel",
-      "value": "817D7C"
-    },
-    {
-      "id": "suspicious_sand",
-      "value": "C1C1C1"
-    },
-    {
-      "id": "sweet_berry_bush",
-      "value": "2A5938"
-    },
-    {
-      "id": "tall_seagrass",
-      "value": "2D7504"
-    },
-    {
-      "id": "target",
-      "value": "E2AA9D"
-    },
-    {
-      "id": "terracotta",
-      "value": "985E43"
-    },
-    {
-      "id": "tinted_glass",
-      "value": "2B262D"
-    },
-    {
-      "id": "tnt",
-      "value": "8E3E35"
-    },
-    {
-      "id": "torch",
-      "value": "8A713F"
-    },
-    {
-      "id": "torchflower",
-      "value": "64654D"
-    },
-    {
-      "id": "torchflower_crop",
-      "value": "1C6143"
-    },
-    {
-      "id": "trapped_chest",
-      "value": "A2824E"
-    },
-    {
-      "id": "tripwire",
-      "value": "818181"
-    },
-    {
-      "id": "tripwire_hook",
-      "value": "A2824E"
-    },
-    {
-      "id": "tube_coral",
-      "value": "2F53C5"
-    },
-    {
-      "id": "tube_coral_block",
-      "value": "3157CE"
-    },
-    {
-      "id": "tube_coral_fan",
-      "value": "325BD0"
-    },
-    {
-      "id": "tube_coral_wall_fan",
-      "value": "325BD0"
-    },
-    {
-      "id": "tuff",
-      "value": "6C6D66"
-    },
-    {
-      "id": "turtle_egg",
-      "value": "E4E2BF"
-    },
-    {
-      "id": "twisting_vines",
-      "value": "148F7C"
-    },
-    {
-      "id": "twisting_vines_plant",
-      "value": "14877A"
-    },
-    {
-      "id": "verdant_froglight",
-      "value": "E9E9E9"
-    },
-    {
-      "id": "wall_torch",
-      "value": "8A713F"
-    },
-    {
-      "id": "warped_button",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_door",
-      "value": "2C7E78"
-    },
-    {
-      "id": "warped_fence",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_fence_gate",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_fungus",
-      "value": "4A6D57"
-    },
-    {
-      "id": "warped_hanging_sign",
-      "value": "399693"
-    },
-    {
-      "id": "warped_hyphae",
-      "value": "3A3A4D"
-    },
-    {
-      "id": "warped_nylium",
-      "value": "2B7265"
-    },
-    {
-      "id": "warped_planks",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_pressure_plate",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_roots",
-      "value": "148A7C"
-    },
-    {
-      "id": "warped_sign",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_slab",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_stairs",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_stem",
-      "value": "356D6E"
-    },
-    {
-      "id": "warped_trapdoor",
-      "value": "2F776F"
-    },
-    {
-      "id": "warped_wall_hanging_sign",
-      "value": "399693"
-    },
-    {
-      "id": "warped_wall_sign",
-      "value": "2B6863"
-    },
-    {
-      "id": "warped_wart_block",
-      "value": "167779"
-    },
-    {
-      "id": "water_cauldron",
-      "value": "49484A"
+      "id": "waxed_chiseled_copper",
+      "value": "ba6d2c"
     },
     {
       "id": "waxed_copper_block",
-      "value": "C06B4F"
+      "value": "ba6d2c"
+    },
+    {
+      "id": "waxed_copper_bulb",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "waxed_copper_door",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "waxed_copper_grate",
+      "value": "ba6d2c"
+    },
+    {
+      "id": "waxed_copper_trapdoor",
+      "value": "909090"
     },
     {
       "id": "waxed_cut_copper",
-      "value": "BF6A50"
+      "value": "ba6d2c"
     },
     {
       "id": "waxed_cut_copper_slab",
-      "value": "BF6A50"
+      "value": "ba6d2c"
     },
     {
       "id": "waxed_cut_copper_stairs",
-      "value": "BF6A50"
+      "value": "ba6d2c"
+    },
+    {
+      "id": "waxed_exposed_chiseled_copper",
+      "value": "745c54"
     },
     {
       "id": "waxed_exposed_copper",
-      "value": "A17D67"
+      "value": "745c54"
+    },
+    {
+      "id": "waxed_exposed_copper_bulb",
+      "value": "745c54"
+    },
+    {
+      "id": "waxed_exposed_copper_door",
+      "value": "745c54"
+    },
+    {
+      "id": "waxed_exposed_copper_grate",
+      "value": "745c54"
+    },
+    {
+      "id": "waxed_exposed_copper_trapdoor",
+      "value": "909090"
     },
     {
       "id": "waxed_exposed_cut_copper",
-      "value": "9A7965"
+      "value": "745c54"
     },
     {
       "id": "waxed_exposed_cut_copper_slab",
-      "value": "9A7965"
+      "value": "745c54"
     },
     {
       "id": "waxed_exposed_cut_copper_stairs",
-      "value": "9A7965"
+      "value": "745c54"
+    },
+    {
+      "id": "waxed_oxidized_chiseled_copper",
+      "value": "126c73"
     },
     {
       "id": "waxed_oxidized_copper",
-      "value": "52A284"
+      "value": "126c73"
+    },
+    {
+      "id": "waxed_oxidized_copper_bulb",
+      "value": "126c73"
+    },
+    {
+      "id": "waxed_oxidized_copper_door",
+      "value": "126c73"
+    },
+    {
+      "id": "waxed_oxidized_copper_grate",
+      "value": "126c73"
+    },
+    {
+      "id": "waxed_oxidized_copper_trapdoor",
+      "value": "909090"
     },
     {
       "id": "waxed_oxidized_cut_copper",
-      "value": "4F997E"
+      "value": "126c73"
     },
     {
       "id": "waxed_oxidized_cut_copper_slab",
-      "value": "4F997E"
+      "value": "126c73"
     },
     {
       "id": "waxed_oxidized_cut_copper_stairs",
-      "value": "4F997E"
+      "value": "126c73"
+    },
+    {
+      "id": "waxed_weathered_chiseled_copper",
+      "value": "327a78"
     },
     {
       "id": "waxed_weathered_copper",
-      "value": "6C996E"
+      "value": "327a78"
+    },
+    {
+      "id": "waxed_weathered_copper_bulb",
+      "value": "327a78"
+    },
+    {
+      "id": "waxed_weathered_copper_door",
+      "value": "327a78"
+    },
+    {
+      "id": "waxed_weathered_copper_grate",
+      "value": "327a78"
+    },
+    {
+      "id": "waxed_weathered_copper_trapdoor",
+      "value": "909090"
     },
     {
       "id": "waxed_weathered_cut_copper",
-      "value": "6D916B"
+      "value": "327a78"
     },
     {
       "id": "waxed_weathered_cut_copper_slab",
-      "value": "6D916B"
+      "value": "327a78"
     },
     {
       "id": "waxed_weathered_cut_copper_stairs",
-      "value": "6D916B"
+      "value": "327a78"
+    },
+    {
+      "id": "weathered_chiseled_copper",
+      "value": "327a78"
     },
     {
       "id": "weathered_copper",
-      "value": "6C996E"
+      "value": "327a78"
+    },
+    {
+      "id": "weathered_copper_bulb",
+      "value": "327a78"
+    },
+    {
+      "id": "weathered_copper_door",
+      "value": "327a78"
+    },
+    {
+      "id": "weathered_copper_grate",
+      "value": "327a78"
+    },
+    {
+      "id": "weathered_copper_trapdoor",
+      "value": "909090"
     },
     {
       "id": "weathered_cut_copper",
-      "value": "6D916B"
+      "value": "327a78"
     },
     {
       "id": "weathered_cut_copper_slab",
-      "value": "6D916B"
+      "value": "327a78"
     },
     {
       "id": "weathered_cut_copper_stairs",
-      "value": "6D916B"
+      "value": "327a78"
     },
     {
       "id": "weeping_vines",
-      "value": "680100"
+      "value": "600100"
     },
     {
       "id": "weeping_vines_plant",
-      "value": "84100C"
+      "value": "600100"
     },
     {
       "id": "wet_sponge",
-      "value": "ABB546"
+      "value": "c5c52c"
     },
     {
       "id": "wheat",
-      "value": "087F0F"
+      "value": "006a00"
     },
     {
       "id": "white_banner",
-      "value": "A2824E"
+      "value": "7b663e"
     },
     {
       "id": "white_bed",
-      "value": "A2824E"
+      "value": "d6dcdb"
     },
     {
       "id": "white_candle",
-      "value": "D2D8D9"
-    },
-    {
-      "id": "white_candle_cake",
-      "value": "F8DED6"
+      "value": "ababab"
     },
     {
       "id": "white_carpet",
-      "value": "EBEBEB"
+      "value": "dcdcdc"
     },
     {
       "id": "white_concrete",
-      "value": "D3D3D3"
+      "value": "dcdcdc"
     },
     {
       "id": "white_concrete_powder",
-      "value": "E2E2E2"
+      "value": "dcdcdc"
     },
     {
       "id": "white_glazed_terracotta",
-      "value": "C9CCC5"
+      "value": "dcdcdc"
     },
     {
       "id": "white_shulker_box",
-      "value": "DBDBDB"
+      "value": "dcdcdc"
     },
     {
       "id": "white_stained_glass",
-      "value": "FFFFFF"
-    },
-    {
-      "id": "white_stained_glass_pane",
-      "value": "F6F6F6"
+      "value": "dcdcdc"
     },
     {
       "id": "white_terracotta",
-      "value": "D1B2A1"
+      "value": "b4988a"
     },
     {
       "id": "white_tulip",
-      "value": "5DA447"
+      "value": "006a00"
     },
     {
       "id": "white_wall_banner",
-      "value": "A2824E"
+      "value": "7b663e"
     },
     {
       "id": "white_wool",
-      "value": "EBEBEB"
+      "value": "dcdcdc"
     },
     {
       "id": "wither_rose",
-      "value": "292C17"
-    },
-    {
-      "id": "wither_skeleton_skull",
-      "value": "513E32"
-    },
-    {
-      "id": "wither_skeleton_wall_skull",
-      "value": "513E32"
+      "value": "006a00"
     },
     {
       "id": "yellow_banner",
-      "value": "A2824E"
+      "value": "7b663e"
     },
     {
       "id": "yellow_bed",
-      "value": "A2824E"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_candle",
-      "value": "D1A432"
-    },
-    {
-      "id": "yellow_candle_cake",
-      "value": "F8DED6"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_carpet",
-      "value": "A2A2A2"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_concrete",
-      "value": "919192"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_concrete_powder",
-      "value": "A2A2A2"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_glazed_terracotta",
-      "value": "A9ACAD"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_shulker_box",
-      "value": "9B9C9B"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_stained_glass",
-      "value": "E5E533"
-    },
-    {
-      "id": "yellow_stained_glass_pane",
-      "value": "DDDD30"
+      "value": "c5c52c"
     },
     {
       "id": "yellow_terracotta",
-      "value": "BA8523"
+      "value": "a0721f"
     },
     {
       "id": "yellow_wall_banner",
-      "value": "A2824E"
+      "value": "7b663e"
     },
     {
       "id": "yellow_wool",
-      "value": "A2A2A2"
-    },
-    {
-      "id": "zombie_head",
-      "value": "513E32"
-    },
-    {
-      "id": "zombie_wall_head",
-      "value": "513E32"
+      "value": "c5c52c"
     }
   ]
 }

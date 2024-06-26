@@ -1,4 +1,5 @@
 ﻿using Mcasaenk.Rendering;
+using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
 using Mcasaenk.UI.Canvas;
@@ -41,6 +42,13 @@ namespace Mcasaenk
         None,
     }
 
+    public enum ShadeType {
+        [Description("standard")]
+        OG,
+        [Description("map")]
+        jmap,
+    }
+
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
 
@@ -56,6 +64,9 @@ namespace Mcasaenk
             CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
             DRAWMAXCONCURRENCY = DrawConcurrency;
             COLOR_MAPPING_MODE = ColorMapping;
+            SHADETYPE = ShadeType;
+            PREFERHEIGHTMAPS = PreferHeightmap;
+            MAXY = MaxY; MINY = MinY;
 
             frozen = false;
             OnHardChange("");
@@ -69,6 +80,9 @@ namespace Mcasaenk
             ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
             DrawConcurrency = DRAWMAXCONCURRENCY;
             ColorMapping = COLOR_MAPPING_MODE;
+            ShadeType = SHADETYPE;
+            PreferHeightmap = PREFERHEIGHTMAPS;
+            MaxY = MAXY; MinY = MINY;
         }
 
 
@@ -104,14 +118,18 @@ namespace Mcasaenk
                 new Resolution() { Name = "WQHD", X = 2560, Y = 1440 },
                 new Resolution() { Name = "4K UHD", X = 3840, Y = 2160 },
             ],
+            PREFERHEIGHTMAPS = true,
+            MAXY = "", MINY = "",
 
-            COLOR_MAPPING_MODE = "mean",
+            COLOR_MAPPING_MODE = "texture",
 
             SUN_LIGHT = 15, BLOCK_LIGHT = 0,
 
             CONTRAST = 0.50,
 
             SHADE3D = true, STATIC_SHADE = true,
+
+            WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
 
             ADEG = 20, BDEG = 15,
         };
@@ -168,6 +186,20 @@ namespace Mcasaenk
         public double CONTRAST { get => Contrast; set => Contrast = value; }
 
 
+        private double waterTransparency;
+        [JsonIgnore]
+        public double WaterTransparency {
+            get => waterTransparency;
+            set {
+                if(waterTransparency == value) return;
+
+                waterTransparency = value;
+                this.OnLightChange(nameof(WaterTransparency));
+            }
+        }
+        public double WATER_TRANSPARENCY { get => WaterTransparency; set => WaterTransparency = value; }
+
+
         private int sunlight;
         [JsonIgnore]
         public int SunLight {
@@ -194,6 +226,24 @@ namespace Mcasaenk
             }
         }
         public int BLOCK_LIGHT { get => BlockLight; set => BlockLight = value; }
+
+
+        private ShadeType shadetype, shadetype_back;
+        [JsonIgnore]
+        public ShadeType ShadeType {
+            get => shadetype_back;
+            set {
+                if(shadetype_back == value) return;
+
+                shadetype_back = value;
+                OnAutoChange(nameof(ShadeType));
+                if(Global.App.OpenedSave == null) {
+                    shadetype = value;
+                    OnAutoChange(nameof(SHADETYPE));
+                }
+            }
+        }
+        public ShadeType SHADETYPE { get => shadetype; set { shadetype = value; ShadeType = value; OnHardChange(nameof(SHADETYPE)); } }
 
 
         private bool staticShade;
@@ -271,6 +321,21 @@ namespace Mcasaenk
             }
         }
         public double BDEG { get => bdeg; set { bdeg = value; BDeg = value; OnHardChange(nameof(BDEG)); } }
+
+
+        private bool waterSmartShade;
+        [JsonIgnore]
+        public bool WaterSmartShade {
+            get => waterSmartShade;
+            set {
+                if(waterSmartShade == value) return;
+
+                waterSmartShade = value;
+                OnLightChange(nameof(WaterSmartShade));
+            }
+        }
+        public bool WATER_SMART_SHADE { get => WaterSmartShade; set => WaterSmartShade = value; }
+
 
 
         private string colorMapping, colorMapping_back;
@@ -473,7 +538,6 @@ namespace Mcasaenk
         public int MAXZOOM { get => MaxZoom; set => MaxZoom = value; }
 
 
-
         private string mcDir;
         [JsonIgnore]
         public string McDir {
@@ -487,6 +551,94 @@ namespace Mcasaenk
         }
         public string MCDIR { get => McDir; set => McDir = value; }
 
+
+        private bool preferheightmap, preferheightmap_back;
+        [JsonIgnore]
+        public bool PreferHeightmap {
+            get => preferheightmap_back;
+            set {
+                if(preferheightmap_back == value) return;
+
+                preferheightmap_back = value;
+                OnAutoChange(nameof(PreferHeightmap));
+                if(Global.App.OpenedSave == null) {
+                    preferheightmap = value;
+                    OnAutoChange(nameof(PREFERHEIGHTMAPS));
+                }
+            }
+        }
+        public bool PREFERHEIGHTMAPS { get => preferheightmap; set { preferheightmap = value; PreferHeightmap = value; OnHardChange(nameof(PREFERHEIGHTMAPS)); } }
+
+
+
+        private string maxy, maxy_back;
+        [JsonIgnore]
+        public string MaxY {
+            get => maxy_back;
+            set {
+                if(maxy_back == value) return;
+
+                maxy_back = value;
+                OnAutoChange(nameof(MaxY));
+                if(Global.App.OpenedSave == null) {
+                    maxy = value;
+                    OnAutoChange(nameof(MAXY));
+
+                    if(int.TryParse(value, out int mn)) _MAXY_INT = mn;
+                    else _MAXY_INT = int.MaxValue;
+                }
+            }
+        }
+        public string MAXY { get => maxy; 
+            set { 
+                maxy = value; 
+                MaxY = value; 
+                OnHardChange(nameof(MAXY));
+
+                if(int.TryParse(value, out int mx)) _MAXY_INT = mx;
+                else _MAXY_INT = int.MaxValue;
+            } 
+        }
+        private int _MAXY_INT;
+        public int MAXY_INT(int def) {
+            if(_MAXY_INT == int.MaxValue) return def;
+            else return _MAXY_INT;
+        }
+
+
+        private string miny, miny_back;
+        [JsonIgnore]
+        public string MinY {
+            get => miny_back;
+            set {
+                if(miny_back == value) return;
+
+                miny_back = value;
+                OnAutoChange(nameof(MinY));
+                if(Global.App.OpenedSave == null) {
+                    miny = value;
+                    OnAutoChange(nameof(MINY));
+
+                    if(int.TryParse(value, out int mn)) _MINY_INT = mn;
+                    else _MINY_INT = int.MinValue;
+                }
+            }
+        }
+        public string MINY { get => miny; 
+            set { 
+                miny = value; 
+                MinY = value; 
+                OnHardChange(nameof(MINY));
+
+                if(int.TryParse(value, out int mn)) _MINY_INT = mn;
+                else _MINY_INT = int.MinValue;
+            }
+        }
+        private int _MINY_INT;
+        public int MINY_INT(int def) {
+            if(_MINY_INT == int.MinValue) return def;
+            else return _MINY_INT;
+        }
 
 
         private Resolution[] predefined_reses;
@@ -506,24 +658,6 @@ namespace Mcasaenk
         #region depr
         public bool WATERDEPTH { get => true; set { } }
         #endregion
-
-
-        #region static
-        public static Filter.filter AIR_FILTER { 
-            get {
-                if(Global.App.Settings.Y == 319 && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterAir;
-                else return AirFilter.List;
-            }
-        }
-        public static Filter.filter DEPTH_FILTER {
-            get {
-                if(Global.App.Settings.Y == 319 && Global.App.Colormap.depth.block == Colormap.BLOCK_WATER && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterWater;
-                else return DepthFilter.List;
-            }
-        }
-        public static Filter.filter SHADE3D_FILTER { get => Shade3DFilter.List; }
-        #endregion
-
 
 
 
