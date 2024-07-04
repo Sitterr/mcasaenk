@@ -9,23 +9,23 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Rendering {
     public static class Filter {
-        public delegate short filter(IChunkInterpreter data, int x, int z, short startY, short minY);
+        public delegate short filter(IChunkInterpreter data, int x, int z, short startY);
 
-        public static short NullFilter(IChunkInterpreter data, int x, int z, short startY, short minY) => startY;
+        public static short NullFilter(IChunkInterpreter data, int x, int z, short startY) => startY;
 
 
         public static Filter.filter AIR_FILTER(int renderheight, int maxheight) {
-            if(Global.Settings.PREFERHEIGHTMAPS && (renderheight >= maxheight) && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterAir;
+            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterAir;
             else return AirFilter.List;
         }
         public static Filter.filter DEPTH_FILTER(int renderheight, int maxheight) {
-            if(Global.Settings.PREFERHEIGHTMAPS && (renderheight >= maxheight) && Global.App.Colormap.depth == Colormap.BLOCK_WATER && Global.Settings.DIMENSION != Dimension.Type.End) return HeightmapFilter.FilterWater;
+            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight && Global.App.Colormap.depth == Colormap.BLOCK_WATER/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterWater;
             else return DepthFilter.List;
         }
     }
     public static class AirFilter {
-        public static short Def(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            for(int h = startY; h >= minY; h--) {
+        public static short Def(IChunkInterpreter data, int x, int z, short startY) {
+            for(int h = startY; h >= 0; h--) {
                 if(h % 16 == 15) {
                     if(IsEmpty(data.SingleBlockSection(h / 16))) {
                         h -= 15;
@@ -37,12 +37,11 @@ namespace Mcasaenk.Rendering {
                 bool isEmpty = IsEmpty(block);
                 if(!isEmpty) return (short)h;
             }
-            return minY;
-
+            return -1;
         }
 
-        public static short List(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            return Def(data, x, z, startY, minY); // TODO
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
+            return Def(data, x, z, startY); // TODO
         }
 
         static bool IsEmpty(ushort blockid) {
@@ -63,22 +62,22 @@ namespace Mcasaenk.Rendering {
             ids = ids.ToFrozenSet();
         }
 
-        public static short Inner(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            for(int h = startY; h >= minY; h--) {
+        public static short Inner(IChunkInterpreter data, int x, int z, short startY) {
+            for(int h = startY; h >= 0; h--) {
                 var block = data.GetBlock(x, z, h);
 
                 bool isEmpty = ids.Contains(block);
                 if(!isEmpty) return (short)h;
             }
-            return -64;
+            return -1;
         }
 
-        public static short List(IChunkInterpreter data, int x, int z, short startY, short minY) {
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
             while(true) {
                 short a = startY;
-                startY = AirFilter.List(data, x, z, startY, minY);
-                startY = Inner(data, x, z, startY, minY);
-                startY = DepthFilter.List(data, x, z, startY, minY);
+                startY = AirFilter.List(data, x, z, startY);
+                startY = Inner(data, x, z, startY);
+                startY = DepthFilter.List(data, x, z, startY);
 
                 if(a == startY) break;
             }
@@ -87,36 +86,36 @@ namespace Mcasaenk.Rendering {
     }
 
     public static class DepthFilter {
-        public static short Def(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            for(int h = startY; h >= minY; h--) {
+        public static short Def(IChunkInterpreter data, int x, int z, short startY) {
+            for(int h = startY; h >= 0; h--) {
                 var block = data.GetBlock(x, z, h);
 
                 bool isWater = IsDepth(block);
                 if(!isWater) return (short)h;
             }
-            return minY;
+            return -1;
         }
 
-        public static short List(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            return Def(data, x, z, startY, minY); // TODO
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
+            return Def(data, x, z, startY); // TODO
         }
 
         static bool IsDepth(ushort blockid) {
-            if(blockid == Global.App.Colormap.depth) return true;
+            if(blockid == Global.App.Colormap.depth || blockid == Colormap.INVBLOCK) return true;
             return false;
         }
     }
 
     public static class HeightmapFilter {
-        public static short FilterAir(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            if(data.ContainsHeightmaps() == false) return AirFilter.Def(data, x, z, startY, minY);
+        public static short FilterAir(IChunkInterpreter data, int x, int z, short startY) {
+            if(data.ContainsHeightmaps() == false) return AirFilter.Def(data, x, z, startY);
             short hm = data.GetHeight(x, z);
-            hm = AirFilter.Def(data, x, z, hm, minY);
+            hm = AirFilter.Def(data, x, z, hm);
             return hm;
         }
 
-        public static short FilterWater(IChunkInterpreter data, int x, int z, short startY, short minY) {
-            if(data.ContainsHeightmaps() == false) return DepthFilter.Def(data, x, z, startY, minY);
+        public static short FilterWater(IChunkInterpreter data, int x, int z, short startY) {
+            if(data.ContainsHeightmaps() == false) return DepthFilter.Def(data, x, z, startY);
 
             short surface_height = data.GetHeight(x, z);
             short floor_height = data.GetTerrainHeight(x, z);
@@ -127,7 +126,7 @@ namespace Mcasaenk.Rendering {
             }
 
             short hm = surface_height;
-            hm = AirFilter.Def(data, x, z, hm, minY);
+            hm = AirFilter.Def(data, x, z, hm);
             return hm;
         }
     }

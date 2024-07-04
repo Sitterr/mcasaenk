@@ -22,13 +22,18 @@ using System.Windows.Media.Media3D;
 using System.ComponentModel;
 using Mcasaenk.Resources;
 using CommunityToolkit.HighPerformance;
+using System.CodeDom;
+using Mcasaenk.WorldInfo;
+using System.Windows.Documents;
+using static Mcasaenk.Rendering.Tint;
+using System.Net.Sockets;
 
 namespace Mcasaenk.Rendering {
     public class DynamicNameToIdBiMap {
         private static List<string[]> synonyms = new List<string[]>();
         static DynamicNameToIdBiMap(){
             TxtFormatReader.ReadStandartFormat(ResourceMapping.synonymblocks, (_, parts) => {
-                synonyms.Add(parts.Select(w => w.blockname()).ToArray());
+                synonyms.Add(parts.Select(w => w.minecraftname()).ToArray());
             });
         }
 
@@ -45,7 +50,7 @@ namespace Mcasaenk.Rendering {
         public ushort GetId(string name) {
             if(nameToId.TryGetValue(name, out var id)) return id;
             else if(frozen == false) return assignNew(name);
-            else return ushort.MaxValue;
+            else return Colormap.INVBLOCK;
         }
 
         public string GetName(ushort id) {
@@ -91,8 +96,9 @@ namespace Mcasaenk.Rendering {
             foreach(string _line in lines) {
                 var line = _line.Trim();
                 if(line.Length == 0) continue;
+                if(line.StartsWith("//")) continue;
                 if(line.StartsWith("--") && line.EndsWith("--")) {
-                    group = line.Substring(2, line.Length - 4);
+                    group = line.Substring(2, line.Length - 4).Trim();
                     continue;
                 }
                 string[] parts = line.Split(';').Select(a => a.Trim()).ToArray();
@@ -114,15 +120,11 @@ namespace Mcasaenk.Rendering {
         }
         public static int GetBiomeCount() => biomeNameToId.Count;
 
-        public static void Initialize() {
+        public static void Initialize(List<BiomeInfo> biomes) {
             biomeNameToId = new Dictionary<string, ushort>();
-
-            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.biomes, (_, parts) => {
-                string name = parts[0];
-                if(name.Contains(":") == false) name = "minecraft:" + name;
-                ushort id = Convert.ToUInt16(parts[1]);
-                biomeNameToId.Add(name, id);
-            });
+            foreach(var biome in biomes) {
+                biomeNameToId.Add(biome.name, biome.id);
+            }
             biomeNameToId = biomeNameToId.ToFrozenDictionary();
 
             oldBiomeIdToId = new Dictionary<int, ushort>();
@@ -137,21 +139,19 @@ namespace Mcasaenk.Rendering {
     }
 
     public class Colormap {
-        public const ushort DEFBIOME = 0;
-        public const int DEFHEIGHT = 70;
+        public const ushort DEFBIOME = 1;
+        public const int DEFHEIGHT = 64;
 
         public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1;
+        public static ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
 
         public readonly ushort depth;
 
-        public static ushort BLOCK_AIR = ushort.MaxValue, BLOCK_WATER = ushort.MaxValue;
         public readonly DynamicNameToIdBiMap Block;
-
         private IDictionary<ushort, BlockValue> blocks;
-        private List<Tint2> tints;
-        public Colormap(string path) {
-            var jsonOptions = Global.ColormapJsonOptions();
-            var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), jsonOptions);
+        private List<Tint> tints;
+        public Colormap(string path, DatapacksInfo datapacksInfo) {
+            BiomeRegistry.Initialize(datapacksInfo.biomes.Values.ToList());
 
             Block = new((name, id) => {
                 switch(name) {
@@ -163,73 +163,79 @@ namespace Mcasaenk.Rendering {
                         break;
                 }
             });
-
-            tints = new List<Tint2>();
-
             blocks = new Dictionary<ushort, BlockValue> {
-                { Block.GetId("minecraft:air"), new FixedBlock(0x00000000) }
+                { Block.GetId("minecraft:air"), new BlockValue(){ color = 0, tint = NullTint.Tint } }
             };
 
-            foreach(var bl in data.blocks) {
-                var jel = (JsonElement)bl.value;
+            tints = new List<Tint>();
+            foreach(var file in Directory.GetFiles(path)) {
+                if(Path.GetExtension(file) != ".properties") continue;
 
-                BlockValue val = null;
-                if(jel.ValueKind == JsonValueKind.String) {
-                    val = new FixedBlock(Global.ToARGBInt(jel.Deserialize<string>(jsonOptions)));
-                } else if(jel.ValueKind == JsonValueKind.Object) {
-                    var gridvalue = jel.Deserialize<JsonBlock.GridValue>(jsonOptions);
-                    var tint = tints.FirstOrDefault(t => t.name == gridvalue.tint);
+                var t = Tint.ReadTint(file);
+                Tint tint = t.format switch {
+                    "vanilla" => new OrthodoxVanillaTint(t.name, t.source, datapacksInfo),
+                    "vanilla_grass" => new HardcodedVanillaTint(t.name, "grass", t.source, datapacksInfo),
+                    "vanilla_foliage" => new HardcodedVanillaTint(t.name, "foliage", t.source, datapacksInfo),
+                    "vanilla_water" => new HardcodedVanillaTint(t.name, "water", t.source, datapacksInfo),
+                    "grid" => new GridTint(t.name, t.source),
+                    "fixed" => new FixedTint(t.name, t.color),
+                };
+                tints.Add(tint);
 
-                    bool error = false;
-                    if(tint == default) {
-                        if(File.Exists(Path.Combine(path, gridvalue.tint))) {
-                            tint = new Tint2(path, gridvalue.tint);
-                            tints.Add(tint);
-                        } else {
-                            error = true;
-                        }
-                    }
-
-                    if(error == false) val = new GridBlock(tint, gridvalue.baseColor);
-                    else val = new FixedBlock(gridvalue.baseColor);
+                foreach(var block in t.blocks) {
+                    blocks[Block.GetId(block.minecraftname())] = new BlockValue() { tint = tint };
                 }
-                blocks.TryAdd(Block.GetId(bl.id.blockname()), val);
             }
+
+
+            TxtFormatReader.ReadStandartFormat(File.ReadAllText(Path.Combine(path, "__colormap__")), (group, parts) => {
+                string name = parts[0].minecraftname(); ushort id = Block.GetId(name);
+                string strcolor = parts[1];
+                if(strcolor.StartsWith('#')) strcolor = strcolor.Substring(1);
+                if(strcolor.Length == 6) strcolor = "FF" + strcolor;
+                uint color = Convert.ToUInt32(parts[1], 16);
+
+
+                if(blocks.TryGetValue(id, out var block)) {
+                    block.color = color;
+                } else {
+                    blocks[id] = new BlockValue() { color = color, tint = NullTint.Tint }; 
+                }
+            });
+
+
 
             blocks = blocks.ToFrozenDictionary();
             Block.Freeze();
 
             def = blocks[0];
-            tints = tints.OrderBy(t => t.name).ToList();
-            depth = Block.GetId(data.depth_block.blockname());
+            depth = Block.GetId("minecraft:water"); // todo!
         }
 
-        public List<Tint2> GetTints() => tints;
-        public bool HasActiveTints() => tints.Any(t => t.settings.On && t.settings.Blend > 1);
+        public List<Tint> GetTints() => tints;
+        public bool HasActiveTints() => tints.Where(t => t.Settings() != null).Any(t => t.Settings().On && t.Settings().Blend > 1);
 
         private BlockValue def;
         public BlockValue Value(ushort block) => blocks.GetValueOrDefault(block, def);
 
-        public JsonColormap ToJson() {
-            return new JsonColormap() {
-                blocks = this.blocks.Select(b => new JsonBlock() { id = Block.GetName(b.Key), value = b.Value.ToJson() }).ToArray(),
-                depth_block = Block.GetName(depth),
-            };
-        }
-
 
 
         public static bool IsColormap(string path) {
-            try {
-                var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), Global.ColormapJsonOptions());
-            }
-            catch {
-                return false;
-            }
+            //try {
+            //    var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), Global.ColormapJsonOptions());
+            //}
+            //catch {
+            //    return false;
+            //}
 
             return true;
         }
     }
+
+
+
+
+
     public class DynamicTintSettings : INotifyPropertyChanged {
 
         private bool on;
@@ -260,11 +266,11 @@ namespace Mcasaenk.Rendering {
             if(frozen == false) onLightChange();
             if(propertyName != "") OnPropertyChanged(propertyName);
         }
-        public DynamicTintSettings() { }
-        public static DynamicTintSettings DEF() => new DynamicTintSettings() {
-            On = true,
-            Blend = 7,
-        };
+        public DynamicTintSettings() {
+            On = true;
+            Blend = 7;
+        }
+
         private Action onLightChange;
         public void SetActions(Action onLightChange) {
             this.onLightChange = onLightChange;
@@ -278,136 +284,237 @@ namespace Mcasaenk.Rendering {
         }
     }
 
+    public class DynamicVanillaTintSettings : DynamicTintSettings {
+        private bool tempHeight;
+        public bool HeightVariation {
+            get => tempHeight;
+            set {
+                if(value == tempHeight) return;
 
-
-
-    public class Tint2 {
-        public readonly string name;
-        private uint[,] sprite;
-
-        public DynamicTintSettings settings;
-
-        private bool biomeonly = false, heightonly = false;
-        public Tint2(string path, string name) {
-            this.name = name;
-
-            BitmapImage bitmapImage = new BitmapImage(new Uri(Path.Combine(path, name), UriKind.RelativeOrAbsolute));
-            var image = new WriteableBitmap(bitmapImage).ToUIntMatrix();
-
-            sprite = new uint[384, BiomeRegistry.GetBiomeCount()];
-
-            if(image.GetLength(0) == 1) { // biome only
-                biomeonly = true;
-                for(int i = 0; i < image.GetLength(1); i++) {
-                    sprite[0, i] = image[0, i];
-                }
-                for(int j = 0; j < 384; j++) {
-                    for(int i = 0; i < sprite.GetLength(1); i++) {
-                        sprite[j, i] = sprite[0, i];
-                    }
-                }
-            } else if(image.GetLength(1) == 1) { // height only
-                heightonly = true;
-                for(int j = 0; j < image.GetLength(0); j++) {
-                    sprite[j, 0] = image[j, 0];
-                }
-                for(int i = 0; i < sprite.GetLength(1); i++) {
-                    for(int j = 0; j < 384; j++) {
-                        sprite[j, i] = sprite[j, 0];
-                    }
-                }
-            } else {
-                for(int j = 0; j < image.GetLength(0); j++) {
-                    for(int i = 0; i < image.GetLength(1); i++) {
-                        sprite[j, i] = image[j, i];
-                    } for(int i = image.GetLength(1); i < sprite.GetLength(1); i++) {
-                        sprite[j, i] = image[j, image.GetLength(1) - 1];
-                    }
-                } for(int j = image.GetLength(0); j < sprite.GetLength(0); j++) {
-                    for(int i = 0; i < image.GetLength(1); i++) {
-                        sprite[j, i] = image[image.GetLength(0) - 1, i];
-                    }
-                }
-
-                for(int j = image.GetLength(0); j < sprite.GetLength(1); j++) {
-                    for(int i = image.GetLength(1); i < sprite.GetLength(1); i++) {
-                        sprite[j, i] = image[image.GetLength(0) - 1, image.GetLength(1) - 1];
-                    }
-                }
+                tempHeight = value;
+                OnLightChange(nameof(HeightVariation));
             }
         }
 
-        public uint GridColor(ushort biome, short height) {
-            height = (short)(height + 0);
-            if(height <= -65) return sprite[-64 + 64, biome];
-            if(height > 319) return sprite[319 + 64, biome];
-            if(this.settings.On) return sprite[height + 64, biome];
-            else return sprite[Colormap.DEFHEIGHT + 64, Colormap.DEFBIOME];
+        public DynamicVanillaTintSettings() : base() {
+            HeightVariation = true;
+        }
+    }
+
+
+
+
+
+
+    public interface Tint {
+        public string Name();
+        public DynamicTintSettings Settings();
+
+        public uint TintColorFor(ushort biome, short height);
+        public uint GetTintedColor(uint baseColor, ushort biome, short height) => Global.ColorMult(baseColor, TintColorFor(biome, height));
+
+
+        public Blending GetBlendMode();
+        public enum Blending { none, heightonly, biomeonly, full }
+
+
+        public static (string name, string format, string[] blocks, string source, uint color) ReadTint(string path_properties) {
+            string name = Path.GetFileNameWithoutExtension(path_properties);
+            string format = "vanilla";
+            string[] blocks = [name.minecraftname()];
+            string source = name + ".png";
+            uint color = 0xFFFFFFFF;
+
+            foreach(string _line in File.ReadAllLines(path_properties)) {
+                string line = _line.Trim();
+                if(line.Length == 0) continue;
+
+                switch(line.Substring(0, line.IndexOf('='))) {
+                    case "source":
+                        source = line.Substring(line.IndexOf("=") + 1);
+                        break;
+                    case "format":                   
+                        format = line.Substring(line.IndexOf("=") + 1);
+                        break;
+                    case "blocks":
+                        blocks = line.Substring(line.IndexOf("=") + 1).Split(" ").Select(l => l.minecraftname()).ToArray();
+                        break;
+                    case "color":
+                        color = 0xFF000000 | Convert.ToUInt32(line.Substring(line.IndexOf("=") + 1), 16);
+                        break;
+                }
+            }
+
+            source = Path.Combine(Path.GetDirectoryName(path_properties), source);
+            return (name, format, blocks, source, color);
+        }
+    }
+
+    public class OrthodoxVanillaTint : Tint {
+        public readonly string name;
+        private uint[,] sprite;
+
+        private DatapacksInfo datapacksInfo;
+        private DynamicVanillaTintSettings settings = new DynamicVanillaTintSettings();
+
+        public OrthodoxVanillaTint(string name, string source, DatapacksInfo datapacksInfo) {
+            this.name = name;
+            this.datapacksInfo = datapacksInfo;
+
+            BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
+            if(bitmapImage.Width != 256 && bitmapImage.Height != 256) throw new Exception();
+            sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+        }
+        string Tint.Name() => name;
+        DynamicTintSettings Tint.Settings() => settings;
+
+        uint Tint.TintColorFor(ushort biome, short height) {
+            return datapacksInfo.biomes[biome].GetOrthodox(sprite, height, settings.HeightVariation);
         }
 
-        public uint MergeColors(uint color1, uint color2) {
-            return Global.ColorMult(color1, color2);
+        Blending Tint.GetBlendMode() {
+            if(settings.On == false) return Blending.none;
+            if(settings.HeightVariation) return Blending.full;
+            else return Blending.biomeonly;
         }
 
-        public Blending GetBlendMode() {
+    }
+    public class HardcodedVanillaTint : Tint {
+        private readonly string name, tint;
+        private uint[,] sprite;
+
+        private DatapacksInfo datapacksInfo;
+        private DynamicVanillaTintSettings settings = new DynamicVanillaTintSettings();
+
+        public HardcodedVanillaTint(string name, string tint, string source, DatapacksInfo datapackInfo) {
+            this.name = name;
+            this.tint = tint;           
+            this.datapacksInfo = datapackInfo;
+
+            if(File.Exists(source)) {
+                BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
+                if(bitmapImage.PixelWidth != 256 && bitmapImage.PixelHeight != 256) throw new Exception();
+                this.sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+            }
+        }
+
+        string Tint.Name() => name;
+        DynamicTintSettings Tint.Settings() => settings;
+
+        uint Tint.TintColorFor(ushort biome, short height) {
+            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, settings.HeightVariation);
+        }
+
+        Blending Tint.GetBlendMode() {
+            if(settings.On == false) return Blending.none;
+            if(settings.Blend == 1) return Blending.heightonly;
+            if(settings.HeightVariation) return Blending.full;
+            else return Blending.biomeonly;
+        }
+
+    }
+    public class FixedTint : Tint { // for every block its own tint
+        private readonly string name;
+
+        private uint tint, baseColor;
+        private bool hasBaseColor;
+        public FixedTint(string name, uint tint, uint baseColor) {
+            this.name = name;
+            this.tint = tint;
+            this.baseColor = Global.ColorMult(tint, baseColor);
+
+            this.hasBaseColor = true;
+        }
+        string Tint.Name() => name;
+        DynamicTintSettings Tint.Settings() => null;
+        Blending Tint.GetBlendMode() => Blending.none;
+
+        public FixedTint(string name, uint tint) {
+            this.name = name;
+            this.tint = tint;
+            this.hasBaseColor = false;
+        }
+
+        uint Tint.TintColorFor(ushort biome, short height) => tint;
+        uint Tint.GetTintedColor(uint baseColor, ushort biome, short height) => hasBaseColor ? this.baseColor : Global.ColorMult(baseColor, tint);
+    }
+    public class GridTint : Tint {
+        private readonly string name;
+        private uint[,] sprite;
+
+        private readonly DynamicTintSettings settings = new DynamicTintSettings();
+        public GridTint(string name, string source) {
+            this.name = name;
+
+            BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
+            sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+        }
+        string Tint.Name() => name;
+        DynamicTintSettings Tint.Settings() => settings;
+
+        uint Tint.TintColorFor(ushort biome, short height) {
+            int x = biome;
+            if(x > sprite.GetLength(0) || x < 0) x = Colormap.DEFBIOME;
+            int y = Math.Clamp(height, 0, sprite.GetLength(1) - 1);
+            return sprite[x, y];
+        }
+
+
+
+        Blending Tint.GetBlendMode() {
             if(this.settings.On == false) return Blending.none;
-            else if(heightonly || settings.Blend == 1) return Blending.simple;
-            else if(biomeonly) return Blending.biomeonly;
+            else if(sprite.GetLength(0) == 1 || settings.Blend == 1) return Blending.heightonly;
+            else if(sprite.GetLength(1) == 1) return Blending.biomeonly;
             else return Blending.full;
         }
 
-        public enum Blending { none, simple, biomeonly, full }
+
     }
-    public interface BlockValue {
-        public uint GetColor(ushort biome, short height);
-        public object ToJson();
+    public class NullTint : Tint {
+        public static NullTint Tint = new NullTint();
+        private NullTint() { }
+
+        string Tint.Name() => "";
+        DynamicTintSettings Tint.Settings() => null;
+        Blending Tint.GetBlendMode() => Blending.none;
+
+        uint Tint.TintColorFor(ushort biome, short height) => 0xFFFFFFFF;
+
+        uint Tint.GetTintedColor(uint baseColor, ushort biome, short height) => baseColor;
     }
-    public class FixedBlock(uint color) : BlockValue {
-        public uint GetColor(ushort biome, short height) => color;
-        public object ToJson() => color;
-    }
-    public class GridBlock : BlockValue {
-        public Tint2 tint;
-        public uint baseColor;
-        public GridBlock(Tint2 tint, uint baseColor) {
-            this.tint = tint;
-            this.baseColor = baseColor;
-        }
+
+
+
+
+
+
+
+
+
+
+    public class BlockValue {
+        public Tint tint;
+        public uint color;
 
         public uint GetColor(ushort biome, short height) {
-            return tint.MergeColors(baseColor, tint.GridColor(biome, height));
-        }
-
-        public object ToJson() { return new JsonBlock.GridValue() { baseColor = this.baseColor, tint = this.tint.name }; }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public class JsonColormap {
-        public string depth_block;
-        public JsonBlock[] blocks;
-    }
-    public class JsonBlock {
-        public string id;
-        public object value;
-
-        public class GridValue {
-            public string tint;
-            public uint baseColor;
+            return tint.GetTintedColor(color, biome, height);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public enum ConvertMode { multiply, additive }
     public enum DepthMode { translucient, map }

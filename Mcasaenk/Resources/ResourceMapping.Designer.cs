@@ -71,77 +71,43 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] bedrock_colormap {
-            get {
-                object obj = ResourceManager.GetObject("bedrock_colormap", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] bedrock_foliage {
-            get {
-                object obj = ResourceManager.GetObject("bedrock_foliage", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] bedrock_grass {
-            get {
-                object obj = ResourceManager.GetObject("bedrock_grass", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] bedrock_water {
-            get {
-                object obj = ResourceManager.GetObject("bedrock_water", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to the_void;0
-        ///plains;1
-        ///sunflower_plains;2
-        ///snowy_plains;3
-        ///ice_spikes;4
-        ///desert;5
-        ///swamp;6
-        ///mangrove_swamp;7
-        ///forest;8
-        ///flower_forest;9
-        ///birch_forest;10
-        ///dark_forest;11
-        ///old_growth_birch_forest;12
-        ///old_growth_pine_taiga;13
-        ///old_growth_spruce_taiga;14
-        ///taiga;15
-        ///snowy_taiga;16
-        ///savanna;17
-        ///savanna_plateau;18
-        ///windswept_hills;19
-        ///windswept_gravelly_hills;20
-        ///windswept_forest;21
-        ///windswept_savanna;22
-        ///jungle;23
-        ///sparse_jungle;24
-        ///bamboo_jungle;25
-        ///badlands;26
-        ///eroded_badlands;27
-        ///wooded_badlands;28
-        ///meadow;29
-        /// [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to the_void
+        ///plains
+        ///sunflower_plains
+        ///snowy_plains
+        ///ice_spikes
+        ///desert
+        ///swamp
+        ///mangrove_swamp
+        ///forest
+        ///flower_forest
+        ///birch_forest;
+        ///dark_forest
+        ///old_growth_birch_forest
+        ///old_growth_pine_taiga
+        ///old_growth_spruce_taiga
+        ///taiga
+        ///snowy_taiga
+        ///savanna
+        ///savanna_plateau
+        ///windswept_hills
+        ///windswept_gravelly_hills
+        ///windswept_forest
+        ///windswept_savanna
+        ///jungle
+        ///sparse_jungle
+        ///bamboo_jungle
+        ///badlands
+        ///eroded_badlands
+        ///wooded_badlands
+        ///meadow
+        ///cherry_grove
+        ///grove
+        ///snowy_slopes
+        ///frozen_peaks
+        ///jagged_peaks
+        ///stony_peaks
+        ///riv [rest of string was truncated]&quot;;.
         /// </summary>
         public static string biomes {
             get {
@@ -155,6 +121,36 @@ namespace Mcasaenk.Resources {
         public static byte[] capture {
             get {
                 object obj = ResourceManager.GetObject("capture", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] colormap_bedrock {
+            get {
+                object obj = ResourceManager.GetObject("colormap_bedrock", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] colormap_java {
+            get {
+                object obj = ResourceManager.GetObject("colormap_java", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] colormap_texture {
+            get {
+                object obj = ResourceManager.GetObject("colormap_texture", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -235,56 +231,6 @@ namespace Mcasaenk.Resources {
         public static byte[] Icon2 {
             get {
                 object obj = ResourceManager.GetObject("Icon2", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] javamap_colormap {
-            get {
-                object obj = ResourceManager.GetObject("javamap_colormap", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] mean_colormap {
-            get {
-                object obj = ResourceManager.GetObject("mean_colormap", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] mean_foliage {
-            get {
-                object obj = ResourceManager.GetObject("mean_foliage", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] mean_grass {
-            get {
-                object obj = ResourceManager.GetObject("mean_grass", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] mean_water {
-            get {
-                object obj = ResourceManager.GetObject("mean_water", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -441,6 +387,26 @@ namespace Mcasaenk.Resources {
             get {
                 object obj = ResourceManager.GetObject("undo", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to // automatically generated by Utils.AssetsUtils.CreateVanillaDataAsset
+        ///
+        ///-- BIOMES --
+        ///minecraft:badlands;1;0;4287660365;4288577869;4282349284;;
+        ///minecraft:bamboo_jungle;0.95;0.86;0;0;4282349284;;
+        ///minecraft:basalt_deltas;1;0;0;0;4282349284;;
+        ///minecraft:beach;0.8;0.32;0;0;4282349284;;
+        ///minecraft:birch_forest;0.6;0.36;0;0;4282349284;;
+        ///minecraft:cherry_grove;0.5;0.4;4290173793;4290173793;4284332015;;
+        ///minecraft:cold_ocean;0.5;0.25;0;0;4282210262;;
+        ///minecraft:crimson_forest;1;0;0;0;4282349284;;
+        ///minecraft:da [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string vanilladatainfo {
+            get {
+                return ResourceManager.GetString("vanilladatainfo", resourceCulture);
             }
         }
         

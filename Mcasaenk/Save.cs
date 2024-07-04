@@ -1,8 +1,10 @@
 ﻿using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.UI;
+using Mcasaenk.WorldInfo;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,62 +13,69 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk {
     public class Save {
-        public readonly LevelDat levelDat;
+        public readonly LevelDatInfo levelDatInfo;
+        public readonly DatapacksInfo datapackInfo;
         public readonly string path;
         public readonly Dimension overworld, nether, end;
+        public readonly List<Dimension> dimensions;
 
-        public Save(LevelDat levelDat) { this.levelDat = levelDat; }
-        public Save(string path, LevelDat levelDat) : this(levelDat) {
+        public Save(string path, LevelDatInfo levelDat, DatapacksInfo datapackInfo) {
             this.path = path;
+            this.levelDatInfo = levelDat;
+            this.datapackInfo = datapackInfo;
 
-            this.overworld = new Dimension(this, Path.Combine(path, "region"), Dimension.Type.Overworld);
-            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), Dimension.Type.Nether);
-            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), Dimension.Type.End);
+            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"]);
+            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"]);
+            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"]);
+
+            dimensions = new List<Dimension>() { overworld, nether, end };
+
+            foreach(var dim in datapackInfo.dimensions.Values) {
+                if(dimensions.Any(d => d.name == dim.name)) continue;
+                var name = dim.name.fromminecraftname();
+                dimensions.Add(new Dimension(this, Path.Combine(path, "dimensions", name.@namespace, name.name, "region"), dim));
+            }          
         }
-        public Save(string path) : this(path, LevelDat.ReadWorld(path)) { }
+
+        public Dimension GetDimension(string name) {
+            return dimensions.FirstOrDefault(d => d.info.name == name);
+        }
+
+        public Save(string path) : this(path, LevelDatInfo.ReadWorld(path), new DatapacksInfo(path)) { }
 
         public string LevelPath() {
             return Path.Combine(path, "level.dat");
         }
-
-        public virtual Dimension GetDimension(Dimension.Type type) {
-            if(overworld.type == type) return overworld;
-            if(nether.type == type) return nether;
-            if(end.type == type) return end;
-            return null;
-        }
-    }
-
-    public class DimensionSave : Save {
-        private readonly Dimension region;
-        public DimensionSave(string path) : base(default(LevelDat)) {
-            this.region = new Dimension(this, path, Dimension.Type.Overworld);
-        }
-        public override Dimension GetDimension(Dimension.Type type) {
-            return region;
-        }
     }
 
     public class Dimension {
+        public static readonly Regex regionNamingConvention = new Regex("r.(-?\\d+).(-?\\d+).(mca|mcr)$");
+
+        public readonly string name;
         public readonly string path;
-        public readonly Type type;
+        public DimensionInfo info;
         public readonly Save save;
         public readonly TileMap tileMap;
 
-        public static readonly Regex regionNamingConvention = new Regex("r.(-?\\d+).(-?\\d+).(mca|mcr)$");
-
-        public Dimension(Save save, string path, Type type) {
+        public Dimension(Save save, string path, DimensionInfo info) {
             this.save = save;
-            this.type = type;
+            this.info = info;
+            this.name = info.name;
             this.path = path;
             this.tileMap = new TileMap(this, ExistingRegions());
+        }
+
+        public (int height, int miny) GetHeight(int version) {
+            if(info.name == "minecraft:overworld" && info.fromparts) {
+                if(version >= 2825) return (384, -64);
+                else return (256, 0);
+            }
+            return (info.height, info.miny);
         }
 
         public string GetRegionPath(Point2i pos) {
             return Path.Combine(path, $"r.{pos.X}.{pos.Z}.mca");
         }
-
-        public enum Type { Undefined, Overworld, Nether, End }
 
         private HashSet<Point2i> ExistingRegions() { 
             var set = new HashSet<Point2i>();

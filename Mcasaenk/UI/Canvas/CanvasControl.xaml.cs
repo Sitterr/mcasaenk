@@ -120,8 +120,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            if(window.footer != null
-                ) {
+            if(window.footer != null) {
                 { // footer update
                     window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
                     window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";

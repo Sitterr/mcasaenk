@@ -150,7 +150,7 @@ namespace Mcasaenk
 
         public unsafe void Redraw() {
             if(this.genData == null) return;
-            var img = this.img == null ? new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null) : this.img.Clone();
+            var img = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
             img.Lock();
 
             uint* pixels = (uint*)img.BackBuffer;

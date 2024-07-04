@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Automation;
+using System.Windows.Media.Media3D;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Shade3d {
@@ -15,18 +16,9 @@ namespace Mcasaenk.Shade3d {
         public const double MINB = 5;
         //public static ShadeConstants GLB = new ShadeConstants(Global.App.Settings.ADEG, Global.App.Settings.BDEG);
 
-        private static double a, b;
-        private static ShadeConstants _GLB;
-        public static ShadeConstants GLB {
-            get {
-                if(Global.App.Settings.ADEG != a || Global.App.Settings.BDEG != b || _GLB == null) {
-                    a = Global.App.Settings.ADEG;
-                    b = Global.App.Settings.BDEG;
-                    _GLB = new ShadeConstants(a, b);
-                }
-                return _GLB;
-            }
-        }
+        public static ShadeConstants GLB;
+
+        public readonly int Height;
 
         public readonly double Adeg, Bdeg;
         public readonly double A, B;
@@ -46,7 +38,8 @@ namespace Mcasaenk.Shade3d {
             sinA = Round(Math.Sin(A));
         }
 
-        public ShadeConstants(double A_deg, double B_deg) {
+        public ShadeConstants(int height, double A_deg, double B_deg) {
+            Height = height;
             Adeg = A_deg;
             Bdeg = B_deg;
             A = DegToRad(Adeg);
@@ -60,15 +53,15 @@ namespace Mcasaenk.Shade3d {
             xp = nCeil(cosA);
             zp = -nCeil(sinA);
 
-            rX = (byte)Math.Ceiling(Math.Abs(cosAcotgB * (319 + 64)) / 512) + 1;
-            rZ = (byte)Math.Ceiling(Math.Abs(sinAcotgB * (319 + 64)) / 512) + 1;
+            rX = (byte)Math.Ceiling(Math.Abs(cosAcotgB * Height) / 512) + 1;//!!!
+            rZ = (byte)Math.Ceiling(Math.Abs(sinAcotgB * Height) / 512) + 1;//!!!
 
 
             var size = new SizeF(Math.Abs((float)cosAcotgB), Math.Abs((float)sinAcotgB));
             blockReach = CreateReach(new PointF(0, 0), size, true);
             blockReachLenMax = (byte)blockReach.Count;
 
-            regionReach = CreateReach(new PointF(0, 0), new SizeF((float)Math.Abs(cosAcotgB * (319 + 64)) / 512, (float)Math.Abs(sinAcotgB * (319 + 64)) / 512), false);
+            regionReach = CreateReach(new PointF(0, 0), new SizeF((float)Math.Abs(cosAcotgB * Height) / 512, (float)Math.Abs(sinAcotgB * Height) / 512), false);//!!!
         }
         private List<(RegionDir dir, Point2i p)> CreateReach(PointF a, SizeF size, bool transf, float precision = 0.85f) {
             var list = new List<(RegionDir dir, Point2i p)>();

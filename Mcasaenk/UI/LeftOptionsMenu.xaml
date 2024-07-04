@@ -149,7 +149,7 @@
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Screenshot}"/>
                                 </StackPanel>
 
-                                
+
                                 <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto"/>
@@ -176,37 +176,7 @@
                                     </StackPanel>
                                 </Grid>
 
-
                                 <StackPanel Grid.Row="10" Grid.Column="0" Orientation="Horizontal">
-                                    <TextBlock>
-                                        <Run Text="height range "/>
-                                        <Run Text="✶">
-                                            <Run.Foreground>
-                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MinY" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MINY" />
-                                                </MultiBinding>
-                                            </Run.Foreground>
-                                        </Run>
-                                    </TextBlock>
-                                    <TextBox Width="30" Text="{Binding Source={x:Static gl:Global.Settings}, Path=MinY}"/>
-                                    <Border Width="10"/>
-                                    <TextBlock>
-                                        <Run Text="to "/>
-                                        <Run Text="✶">
-                                            <Run.Foreground>
-                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MaxY" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="MAXY" />
-                                                </MultiBinding>
-                                            </Run.Foreground>
-                                        </Run>
-                                    </TextBlock>
-                                    <TextBox Width="30" Text="{Binding Source={x:Static gl:Global.Settings}, Path=MaxY}"/>
-                                </StackPanel>
-
-
-                                <StackPanel Grid.Row="10" Grid.Column="2" Orientation="Horizontal">
                                     <TextBlock>
                                         <Run Text="prefer heightmap filter"/>
                                         <Run Text="✶">

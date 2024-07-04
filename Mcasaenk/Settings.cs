@@ -56,7 +56,7 @@ namespace Mcasaenk
         public void SetFromBack() {
             frozen = true;
 
-            RENDERHEIGHT = Y;
+            Y_OFFICIAL = Y;
             ADEG = ADeg;
             BDEG = BDeg;
             SHADE3D = Shade3d;
@@ -66,13 +66,12 @@ namespace Mcasaenk
             COLOR_MAPPING_MODE = ColorMapping;
             SHADETYPE = ShadeType;
             PREFERHEIGHTMAPS = PreferHeightmap;
-            MAXY = MaxY; MINY = MinY;
 
             frozen = false;
             OnHardChange("");
         }
         public void Reset() {
-            Y = RENDERHEIGHT;
+            Y = Y_OFFICIAL;
             ADeg = ADEG;
             BDeg = BDEG;
             Shade3d = SHADE3D;
@@ -82,9 +81,27 @@ namespace Mcasaenk
             ColorMapping = COLOR_MAPPING_MODE;
             ShadeType = SHADETYPE;
             PreferHeightmap = PREFERHEIGHTMAPS;
-            MaxY = MAXY; MinY = MINY;
         }
 
+        public void OnNewSave() {
+            frozen = true;
+
+            if(Global.App.OpenedSave != null) {
+                var h = Global.App.OpenedSave.GetDimension(this.DIMENSION).GetHeight(Global.App.OpenedSave.levelDatInfo.version_id);
+                MINY = (short)h.miny;
+                MAXABSHEIGHT = (short)h.height;
+            } else {
+                MINY = -64; MAXABSHEIGHT = 384;
+            }
+            OnAutoChange(nameof(MINY));
+            OnAutoChange(nameof(MAXY));
+            OnAutoChange(nameof(MAXABSHEIGHT));
+            Y_OFFICIAL = Y_OFFICIAL;
+
+            ShadeConstants.GLB = new ShadeConstants(MAXABSHEIGHT, ADEG, BDEG);
+
+            frozen = false;
+        }
 
         bool frozen = true;
         public void OnAutoChange(string propertyName) {
@@ -105,8 +122,8 @@ namespace Mcasaenk
         public Settings() { }
 
         public static Settings DEF() => new Settings() {
-            DIMENSION = Dimension.Type.Overworld,
-            Y = 319,
+            DIMENSION = "minecraft:overworld",
+            Y_OFFICIAL = 319,
 
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, Screenshot = ScreenshotType.None,
@@ -119,7 +136,6 @@ namespace Mcasaenk
                 new Resolution() { Name = "4K UHD", X = 3840, Y = 2160 },
             ],
             PREFERHEIGHTMAPS = true,
-            MAXY = "", MINY = "",
 
             COLOR_MAPPING_MODE = "texture",
 
@@ -141,9 +157,8 @@ namespace Mcasaenk
             frozen = false;
         }
 
-        private Dimension.Type dimension;
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public Dimension.Type DIMENSION {
+        private string dimension;
+        public string DIMENSION {
             get => dimension;
             set {
                 if(dimension == value) return;
@@ -159,17 +174,32 @@ namespace Mcasaenk
         public short Y {
             get => y_back;
             set {
+                value = Math.Clamp(value, MINY, MAXY);
                 if(y_back == value) return;
 
                 y_back = value;
                 OnAutoChange(nameof(Y));
                 if(Global.App.OpenedSave == null) {
                     y = value;
-                    OnAutoChange(nameof(RENDERHEIGHT));
+                    OnAutoChange(nameof(Y_OFFICIAL));
+                    OnAutoChange(nameof(ABSY));
                 }
             }
         }
-        public short RENDERHEIGHT { get => y; set { y = value; Y = value; OnHardChange(nameof(RENDERHEIGHT)); } }
+        public short Y_OFFICIAL { get => y; set { 
+                value = Math.Clamp(value, MINY, MAXY);
+                y = value; Y = value; 
+                OnHardChange(nameof(Y_OFFICIAL)); OnAutoChange(nameof(ABSY));
+            } 
+        }
+        [JsonIgnore]
+        public short MINY { get; private set; } = -64;
+        [JsonIgnore]
+        public short MAXABSHEIGHT { get; private set; } = 384;
+        [JsonIgnore]
+        public short ABSY { get => (short)(Y_OFFICIAL - MINY); }
+        [JsonIgnore]
+        public short MAXY { get => (short)(MAXABSHEIGHT + MINY - 1); }
 
 
         private double contrast;
@@ -568,77 +598,6 @@ namespace Mcasaenk
             }
         }
         public bool PREFERHEIGHTMAPS { get => preferheightmap; set { preferheightmap = value; PreferHeightmap = value; OnHardChange(nameof(PREFERHEIGHTMAPS)); } }
-
-
-
-        private string maxy, maxy_back;
-        [JsonIgnore]
-        public string MaxY {
-            get => maxy_back;
-            set {
-                if(maxy_back == value) return;
-
-                maxy_back = value;
-                OnAutoChange(nameof(MaxY));
-                if(Global.App.OpenedSave == null) {
-                    maxy = value;
-                    OnAutoChange(nameof(MAXY));
-
-                    if(int.TryParse(value, out int mn)) _MAXY_INT = mn;
-                    else _MAXY_INT = int.MaxValue;
-                }
-            }
-        }
-        public string MAXY { get => maxy; 
-            set { 
-                maxy = value; 
-                MaxY = value; 
-                OnHardChange(nameof(MAXY));
-
-                if(int.TryParse(value, out int mx)) _MAXY_INT = mx;
-                else _MAXY_INT = int.MaxValue;
-            } 
-        }
-        private int _MAXY_INT;
-        public int MAXY_INT(int def) {
-            if(_MAXY_INT == int.MaxValue) return def;
-            else return _MAXY_INT;
-        }
-
-
-        private string miny, miny_back;
-        [JsonIgnore]
-        public string MinY {
-            get => miny_back;
-            set {
-                if(miny_back == value) return;
-
-                miny_back = value;
-                OnAutoChange(nameof(MinY));
-                if(Global.App.OpenedSave == null) {
-                    miny = value;
-                    OnAutoChange(nameof(MINY));
-
-                    if(int.TryParse(value, out int mn)) _MINY_INT = mn;
-                    else _MINY_INT = int.MinValue;
-                }
-            }
-        }
-        public string MINY { get => miny; 
-            set { 
-                miny = value; 
-                MinY = value; 
-                OnHardChange(nameof(MINY));
-
-                if(int.TryParse(value, out int mn)) _MINY_INT = mn;
-                else _MINY_INT = int.MinValue;
-            }
-        }
-        private int _MINY_INT;
-        public int MINY_INT(int def) {
-            if(_MINY_INT == int.MinValue) return def;
-            else return _MINY_INT;
-        }
 
 
         private Resolution[] predefined_reses;

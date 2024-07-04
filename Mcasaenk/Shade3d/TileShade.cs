@@ -85,7 +85,7 @@ namespace Mcasaenk.Shade3d {
                     for(int cx = 0; cx < 512; cx++) {
                         int regionIndex = cz * 512 + cx;
 
-                        int h = 319 - genData.heights(regionIndex);
+                        int h = ShadeConstants.GLB.Height - genData.heights(regionIndex); //!!!
                         double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 

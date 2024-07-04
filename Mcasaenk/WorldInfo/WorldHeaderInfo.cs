@@ -9,13 +9,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mcasaenk {
-    public class LevelDat {
+namespace Mcasaenk.WorldInfo {
+    public class LevelDatInfo {
         public DateOnly lastopened { get; private set; }
         public Difficulty difficulty { get; private set; }
         public Gamemode gamemode { get; private set; }
         public string name { get; private set; }
-        public string version { get; private set; }
+        public string version_name { get; private set; }
+        public int version_id { get; private set; }
         public long seed { get; private set; }
         public bool hardcore { get; private set; }
         public string imagepath { get; private set; }
@@ -28,7 +29,7 @@ namespace Mcasaenk {
         public int sy { get; private set; }
         public int sz { get; private set; }
 
-        private LevelDat(Tag _tag, string foldername, string imagepath, DateOnly lastopened) {
+        private LevelDatInfo(Tag _tag, string foldername, string imagepath, DateOnly lastopened) {
             this.foldername = foldername;
             this.imagepath = imagepath;
             this.lastopened = lastopened;
@@ -41,7 +42,8 @@ namespace Mcasaenk {
                 this.gamemode = (Gamemode)(int)(NumTag<int>)data["GameType"];
                 var version = (CompoundTag)data["Version"];
                 {
-                    this.version = (NumTag<string>)version["Name"];
+                    this.version_name = (NumTag<string>)version["Name"];
+                    this.version_id = (NumTag<int>)version["Id"];
                 }
                 var worldGenSettings = (CompoundTag)data["WorldGenSettings"];
                 if(worldGenSettings != null) {
@@ -65,10 +67,10 @@ namespace Mcasaenk {
                 }
             }
         }
-        private LevelDat() { }
+        private LevelDatInfo() { }
 
 
-        public static LevelDat ReadWorld(string path) {
+        public static LevelDatInfo ReadWorld(string path) {
             try {
                 using var pointer = new MemoryStream(File.ReadAllBytes(Path.Combine(path, "level.dat")));
 
@@ -81,17 +83,16 @@ namespace Mcasaenk {
                 bool error = nbtreader.TryRead(out var _g);
 
                 var globaltag = (CompoundTag)_g;
-                return new LevelDat(globaltag, Path.GetFileName(path), Path.Combine(path, "icon.png"), DateOnly.FromDateTime(File.GetLastAccessTime(Path.Combine(path, "level.dat"))));
+                return new LevelDatInfo(globaltag, Path.GetFileName(path), Path.Combine(path, "icon.png"), DateOnly.FromDateTime(File.GetLastAccessTime(Path.Combine(path, "level.dat"))));
             }
             catch {
                 return null;
             }
         }
 
-        public static LevelDat ReadRegionFolder() {
-            return new LevelDat() { };
+        public static LevelDatInfo ReadRegionFolder() {
+            return new LevelDatInfo() { };
         }
-
 
     }
     public enum Difficulty : sbyte {

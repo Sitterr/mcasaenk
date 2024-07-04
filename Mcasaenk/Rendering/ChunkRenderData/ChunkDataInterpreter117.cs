@@ -26,14 +26,12 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         private bool oldChunk, endChunk;
 
-        int maxy, negy, negys;
-        public int MaxHeight() => maxy;
-        public int MinHeight() => -negy;
-        public ChunkDataInterpreter117(Tag _tag, int miny, int maxy, bool error) {
-            int SECTIONS = (int)Math.Ceiling((-miny + maxy + 1) / (double)16);
+        int height, negy, negys;
+        public ChunkDataInterpreter117(Tag _tag, int miny, int height, bool error) {
+            int SECTIONS = (int)Math.Ceiling(height / (double)16);
             this.negy = -miny;
             this.negys = negy / 16;
-            this.maxy = maxy;
+            this.height = height;
 
             this.error = error;
 
@@ -59,7 +57,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                         var section = (CompoundTag)_section;
 
                         sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + negys);
-                        if(y < 0) continue;
+                        if(y < 0 || y >= blockStates.Length) continue;
                         blockStates[y] = (ArrTag<long>)section["BlockStates"];
                         blocklights[y] = (ArrTag<byte>)section["BlockLight"];
 
@@ -94,25 +92,26 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         private bool error;
 
         public bool ContainsInformation() {
+            if(blockStates.All(b => b == null)) return false;
             return !error;
         }
         public bool ContainsHeightmaps() {
             return world_surface != null && ocean_floor != null;
         }
         public ushort SingleBlockSection(int i) {
-            if(blockStates[i + negys] == null && palettes[i + negys] == null) return Colormap.BLOCK_AIR;
+            if(blockStates[i] == null && palettes[i] == null) return Colormap.BLOCK_AIR;
             return Colormap.NONEBLOCK;
         }
 
 
 
         public ushort GetBiome(int cx, int cz, int cy) {
-            cy += negy;
+            //cy += negy;
             return BiomeRegistry.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
         }
 
         public ushort GetBlock(int cx, int cz, int cy) {
-            cy += negy;
+            //cy += negy;
             if(cy < 0) return default;
             int i = cy / 16;
             if(blockStates[i] == null || palettes[i] == null) return Colormap.BLOCK_AIR;
@@ -135,7 +134,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
 
         public byte GetBlockLight(int cx, int cz, int cy) {
-            cy += negy;
+            //cy += negy;
             if(cy < 0) return 0;
             int i = cy / 16;
             if(blocklights[i] == null) return 0;
@@ -152,9 +151,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
 
         private short getHeight(ArrTag<long> heightmap, int cx, int cz) {
-            if(heightmap == null) return (short)-negy;
+            if(heightmap == null) return -1;
             short val = (short)((this as IChunkInterpreter).GetValueFromBitArray(getIndexXZ(cx, cz, 16), heightmap, 9) - 1);
-            if(!oldChunk) val = (short)(val - negy);
+            //if(!oldChunk) val = (short)(val - negy);
             return val;
         }
 
@@ -167,8 +166,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         private int getBiomeAtBlock(int biomeX, int biomeY, int biomeZ) {
             if(biomes == null) return default;
             if(endChunk) return biomes[getIndexXZ(biomeX / 4, biomeZ / 4, 4)];
-            if(oldChunk) biomeY -= negy;
-            if(biomeY <= -negy) return default;
+            //if(oldChunk) biomeY -= negy;
+            if(biomeY < 0) return default;
             return biomes[getIndexXYZ(biomeX / 4, biomeY / 4, biomeZ / 4, 4)];
         }
 

@@ -105,19 +105,25 @@ namespace Mcasaenk {
             byte b2 = (byte)(b * ab);
             return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
-        public static uint Blend(uint color, uint other, double ratio) {
+        public static uint Blend(uint color, uint other, double ratio, bool alphaBlend = false) {
             ratio = Math.Clamp(ratio, 0, 1);
 
             byte aA = (byte)(color >> 24 & 0xFF);
+            if(!alphaBlend) aA = 255;
             byte aR = (byte)(color >> 16 & 0xFF);
             byte aG = (byte)(color >> 8 & 0xFF);
             byte aB = (byte)(color & 0xFF);
 
             double bratio = 1 - ratio;
             byte bA = (byte)(other >> 24 & 0xFF);
+            if(!alphaBlend) bA = 255;
             byte bR = (byte)(other >> 16 & 0xFF);
             byte bG = (byte)(other >> 8 & 0xFF);
             byte bB = (byte)(other & 0xFF);
+
+            if(ratio == 0.5) {
+                return (uint)((aA + bA) / 2) << 24 | (uint)((aR + bR) / 2) << 16 | (uint)((aG + bG) / 2) << 8 | (uint)((aB + bB) / 2);
+            }
 
             uint a = (uint)(aA * ratio + bA * bratio);
             uint r = (uint)(aR * ratio + bR * bratio);
@@ -227,9 +233,14 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
-        public static string blockname(this string name) {
+        public static string minecraftname(this string name) {
             if(name.Contains(":") == false) name = "minecraft:" + name;
             return name;
+        }
+        public static (string @namespace, string name) fromminecraftname(this string name) {
+            name = name.minecraftname();
+            string[] parts = name.Split(':');
+            return (parts[0], parts[1]);
         }
 
         public static TValue GetValueOrDefault<TKey, TValue>(
@@ -251,7 +262,7 @@ namespace Mcasaenk {
             int height = writeableBitmap.PixelHeight;
 
             // Create a 2D array to hold the pixel data
-            uint[,] pixelArray = new uint[height, width];
+            uint[,] pixelArray = new uint[width, height];
 
             // Calculate the stride (width of a single row of pixels in bytes)
             int stride = width * (writeableBitmap.Format.BitsPerPixel / 8);
@@ -277,7 +288,7 @@ namespace Mcasaenk {
                     uint pixelValue = (uint)((alpha << 24) | (red << 16) | (green << 8) | blue);
 
                     // Store the uint value in the array
-                    pixelArray[y, x] = pixelValue;
+                    pixelArray[x, y] = pixelValue;
                 }
             }
 

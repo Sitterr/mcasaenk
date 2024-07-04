@@ -20,20 +20,22 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             var nbtreader = new NbtReader(decompressedStream);
             bool error = nbtreader.TryRead(out var _g);
             //try {
-                var globaltag = (CompoundTag)_g;
+            var globaltag = (CompoundTag)_g;
 
-                int version = (NumTag<int>)globaltag["DataVersion"];
-                IChunkInterpreter chunkreader = null;
-                if(version > 0) {
+            int version = (NumTag<int>)globaltag["DataVersion"];
+            IChunkInterpreter chunkreader = null;
+            if(version > 0) {
 
-                    if(version >= 2566 && version <= 2586) chunkreader = new ChunkDataInterpreter117(globaltag, Global.Settings.MINY_INT(0), Global.Settings.MAXY_INT(255), error); // 1.16
-                    else if(version >= 2724 && version <= 2730) chunkreader = new ChunkDataInterpreter117(globaltag, Global.Settings.MINY_INT(-64), Global.Settings.MAXY_INT(319), error); // 1.17
-                    else if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, Global.Settings.MINY_INT(-64), Global.Settings.MAXY_INT(319), error); // 1.18 - 1.20
-                    
-                } 
+                var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight(version);
+
+                if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
+                else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17
                 
-                if(chunkreader == null) throw new Exception();
-                else return chunkreader;
+
+            }
+
+            if(chunkreader == null) throw new Exception();
+            else return chunkreader;
             //}
             //catch (Exception e){
             //    throw e;

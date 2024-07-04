@@ -91,9 +91,9 @@ namespace Mcasaenk.Rendering {
 
             if(observers[tile].Contains(observer) == false) observers[tile].Add(observer);
 
-            base.Queue(tile, (Action)(() => {
-                Global.Time((Action)(() => {
-                    tile.genData = Global.App.Settings.SHADE3D ? TileGenerate.ShadeGenerate(tile, TaskScheduler.Default) : TileGenerate.StandartGenerate(tile);
+            base.Queue(tile, (() => {
+                Global.Time((() => {
+                    tile.genData = (Global.App.Settings.ShadeType == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
                 }), out var time);
                 redrawAcc += time;
                 redrawCount++;

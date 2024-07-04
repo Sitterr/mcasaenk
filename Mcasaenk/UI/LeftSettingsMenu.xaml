@@ -30,7 +30,7 @@
                 <TextBlock Text="General"/>
             </local:EButton>
             <local:EButton x:Name="tab_shades" Grid.Row="0" Grid.Column="1" Style="{StaticResource itemsControlItem}">
-                <TextBlock Text="Shades"/>
+                <TextBlock Text="Shading"/>
             </local:EButton>
             <local:EButton x:Name="tab_color" Grid.Row="0" Grid.Column="2" Style="{StaticResource itemsControlItem}">
                 <TextBlock Text="Colormap"/>
@@ -55,7 +55,7 @@
 
                             
                             
-                            <Border x:Name="cont_general" Visibility="Collapsed">
+                            <Border x:Name="cont_general" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -78,7 +78,7 @@
 
 
 
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0">
+                                    <DockPanel Grid.Row="0" Grid.Column="0">
                                         <TextBlock>
                                              <Run Text="Y"/><!--
                                           --><Run Text="(render height)" FontSize="12" FontStyle="Italic"/>
@@ -86,15 +86,18 @@
                                                   <Run.Foreground>
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
                                                         <Binding Source="{x:Static gl:Global.Settings}" Path="Y" />
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="RENDERHEIGHT" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="Y_OFFICIAL" />
                                                     </MultiBinding>
                                                   </Run.Foreground>
                                               </Run>
                                         </TextBlock>
-                                        <Border Width="10"/>
                                         <TextBox Width="30" HorizontalAlignment="Right"
                                                  Text="{Binding Source={x:Static gl:Global.Settings}, Path=Y, Mode=TwoWay}"/>
-                                    </StackPanel>
+                                    </DockPanel>
+                                    <Slider Grid.Row="2" Grid.Column="0" Minimum="{Binding Source={x:Static gl:Global.Settings}, Path=MINY}" Maximum="{Binding Source={x:Static gl:Global.Settings}, Path=MAXY}" TickFrequency="16"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
+                                    
+                                    
 
                                     <DockPanel Grid.Row="4" Grid.Column="0">
                                         <TextBlock Text="contrast"/>
@@ -122,9 +125,9 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Visible">
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
                                 <StackPanel>
-                                    <StackPanel Margin="0 0 0 60" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
                                         <Run Text="shade mode"/>
                                         <Run Text="✶">
@@ -142,7 +145,11 @@
                                                   DisplayMemberPath="Description"
                                                   SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType}"/>
                                     </StackPanel>
-
+                                    
+                                    <Border Height="30"/>
+                                    <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
+                                    <Border Height="30"/>
+                                    
                                     <StackPanel Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:ShadeType.OG}, Mode=OneWay}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -251,7 +258,7 @@
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
 
-                                            <StackPanel Grid.Row="8" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
+                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="8" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
                                                 <TextBlock Text="softer depth shade"/>
                                                 <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
                                             </StackPanel>
@@ -286,7 +293,11 @@
                                         </local:EButton>
                                     </StackPanel>
 
-                                    <Grid x:Name="tintGrid" Margin="0 60 0 0">
+                                    <Border Height="30"/>
+                                    <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
+                                    <Border Height="30"/>
+
+                                    <Grid x:Name="tintGrid">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" SharedSizeGroup="A"/>
                                             <ColumnDefinition Width="20"/>

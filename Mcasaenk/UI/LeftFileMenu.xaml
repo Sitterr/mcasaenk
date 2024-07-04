@@ -70,10 +70,6 @@
                                 <local:EButton x:Name="btn_browse" Width="128" Height="40">
                                     <TextBlock Text="World" FontSize="14"/>
                                 </local:EButton>
-                                <Border Width="40"/>
-                                <local:EButton x:Name="btn_browse_dim" Width="128" Height="40">
-                                    <TextBlock Text="Region folder" FontSize="14"/>
-                                </local:EButton>
                             </StackPanel>
 
                         </Border>

@@ -119,6 +119,8 @@ namespace Mcasaenk.UI {
 
             int i = 0;
             foreach(var tint in colormap.GetTints()) {
+                if(tint.Settings() == null) continue;
+
                 if(i % 2 == 0) {
                     tintGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
                     tintGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2) });
@@ -126,24 +128,24 @@ namespace Mcasaenk.UI {
                     tintGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(40) });
                 }
 
-                {
+                if(tint.Settings() is DynamicTintSettings settings) {
                     var dockPanel = new DockPanel();
                     Grid.SetRow(dockPanel, (i / 2) * 4);
                     Grid.SetColumn(dockPanel, (i % 2) * 2);
 
-                    dockPanel.Children.Add(new TextBlock() { Text = tint.name.Split('.')[0] });
+                    dockPanel.Children.Add(new TextBlock() { Text = tint.Name() });
                     var tintEnable = new ToggleButton { Margin = new Thickness(10, 0, 0, 0) };
                     var toggleBinding = new Binding("On") {
-                        Source = tint.settings // Assuming 'Global.Settings' is correctly defined
+                        Source = settings // Assuming 'Global.Settings' is correctly defined
                     };
                     tintEnable.SetBinding(ToggleButton.IsCheckedProperty, toggleBinding);
                     dockPanel.Children.Add(tintEnable);
 
                     var txtRaduis = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
-                    txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = tint.settings });
+                    txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = settings });
                     MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{1}" };
-                    txtMultBinding.Bindings.Add(new Binding("Blend") { Source = tint.settings });
-                    txtMultBinding.Bindings.Add(new Binding("Blend") { Source = tint.settings });
+                    txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
+                    txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
                     txtRaduis.SetBinding(TextBlock.TextProperty, txtMultBinding);
                     dockPanel.Children.Add(txtRaduis);
 
@@ -156,8 +158,8 @@ namespace Mcasaenk.UI {
                     };
                     Grid.SetRow(slider, (i / 2) * 4 + 2);
                     Grid.SetColumn(slider, (i % 2) * 2);
-                    slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = tint.settings });
-                    slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = tint.settings });
+                    slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = settings });
+                    slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = settings });
 
                     tintGrid.Children.Add(slider);
                 }

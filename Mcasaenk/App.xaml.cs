@@ -11,6 +11,7 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime;
 using System.Text;
 using System.Text.Json;
@@ -31,7 +32,7 @@ namespace Mcasaenk {
             Debug.WriteLine("int main()?");
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
-            Thread.CurrentThread.Name = "app?";
+            Thread.CurrentThread.Name = "app/ui?";
             Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
 
 
@@ -48,62 +49,30 @@ namespace Mcasaenk {
                         TileMap?.RedrawAll();
                     },
                     () => {
-                        if(Global.App.OpenedSave is DimensionSave ds) Global.App.OpenedSave = new DimensionSave(ds.path);
-                        else if(Global.App.OpenedSave is Save) Global.App.OpenedSave = new Save(Global.App.OpenedSave.path);
+                        if(Global.App.OpenedSave != null) {
+                            Global.App.OpenedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
+                        }
                     });
+
+                
             }
 
             // colormap
             {
-                BiomeRegistry.Initialize();
-
-                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "texture")) == false) {
-                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "texture"))) 
-                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "texture"));
-                }
-                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
-                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")))
-                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "java map"));
-                }
-                if(Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", "bedrock map")) == false) {
-                    if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "bedrock map")))
-                        Directory.Delete(Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "texture")) == false) {
+                    using var stream = new MemoryStream(ResourceMapping.colormap_texture);
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "texture"));
                 }
 
-                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "java map"));
-                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "texture"));
-                Directory.CreateDirectory(Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
+                    using var stream = new MemoryStream(ResourceMapping.colormap_java);
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "java map"));
+                }
 
-                string path;
-
-                path = Path.Combine(APPFOLDER, "colormaps", "java map", "colormap.json");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.javamap_colormap);
-
-
-                path = Path.Combine(APPFOLDER, "colormaps", "texture", "colormap.json");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_colormap);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "texture", "foliage.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_foliage);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "texture", "grass.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_grass);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "texture", "water.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.mean_water);
-
-
-                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "colormap.json");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_colormap);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "foliage.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_foliage);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "grass.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_grass);
-
-                path = Path.Combine(APPFOLDER, "colormaps", "bedrock map", "water.png");
-                if(!File.Exists(path)) File.WriteAllBytes(path, ResourceMapping.bedrock_water);
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "bedrock map")) == false) {
+                    using var stream = new MemoryStream(ResourceMapping.colormap_bedrock);
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
+                }
             }
 
             Global.ViewModel = new ViewModel();
@@ -129,7 +98,7 @@ namespace Mcasaenk {
         public Colormap Colormap { get; set; }
 
         private Save _openedSave;
-        public Save OpenedSave {
+        public Save OpenedSave { // hard reset
             get {
                 return _openedSave;
             }
@@ -141,14 +110,14 @@ namespace Mcasaenk {
 
                 if(value != null) {
                     TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
+                    Settings.OnNewSave();
                     TileMap.SetSettings();
 
-                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE));
+                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.datapackInfo);
                     Shade3DFilter.ReInit(Colormap);
 
                     foreach(var tint in Colormap.GetTints()) {
-                        tint.settings = DynamicTintSettings.DEF();
-                        tint.settings.SetActions(() => {
+                        tint.Settings()?.SetActions(() => {
                             TileMap?.RedrawAll();
                         });
                     }

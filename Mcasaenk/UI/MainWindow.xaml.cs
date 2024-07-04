@@ -101,13 +101,13 @@ namespace Mcasaenk.UI {
                     if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange(); 
                 };
                 btn_overworld.Click += (o, e) => {
-                    Global.Settings.DIMENSION = Dimension.Type.Overworld;
+                    Global.Settings.DIMENSION = "minecraft:overworld";
                 };
                 btn_nether.Click += (o, e) => {
-                    Global.Settings.DIMENSION = Dimension.Type.Nether;
+                    Global.Settings.DIMENSION = "minecraft:the_nether";
                 };
                 btn_end.Click += (o, e) => {
-                    Global.Settings.DIMENSION = Dimension.Type.End;
+                    Global.Settings.DIMENSION = "minecraft:the_end";
                 };
             }
 
@@ -217,17 +217,19 @@ namespace Mcasaenk.UI {
             dim_bor.Background = brush;
         }
         void dim_onchange() {
-            if(Global.App.OpenedSave == null || Global.App.OpenedSave is DimensionSave) {
+            if(Global.App.OpenedSave == null) {
                 dim_setNone();
                 return;
             }
             switch(Global.Settings.DIMENSION) {
-                case Dimension.Type.Overworld:
+                case "minecraft:overworld":
                     dim_setOverworld(); break;
-                case Dimension.Type.Nether:
+                case "minecraft:the_nether":
                     dim_setNether(); break;
-                case Dimension.Type.End:
+                case "minecraft:the_end":
                     dim_setEnd(); break;
+                default:
+                    dim_setNone(); break;
             }
         }
 
@@ -241,8 +243,8 @@ namespace Mcasaenk.UI {
             btn_nether.IsEnabled = Global.App.OpenedSave?.nether != null;
             btn_end.IsEnabled = Global.App.OpenedSave?.end != null;
 
-            currs.Content = Global.App.OpenedSave?.levelDat;
-            wrldPanel.Visibility = Global.App.OpenedSave?.levelDat != null ? Visibility.Visible : Visibility.Collapsed;
+            currs.Content = Global.App.OpenedSave?.levelDatInfo;
+            wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
             //Grid.SetRow(screenshotPanel, Global.App.OpenedSave?.levelDat != null ? 2 : 0);
 
             rad.Reset(Global.App.OpenedSave != null);

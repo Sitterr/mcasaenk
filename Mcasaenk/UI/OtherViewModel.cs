@@ -14,15 +14,28 @@ namespace Mcasaenk.UI {
         public ObservableCollection<string> AllColormaps {
             get { return _allColormaps; }
             set {
-                _allColormaps = new ObservableCollection<string>();
+                var __allColormaps = new List<string>();
                 foreach(var dir in Directory.GetDirectories(Path.Combine(Global.App.APPFOLDER, "colormaps"))) {
                     if(Colormap.IsColormap(dir)) {
-                        _allColormaps.Add(new DirectoryInfo(dir).Name);
+                        __allColormaps.Add(new DirectoryInfo(dir).Name);
                     }
                 }
+                __allColormaps = __allColormaps.OrderByDescending(c => c switch { 
+                    "texture" => 3,
+                    "java map" => 2,
+                    "bedrock map" => 1,
+                    _ => 0,
+                }).ToList();
+
+                _allColormaps = new ObservableCollection<string>(__allColormaps);
+
                 OnPropertyChanged(nameof(AllColormaps));
             }
         }
+
+
+
+
 
         public ViewModel() {
             // folders

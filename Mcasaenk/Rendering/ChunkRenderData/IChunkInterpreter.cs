@@ -23,9 +23,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         byte GetBlockLight(int cx, int cz, int cy);
 
-        int MaxHeight();
-        int MinHeight();
-
         ushort SingleBlockSection(int i);
         bool ContainsInformation();
         bool ContainsHeightmaps();

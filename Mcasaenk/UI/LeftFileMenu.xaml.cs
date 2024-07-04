@@ -1,4 +1,5 @@
 ﻿using Mcasaenk.Rendering.ChunkRenderData;
+using Mcasaenk.WorldInfo;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -110,21 +111,6 @@ namespace Mcasaenk.UI {
                 }
             };
 
-            btn_browse_dim.Click += (o, e) => {
-                var dialog = new Microsoft.Win32.OpenFolderDialog();
-                dialog.Multiselect = false;
-
-                bool? result = dialog.ShowDialog();
-
-                if(result == true) {
-                    string path = dialog.FolderName;
-
-                    Global.App.OpenedSave = new DimensionSave(path);
-
-                    opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                }
-            };
-
 
             btn_retry.Click += (o, e) => {
                 OnActive();
@@ -152,7 +138,7 @@ namespace Mcasaenk.UI {
             int i = 0;
             foreach(var _dir in Directory.GetDirectories(Global.Settings.McDir)) {
                 var dir = _dir;
-                var level = LevelDat.ReadWorld(dir);
+                var level = LevelDatInfo.ReadWorld(dir);
                 if(level == null) continue;
 
                 var b = new Border();
@@ -168,7 +154,7 @@ namespace Mcasaenk.UI {
                 b.BorderThickness = new Thickness(0, i == 0 ? 1 : 0, 0, 1);
 
                 btn.Click += (o, e) => {
-                    Global.App.OpenedSave = new Save(dir, level);
+                    Global.App.OpenedSave = new Save(dir, level, new DatapacksInfo(dir));
 
                     opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 };

@@ -19,6 +19,7 @@ namespace Mcasaenk.Rendering
 {
     public class ChunkRenderer {
         public static void Extract(IChunkInterpreter data, int x, int z, int y, RawData rdata) {
+            int maxh = Global.Settings.MAXABSHEIGHT;
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
 
@@ -32,11 +33,11 @@ namespace Mcasaenk.Rendering
                     int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
                     int regionIndex = (z + cz) * 512 + x + cx;
 
-                    short airHeight = Filter.AIR_FILTER(y, data.MaxHeight())(data, cx, cz, (short)y, (short)data.MinHeight());
+                    short airHeight = Filter.AIR_FILTER(y, maxh - 1)(data, cx, cz, (short)y);
                     rdata.heights[regionIndex] = airHeight;
                     rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
 
-                    short waterHeight = Filter.DEPTH_FILTER(y, data.MaxHeight())(data, cx, cz, airHeight, (short)data.MinHeight());
+                    short waterHeight = Filter.DEPTH_FILTER(y, maxh - 1)(data, cx, cz, airHeight);
                     rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
                     rdata.terrainHeights[regionIndex] = waterHeight;
 
@@ -44,20 +45,20 @@ namespace Mcasaenk.Rendering
 
                     if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {
-                            int hs = data.MaxHeight() - airHeight;
+                            int hs = maxh - airHeight;
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
                             SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                         }
 
                         short height = waterHeight;
-                        while(height > data.MinHeight()) {
+                        while(height >= 0) {
 
-                            short nheight = Shade3DFilter.List(data, cx, cz, height, (short)data.MinHeight());
+                            short nheight = Shade3DFilter.List(data, cx, cz, height);
                             height = nheight;
 
-                            if(height <= data.MinHeight()) break;
+                            //if(height <= 0) break;
 
-                            int hs = data.MaxHeight() - height;
+                            int hs = maxh - height;
                             double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
                             bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
                             if(!alreadyshade) {

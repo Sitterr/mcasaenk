@@ -26,17 +26,20 @@ namespace Mcasaenk.Rendering {
 
             if(colormap.HasActiveTints()) {
                 foreach(var tint in colormap.GetTints()) {
-                    int radius = (tint.settings.Blend - 1) / 2;
+                    if(tint.Settings() == null) continue;
+
+                    int radius = (tint.Settings().Blend - 1) / 2;
                     switch(tint.GetBlendMode()) {
-                        case Tint2.Blending.none:
+                        case Tint.Blending.none:
+                        case Tint.Blending.heightonly:
                             break;
-                        case Tint2.Blending.biomeonly:
+                        case Tint.Blending.biomeonly:
                             //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
                             //PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
                             ColorGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
                             //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
                             break;
-                        case Tint2.Blending.full:
+                        case Tint.Blending.full:
                             //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
                             PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
                             //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
@@ -47,17 +50,13 @@ namespace Mcasaenk.Rendering {
             }
 
             for(int i = 0; i < 512 * 512; i++) {
-                var block = genData.block(i);
-                var value = colormap.Value(block);
+                var blockid = genData.block(i);
+                var block = colormap.Value(blockid);
 
-                if(value is FixedBlock fb) {
-                    pixels[i] = fb.GetColor(0, 0);
-                } else if(value is GridBlock gb) {
-                    if(gb.tint.GetBlendMode() == Tint2.Blending.none) {
-                        pixels[i] = gb.GetColor(Colormap.DEFBIOME, Colormap.DEFHEIGHT);
-                    } else if(gb.tint.GetBlendMode() == Tint2.Blending.simple) {
-                        pixels[i] = gb.GetColor(genData.biomeIds(i), genData.heights(i));
-                    }
+                if(block.tint.GetBlendMode() == Tint.Blending.none) {
+                    pixels[i] = block.GetColor(Colormap.DEFBIOME, Colormap.DEFHEIGHT);
+                } else if(block.tint.GetBlendMode() == Tint.Blending.heightonly) {
+                    pixels[i] = block.GetColor(genData.biomeIds(i), genData.heights(i));
                 }
             }
 
@@ -125,7 +124,7 @@ namespace Mcasaenk.Rendering {
         }
 
         private static double I(int x, double m = 0.3, double b = -2) {
-            return m + (1 - Math.Pow(10.0, b * ((double)x / (319 + 64)))) * (1 - m);
+            return m + (1 - Math.Pow(10.0, b * ((double)x / (319 + 64)))) * (1 - m); //!!!
         }
 
         private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
@@ -174,12 +173,12 @@ namespace Mcasaenk.Rendering {
     }
 
     interface Blur<T> where T : Blur<T> {
-        void IncreaseNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes);
-        void SetNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes);
+        void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes);
+        void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes);
         void CopyFrom(T blur);
         void Subtract(T blur);
         void Plus(T blur);
-        uint GenerateColor(GridBlock gb, IGenData gen, int i, DynBiome dynbiomes);
+        uint GenerateColor(BlockValue gb, IGenData gen, int i, DynBiome dynbiomes);
     }
 
     struct ColorBlur : Blur<ColorBlur> {
@@ -203,24 +202,24 @@ namespace Mcasaenk.Rendering {
             br -= blur.br;
         }
 
-        public void IncreaseNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = Global.FromARGBInt(gb.tint.GridColor(gen.biomeIds(ri), gen.heights(ri)));
+        public void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
+            var f = Global.FromARGBInt(gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
             r += f.r;
             g += f.g;
             b += f.b;
             br++;
         }
-        public void SetNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = Global.FromARGBInt(gb.tint.GridColor(gen.biomeIds(ri), gen.heights(ri)));
+        public void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
+            var f = Global.FromARGBInt(gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
             r = f.r;
             g = f.g;
             b = f.b;
             br = 1;
         }
 
-        public uint GenerateColor(GridBlock gb, IGenData gen, int i, DynBiome dynbiomes) {
+        public uint GenerateColor(BlockValue gb, IGenData gen, int i, DynBiome dynbiomes) {
             if(br == 0) return 0xFFFF0000;
-            return gb.tint.MergeColors(gb.baseColor, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+            return Global.ColorMult(gb.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
         }
     }
     unsafe struct PrecBlur : Blur<PrecBlur> {
@@ -243,28 +242,28 @@ namespace Mcasaenk.Rendering {
         }
 
 
-        public void IncreaseNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes) {
+        public void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
             int i = dynbiomes.get(gen.biomeIds(ri));
             biome[i]++;
         }
-        public void SetNewBlock(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes) {
+        public void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
             int i = dynbiomes.get(gen.biomeIds(ri));
             biome[i] = 1;
         }
 
 
 
-        public uint GenerateColor(GridBlock gb, IGenData gen, int ri, DynBiome dynbiomes) {
+        public uint GenerateColor(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
             int r = 0, g = 0, b = 0, br = 0;
             for(int i = 0; i < dynbiomes.max(); i++) {
-                var c = Global.FromARGBInt(gb.tint.GridColor(dynbiomes.back(i), gen.heights(ri)));
+                var c = Global.FromARGBInt(gb.tint.TintColorFor(dynbiomes.back(i), gen.heights(ri)));
                 r += c.r * biome[i];
                 g += c.g * biome[i];
                 b += c.b * biome[i];
                 br += biome[i];
             }
             if(br == 0) return 0xFFFF0000;
-            return gb.tint.MergeColors(gb.baseColor, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+            return Global.ColorMult(gb.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
         }
     }
 
@@ -296,7 +295,7 @@ namespace Mcasaenk.Rendering {
     }
 
     unsafe static class GausBlur {
-        public static void BoxBlur<T>(int R, uint* pixels, Tint2 tint, Colormap colormap, ArrayPool<T> pool, IGenData[,] neighbours) where T : struct, Blur<T> {
+        public static void BoxBlur<T>(int R, uint* pixels, GridTint tint, Colormap colormap, ArrayPool<T> pool, IGenData[,] neighbours) where T : struct, Blur<T> {
             DynBiome dynbiomes = null;
             if(typeof(T) == typeof(PrecBlur)) {
                 dynbiomes = new DynBiome(PrecBlur.MB);
@@ -318,7 +317,7 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
+                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
                             if(gb.tint == tint) {
                                 acc.IncreaseNewBlock(gb, gen, ri, dynbiomes);
                                 cx2[R + r].SetNewBlock(gb, gen, ri, dynbiomes);
@@ -339,7 +338,7 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
+                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
                             if(gb.tint == tint) {
                                 acc.IncreaseNewBlock(gb, gen, ri, dynbiomes);
                                 cx2[R + x + R].SetNewBlock(gb, gen, ri, dynbiomes);
@@ -361,7 +360,7 @@ namespace Mcasaenk.Rendering {
                     acc.Plus(cx2[R + r]);
                 }
 
-                if(colormap.Value(genData.block(0 * 512 + x)) is GridBlock bl) {
+                if(colormap.Value(genData.block(0 * 512 + x)) is BlockValue bl) {
                     if(bl.tint == tint) {
                         pixels[0 * 512 + x] = acc.GenerateColor(bl, genData, 0 * 512 + x, dynbiomes);
                     }
@@ -375,7 +374,7 @@ namespace Mcasaenk.Rendering {
                     cx2[R + z + R].CopyFrom(xdata2[(z + R + R) * STRIDE + (x + R)]);
                     acc.Plus(cx2[R + z + R]);
 
-                    if(colormap.Value(genData.block(z * 512 + x)) is GridBlock bll) {
+                    if(colormap.Value(genData.block(z * 512 + x)) is BlockValue bll) {
                         if(bll.tint == tint) {
                             pixels[z * 512 + x] = acc.GenerateColor(bll, genData, z * 512 + x, dynbiomes);
                         }
@@ -418,7 +417,7 @@ namespace Mcasaenk.Rendering {
             public ushort back(int i) => dynamicbiomeback[i];
         }
 
-        public static void BoxBlur(int R, uint* pixels, Tint2 tint, Colormap colormap, IGenData[,] neighbours) {
+        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, IGenData[,] neighbours) {
             var dynbiomes = new DynBiome();
 
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R) * MB);
@@ -437,7 +436,7 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
+                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
                             if(gb.tint == tint) {
                                 int i = dynbiomes.get(gen.biomeIds(ri));
                                 acc_biome[i] += 1;
@@ -461,7 +460,7 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
+                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
                             if(gb.tint == tint) {
                                 int i = dynbiomes.get(gen.biomeIds(ri));
                                 acc_biome[i] += 1;
@@ -489,19 +488,18 @@ namespace Mcasaenk.Rendering {
                     }
                 }
 
-                if(colormap.Value(genData.block(0 * 512 + x)) is GridBlock bl) {
-                    if(bl.tint == tint) {
-                        int r = 0, g = 0, b = 0, br = 0;
-                        for(int i = 0; i < dynbiomes.max(); i++) {
-                            var c = Global.FromARGBInt(tint.GridColor(dynbiomes.back(i), genData.heights(0 * 512 + x)));
-                            r += c.r * localAccBiome[i];
-                            g += c.g * localAccBiome[i];
-                            b += c.b * localAccBiome[i];
-                            br += localAccBiome[i];
-                        }
-
-                        pixels[0 * 512 + x] = tint.MergeColors(bl.baseColor, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+                var block = colormap.Value(genData.block(0 * 512 + x));
+                if(block.tint == tint) {
+                    int r = 0, g = 0, b = 0, br = 0;
+                    for(int i = 0; i < dynbiomes.max(); i++) {
+                        var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(0 * 512 + x)));
+                        r += c.r * localAccBiome[i];
+                        g += c.g * localAccBiome[i];
+                        b += c.b * localAccBiome[i];
+                        br += localAccBiome[i];
                     }
+
+                    pixels[0 * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
                 }
 
                 for(int z = 1; z < 512; z++) {
@@ -517,19 +515,18 @@ namespace Mcasaenk.Rendering {
                         localAccBiome[i] += localCx2[_fNew + i];
                     }
 
-                    if(colormap.Value(genData.block(z * 512 + x)) is GridBlock bll) {
-                        if(bll.tint == tint) {
-                            int r = 0, g = 0, b = 0, br = 0;
-                            for(int i = 0; i < dynbiomes.max(); i++) {
-                                var c = Global.FromARGBInt(tint.GridColor(dynbiomes.back(i), genData.heights(z * 512 + x)));
-                                r += c.r * localAccBiome[i];
-                                g += c.g * localAccBiome[i];
-                                b += c.b * localAccBiome[i];
-                                br += localAccBiome[i];
-                            }
-
-                            pixels[z * 512 + x] = tint.MergeColors(bll.baseColor, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+                    block = colormap.Value(genData.block(z * 512 + x));
+                    if(block.tint == tint) {
+                        int r = 0, g = 0, b = 0, br = 0;
+                        for(int i = 0; i < dynbiomes.max(); i++) {
+                            var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(z * 512 + x)));
+                            r += c.r * localAccBiome[i];
+                            g += c.g * localAccBiome[i];
+                            b += c.b * localAccBiome[i];
+                            br += localAccBiome[i];
                         }
+
+                        pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
                     }
                 }
             });
@@ -544,7 +541,7 @@ namespace Mcasaenk.Rendering {
 
         public static ArrayPool<C> pool;
 
-        public static void BoxBlur(int R, uint* pixels, Tint2 tint, Colormap colormap, IGenData[,] neighbours) {
+        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, IGenData[,] neighbours) {
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R));
 
             int STRIDE = 512 + 2 * R;
@@ -560,18 +557,16 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
-                            if(gb.tint == tint) {
-                                var f = Global.FromARGBInt(gb.tint.GridColor(gen.biomeIds(ri), gen.heights(ri)));
-                                acc.r += f.r;
-                                acc.g += f.g;
-                                acc.b += f.b;
-                                acc.br++;
-                                cx2[R + r].r = f.r;
-                                cx2[R + r].g = f.g;
-                                cx2[R + r].b = f.b;
-                                cx2[R + r].br = 1;
-                            }
+                        if(colormap.Value(gen.block(ri)).tint == tint) {
+                            var f = Global.FromARGBInt(tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
+                            acc.r += f.r;
+                            acc.g += f.g;
+                            acc.b += f.b;
+                            acc.br++;
+                            cx2[R + r].r = f.r;
+                            cx2[R + r].g = f.g;
+                            cx2[R + r].b = f.b;
+                            cx2[R + r].br = 1;
                         }
                     }
                 }
@@ -596,18 +591,16 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is GridBlock gb) {
-                            if(gb.tint == tint) {
-                                var f = Global.FromARGBInt(gb.tint.GridColor(gen.biomeIds(ri), gen.heights(ri)));
-                                acc.r += f.r;
-                                acc.g += f.g;
-                                acc.b += f.b;
-                                acc.br++;
-                                cx2[R + x + R].r = f.r;
-                                cx2[R + x + R].g = f.g;
-                                cx2[R + x + R].b = f.b;
-                                cx2[R + x + R].br = 1;
-                            }
+                        if(colormap.Value(gen.block(ri)).tint == tint) {
+                            var f = Global.FromARGBInt(tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
+                            acc.r += f.r;
+                            acc.g += f.g;
+                            acc.b += f.b;
+                            acc.br++;
+                            cx2[R + x + R].r = f.r;
+                            cx2[R + x + R].g = f.g;
+                            cx2[R + x + R].b = f.b;
+                            cx2[R + x + R].br = 1;
                         }
                     }
 
@@ -639,10 +632,9 @@ namespace Mcasaenk.Rendering {
                     acc.br += cx2[_f].br;
                 }
 
-                if(colormap.Value(genData.block(0 * 512 + x)) is GridBlock bl) {
-                    if(bl.tint == tint) {
-                        pixels[0 * 512 + x] = tint.MergeColors(bl.baseColor, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
-                    }
+                var block = colormap.Value(genData.block(0 * 512 + x));
+                if(block.tint == tint) {
+                    pixels[0 * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
                 }
 
                 for(int z = 1; z < 512; z++) {
@@ -666,10 +658,9 @@ namespace Mcasaenk.Rendering {
                     acc.b += cx2[_fNew].b;
                     acc.br += cx2[_fNew].br;
 
-                    if(colormap.Value(genData.block(z * 512 + x)) is GridBlock bll) {
-                        if(bll.tint == tint) {
-                            pixels[z * 512 + x] = tint.MergeColors(bll.baseColor, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
-                        }
+                    block = colormap.Value(genData.block(z * 512 + x));
+                    if(block.tint == tint) {
+                        pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
                     }
                 }
             });

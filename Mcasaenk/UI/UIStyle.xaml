@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Mcasaenk.UI"
                     xmlns:base="clr-namespace:Mcasaenk"
+                    xmlns:worldinfo="clr-namespace:Mcasaenk.WorldInfo"
                     xmlns:imageeffects="clr-namespace:WPF.ImageEffects;assembly=WPF.ImageEffects">
 
     <local:RoundConverter x:Key="RoundConverter"/>
@@ -712,7 +713,7 @@ TargetType="{x:Type ScrollBar}">
 
 
 
-    <DataTemplate x:Key="saveTemp" DataType="{x:Type base:LevelDat}">
+    <DataTemplate x:Key="saveTemp" DataType="{x:Type worldinfo:LevelDatInfo}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="48" />
@@ -731,7 +732,7 @@ TargetType="{x:Type ScrollBar}">
             <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
                 <Run Text="{Binding Path=name, Mode=OneWay}" FontSize="16"/>
                 <Run Text="/" FontSize="10"/><!--
-             --><Run Text="{Binding Path=version, Mode=OneWay}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
+             --><Run Text="{Binding Path=version_name, Mode=OneWay}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
              --><Run Text="/" FontSize="10"/>
             </TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">

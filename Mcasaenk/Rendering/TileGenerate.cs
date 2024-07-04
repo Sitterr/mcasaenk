@@ -38,7 +38,7 @@ namespace Mcasaenk.Rendering
                     using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[i]);
                     if(chunkdata == null) continue;
 
-                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Math.Clamp(Global.Settings.RENDERHEIGHT, chunkdata.MinHeight(), chunkdata.MaxHeight()), rawData);
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Global.Settings.ABSY, rawData);
                 }
             }
 
@@ -46,7 +46,7 @@ namespace Mcasaenk.Rendering
             return genData;
         }
 
-        public static unsafe GenData ShadeGenerate(Tile tile, TaskScheduler scheduler) {
+        public static unsafe GenData ShadeGenerate(Tile tile) {
             var rawData = new RawData();
 
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
@@ -55,54 +55,24 @@ namespace Mcasaenk.Rendering
                 void doChunk(int cx, int cz) {
                     using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[cz * 32 + cx]);
                     if(chunkdata == null) return;
-                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Math.Clamp(Global.Settings.RENDERHEIGHT, chunkdata.MinHeight(), chunkdata.MaxHeight()), rawData);
+                    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Global.Settings.ABSY, rawData);
                 }
 
-                const int g = 5;
-                List<Task> tasks = new List<Task>();
-                for(int i = 0; i < 32; i++) {
-                    for(int _c = 0; _c <= i; _c += g) {
-                        int c = _c;
-                        var task = Task.Factory.StartNew(() => {
-                            for(int cc = c; cc < c + g; cc++) {
-                                if(cc > i) break;
 
-                                int _cx = cc, _cz = i - cc;
-                                int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
-                                doChunk(cx, cz);
-                            }
-                        }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, scheduler);
-                        tasks.Add(task);
-                        if(tasks.Count >= Global.App.Settings.CHUNKRENDERMAXCONCURRENCY) {
-                            Task.WaitAll(tasks.ToArray());
-                            tasks.Clear();
-                        }
+                for(int i = 0; i < 32; i++) {
+                    for(int _c = 0; _c <= i; _c += 1) {
+                        int _cx = _c, _cz = i - _c;
+                        int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
+                        doChunk(cx, cz);
                     }
-                    Task.WaitAll(tasks.ToArray());
-                    tasks.Clear();
 
                 }
                 for(int i = 1; i < 32; i++) {
-                    for(int _c = i; _c < 32; _c += g) {
-                        int c = _c;
-                        var task = Task.Run(() => {
-                            for(int cc = c; cc < c + g; cc++) {
-                                if(cc >= 32) break;
-
-                                int _cx = cc, _cz = 32 - cc + i - 1;
-                                int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
-                                doChunk(cx, cz);
-
-                            }
-                        });
-                        tasks.Add(task);
-                        if(tasks.Count >= Global.App.Settings.CHUNKRENDERMAXCONCURRENCY) {
-                            Task.WaitAll(tasks.ToArray());
-                            tasks.Clear();
-                        }
+                    for(int _c = i; _c < 32; _c += 1) {
+                        int _cx = _c, _cz = 32 - _c + i - 1;
+                        int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
+                        doChunk(cx, cz);
                     }
-                    Task.WaitAll(tasks.ToArray());
-                    tasks.Clear();
                 }
             }
 
