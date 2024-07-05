@@ -84,23 +84,6 @@ namespace Mcasaenk
         }
 
         public void OnNewSave() {
-            frozen = true;
-
-            if(Global.App.OpenedSave != null) {
-                var h = Global.App.OpenedSave.GetDimension(this.DIMENSION).GetHeight(Global.App.OpenedSave.levelDatInfo.version_id);
-                MINY = (short)h.miny;
-                MAXABSHEIGHT = (short)h.height;
-            } else {
-                MINY = -64; MAXABSHEIGHT = 384;
-            }
-            OnAutoChange(nameof(MINY));
-            OnAutoChange(nameof(MAXY));
-            OnAutoChange(nameof(MAXABSHEIGHT));
-            Y_OFFICIAL = Y_OFFICIAL;
-
-            ShadeConstants.GLB = new ShadeConstants(MAXABSHEIGHT, ADEG, BDEG);
-
-            frozen = false;
         }
 
         bool frozen = true;
@@ -161,7 +144,26 @@ namespace Mcasaenk
         public string DIMENSION {
             get => dimension;
             set {
-                if(dimension == value) return;
+                bool _fr = frozen;
+                frozen = true;
+                {
+                    if(Global.App.OpenedSave != null) {
+                        if(Global.App.OpenedSave.GetDimension(value) == null) {
+                            value = Settings.DEF().DIMENSION;
+                        }
+
+                        var h = Global.App.OpenedSave.GetDimension(value).GetHeight(Global.App.OpenedSave.levelDatInfo.version_id);
+                        MINY = (short)h.miny;
+                        MAXABSHEIGHT = (short)h.height;
+                    } else {
+                        MINY = -64; MAXABSHEIGHT = 384;
+                    }
+                    OnAutoChange(nameof(MINY));
+                    OnAutoChange(nameof(MAXY));
+                    OnAutoChange(nameof(MAXABSHEIGHT));
+                    Y_OFFICIAL = Y_OFFICIAL;
+                }
+                frozen = _fr;
 
                 dimension = value;
                 OnHardChange(nameof(DIMENSION));

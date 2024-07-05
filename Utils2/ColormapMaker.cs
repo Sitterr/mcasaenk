@@ -1,20 +1,17 @@
-﻿using CommunityToolkit.HighPerformance;
-using Mcasaenk;
-using Mcasaenk.Rendering;
+﻿using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using static Utils.AssetsUtils;
+using Mcasaenk;
+using static Utils2.AssetsUtils;
+using System.Drawing.Imaging;
 
-namespace Utils {
+namespace Utils2 {
     public static class ColormapMaker {
 
         // must point to the unziped path

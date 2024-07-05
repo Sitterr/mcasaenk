@@ -35,14 +35,28 @@ namespace Mcasaenk {
             Thread.CurrentThread.Name = "app/ui?";
             Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
 
-
             if(!Directory.Exists(APPFOLDER)) Directory.CreateDirectory(APPFOLDER);
 
             // settings
-            {        
+            {
+                Settings = Settings.DEF();
+                Settings.PropertyChanged += (a, b) => {
+                    if(Settings.SHADE3D) {
+                        if(b.PropertyName == nameof(Settings.SHADE3D) || b.PropertyName == nameof(Settings.MAXABSHEIGHT) || b.PropertyName == nameof(Settings.ADEG) || b.PropertyName == nameof(Settings.BDEG)) {
+                            ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
+                        }
+                    } else {
+                        if(b.PropertyName == nameof(Settings.SHADE3D) || b.PropertyName == nameof(Settings.ADEG)) {
+                            ShadeConstants.GLB = new ShadeConstants(Settings.ADEG);
+                        }
+                    }
+                };
+
+                
                 var settFile = Path.Combine(APPFOLDER, "settings.json");
                 if(File.Exists(settFile)) Settings = JsonSerializer.Deserialize<Mcasaenk.Settings>(File.ReadAllText(settFile));
-                else Settings = Settings.DEF();
+
+                ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
 
                 Settings.SetActions(
                     () => {
@@ -53,8 +67,6 @@ namespace Mcasaenk {
                             Global.App.OpenedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
                         }
                     });
-
-                
             }
 
             // colormap
@@ -108,9 +120,10 @@ namespace Mcasaenk {
 
                 _openedSave = value;
 
-                if(value != null) {
-                    TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
+                if(value != null) {                   
                     Settings.OnNewSave();
+
+                    TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
                     TileMap.SetSettings();
 
                     Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.datapackInfo);

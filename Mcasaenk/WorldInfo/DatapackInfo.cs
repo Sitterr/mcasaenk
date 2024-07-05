@@ -11,6 +11,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Mcasaenk.WorldInfo {
     public class DatapacksInfo {
@@ -33,7 +35,7 @@ namespace Mcasaenk.WorldInfo {
 
 
 
-
+        public readonly ImageSource image;
         public readonly IDictionary<string, DimensionInfo> dimensions;
         public readonly IDictionary<ushort, BiomeInfo> biomes;
 
@@ -48,6 +50,15 @@ namespace Mcasaenk.WorldInfo {
                         var entries = datapack.Entries.ToDictionary(entr => entr.FullName);
                         var concatentries = string.Join(Environment.NewLine, datapack.Entries);
 
+                        ImageSource image = null;
+                        {
+                            if(entries.ContainsKey("pack.png")) {
+                                using var str = entries["pack.png"].Open();
+                                var decoder = new PngBitmapDecoder(str, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                                image = decoder.Frames[0];
+                            }
+                        }
+
                         {
                             var biome_regex = new Regex("data/([^/]+)/worldgen/biome/(.+)\\.json", RegexOptions.Multiline);
                             foreach(Match match in biome_regex.Matches(concatentries)) {
@@ -57,13 +68,18 @@ namespace Mcasaenk.WorldInfo {
                                 using var strReader = new StreamReader(str);
                                 string content = strReader.ReadToEnd();
 
-                                biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content);
+                                biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content) with { image = image };
                             }
                         }
 
                         {
                             var dimension_regex = new Regex("data/([^/]+)/dimension/([^/]+)\\.json", RegexOptions.Multiline);
-                            List<(string dimname, string dimloc)> pre_dimensions = new();
+                            List<(string dimname, string dimloc)> pre_dimensions = [
+                                ("minecraft:overworld", "data/minecraft/dimension_type/overworld.json"),
+                                ("minecraft:overworld_caves", "data/minecraft/dimension_type/overworld_caves.json"),
+                                ("minecraft:the_nether", "data/minecraft/dimension_type/the_nether.json"),
+                                ("minecraft:the_end", "data/minecraft/dimension_type/the_end.json"),
+                            ];
                             foreach(Match match in dimension_regex.Matches(concatentries)) {
                                 string mnamespace = match.Groups[1].Value;
                                 string name = match.Groups[2].Value;
@@ -73,17 +89,22 @@ namespace Mcasaenk.WorldInfo {
                                 string content = strReader.ReadToEnd();
 
                                 var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content);
-                                if(json.TryGetValue("type", out var el) == false) continue;            
-                                var dimname = el.GetString().fromminecraftname();
-
-                                pre_dimensions.Add((mnamespace + ":" + name, $"data/{dimname.@namespace}/dimension_type/{dimname.name}.json"));
+                                if(json.TryGetValue("type", out var el) == false) continue;
+                                if(el.ValueKind == JsonValueKind.String) {
+                                    var dimname = el.GetString().fromminecraftname();
+                                    pre_dimensions.Add((mnamespace + ":" + name, $"data/{dimname.@namespace}/dimension_type/{dimname.name}.json"));
+                                } else if(el.ValueKind == JsonValueKind.Object) {
+                                    dimensions[mnamespace + ":" + name] = DimensionInfo.FromJson(mnamespace + ":" + name, el.ToString()) with { image = image };
+                                }
                             }
 
                             foreach(var dim in pre_dimensions) {
+                                if(entries.ContainsKey(dim.dimloc) == false) continue;
+
                                 using var str = entries[dim.dimloc].Open();
                                 using var strReader = new StreamReader(str);
                                 string content = strReader.ReadToEnd();
-                                dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content);
+                                dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content) with { image = image };
                             }
                         }
                     }
@@ -128,6 +149,8 @@ namespace Mcasaenk.WorldInfo {
         public string grass_color_modifier;
         public double temp, downfall;
 
+        public ImageSource image;
+
         public uint GetVanilla(string tint, uint[,] grassMap, uint[,] foliageMap, short y, bool heightVariation) {
             if(tint == "water") {
                 return water_color;
@@ -145,15 +168,16 @@ namespace Mcasaenk.WorldInfo {
             return 0;
         }
 
-        public uint GetOrthodox(uint[,] sprite, short y, bool heightVariation) {
-            double adjTemp = Math.Clamp(heightVariation ? GetTemperature(temp, y) : temp, 0, 1);
+        public uint GetOrthodox(uint[,] sprite, short absy, bool heightVariation) {
+            double adjTemp = Math.Clamp(heightVariation ? GetTemperature(temp, absy) : temp, 0, 1);
             double adjDownfall = Math.Clamp(downfall, 0, 1) * adjTemp;
             return sprite[(int)((1 - adjTemp) * 255), (int)((1 - adjDownfall) * 255)];
         }
 
-        public static double GetTemperature(double deftemp, short y) {
-            if(y > 64) {
-                return deftemp - (y - 64.0F) * 0.05F / 30.0F;
+        public static double GetTemperature(double deftemp, short absy) {
+            int y64 = 64 - Global.Settings.MINY;
+            if(absy > y64) {
+                return deftemp - (absy - y64) * 0.05F / 30.0F;
             } else {
                 return deftemp;
             }
@@ -219,10 +243,12 @@ namespace Mcasaenk.WorldInfo {
         public bool fromparts;
 
         public string name;
-        public int miny = -1;
-        public int height = -1;
+        public int miny = 0;
+        public int height = 256;
         public double ambientLight;
         public string effects;
+
+        public ImageSource image;
 
 
         public string[] ToParts() {

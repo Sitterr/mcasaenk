@@ -20,6 +20,8 @@ using static Mcasaenk.Shade3d.ShadeConstants;
 using Mcasaenk.UI;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.UI.Canvas;
+using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Mcasaenk {
     public class Global {
@@ -233,6 +235,17 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+        public static ImageSource ToWPFImage(this byte[] imageData) {
+            BitmapImage biImg = new BitmapImage();
+            MemoryStream ms = new MemoryStream(imageData);
+            biImg.BeginInit();
+            biImg.StreamSource = ms;
+            biImg.EndInit();
+
+            ImageSource imgSrc = biImg as ImageSource;
+
+            return imgSrc;
+        }
         public static string minecraftname(this string name) {
             if(name.Contains(":") == false) name = "minecraft:" + name;
             return name;
@@ -241,6 +254,10 @@ namespace Mcasaenk {
             name = name.minecraftname();
             string[] parts = name.Split(':');
             return (parts[0], parts[1]);
+        }
+        public static string simplifyminecraftname(this string name) {
+            if(name.StartsWith("minecraft:")) return name.Substring(10);
+            return name;
         }
 
         public static TValue GetValueOrDefault<TKey, TValue>(
@@ -257,42 +274,26 @@ namespace Mcasaenk {
             return dictionary.TryGetValue(key, out var value) ? value : defaultValueProvider();
         }
 
-        public static uint[,] ToUIntMatrix(this WriteableBitmap writeableBitmap) {
-            int width = writeableBitmap.PixelWidth;
-            int height = writeableBitmap.PixelHeight;
+        public static uint[,] ToUIntMatrix(this BitmapSource bitmap) {
+            if(bitmap.Format != PixelFormats.Bgra32) bitmap = new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0);
 
-            // Create a 2D array to hold the pixel data
-            uint[,] pixelArray = new uint[width, height];
+            int width = bitmap.PixelWidth;
+            int height = bitmap.PixelHeight;
 
-            // Calculate the stride (width of a single row of pixels in bytes)
-            int stride = width * (writeableBitmap.Format.BitsPerPixel / 8);
+            uint[] result = new uint[width * height];
+            bitmap.CopyPixels(result, width * 4, 0);
 
-            // Create a byte array to hold the pixel data
-            byte[] pixelData = new byte[height * stride];
+            return result.D2(width, height);
+        }
 
-            // Copy the pixel data into the byte array
-            writeableBitmap.CopyPixels(pixelData, stride, 0);
-
-            // Loop through each pixel in the image
-            for(int y = 0; y < height; y++) {
-                for(int x = 0; x < width; x++) {
-                    int index = (y * stride) + (x * 4); // 4 bytes per pixel (BGRA format)
-
-                    // Extract color components from the byte array
-                    byte blue = pixelData[index];
-                    byte green = pixelData[index + 1];
-                    byte red = pixelData[index + 2];
-                    byte alpha = pixelData[index + 3];
-
-                    // Convert the color to a uint value
-                    uint pixelValue = (uint)((alpha << 24) | (red << 16) | (green << 8) | blue);
-
-                    // Store the uint value in the array
-                    pixelArray[x, y] = pixelValue;
+        public static T[,] D2<T>(this T[] input, int height, int width) {
+            T[,] output = new T[width, height];
+            for(int i = 0; i < width; i++) {
+                for(int j = 0; j < height; j++) {
+                    output[i, j] = input[j * width + i];
                 }
             }
-
-            return pixelArray;
+            return output;
         }
 
         public static BitmapImage ToImage(this byte[] array) {

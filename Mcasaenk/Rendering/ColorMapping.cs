@@ -286,18 +286,18 @@ namespace Mcasaenk.Rendering {
 
     public class DynamicVanillaTintSettings : DynamicTintSettings {
         private bool tempHeight;
-        public bool HeightVariation {
+        public bool TemperatureVariation {
             get => tempHeight;
             set {
                 if(value == tempHeight) return;
 
                 tempHeight = value;
-                OnLightChange(nameof(HeightVariation));
+                OnLightChange(nameof(TemperatureVariation));
             }
         }
 
         public DynamicVanillaTintSettings() : base() {
-            HeightVariation = true;
+            TemperatureVariation = true;
         }
     }
 
@@ -361,20 +361,19 @@ namespace Mcasaenk.Rendering {
             this.name = name;
             this.datapacksInfo = datapacksInfo;
 
-            BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
-            if(bitmapImage.Width != 256 && bitmapImage.Height != 256) throw new Exception();
-            sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+            this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+            if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
         }
         string Tint.Name() => name;
         DynamicTintSettings Tint.Settings() => settings;
 
         uint Tint.TintColorFor(ushort biome, short height) {
-            return datapacksInfo.biomes[biome].GetOrthodox(sprite, height, settings.HeightVariation);
+            return datapacksInfo.biomes[biome].GetOrthodox(sprite, height, settings.TemperatureVariation);
         }
 
         Blending Tint.GetBlendMode() {
             if(settings.On == false) return Blending.none;
-            if(settings.HeightVariation) return Blending.full;
+            if(settings.TemperatureVariation) return Blending.full;
             else return Blending.biomeonly;
         }
 
@@ -392,9 +391,8 @@ namespace Mcasaenk.Rendering {
             this.datapacksInfo = datapackInfo;
 
             if(File.Exists(source)) {
-                BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
-                if(bitmapImage.PixelWidth != 256 && bitmapImage.PixelHeight != 256) throw new Exception();
-                this.sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+                this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+                if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
             }
         }
 
@@ -402,13 +400,13 @@ namespace Mcasaenk.Rendering {
         DynamicTintSettings Tint.Settings() => settings;
 
         uint Tint.TintColorFor(ushort biome, short height) {
-            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, settings.HeightVariation);
+            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, settings.TemperatureVariation);
         }
 
         Blending Tint.GetBlendMode() {
             if(settings.On == false) return Blending.none;
             if(settings.Blend == 1) return Blending.heightonly;
-            if(settings.HeightVariation) return Blending.full;
+            if(settings.TemperatureVariation) return Blending.full;
             else return Blending.biomeonly;
         }
 
@@ -442,12 +440,24 @@ namespace Mcasaenk.Rendering {
         private readonly string name;
         private uint[,] sprite;
 
+        private bool heightparity;
         private readonly DynamicTintSettings settings = new DynamicTintSettings();
         public GridTint(string name, string source) {
             this.name = name;
 
-            BitmapImage bitmapImage = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute));
-            sprite = new WriteableBitmap(bitmapImage).ToUIntMatrix();
+            this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+
+            heightparity = true;
+            for(int x = 0; x < sprite.GetLength(0); x++) { 
+                uint c = sprite[x, 0];
+                for(int y = 0; y < sprite.GetLength(1); y++) {
+                    if(sprite[x, y] != c) {
+                        heightparity = false;
+                        break;
+                    }
+                }
+                if(heightparity == false) break;
+            }
         }
         string Tint.Name() => name;
         DynamicTintSettings Tint.Settings() => settings;
@@ -464,7 +474,7 @@ namespace Mcasaenk.Rendering {
         Blending Tint.GetBlendMode() {
             if(this.settings.On == false) return Blending.none;
             else if(sprite.GetLength(0) == 1 || settings.Blend == 1) return Blending.heightonly;
-            else if(sprite.GetLength(1) == 1) return Blending.biomeonly;
+            else if(sprite.GetLength(1) == 1 || heightparity) return Blending.biomeonly;
             else return Blending.full;
         }
 

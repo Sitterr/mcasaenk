@@ -1,8 +1,10 @@
-﻿using Mcasaenk.Resources;
+﻿using CommunityToolkit.HighPerformance;
+using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using Microsoft.Windows.Themes;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
+using System.Printing;
 using System.Resources;
 using System.Text;
 using System.Windows;
@@ -90,24 +92,31 @@ namespace Mcasaenk.UI {
                 }
             };
 
-            overworld_fore = overworld_back;
-            overworld_fore.A = 160;
-            nether_fore = nether_back;
-            nether_fore.A = 220;
-            end_fore = end_back;
-            end_fore.A = 120;
             {
                 Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => { 
                     if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange(); 
                 };
-                btn_overworld.Click += (o, e) => {
+                btn_dim_overworld.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:overworld";
                 };
-                btn_nether.Click += (o, e) => {
+                btn_dim_nether.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:the_nether";
                 };
-                btn_end.Click += (o, e) => {
+                btn_dim_end.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:the_end";
+                };
+                btn_dim_others.Click += (o, e) => {
+                    var w = new CustomDimensionSelectorWindow(
+                        Global.App.OpenedSave.dimensions
+                        .Select(d => d.name).Where(n => !n.StartsWith("minecraft:")).ToArray(), 
+                        Global.Settings.DIMENSION);
+
+                    w.ShowDialog();
+                    string res = w.Result();
+                    if(res != "") {
+                        Global.Settings.DIMENSION = res;
+                        (btn_dim_others.Content as Image).Source = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).image;
+                    }
                 };
             }
 
@@ -165,71 +174,26 @@ namespace Mcasaenk.UI {
         Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
         Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
         Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
-        Color overworld_fore, nether_fore, end_fore;
-        void dim_setOverworld() {
-            LinearGradientBrush brush = new LinearGradientBrush();
-            brush.StartPoint = new Point(0, 0.5);
-            brush.EndPoint = new Point(1, 0.5);
+        Color others_back = (Color)ColorConverter.ConvertFromString("#6670a0b2");
 
-            brush.GradientStops.Add(new GradientStop(overworld_fore, 0));
-            brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
-            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
-            //brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#bb723232"), 0.62));
-            brush.GradientStops.Add(new GradientStop(end_back, 1));
-
-            dim_bor.Background = brush;
-        }
-        void dim_setNether() {
-            LinearGradientBrush brush = new LinearGradientBrush();
-            brush.StartPoint = new Point(0, 0.5);
-            brush.EndPoint = new Point(1, 0.5);
-
-            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
-            brush.GradientStops.Add(new GradientStop(nether_fore, 0.37));
-            brush.GradientStops.Add(new GradientStop(nether_fore, 0.5));
-            brush.GradientStops.Add(new GradientStop(nether_fore, 0.62));
-            brush.GradientStops.Add(new GradientStop(end_back, 1));
-
-            dim_bor.Background = brush;
-        }
-        void dim_setEnd() {
-            LinearGradientBrush brush = new LinearGradientBrush();
-            brush.StartPoint = new Point(0, 0.5);
-            brush.EndPoint = new Point(1, 0.5);
-
-            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
-            // brush.GradientStops.Add(new GradientStop(overworld_fore, 0.37));
-            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
-            brush.GradientStops.Add(new GradientStop(end_fore, 0.62));
-            brush.GradientStops.Add(new GradientStop(end_fore, 1));
-
-            dim_bor.Background = brush;
-        }
-        void dim_setNone() {
-            LinearGradientBrush brush = new LinearGradientBrush();
-            brush.StartPoint = new Point(0, 0.5);
-            brush.EndPoint = new Point(1, 0.5);
-
-            brush.GradientStops.Add(new GradientStop(overworld_back, 0));
-            brush.GradientStops.Add(new GradientStop(nether_back, 0.5));
-            brush.GradientStops.Add(new GradientStop(end_back, 1));
-
-            dim_bor.Background = brush;
-        }
         void dim_onchange() {
             if(Global.App.OpenedSave == null) {
-                dim_setNone();
+                dim_bor.Background = new SolidColorBrush(Colors.Transparent);
                 return;
             }
             switch(Global.Settings.DIMENSION) {
                 case "minecraft:overworld":
-                    dim_setOverworld(); break;
+                    dim_bor.Background = new SolidColorBrush(overworld_back);
+                    break;
                 case "minecraft:the_nether":
-                    dim_setNether(); break;
+                    dim_bor.Background = new SolidColorBrush(nether_back); 
+                    break;
                 case "minecraft:the_end":
-                    dim_setEnd(); break;
+                    dim_bor.Background = new SolidColorBrush(end_back); 
+                    break;
                 default:
-                    dim_setNone(); break;
+                    dim_bor.Background = new SolidColorBrush(others_back); 
+                    break;
             }
         }
 
@@ -239,9 +203,12 @@ namespace Mcasaenk.UI {
         public void OnHardReset() {
             leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
 
-            btn_overworld.IsEnabled = Global.App.OpenedSave?.overworld != null;
-            btn_nether.IsEnabled = Global.App.OpenedSave?.nether != null;
-            btn_end.IsEnabled = Global.App.OpenedSave?.end != null;
+            if(Global.App.OpenedSave != null) {
+                btn_dim_overworld.IsEnabled = Global.App.OpenedSave.overworld != null;
+                btn_dim_nether.IsEnabled = Global.App.OpenedSave.nether != null;
+                btn_dim_end.IsEnabled = Global.App.OpenedSave.end != null;
+                btn_dim_others.Visibility = Global.App.OpenedSave.dimensions.Any(d => !d.name.StartsWith("minecraft:")) ? Visibility.Visible : Visibility.Collapsed;
+            }
 
             currs.Content = Global.App.OpenedSave?.levelDatInfo;
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;

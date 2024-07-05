@@ -1,4 +1,4 @@
-﻿using Mcasaenk.Rendering.ChunkRenderData;
+﻿using Mcasaenk.Resources;
 using Mcasaenk.UI;
 using Mcasaenk.WorldInfo;
 using System;
@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Mcasaenk {
     public class Save {
@@ -24,16 +26,19 @@ namespace Mcasaenk {
             this.levelDatInfo = levelDat;
             this.datapackInfo = datapackInfo;
 
-            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"]);
-            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"]);
-            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"]);
+            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], ResourceMapping.grass8.ToWPFImage());
+            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], ResourceMapping.nether8.ToWPFImage());
+            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], ResourceMapping.end8.ToWPFImage());
 
             dimensions = new List<Dimension>() { overworld, nether, end };
 
+            var unknownPack = ResourceMapping.unknown_pack.ToWPFImage();
             foreach(var dim in datapackInfo.dimensions.Values) {
                 if(dimensions.Any(d => d.name == dim.name)) continue;
                 var name = dim.name.fromminecraftname();
-                dimensions.Add(new Dimension(this, Path.Combine(path, "dimensions", name.@namespace, name.name, "region"), dim));
+                string regionpath = Path.Combine(path, "dimensions", name.@namespace, name.name, "region");
+                if(Path.Exists(regionpath) == false) continue;
+                dimensions.Add(new Dimension(this, regionpath, dim, dim.image != null ? dim.image : unknownPack));
             }          
         }
 
@@ -53,13 +58,15 @@ namespace Mcasaenk {
 
         public readonly string name;
         public readonly string path;
+        public readonly ImageSource image;
         public DimensionInfo info;
         public readonly Save save;
         public readonly TileMap tileMap;
 
-        public Dimension(Save save, string path, DimensionInfo info) {
+        public Dimension(Save save, string path, DimensionInfo info, ImageSource image) {
             this.save = save;
             this.info = info;
+            this.image = image;
             this.name = info.name;
             this.path = path;
             this.tileMap = new TileMap(this, ExistingRegions());

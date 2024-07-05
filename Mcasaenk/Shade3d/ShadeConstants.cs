@@ -33,12 +33,15 @@ namespace Mcasaenk.Shade3d {
 
         public ShadeConstants(double A_deg) {
             Adeg = A_deg;
+            Bdeg = double.MinValue;
             A = DegToRad(Adeg);
             cosA = Round(Math.Cos(A));
             sinA = Round(Math.Sin(A));
         }
 
         public ShadeConstants(int height, double A_deg, double B_deg) {
+            if(B_deg < MINB) return;
+
             Height = height;
             Adeg = A_deg;
             Bdeg = B_deg;

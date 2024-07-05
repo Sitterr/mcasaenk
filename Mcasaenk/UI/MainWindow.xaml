@@ -48,70 +48,51 @@
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
-                    <Grid x:Name="wrldPanel" Visibility="Collapsed">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                        </Grid.ColumnDefinitions>
+                    <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
+                        <ContentControl x:Name="currs" DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
 
-                        <ContentControl x:Name="currs" Grid.Column="1" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
-
-                        <Border x:Name="dim_bor" Grid.Column="3" HorizontalAlignment="Right" Height="48">
-                            <Border.Background >
-                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#664d7132" Offset="0" />
-                                    <GradientStop Color="#66723232" Offset="0.50" />
-                                    <GradientStop Color="#66ABB270" Offset="1" />
-                                </LinearGradientBrush>
-                            </Border.Background>
+                        <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="7"/>
-                                <local:EButton x:Name="btn_overworld" Width="34" Height="34" BorderThickness="2" BorderColor="#08689b">
+                                <local:EButton x:Name="btn_dim_overworld" Width="34" Height="34" BorderThickness="2" BorderColor="#08689b">
                                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.grass8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                 </local:EButton>
-                                <Border Width="15"/>
-                                <local:EButton x:Name="btn_nether" Width="34" Height="34" BorderThickness="2" BorderColor="#119B84">
+                                <local:EButton x:Name="btn_dim_nether" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#119B84">
                                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.nether8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                 </local:EButton>
-                                <Border Width="15"/>
-                                <local:EButton x:Name="btn_end" Width="34" Height="34" BorderThickness="2" BorderColor="#931054">
+                                <local:EButton x:Name="btn_dim_end" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#931054">
                                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.end8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                </local:EButton>
+                                <local:EButton x:Name="btn_dim_others" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#121093">
+                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.unknown_pack}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </local:EButton>
                                 <Border Width="7"/>
                             </StackPanel>
                         </Border>
 
-                    </Grid>
+                    </DockPanel>
                 </Border>
 
                 <Border Grid.Row="1"/>
                 <Border x:Name="screenshotPanel" Grid.Row="2" VerticalAlignment="Top" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Background="Transparent" Width="10"/>
-                        <local:Rad x:Name="rad" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Border Background="Transparent" Width="15"/>
-                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" HorizontalContentAlignment="Center">
+                    <DockPanel>
+                        <local:Rad x:Name="rad" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalContentAlignment="Center">
                             <ComboBoxItem>1:1</ComboBoxItem>
                             <ComboBoxItem>2:1</ComboBoxItem>
                             <ComboBoxItem>4:1</ComboBoxItem>
                         </ComboBox>
-                        <Border Background="Transparent" Width="15"/>
-                        <local:EButton x:Name="scr_capture" Width="34" Height="34" Grid.Column="3" BorderColor="{StaticResource GREEN_B}">
-                            <Image Source="{Binding Source={x:Static resx:ResourceMapping.capture}}"/>
-                        </local:EButton>
-                        <Border Background="Transparent" Width="10"/>
-                        <local:EButton x:Name="scr_stop" Width="34" Height="34" Grid.Column="5" BorderColor="{StaticResource RED_B}">
-                            <Image Source="{Binding Source={x:Static resx:ResourceMapping.discard}}"/>
-                        </local:EButton>
-                        <Border Background="Transparent" Width="10"/>
-                        <local:EButton x:Name="scr_rotate" Width="34" Height="34" Grid.Column="7" BorderColor="{StaticResource BORDER}">
+                        <local:EButton x:Name="scr_rotate" Width="34" Height="34" BorderColor="{StaticResource BORDER}" DockPanel.Dock="Right" Margin="10 0 10 0" HorizontalAlignment="Right">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.rotate2}}"/>
                         </local:EButton>
-                        <Border Background="Transparent" Width="10"/>
-                    </StackPanel>
+                        <local:EButton x:Name="scr_stop" Width="34" Height="34" BorderColor="{StaticResource RED_B}" DockPanel.Dock="Right" Margin="10 0 0 0" HorizontalAlignment="Right">
+                            <Image Source="{Binding Source={x:Static resx:ResourceMapping.discard}}"/>
+                        </local:EButton>
+                        <local:EButton x:Name="scr_capture" Width="34" Height="34" BorderColor="{StaticResource GREEN_B}" DockPanel.Dock="Right" Margin="15 0 0 0" HorizontalAlignment="Right">
+                            <Image Source="{Binding Source={x:Static resx:ResourceMapping.capture}}"/>
+                        </local:EButton>
+
+                    </DockPanel>
                 </Border>
             </Grid>
             
