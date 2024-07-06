@@ -41,7 +41,7 @@ namespace Mcasaenk.Rendering
                     rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
                     rdata.terrainHeights[regionIndex] = waterHeight;
 
-                    rdata.blockLights[regionIndex] = data.GetBlockLight(cx, cz, airHeight + 1);
+                    rdata.blockLights[regionIndex] = Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1));
 
                     if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {

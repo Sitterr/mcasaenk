@@ -406,7 +406,7 @@ namespace Mcasaenk.Rendering {
         Blending Tint.GetBlendMode() {
             if(settings.On == false) return Blending.none;
             if(settings.Blend == 1) return Blending.heightonly;
-            if(settings.TemperatureVariation) return Blending.full;
+            if(settings.TemperatureVariation && (tint == "grass" || tint == "foliage")) return Blending.full;
             else return Blending.biomeonly;
         }
 

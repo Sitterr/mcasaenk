@@ -176,20 +176,44 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <StackPanel Grid.Row="10" Grid.Column="0" Orientation="Horizontal">
-                                    <TextBlock>
-                                        <Run Text="prefer heightmap filter"/>
-                                        <Run Text="✶">
-                                            <Run.Foreground>
-                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PreferHeightmap" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PREFERHEIGHTMAPS" />
-                                                </MultiBinding>
-                                            </Run.Foreground>
-                                        </Run>
-                                    </TextBlock>
+                                <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+                                    <Label>
+                                        <TextBlock Margin="0">
+                                            <Run Text="use heightmaps filter"/>
+                                            <Run Text="✶">
+                                                <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="PreferHeightmap" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="PREFERHEIGHTMAPS" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>
+                                            </Run>
+                                        </TextBlock>
+                                        <Label.ToolTip>
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="generally rendering with heightmaps is faster, tho it is sometimes buggy"/>
+                                                <TextBlock Text="if you see some ill-rendered chunks, try turning this off"/>
+                                            </StackPanel>
+                                        </Label.ToolTip>
+                                    </Label>
+                                    
                                     <Border Width="6"/>
-                                    <ToggleButton IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=PreferHeightmap}"/>
+                                    <ToggleButton>
+                                        <ToggleButton.IsChecked>
+                                            <MultiBinding Mode="TwoWay" Converter="{StaticResource BitAndConverter}">
+                                                <Binding Source="{x:Static gl:Global.Settings}" Mode="TwoWay" Path="PreferHeightmap"/>
+                                                <Binding RelativeSource="{RelativeSource Self}" Mode="OneWay" Path="IsEnabled"/>
+                                            </MultiBinding>
+                                        </ToggleButton.IsChecked>
+                                        <ToggleButton.IsEnabled>
+                                            <MultiBinding Mode="OneWay" Converter="{StaticResource DifferenceBoolConverter}">
+                                                <Binding Source="{x:Static gl:Global.Settings}" Mode="OneWay" Path="Y"/>
+                                                <Binding Source="{x:Static gl:Global.Settings}" Mode="OneWay" Path="MAXY"/>
+                                            </MultiBinding>
+                                        </ToggleButton.IsEnabled>
+                                    </ToggleButton>
+
+
                                 </StackPanel>
 
                             </Grid>

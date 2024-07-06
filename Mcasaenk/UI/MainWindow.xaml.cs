@@ -181,18 +181,28 @@ namespace Mcasaenk.UI {
                 dim_bor.Background = new SolidColorBrush(Colors.Transparent);
                 return;
             }
+
+            btn_dim_overworld.Opacity = 0.65;
+            btn_dim_nether.Opacity = 0.65;
+            btn_dim_end.Opacity = 0.65;
+            btn_dim_others.Opacity = 0.65;
+
             switch(Global.Settings.DIMENSION) {
                 case "minecraft:overworld":
                     dim_bor.Background = new SolidColorBrush(overworld_back);
+                    btn_dim_overworld.Opacity = 1;
                     break;
                 case "minecraft:the_nether":
-                    dim_bor.Background = new SolidColorBrush(nether_back); 
+                    dim_bor.Background = new SolidColorBrush(nether_back);
+                    btn_dim_nether.Opacity = 1;
                     break;
                 case "minecraft:the_end":
-                    dim_bor.Background = new SolidColorBrush(end_back); 
+                    dim_bor.Background = new SolidColorBrush(end_back);
+                    btn_dim_end.Opacity = 1;
                     break;
                 default:
-                    dim_bor.Background = new SolidColorBrush(others_back); 
+                    dim_bor.Background = new SolidColorBrush(others_back);
+                    btn_dim_others.Opacity = 1;
                     break;
             }
         }

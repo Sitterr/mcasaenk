@@ -26,7 +26,6 @@ namespace Mcasaenk.UI {
         public LeftOptionsMenu() {
             InitializeComponent();
 
-
             upd_meth_link.Click += (o, e) => {
                 var window = new UpdateMethodClarifyWindow();
                 window.Owner = Window.GetWindow(this);

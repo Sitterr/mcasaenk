@@ -83,7 +83,8 @@ namespace Mcasaenk.WorldInfo {
                 bool error = nbtreader.TryRead(out var _g);
 
                 var globaltag = (CompoundTag)_g;
-                return new LevelDatInfo(globaltag, Path.GetFileName(path), Path.Combine(path, "icon.png"), DateOnly.FromDateTime(File.GetLastAccessTime(Path.Combine(path, "level.dat"))));
+
+                return new LevelDatInfo(globaltag, new DirectoryInfo(path).Name, Path.Combine(path, "icon.png"), DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
             }
             catch {
                 return null;

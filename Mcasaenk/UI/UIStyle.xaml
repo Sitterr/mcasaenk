@@ -2,16 +2,19 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Mcasaenk.UI"
                     xmlns:base="clr-namespace:Mcasaenk"
+                    xmlns:resx="clr-namespace:Mcasaenk.Resources"
                     xmlns:worldinfo="clr-namespace:Mcasaenk.WorldInfo"
                     xmlns:imageeffects="clr-namespace:WPF.ImageEffects;assembly=WPF.ImageEffects">
 
     <local:RoundConverter x:Key="RoundConverter"/>
     <local:BitOrConverter x:Key="BitOrConverter"/>
+    <local:BitAndConverter x:Key="BitAndConverter"/>
     <local:FooterConverter x:Key="FooterConverter"/>
     <local:EnumToCollectionConverter x:Key="EnumToCollectionConverter"/>
     <local:DifferenceConverter x:Key="DifferenceConverter"/>
     <local:StarConverter x:Key="StarConverter"/>
     <local:VisibilityConverter x:Key="VisibilityConverter"/>
+    <local:DifferenceBoolConverter x:Key="DifferenceBoolConverter"/>
 
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
@@ -111,6 +114,7 @@
     </Style>
 
 
+
     <Style x:Key="itemsControlItem" TargetType="local:EButton" BasedOn="{StaticResource outlinebtn}">
         <Setter Property="BorderColor" Value="{StaticResource BORDER}"/>
         <Setter Property="Height" Value="40"/>
@@ -124,6 +128,53 @@
                 <Setter Property="Background2" Value="Transparent"/>
                 <!--<Setter Property="BorderThickness" Value="1 1 1 0"/>
         <Setter Property="TextBlock.TextDecorations" Value="Underline"/>-->
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type ToolTip}">
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BORDER}"/>
+        <Setter Property="Background" Value="{StaticResource BACK}"/>
+    </Style>
+
+    <Style x:Key="clarify" TargetType="{x:Type Label}">
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{StaticResource FORE}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        
+        <Setter Property="MinWidth" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="MinHeight" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Label}">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{StaticResource BORDER}">
+                        <TextBlock Text="❓" Foreground="{TemplateBinding Foreground}" Opacity="1" TextAlignment="Center" HorizontalAlignment="Center"
+                                   ToolTipService.InitialShowDelay="0"
+                                   ToolTipService.ShowDuration="60000"
+                                   ToolTipService.BetweenShowDelay="000"
+                                   ToolTipService.Placement="Right" 
+                                   ToolTipService.PlacementRectangle="-2,-2,0,0"
+                                   ToolTipService.HorizontalOffset="0" 
+                                   ToolTipService.VerticalOffset="{TemplateBinding MinHeight}"
+                                   ToolTipService.HasDropShadow="false"
+                                   ToolTipService.ShowOnDisabled="True" 
+                                   ToolTipService.IsEnabled="true">
+                            <TextBlock.ToolTip>
+                                <ToolTip>
+                                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                                </ToolTip>
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource BLUE_B}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -143,6 +194,39 @@
     <Style TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="{StaticResource FORE}" />
         <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.3"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type Label}">
+        <Setter Property="Foreground" Value="{StaticResource FORE}" />
+        <Setter Property="BorderThickness" Value="0" />
+
+        <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
+        <Setter Property="ToolTipService.BetweenShowDelay" Value="0"/>
+        <Setter Property="ToolTipService.ShowDuration" Value="60000"/>
+        <Setter Property="ToolTipService.Placement" Value="Right" />
+        <Setter Property="ToolTipService.PlacementRectangle" Value="-2,-1,0,0"/>
+        <Setter Property="ToolTipService.HorizontalOffset" Value="0" />
+        <Setter Property="ToolTipService.VerticalOffset" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
+        <Setter Property="ToolTipService.HasDropShadow" Value="false"/>
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        <Setter Property="ToolTipService.IsEnabled" Value="true"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Label}">
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="TextElement.FontStyle" Value="Oblique"/>
+            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.3"/>
             </Trigger>
@@ -211,12 +295,14 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="Width" Value="120"/>
+        <Setter Property="Height" Value="auto"/>
         <Setter Property="Foreground" Value="{StaticResource FORE}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
-                    <Grid>
+                    <Grid VerticalAlignment="{TemplateBinding VerticalAlignment}">
                         <ToggleButton Name="ToggleButton" Style="{StaticResource ComboBoxToggleButton}" Grid.Column="1" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
 
                         <Border Margin="0 0 20 0">
@@ -226,14 +312,15 @@
                             Margin="5,2,5,2"
                             Grid.Column="0"
                             VerticalAlignment="Center"
+                            TextElement.FontSize="{TemplateBinding FontSize}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
                         </Border>
 
                         <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
                             <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <Border x:Name="DropDownBorder" Margin="0 -1 0 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+                                <Border x:Name="DropDownBorder" Margin="0 -1 0.3 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
                                 <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
-                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    <StackPanel TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
                         </Popup>
@@ -277,12 +364,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
-
-
-
-
 
     <Style x:Key="ScrollBarLineButton" TargetType="{x:Type RepeatButton}">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -640,8 +721,8 @@ TargetType="{x:Type ScrollBar}">
                             <Setter Property="Opacity" TargetName="b_r" Value="0.3"/>
                             <Setter Property="Opacity" TargetName="b_g" Value="0.3"/>
 
-                            <Setter Property="Text" TargetName="t_r" Value=""/>
-                            <Setter Property="Text" TargetName="t_g" Value=""/>
+                            <Setter Property="Opacity" TargetName="t_r" Value="1"/>
+                            <Setter Property="Opacity" TargetName="t_g" Value="1"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -671,7 +752,7 @@ TargetType="{x:Type ScrollBar}">
                             Background="{x:Null}"
                              Focusable="True"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
+                            VerticalAlignment="Center"
                             VerticalContentAlignment="Bottom"
                             TextElement.Foreground="{TemplateBinding Foreground}"
                             TextElement.FontSize="{TemplateBinding FontSize}"/>
@@ -727,18 +808,18 @@ TargetType="{x:Type ScrollBar}">
             </Grid.RowDefinitions>
 
             <local:EButton Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BackgroundH="{StaticResource BACK}" BackgroundP="{StaticResource BACK}" BorderBrush="{StaticResource BORDER}">
-                <Image Source="{Binding Path=imagepath, Mode=OneWay}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <Image Source="{Binding Path=imagepath, Mode=OneTime}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             </local:EButton>
             <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
-                <Run Text="{Binding Path=name, Mode=OneWay}" FontSize="16"/>
+                <Run Text="{Binding Path=name, Mode=OneTime}" FontSize="16"/>
                 <Run Text="/" FontSize="10"/><!--
-             --><Run Text="{Binding Path=version_name, Mode=OneWay}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
+             --><Run Text="{Binding Path=version_name, Mode=OneTime}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
              --><Run Text="/" FontSize="10"/>
             </TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">
-                <Run Text="{Binding Path=foldername, Mode=OneWay}"/>
+                <Run Text="{Binding Path=foldername, Mode=OneTime}"/>
                 <Run Text="("/><!--
-             --><Run Text="{Binding Path=lastopened, Mode=OneWay}"/><!--
+             --><Run Text="{Binding Path=lastopened, Mode=OneTime}"/><!--
              --><Run Text=")"/>
             </TextBlock>
         </Grid>

@@ -392,33 +392,17 @@ namespace Mcasaenk.Rendering {
 
 
 
+
+
+
+
+
     unsafe static class PrecGausBlur {
         public static ArrayPool<ushort> pool;
         public const int MB = 15;
-        class DynBiome {
-            ConcurrentDictionary<ushort, int> dynamicbiome = new ConcurrentDictionary<ushort, int>();
-            ConcurrentDictionary<int, ushort> dynamicbiomeback = new ConcurrentDictionary<int, ushort>();
-
-            volatile int c = 0;
-            public int get(ushort biome) {
-                return dynamicbiome.GetOrAdd(biome, key => {
-                    int value = Interlocked.Increment(ref c) - 1;
-                    if(value >= MB) {
-                        Interlocked.Decrement(ref c);
-                        return MB - 1;
-                    }
-                    dynamicbiomeback.TryAdd(value, key);
-                    return value;
-                });
-            }
-
-            public int max() => c;
-
-            public ushort back(int i) => dynamicbiomeback[i];
-        }
 
         public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, IGenData[,] neighbours) {
-            var dynbiomes = new DynBiome();
+            var dynbiomes = new DynBiome(MB);
 
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R) * MB);
 
@@ -426,11 +410,13 @@ namespace Mcasaenk.Rendering {
 
             var genData = neighbours[1, 1];
 
-            Parallel.For(-R, 512 + R, z => {
-                Span<ushort> cx2 = stackalloc ushort[(512 + R + R) * MB];
-                Span<ushort> acc_biome = stackalloc ushort[MB];
 
-                for(int r = -R; r <= R; r++) {
+            //for(int z = -R; z < 512 + R; z++) {
+                Parallel.For(-R, 512 + R, z => {
+                    Span<ushort> cx2 = stackalloc ushort[(512 + R + R) * MB];
+                    Span<ushort> acc_biome = stackalloc ushort[MB];
+
+                    for(int r = -R; r <= R; r++) {
                     (int q, int rem) rx = Math.DivRem(512 + r, 512), rz = Math.DivRem(512 + z, 512);
                     int ri = rz.rem * 512 + rx.rem;
                     var gen = neighbours[rx.q, rz.q];
@@ -472,19 +458,20 @@ namespace Mcasaenk.Rendering {
                     int __f = ((R + z) * STRIDE + (R + x)) * MB;
                     for(int i = 0; i < MB; i++) xdata2[__f + i] = acc_biome[i];
                 }
-            });
+            }
+            );
 
+            //for(int x = 0; x < 512; x++) {
+                Parallel.For(0, 512, x => {
+                    Span<ushort> cx2 = stackalloc ushort[(512 + R + R) * MB];
+                    Span<ushort> acc_biome = stackalloc ushort[MB];
 
-            Parallel.For(0, 512, x => {
-                Span<ushort> localCx2 = stackalloc ushort[(512 + R + R) * MB];
-                Span<ushort> localAccBiome = stackalloc ushort[MB];
-
-                for(int r = -R; r <= R; r++) {
+                    for(int r = -R; r <= R; r++) {
                     int sd = ((r + R) * STRIDE + (x + R)) * MB;
                     int _f = (R + r) * MB;
                     for(int i = 0; i < MB; i++) {
-                        localCx2[_f + i] = xdata2[sd + i];
-                        localAccBiome[i] += localCx2[_f + i];
+                        cx2[_f + i] = xdata2[sd + i];
+                        acc_biome[i] += cx2[_f + i];
                     }
                 }
 
@@ -493,10 +480,10 @@ namespace Mcasaenk.Rendering {
                     int r = 0, g = 0, b = 0, br = 0;
                     for(int i = 0; i < dynbiomes.max(); i++) {
                         var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(0 * 512 + x)));
-                        r += c.r * localAccBiome[i];
-                        g += c.g * localAccBiome[i];
-                        b += c.b * localAccBiome[i];
-                        br += localAccBiome[i];
+                        r += c.r * acc_biome[i];
+                        g += c.g * acc_biome[i];
+                        b += c.b * acc_biome[i];
+                        br += acc_biome[i];
                     }
 
                     pixels[0 * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
@@ -505,14 +492,14 @@ namespace Mcasaenk.Rendering {
                 for(int z = 1; z < 512; z++) {
                     // old
                     int _f = (z - 1) * MB;
-                    for(int i = 0; i < MB; i++) localAccBiome[i] -= localCx2[_f + i];
+                    for(int i = 0; i < MB; i++) acc_biome[i] -= cx2[_f + i];
 
                     // new
                     int sd = ((z + R + R) * STRIDE + (x + R)) * MB;
                     int _fNew = (R + z + R) * MB;
                     for(int i = 0; i < MB; i++) {
-                        localCx2[_fNew + i] = xdata2[sd + i];
-                        localAccBiome[i] += localCx2[_fNew + i];
+                        cx2[_fNew + i] = xdata2[sd + i];
+                        acc_biome[i] += cx2[_fNew + i];
                     }
 
                     block = colormap.Value(genData.block(z * 512 + x));
@@ -520,16 +507,17 @@ namespace Mcasaenk.Rendering {
                         int r = 0, g = 0, b = 0, br = 0;
                         for(int i = 0; i < dynbiomes.max(); i++) {
                             var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(z * 512 + x)));
-                            r += c.r * localAccBiome[i];
-                            g += c.g * localAccBiome[i];
-                            b += c.b * localAccBiome[i];
-                            br += localAccBiome[i];
+                            r += c.r * acc_biome[i];
+                            g += c.g * acc_biome[i];
+                            b += c.b * acc_biome[i];
+                            br += acc_biome[i];
                         }
 
                         pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
                     }
                 }
-            });
+            }
+            );
 
             pool.Return(xdata2, true);
         }
@@ -547,6 +535,7 @@ namespace Mcasaenk.Rendering {
             int STRIDE = 512 + 2 * R;
             var genData = neighbours[1, 1];
 
+            //for(int z = -R; z < 512 + R; z++) { 
             Parallel.For(-R, 512 + R, z => {
                 Span<C> cx2 = stackalloc C[(512 + R + R)];
                 C acc = new C();
@@ -610,9 +599,10 @@ namespace Mcasaenk.Rendering {
                     xdata2[__f].b = acc.b;
                     xdata2[__f].br = acc.br;
                 }
-            });
+            }
+            );
 
-
+            //for(int x = 0; x < 512; x++) {
             Parallel.For(0, 512, x => {
                 Span<C> cx2 = stackalloc C[(512 + R + R)];
                 C acc = new C();
@@ -663,7 +653,8 @@ namespace Mcasaenk.Rendering {
                         pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
                     }
                 }
-            });
+            }
+            );
 
             pool.Return(xdata2, true);
         }

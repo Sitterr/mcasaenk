@@ -110,7 +110,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         public ushort GetBiome(int cx, int cz, int cy) {
             //cy += negy;
-            if(cy < 0) return default;
+            if(cy < 0 || cy >= height) return default;
             int i = cy / 16;
             if(biomes_palette[i] == null) return 0;
             if(biomes[i] == null) return biomes_palette[i][0 + 1];
@@ -122,7 +122,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         public ushort GetBlock(int cx, int cz, int cy) {
             //cy += negy;
-            if(cy < 0) return default;
+            if(cy < 0 || cy >= height) return default;
             int i = cy / 16;
             if(blockStates_palette[i] == null) return Colormap.BLOCK_AIR;
             if(blockStates[i] == null) return blockStates_palette[i][0 + 1];
@@ -145,7 +145,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         public byte GetBlockLight(int cx, int cz, int cy) {
             //cy += negy;
-            if(cy < 0) return 0;
+            if(cy < 0 || cy >= height) return default;
             int i = cy / 16;
             if(blocklights[i] == null) return 0;
 

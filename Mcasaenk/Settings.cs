@@ -83,10 +83,7 @@ namespace Mcasaenk
             PreferHeightmap = PREFERHEIGHTMAPS;
         }
 
-        public void OnNewSave() {
-        }
-
-        bool frozen = true;
+        public bool frozen { get; private set; } = true;
         public void OnAutoChange(string propertyName) {
             OnPropertyChanged(propertyName);
         }
@@ -98,7 +95,7 @@ namespace Mcasaenk
 
         public void OnHardChange(string propertyName) {
             if(frozen == false) onHardChange();
-            if(propertyName != "") OnPropertyChanged(propertyName);
+            OnPropertyChanged(propertyName);
         }
 
 
@@ -141,35 +138,16 @@ namespace Mcasaenk
         }
 
         private string dimension;
+        [JsonIgnore]
         public string DIMENSION {
             get => dimension;
             set {
-                bool _fr = frozen;
-                frozen = true;
-                {
-                    if(Global.App.OpenedSave != null) {
-                        if(Global.App.OpenedSave.GetDimension(value) == null) {
-                            value = Settings.DEF().DIMENSION;
-                        }
-
-                        var h = Global.App.OpenedSave.GetDimension(value).GetHeight(Global.App.OpenedSave.levelDatInfo.version_id);
-                        MINY = (short)h.miny;
-                        MAXABSHEIGHT = (short)h.height;
-                    } else {
-                        MINY = -64; MAXABSHEIGHT = 384;
-                    }
-                    OnAutoChange(nameof(MINY));
-                    OnAutoChange(nameof(MAXY));
-                    OnAutoChange(nameof(MAXABSHEIGHT));
-                    Y_OFFICIAL = Y_OFFICIAL;
+                if(dimension != value) {
+                    dimension = value;
+                    OnHardChange(nameof(DIMENSION));
                 }
-                frozen = _fr;
-
-                dimension = value;
-                OnHardChange(nameof(DIMENSION));
             }
         }
-
 
         private short y, y_back;
         [JsonIgnore]
@@ -195,9 +173,9 @@ namespace Mcasaenk
             } 
         }
         [JsonIgnore]
-        public short MINY { get; private set; } = -64;
+        public short MINY { get; set; } = -64;
         [JsonIgnore]
-        public short MAXABSHEIGHT { get; private set; } = 384;
+        public short MAXABSHEIGHT { get; set; } = 384;
         [JsonIgnore]
         public short ABSY { get => (short)(Y_OFFICIAL - MINY); }
         [JsonIgnore]
@@ -321,7 +299,7 @@ namespace Mcasaenk
 
                 if(SHADE3D == false) {
                     adeg = value;
-
+                    ShadeConstants.GLB = new ShadeConstants(ADEG);
                     OnAutoChange(nameof(ADeg));
                     OnLightChange(nameof(ADEG));
                 } else {
@@ -600,7 +578,6 @@ namespace Mcasaenk
             }
         }
         public bool PREFERHEIGHTMAPS { get => preferheightmap; set { preferheightmap = value; PreferHeightmap = value; OnHardChange(nameof(PREFERHEIGHTMAPS)); } }
-
 
         private Resolution[] predefined_reses;
         [JsonIgnore]

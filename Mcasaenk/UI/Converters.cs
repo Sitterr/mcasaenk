@@ -58,7 +58,6 @@ namespace Mcasaenk.UI
 
         }
 
-
         static string ConvertToFraction(double number) {
             int sign = Math.Sign(number);
             number = Math.Abs(number);
@@ -100,10 +99,33 @@ namespace Mcasaenk.UI
             throw new NotImplementedException();
         }
     }
+    public class BitAndConverter : IMultiValueConverter {
+        public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
+            return value.Select(o => (bool)o).All(v => v);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+            return [(bool)value];
+        }
+    }
+
+    public class DifferenceBoolConverter : IMultiValueConverter {
+        public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
+            bool res = true;
+            object v0 = value[0];
+            for(int i = 1; i < value.Length; i++) res = res && v0.Equals(value[i]);
+            return res;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
 
     public class DifferenceConverter : IMultiValueConverter {
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
-            return value[0].Equals(value[1]) ? (SolidColorBrush)Application.Current.FindResource("FORE") : (SolidColorBrush)Application.Current.FindResource("YELLOW_B");
+            if(parameter == null) parameter = (SolidColorBrush)Application.Current.FindResource("YELLOW_B");
+            return value[0].Equals(value[1]) ? (SolidColorBrush)Application.Current.FindResource("FORE") : parameter;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {

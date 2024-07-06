@@ -77,7 +77,7 @@
                 <Border x:Name="screenshotPanel" Grid.Row="2" VerticalAlignment="Top" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
                     <DockPanel>
                         <local:Rad x:Name="rad" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalContentAlignment="Center">
+                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="10 0 0 0" VerticalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <ComboBoxItem>1:1</ComboBoxItem>
                             <ComboBoxItem>2:1</ComboBoxItem>
                             <ComboBoxItem>4:1</ComboBoxItem>
@@ -129,7 +129,14 @@
 
                             <TextBlock Grid.Column="0" Grid.Row="4" FontSize="18" Text="y:"/>
                             <TextBox Grid.Column="2" Grid.Row="4" HorizontalAlignment="Left" IsEnabled="False" FontSize="18"
-                                     Text="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
+                                     Text="{Binding Source={x:Static gl:Global.Settings}, Path=Y_OFFICIAL}">
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource DifferenceConverter}" ConverterParameter="{StaticResource LIGHT_YELLOW_B}">
+                                        <Binding Source="{x:Static gl:Global.Settings}" Path="MAXY" />
+                                        <Binding Source="{x:Static gl:Global.Settings}" Path="Y_OFFICIAL" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBox>
                         </Grid>
                     </StackPanel>
                 </StackPanel>

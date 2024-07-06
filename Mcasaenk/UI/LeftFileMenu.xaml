@@ -46,10 +46,45 @@
                         <Border x:Name="cont_java" Visibility="Visible">
 
                             <StackPanel>
-                            
+                                <Border x:Name="javafilter" Padding="0 2 0 2" Margin="0 0 0 20" BorderThickness="1 0 1 0" BorderBrush="{StaticResource BORDER}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="5"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="25"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto"/>
+                                            <RowDefinition Height="15"/>
+                                            <RowDefinition Height="auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="0" FontSize="16" Text="Filter:"/>
+                                        <StackPanel Grid.Column="3" Grid.Row="0" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="Name:  "/>
+                                            <TextBox x:Name="filterName" FontSize="14" Width="100" Margin="0 0 20 0"/>
+
+                                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="Version:  "/>
+                                            <ComboBox x:Name="filterVersion" FontSize="14" Width="67"/>
+                                        </StackPanel>
+
+                                        <TextBlock VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="2" FontSize="16" Text="Order by:"/>
+                                        <StackPanel Grid.Column="3" Grid.Row="2" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="Property:  "/>
+                                            <ComboBox x:Name="orderProperty" FontSize="14" Width="120" Margin="0 0 20 0"/>
+
+                                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="Mode:  "/>
+                                            <ComboBox x:Name="orderMode" FontSize="14" Width="67"/>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+                                <Border Height="1" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
                                 <StackPanel x:Name="javaCont" Margin="0 0 0 20"/>
 
-                                <StackPanel x:Name="emptyCont" HorizontalAlignment="Center">
+                                <StackPanel x:Name="emptyCont" HorizontalAlignment="Center" Margin="0 0 0 20" Visibility="Collapsed">
                                     <TextBlock Text="Cannot find any worlds here!" FontSize="24" Foreground="{StaticResource LIGHT_RED_B}"/>
                                 </StackPanel>
                                 
@@ -65,6 +100,7 @@
                                 </DockPanel>
                             </StackPanel>
                         </Border>
+                        
                         <Border x:Name="cont_folder" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <local:EButton x:Name="btn_browse" Width="128" Height="40">

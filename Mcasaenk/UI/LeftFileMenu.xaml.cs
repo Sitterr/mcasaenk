@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,9 +31,12 @@ namespace Mcasaenk.UI {
         EButton[] tabs;
         FrameworkElement[] contents;
         EButton opener_worlds;
+        DataTemplate saveTemp;
         public LeftFileMenu(EButton opener_worlds) {
             this.opener_worlds = opener_worlds;
             InitializeComponent();
+
+            saveTemp = (DataTemplate)FindResource("saveTemp");
 
             tabs = new[] { tab_java, tab_folder };
             contents = new[] { cont_java, cont_folder };
@@ -129,42 +135,144 @@ namespace Mcasaenk.UI {
                     OnActive();
                 }
             };
+
+
+            orderProperty.Items.Add("Name");
+            orderProperty.Items.Add("Version");
+            orderProperty.Items.Add("Last open");
+
+            orderMode.Items.Add("Asc");
+            orderMode.Items.Add("Desc");
+
+
+            filterName.TextChanged += (o, e) => { if(!fr) FilterJava(); };
+            filterVersion.SelectionChanged += (o, e) => { if(!fr) FilterJava(); };
+
+            orderProperty.SelectionChanged += (o, e) => { if(!fr) OrderJava(null); };
+            orderMode.SelectionChanged += (o, e) => { if(!fr) OrderJava(null); };
         }
 
-        public void OnActive() {
-            var saveTemp = (DataTemplate)FindResource("saveTemp");
+        
+        LevelDatInfo InfoFromChild(UIElement javacontchild) => (((javacontchild as Border).Child as EButton).Content as ContentControl).Content as LevelDatInfo;
+        UIElement ChildFromInfo(LevelDatInfo level) {
+            string dir = Path.Combine(Global.Settings.McDir, level.foldername);
+
+            var b = new Border();
+            b.BorderBrush = (Brush)FindResource("BORDER");
+            var f = new ContentControl() { ContentTemplate = saveTemp, Content = level };
+            f.Margin = new Thickness(0, 8, 0, 8);
+            var btn = new EButton() { Background2 = new SolidColorBrush(Colors.Transparent) };
+            btn.BorderThickness = new Thickness(0);
+            btn.HorizontalContentAlignment = HorizontalAlignment.Left; btn.VerticalContentAlignment = VerticalAlignment.Top;
+            btn.Content = f;
+
+            b.Child = btn;
+            b.BorderThickness = new Thickness(0, 0, 0, 1);
+
+            btn.Click += (o, e) => {
+                Global.App.OpenedSave = new Save(dir, level, new DatapacksInfo(dir));
+
+                opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            };
+
+            return b;
+        }
+
+        Regex standardVersionRegex = new Regex("(1[.]\\d{1,2})[.]*.*");
+        bool fr = false;
+        void FilterJava() {
+            string text = filterName.Text.ToLowerInvariant();
+            string version = (string)filterVersion.SelectedItem;
+
+            Regex versionregex = new Regex($"{version}.*");
+
+            for(int i = 0; i < javaCont.Children.Count; i++) {
+                var info = InfoFromChild(javaCont.Children[i]);
+                bool hide = false;
+
+                if(text != "") {
+                    if(!info.name.ToLowerInvariant().Contains(text) && !info.foldername.ToLowerInvariant().Contains(text)) hide = true;
+                }
+                if(version == "All") {
+                } else if(version == "Other") {
+                    if(standardVersionRegex.Match(info.version_name).Success) hide = true;
+                } else {
+                    if(!versionregex.Match(info.version_name).Success) hide = true;
+                }
+
+                javaCont.Children[i].Visibility = hide ? Visibility.Collapsed : Visibility.Visible;
+            }
+        }
+        void OrderJava(List<(LevelDatInfo l, Visibility v)> levels) {
+            string property = (string)orderProperty.SelectedItem;
+            string mode = (string)orderMode.SelectedItem;
+
+            if(levels == null) {
+                levels = new List<(LevelDatInfo l, Visibility v)>();
+                for(int i = 0; i < javaCont.Children.Count; i++) {
+                    levels.Add((InfoFromChild(javaCont.Children[i]), javaCont.Children[i].Visibility));
+                }
+            }
+
             javaCont.Children.Clear();
 
-            int i = 0;
-            foreach(var _dir in Directory.GetDirectories(Global.Settings.McDir)) {
-                var dir = _dir;
+            if(property == "Name") levels = levels.OrderBy(l => l.l.name).ToList();
+            else if(property == "Version") levels = levels.OrderBy(l => l.l.version_id).ToList();
+            else if(property == "Last open") levels = levels.OrderByDescending(l => l.l.lastopened).ToList();
+
+            if(mode == "Desc") levels.Reverse();
+
+            foreach(var n in levels) {
+                var el = ChildFromInfo(n.l);
+                javaCont.Children.Add(el);
+                el.Visibility = n.v;
+            }
+
+        }
+
+
+
+        
+        public void OnActive() {          
+            List<LevelDatInfo> levels = new();
+            int br = 0;
+            foreach(var dir in Directory.GetDirectories(Global.Settings.McDir).Shuffle()) {
                 var level = LevelDatInfo.ReadWorld(dir);
                 if(level == null) continue;
 
-                var b = new Border();
-                b.BorderBrush = (Brush)FindResource("BORDER");
-                var f = new ContentControl() { ContentTemplate = saveTemp, Content = level };
-                f.Margin = new Thickness(0, 8, 0, 8);
-                var btn = new EButton() { Background2 = new SolidColorBrush(Colors.Transparent) };
-                btn.BorderThickness = new Thickness(0);
-                btn.HorizontalContentAlignment = HorizontalAlignment.Left; btn.VerticalContentAlignment = VerticalAlignment.Top;
-                btn.Content = f;
-
-                b.Child = btn;
-                b.BorderThickness = new Thickness(0, i == 0 ? 1 : 0, 0, 1);
-
-                btn.Click += (o, e) => {
-                    Global.App.OpenedSave = new Save(dir, level, new DatapacksInfo(dir));
-
-                    opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                };
-
-                javaCont.Children.Add(b);
-                i++;
+                levels.Add(level);
+                br++;
             }
 
-            emptyCont.Visibility = i == 0 ? Visibility.Visible : Visibility.Collapsed;
+            javafilter.Visibility = br > 0 ? Visibility.Visible : Visibility.Collapsed;
+            javaCont.Visibility = br > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            emptyCont.Visibility = br == 0 ? Visibility.Visible : Visibility.Collapsed;
             //javaCont.Visibility = i != 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            List<string> options = new List<string>();
+            for(int i = 0; i < levels.Count; i++) {
+                var info = levels[i];
+                var match = standardVersionRegex.Match(info.version_name);
+                if(match.Success) {
+                    options.Add(match.Groups[1].Value);
+                }
+            }
+            options = options.Distinct().Order().ToList();
+            options.Insert(0, "All");
+            options.Add("Other");
+            filterVersion.Items.Clear();
+            foreach(var o in options) filterVersion.Items.Add(o);
+
+            fr = true;
+            filterName.Text = "";
+            filterVersion.SelectedIndex = 0;
+            orderProperty.SelectedIndex = 0;
+            orderMode.SelectedIndex = 0;
+            fr = false;
+
+            OrderJava(levels.Select(l => (l, Visibility.Visible)).ToList());          
         }
+
     }
 }

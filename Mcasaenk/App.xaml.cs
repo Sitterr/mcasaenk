@@ -39,31 +39,19 @@ namespace Mcasaenk {
 
             // settings
             {
-                Settings = Settings.DEF();
-                Settings.PropertyChanged += (a, b) => {
-                    if(Settings.SHADE3D) {
-                        if(b.PropertyName == nameof(Settings.SHADE3D) || b.PropertyName == nameof(Settings.MAXABSHEIGHT) || b.PropertyName == nameof(Settings.ADEG) || b.PropertyName == nameof(Settings.BDEG)) {
-                            ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
-                        }
-                    } else {
-                        if(b.PropertyName == nameof(Settings.SHADE3D) || b.PropertyName == nameof(Settings.ADEG)) {
-                            ShadeConstants.GLB = new ShadeConstants(Settings.ADEG);
-                        }
-                    }
-                };
-
-                
+                        
                 var settFile = Path.Combine(APPFOLDER, "settings.json");
                 if(File.Exists(settFile)) Settings = JsonSerializer.Deserialize<Mcasaenk.Settings>(File.ReadAllText(settFile));
+                else Settings = Settings.DEF();
 
-                ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
+
 
                 Settings.SetActions(
                     () => {
                         TileMap?.RedrawAll();
                     },
                     () => {
-                        if(Global.App.OpenedSave != null) {
+                        if(Global.App.OpenedSave != null && changingsave == false) {
                             Global.App.OpenedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
                         }
                     });
@@ -109,6 +97,7 @@ namespace Mcasaenk {
         public Settings Settings { get; set; }
         public Colormap Colormap { get; set; }
 
+        private bool changingsave = false;
         private Save _openedSave;
         public Save OpenedSave { // hard reset
             get {
@@ -117,11 +106,22 @@ namespace Mcasaenk {
 
             set {
                 if(value != null) if(!Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) return;
+                changingsave = true;
 
                 _openedSave = value;
 
-                if(value != null) {                   
-                    Settings.OnNewSave();
+                if(value != null) {
+                    {
+                        if(_openedSave.GetDimension(Global.Settings.DIMENSION) == null) {
+                            Global.Settings.DIMENSION = Settings.DEF().DIMENSION;
+                        }
+                        var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight(_openedSave.levelDatInfo.version_id);
+                        Settings.MINY = (short)h.miny;
+                        Settings.MAXABSHEIGHT = (short)h.height;
+                        Settings.Y_OFFICIAL = Settings.Y_OFFICIAL;
+                    }
+
+                    ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
 
                     TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
                     TileMap.SetSettings();
@@ -134,12 +134,21 @@ namespace Mcasaenk {
                             TileMap?.RedrawAll();
                         });
                     }
+                } else {
+                    Settings.MINY = -64; Settings.MAXABSHEIGHT = 384;
                 }
+
+                Settings.OnAutoChange(nameof(Settings.MINY));
+                Settings.OnAutoChange(nameof(Settings.MAXY));
+                Settings.OnAutoChange(nameof(Settings.MAXABSHEIGHT));
+                Settings.OnAutoChange(nameof(Settings.ABSY));
 
                 Window.OnHardReset();
                 Window.canvasControl.OnTilemapChanged();
 
                 GC.Collect(2, GCCollectionMode.Forced);
+
+                changingsave = false;
             }
         }
     }
