@@ -13,35 +13,42 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Transactions;
+using System.Configuration;
 
 namespace Mcasaenk.WorldInfo {
-    public class DatapacksInfo {
-        public static readonly Dictionary<string, DimensionInfo> vanilladimensions;
-        public static readonly Dictionary<string, BiomeInfo> vanillabiomes;
-        static DatapacksInfo() {
-            vanillabiomes = new Dictionary<string, BiomeInfo>();
-            vanilladimensions = new Dictionary<string, DimensionInfo>();
-            TxtFormatReader.ReadStandartFormat(ResourceMapping.vanilladatainfo, (group, parts) => {
+
+    public class DatapacksInfoGroudwork { 
+        public readonly Dictionary<string, DimensionInfo> dimensions;
+        public readonly Dictionary<string, BiomeInfo> biomes;
+
+        public DatapacksInfoGroudwork(string parts_info) {
+            biomes = new Dictionary<string, BiomeInfo>();
+            dimensions = new Dictionary<string, DimensionInfo>();
+            TxtFormatReader.ReadStandartFormat(parts_info, (group, parts) => {
                 if(group == "BIOMES") {
                     var biome = BiomeInfo.FromParts(parts);
-                    vanillabiomes[biome.name] = biome;
+                    biomes[biome.name] = biome;
                 } else if(group == "DIMENSIONS") {
                     var dimension = DimensionInfo.FromParts(parts);
-                    vanilladimensions[dimension.name] = dimension;
+                    dimensions[dimension.name] = dimension;
                 }
             });
         }
+    }
 
-
+    public class DatapacksInfo {
+        private static DatapacksInfoGroudwork vanilla118 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo);
+        private static DatapacksInfoGroudwork vanilla117 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo117);
 
 
         public readonly ImageSource image;
         public readonly IDictionary<string, DimensionInfo> dimensions;
         public readonly IDictionary<ushort, BiomeInfo> biomes;
 
-        public DatapacksInfo(string path_world) {
-            this.dimensions = new Dictionary<string, DimensionInfo>(vanilladimensions);
-            var biomes = new Dictionary<string, BiomeInfo>(vanillabiomes);
+        public DatapacksInfo(string path_world, DatapacksInfoGroudwork groudwork) {
+            this.dimensions = new Dictionary<string, DimensionInfo>(groudwork.dimensions);
+            var biomes = new Dictionary<string, BiomeInfo>(groudwork.biomes);
 
             if(Path.Exists(Path.Combine(path_world, "datapacks"))) {
                 foreach(var file in Directory.GetFiles(Path.Combine(path_world, "datapacks"))) {
@@ -116,6 +123,11 @@ namespace Mcasaenk.WorldInfo {
             this.dimensions = this.dimensions.ToFrozenDictionary();
         }
 
+        public static DatapacksInfo FromPath(string path_world, int version) {
+            if(version < 2825) return new DatapacksInfo(path_world, vanilla117);
+            else return new DatapacksInfo(path_world, vanilla118);
+        }
+
 
         private static FrozenDictionary<ushort, BiomeInfo> AssingIdsAndRearrange(Dictionary<string, BiomeInfo> biomes) {
             ushort idbr = 0;
@@ -151,39 +163,50 @@ namespace Mcasaenk.WorldInfo {
 
         public ImageSource image;
 
-        public uint GetVanilla(string tint, uint[,] grassMap, uint[,] foliageMap, short y, bool heightVariation) {
+        public uint GetVanilla(string tint, uint[,] grassMap, uint[,] foliageMap, short y, int version, double heightQ) {
             if(tint == "water") {
                 return water_color;
             } else if(tint == "grass") {
                 if(grass_color_modifier == "dark_forest") {
-                    return Global.Blend((GetOrthodox(foliageMap, y, heightVariation) & 0xFFFEFEFE), 0xFF28340A, 0.5);
+                    return Global.Blend((GetOrthodox(foliageMap, y, version, heightQ) & 0xFFFEFEFE), 0xFF28340A, 0.5);
                 } else if(grass_color_modifier == "swamp") {
-                    return 0xFF4C763C; // todo maybe idk
+                    if(Global.App.RAND < 0.5) return 0xFF4C763C;
+                    else return 0xFF6a7039; // todo maybe idk
                 } else if(grass_hardcode_color > 0) return grass_hardcode_color;
-                else return GetOrthodox(grassMap, y, heightVariation);
+                else return GetOrthodox(grassMap, y, version, heightQ);
             } else if(tint == "foliage") {
                 if(foliage_hardcode_color > 0) return foliage_hardcode_color;
-                else return GetOrthodox(foliageMap, y, heightVariation);
+                else return GetOrthodox(foliageMap, y, version, heightQ);
             }
             return 0;
         }
 
-        public uint GetOrthodox(uint[,] sprite, short absy, bool heightVariation) {
-            double adjTemp = Math.Clamp(heightVariation ? GetTemperature(temp, absy) : temp, 0, 1);
+        public uint GetOrthodox(uint[,] sprite, short absy, int version, double heightQ) {
+            double adjTemp;
+            if(version < 2825) adjTemp = Math.Clamp(f_pre118(temp, absy, heightQ), 0, 1);
+            else adjTemp = Math.Clamp(f(temp, absy, heightQ), 0, 1);
             double adjDownfall = Math.Clamp(downfall, 0, 1) * adjTemp;
-            return sprite[(int)((1 - adjTemp) * 255), (int)((1 - adjDownfall) * 255)];
+            return sprite[(int)Math.Floor((1 - adjTemp) * 255), (int)Math.Floor((1 - adjDownfall) * 255)];
         }
 
-        public static double GetTemperature(double deftemp, short absy) {
+        static double f_pre118(double deftemp, short absy, double heightQ) {
+            if(heightQ == 0) return deftemp;
             int y64 = 64 - Global.Settings.MINY;
             if(absy > y64) {
-                return deftemp - (absy - y64) * 0.05F / 30.0F;
+                return deftemp - (absy - y64) * 0.05F / 30.0F * heightQ;
             } else {
                 return deftemp;
             }
         }
-
-
+        static double f(double deftemp, short absy, double heightQ) {
+            if(heightQ == 0) return deftemp;
+            int y80 = 80 - Global.Settings.MINY;
+            if(absy > y80) {
+                return deftemp - (absy - y80) * 0.05F / 40.0F * heightQ;
+            } else {
+                return deftemp;
+            }
+        }
 
 
         public string[] ToParts() {
@@ -225,8 +248,8 @@ namespace Mcasaenk.WorldInfo {
                 }
             }
 
-            temp = Math.Clamp(temp, 0, 1);
-            downfall = Math.Clamp(downfall, 0, 1) * temp;
+            //temp = Math.Clamp(temp, 0, 1);
+            //downfall = Math.Clamp(downfall, 0, 1) * temp;
 
             return new BiomeInfo() {
                 name = name.minecraftname(),

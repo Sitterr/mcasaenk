@@ -107,7 +107,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
         public ushort GetBiome(int cx, int cz, int cy) {
             //cy += negy;
-            return BiomeRegistry.GetBiomeByOldId(getBiomeAtBlock(cx, cy, cz));
+            return Global.App.Colormap.Biome.GetId(getBiomeAtBlock(cx, cy, cz));
         }
 
         public ushort GetBlock(int cx, int cz, int cy) {

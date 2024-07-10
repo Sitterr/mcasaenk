@@ -286,7 +286,7 @@ namespace Mcasaenk {
             return result.D2(width, height);
         }
 
-        public static T[,] D2<T>(this T[] input, int height, int width) {
+        public static T[,] D2<T>(this T[] input, int width, int height) {
             T[,] output = new T[width, height];
             for(int i = 0; i < width; i++) {
                 for(int j = 0; j < height; j++) {

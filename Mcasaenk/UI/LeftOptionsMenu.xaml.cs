@@ -38,7 +38,6 @@ namespace Mcasaenk.UI {
                 Global.App.Settings.Reset();
             };
 
-
             tabs = new[] { tab_config, tab_about };
             contents = new[] { cont_config, cont_about };
 

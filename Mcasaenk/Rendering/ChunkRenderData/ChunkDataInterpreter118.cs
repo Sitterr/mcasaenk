@@ -84,7 +84,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                         foreach(var _p in (List<Tag>)palette) {
                             var p = (NumTag<string>)_p;
 
-                            biomes_palette[y][i] = BiomeRegistry.GetBiomeByName(p);
+                            biomes_palette[y][i] = Global.App.Colormap.Biome.GetId(p);
                             i++;
                         }
                     }

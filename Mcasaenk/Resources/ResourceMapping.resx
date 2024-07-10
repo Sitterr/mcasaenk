@@ -127,6 +127,9 @@
   <data name="colormap_bedrock" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\bedrockmap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="colormap_beta" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Colormaps\beta.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="colormap_java" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\javamap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -187,8 +190,14 @@
   <data name="unknown_pack" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\unknown_pack.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="unknown_server" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Images\unknown_server.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="vanilladatainfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>vanilladatainfo.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="vanilladatainfo117" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>vanilladatainfo117.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="wrench" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\wrench.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

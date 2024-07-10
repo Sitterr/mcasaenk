@@ -21,7 +21,8 @@ namespace Mcasaenk.UI {
                     }
                 }
                 __allColormaps = __allColormaps.OrderByDescending(c => c switch { 
-                    "texture" => 3,
+                    "default" => 4,
+                    "beta" => 3,
                     "java map" => 2,
                     "bedrock map" => 1,
                     _ => 0,

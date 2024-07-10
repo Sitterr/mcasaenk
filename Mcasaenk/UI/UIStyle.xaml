@@ -150,7 +150,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
                     <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{StaticResource BORDER}">
-                        <TextBlock Text="❓" Foreground="{TemplateBinding Foreground}" Opacity="1" TextAlignment="Center" HorizontalAlignment="Center"
+                        <TextBlock Text="❗" Foreground="{TemplateBinding Foreground}" Opacity="1" TextAlignment="Center" HorizontalAlignment="Center"
                                    ToolTipService.InitialShowDelay="0"
                                    ToolTipService.ShowDuration="60000"
                                    ToolTipService.BetweenShowDelay="000"
@@ -208,7 +208,7 @@
         <Setter Property="ToolTipService.BetweenShowDelay" Value="0"/>
         <Setter Property="ToolTipService.ShowDuration" Value="60000"/>
         <Setter Property="ToolTipService.Placement" Value="Right" />
-        <Setter Property="ToolTipService.PlacementRectangle" Value="-2,-1,0,0"/>
+        <Setter Property="ToolTipService.PlacementRectangle" Value="-2,-0.7,0,0"/>
         <Setter Property="ToolTipService.HorizontalOffset" Value="0" />
         <Setter Property="ToolTipService.VerticalOffset" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
         <Setter Property="ToolTipService.HasDropShadow" Value="false"/>
@@ -293,7 +293,7 @@
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="Width" Value="120"/>
         <Setter Property="Height" Value="auto"/>
         <Setter Property="Foreground" Value="{StaticResource FORE}"/>
@@ -317,10 +317,10 @@
                         </Border>
 
                         <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
-                            <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <Border x:Name="DropDownBorder" Margin="0 -1 0.3 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
-                                    <StackPanel TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                            <Grid Name="DropDown" Margin="0 0 0 1" SnapsToDevicePixels="True" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border x:Name="DropDownBorder" Margin="0 -1 0.2 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+                                <ScrollViewer SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 1 0">
+                                    <StackPanel Margin="4,6,4,6" TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
                         </Popup>
@@ -495,6 +495,7 @@ TargetType="{x:Type ScrollBar}">
         </Style.Triggers>
     </Style>
     <Style TargetType="{x:Type ScrollViewer}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -511,7 +512,7 @@ TargetType="{x:Type ScrollBar}">
 
                         <ScrollContentPresenter Name="cnt" Grid.Row="0" Grid.Column="0"/>
 
-                        <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1"
+                        <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1" Margin="0 0 0.5 0" SnapsToDevicePixels="True"
                         Value="{TemplateBinding VerticalOffset}"
                         Maximum="{TemplateBinding ScrollableHeight}"
                         ViewportSize="{TemplateBinding ViewportHeight}"
@@ -795,7 +796,7 @@ TargetType="{x:Type ScrollBar}">
 
 
     <DataTemplate x:Key="saveTemp" DataType="{x:Type worldinfo:LevelDatInfo}">
-        <Grid>
+        <Grid Margin="10 0 0 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="48" />
                 <ColumnDefinition Width="7" />
@@ -808,7 +809,7 @@ TargetType="{x:Type ScrollBar}">
             </Grid.RowDefinitions>
 
             <local:EButton Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BackgroundH="{StaticResource BACK}" BackgroundP="{StaticResource BACK}" BorderBrush="{StaticResource BORDER}">
-                <Image Source="{Binding Path=imagepath, Mode=OneTime}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <Image Source="{Binding Path=image, Mode=OneTime}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             </local:EButton>
             <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
                 <Run Text="{Binding Path=name, Mode=OneTime}" FontSize="16"/>

@@ -191,8 +191,8 @@
                                         </TextBlock>
                                         <Label.ToolTip>
                                             <StackPanel Orientation="Vertical">
-                                                <TextBlock Text="generally rendering with heightmaps is faster, tho it is sometimes buggy"/>
-                                                <TextBlock Text="if you see some ill-rendered chunks, try turning this off"/>
+                                                <TextBlock Text="• generally rendering with heightmaps is faster, tho it is sometimes buggy"/>
+                                                <TextBlock Text="• if you see some ill-rendered chunks, try turning this off"/>
                                             </StackPanel>
                                         </Label.ToolTip>
                                     </Label>

@@ -41,12 +41,15 @@ namespace Mcasaenk {
                 dimensions.Add(new Dimension(this, regionpath, dim, dim.image != null ? dim.image : unknownPack));
             }          
         }
+        public static Save FromPath(string path) {
+            var level = LevelDatInfo.ReadWorld(path);
+            return new Save(path, level, DatapacksInfo.FromPath(path, level.version_id));
+        }
+
 
         public Dimension GetDimension(string name) {
             return dimensions.FirstOrDefault(d => d.info.name == name);
         }
-
-        public Save(string path) : this(path, LevelDatInfo.ReadWorld(path), new DatapacksInfo(path)) { }
 
         public string LevelPath() {
             return Path.Combine(path, "level.dat");
@@ -72,13 +75,7 @@ namespace Mcasaenk {
             this.tileMap = new TileMap(this, ExistingRegions());
         }
 
-        public (int height, int miny) GetHeight(int version) {
-            if(info.name == "minecraft:overworld" && info.fromparts) {
-                if(version >= 2825) return (384, -64);
-                else return (256, 0);
-            }
-            return (info.height, info.miny);
-        }
+        public (int height, int miny) GetHeight() => (info.height, info.miny);
 
         public string GetRegionPath(Point2i pos) {
             return Path.Combine(path, $"r.{pos.X}.{pos.Z}.mca");

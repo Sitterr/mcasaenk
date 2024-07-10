@@ -86,6 +86,8 @@ namespace Mcasaenk.Rendering {
             nameToId = new Dictionary<string, ushort>();
             idToName = new Dictionary<ushort, string>();
         }
+
+        public List<string> GetAllNames() => nameToId.Keys.ToList();
     }
 
     public static class TxtFormatReader {
@@ -107,39 +109,32 @@ namespace Mcasaenk.Rendering {
         }
     }
 
-    public class BiomeRegistry {
+    public class BiomeRegistry : DynamicNameToIdBiMap {
         private static IDictionary<int, ushort> oldBiomeIdToId;
-        private static IDictionary<string, ushort> biomeNameToId;
-        public static ushort GetBiomeByOldId(int oldid) {
-            if(oldBiomeIdToId.TryGetValue(oldid, out var id)) return id;
-            else return oldBiomeIdToId[-1];
-        }
-        public static ushort GetBiomeByName(string name) {
-            if(biomeNameToId.TryGetValue(name, out var id)) return id;
-            else return 0;
-        }
-        public static int GetBiomeCount() => biomeNameToId.Count;
 
-        public static void Initialize(List<BiomeInfo> biomes) {
-            biomeNameToId = new Dictionary<string, ushort>();
-            foreach(var biome in biomes) {
-                biomeNameToId.Add(biome.name, biome.id);
+        public BiomeRegistry(Action<string, ushort> onAdd) : base(onAdd) { }
+
+        public ushort GetId(int oldid) {
+            return oldBiomeIdToId[oldid];
+        }
+        
+        public void SetUp(List<BiomeInfo> biomes) {
+            foreach(var biome in biomes.OrderBy(b => b.id)) {
+                base.GetId(biome.name);
             }
-            biomeNameToId = biomeNameToId.ToFrozenDictionary();
 
             oldBiomeIdToId = new Dictionary<int, ushort>();
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.oldbiomes, (_, parts) => {
                 int id = Convert.ToInt32(parts[0]);
                 string name = parts[1];
                 if(name.Contains(":") == false) name = "minecraft:" + name;
-                oldBiomeIdToId.Add(id, biomeNameToId[name]);
+                oldBiomeIdToId.Add(id, base.GetId(name));
             });
             oldBiomeIdToId = oldBiomeIdToId.ToFrozenDictionary();
         }
     }
 
     public class Colormap {
-        public const ushort DEFBIOME = 1;
         public const int DEFHEIGHT = 64;
 
         public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1;
@@ -148,10 +143,19 @@ namespace Mcasaenk.Rendering {
         public readonly ushort depth;
 
         public readonly DynamicNameToIdBiMap Block;
+        public readonly BiomeRegistry Biome;
         private IDictionary<ushort, BlockValue> blocks;
         private List<Tint> tints;
-        public Colormap(string path, DatapacksInfo datapacksInfo) {
-            BiomeRegistry.Initialize(datapacksInfo.biomes.Values.ToList());
+        public Colormap(string path, int world_version, DatapacksInfo datapacksInfo) {
+            ushort PLAINSBIOME = 0;
+            Biome = new BiomeRegistry((name, id) => {
+                switch(name) {
+                    case "minecraft:plains":
+                        PLAINSBIOME = id;
+                        break;
+                }
+            });
+            Biome.SetUp(datapacksInfo.biomes.Values.ToList());
 
             Block = new((name, id) => {
                 switch(name) {
@@ -173,27 +177,26 @@ namespace Mcasaenk.Rendering {
 
                 var t = Tint.ReadTint(file);
                 Tint tint = t.format switch {
-                    "vanilla" => new OrthodoxVanillaTint(t.name, t.source, datapacksInfo),
-                    "vanilla_grass" => new HardcodedVanillaTint(t.name, "grass", t.source, datapacksInfo),
-                    "vanilla_foliage" => new HardcodedVanillaTint(t.name, "foliage", t.source, datapacksInfo),
-                    "vanilla_water" => new HardcodedVanillaTint(t.name, "water", t.source, datapacksInfo),
+                    "vanilla" => new OrthodoxVanillaTint(t.name, world_version, t.source, datapacksInfo),
+                    "vanilla_grass" => new HardcodedVanillaTint(t.name, "grass", world_version, t.source, datapacksInfo),
+                    "vanilla_foliage" => new HardcodedVanillaTint(t.name, "foliage", world_version, t.source, datapacksInfo),
+                    "vanilla_water" => new HardcodedVanillaTint(t.name, "water", world_version, t.source, datapacksInfo),
                     "grid" => new GridTint(t.name, t.source),
                     "fixed" => new FixedTint(t.name, t.color),
                 };
                 tints.Add(tint);
 
                 foreach(var block in t.blocks) {
-                    blocks[Block.GetId(block.minecraftname())] = new BlockValue() { tint = tint };
+                    blocks[Block.GetId(block.minecraftname())] = new BlockValue() { color = 0xFFFFFFFF, tint = tint};
                 }
             }
-
 
             TxtFormatReader.ReadStandartFormat(File.ReadAllText(Path.Combine(path, "__colormap__")), (group, parts) => {
                 string name = parts[0].minecraftname(); ushort id = Block.GetId(name);
                 string strcolor = parts[1];
                 if(strcolor.StartsWith('#')) strcolor = strcolor.Substring(1);
                 if(strcolor.Length == 6) strcolor = "FF" + strcolor;
-                uint color = Convert.ToUInt32(parts[1], 16);
+                uint color = Convert.ToUInt32(strcolor, 16);
 
 
                 if(blocks.TryGetValue(id, out var block)) {
@@ -207,13 +210,15 @@ namespace Mcasaenk.Rendering {
 
             blocks = blocks.ToFrozenDictionary();
             Block.Freeze();
+            Biome.Freeze();
 
             def = blocks[0];
+
             depth = Block.GetId("minecraft:water"); // todo!
+            Global.Settings.DEFBIOME = PLAINSBIOME; // todo!
         }
 
         public List<Tint> GetTints() => tints;
-        public bool HasActiveTints() => tints.Where(t => t.Settings() != null).Any(t => t.Settings().On && t.Settings().Blend > 1);
 
         private BlockValue def;
         public BlockValue Value(ushort block) => blocks.GetValueOrDefault(block, def);
@@ -285,8 +290,8 @@ namespace Mcasaenk.Rendering {
     }
 
     public class DynamicVanillaTintSettings : DynamicTintSettings {
-        private bool tempHeight;
-        public bool TemperatureVariation {
+        private double tempHeight;
+        public double TemperatureVariation {
             get => tempHeight;
             set {
                 if(value == tempHeight) return;
@@ -297,7 +302,7 @@ namespace Mcasaenk.Rendering {
         }
 
         public DynamicVanillaTintSettings() : base() {
-            TemperatureVariation = true;
+            TemperatureVariation = 0;
         }
     }
 
@@ -308,6 +313,7 @@ namespace Mcasaenk.Rendering {
 
     public interface Tint {
         public string Name();
+        public string Kurz();
         public DynamicTintSettings Settings();
 
         public uint TintColorFor(ushort biome, short height);
@@ -351,43 +357,48 @@ namespace Mcasaenk.Rendering {
     }
 
     public class OrthodoxVanillaTint : Tint {
-        public readonly string name;
+        private readonly string name;
+        private readonly int version;
         private uint[,] sprite;
 
         private DatapacksInfo datapacksInfo;
         private DynamicVanillaTintSettings settings = new DynamicVanillaTintSettings();
 
-        public OrthodoxVanillaTint(string name, string source, DatapacksInfo datapacksInfo) {
+        public OrthodoxVanillaTint(string name, int verion, string source, DatapacksInfo datapacksInfo) {
             this.name = name;
+            this.version = verion;
             this.datapacksInfo = datapacksInfo;
 
             this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
             if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
         }
-        string Tint.Name() => name;
+        string Tint.Name() => name; string Tint.Kurz() => "vn";
         DynamicTintSettings Tint.Settings() => settings;
 
         uint Tint.TintColorFor(ushort biome, short height) {
-            return datapacksInfo.biomes[biome].GetOrthodox(sprite, height, settings.TemperatureVariation);
+            return datapacksInfo.biomes[biome].GetOrthodox(sprite, height, version, settings.TemperatureVariation);
         }
 
         Blending Tint.GetBlendMode() {
             if(settings.On == false) return Blending.none;
-            if(settings.TemperatureVariation) return Blending.full;
+            if(settings.Blend == 1) return Blending.heightonly;
+            if(settings.TemperatureVariation > 0) return Blending.full;
             else return Blending.biomeonly;
         }
 
     }
     public class HardcodedVanillaTint : Tint {
         private readonly string name, tint;
+        private readonly int version;
         private uint[,] sprite;
 
         private DatapacksInfo datapacksInfo;
         private DynamicVanillaTintSettings settings = new DynamicVanillaTintSettings();
 
-        public HardcodedVanillaTint(string name, string tint, string source, DatapacksInfo datapackInfo) {
+        public HardcodedVanillaTint(string name, string tint, int version, string source, DatapacksInfo datapackInfo) {
             this.name = name;
-            this.tint = tint;           
+            this.tint = tint;
+            this.version = version;
             this.datapacksInfo = datapackInfo;
 
             if(File.Exists(source)) {
@@ -397,16 +408,21 @@ namespace Mcasaenk.Rendering {
         }
 
         string Tint.Name() => name;
+        string Tint.Kurz() => name switch {
+            "grass" => "vn_g",
+            "foliage" => "vn_f",
+            "water" => "vn_w",
+            };
         DynamicTintSettings Tint.Settings() => settings;
 
         uint Tint.TintColorFor(ushort biome, short height) {
-            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, settings.TemperatureVariation);
+            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, version, settings.TemperatureVariation);
         }
 
         Blending Tint.GetBlendMode() {
             if(settings.On == false) return Blending.none;
             if(settings.Blend == 1) return Blending.heightonly;
-            if(settings.TemperatureVariation && (tint == "grass" || tint == "foliage")) return Blending.full;
+            if(settings.TemperatureVariation > 0 && (tint == "grass" || tint == "foliage")) return Blending.full;
             else return Blending.biomeonly;
         }
 
@@ -423,7 +439,7 @@ namespace Mcasaenk.Rendering {
 
             this.hasBaseColor = true;
         }
-        string Tint.Name() => name;
+        string Tint.Name() => name; string Tint.Kurz() => "fx";
         DynamicTintSettings Tint.Settings() => null;
         Blending Tint.GetBlendMode() => Blending.none;
 
@@ -459,12 +475,12 @@ namespace Mcasaenk.Rendering {
                 if(heightparity == false) break;
             }
         }
-        string Tint.Name() => name;
+        string Tint.Name() => name; string Tint.Kurz() => "gr";
         DynamicTintSettings Tint.Settings() => settings;
 
         uint Tint.TintColorFor(ushort biome, short height) {
-            int x = biome;
-            if(x > sprite.GetLength(0) || x < 0) x = Colormap.DEFBIOME;
+            int x = settings.On ? biome : Global.Settings.DEFBIOME;
+            if(x >= sprite.GetLength(0) || x < 0) x = Global.Settings.DEFBIOME;
             int y = Math.Clamp(height, 0, sprite.GetLength(1) - 1);
             return sprite[x, y];
         }
@@ -484,7 +500,7 @@ namespace Mcasaenk.Rendering {
         public static NullTint Tint = new NullTint();
         private NullTint() { }
 
-        string Tint.Name() => "";
+        string Tint.Name() => ""; string Tint.Kurz() => "";
         DynamicTintSettings Tint.Settings() => null;
         Blending Tint.GetBlendMode() => Blending.none;
 

@@ -19,6 +19,7 @@ using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
 using System.Collections.Frozen;
 using System.Buffers;
+using static Mcasaenk.Rendering.Tint;
 
 namespace Mcasaenk
 {
@@ -123,7 +124,7 @@ namespace Mcasaenk
             }
             set {
                 _genData = value;
-                if(Global.App.Colormap.HasActiveTints()) {
+                if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full)) {
                     for(int i = -1; i <= 1; i++) { // biome blend
                         for(int j = -1; j <= 1; j++) {
                             var tile = map.GetTile(pos + new Point2i(i, j));
@@ -155,7 +156,7 @@ namespace Mcasaenk
 
             uint* pixels = (uint*)img.BackBuffer;
             GenData[,] neighbours = null;
-            if(Global.App.Colormap.HasActiveTints()) {
+            if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full)) {
                 neighbours = new GenData[3, 3];
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {

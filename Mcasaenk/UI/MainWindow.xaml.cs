@@ -128,6 +128,7 @@ namespace Mcasaenk.UI {
 
                 leftSettingsMenu = new LeftSettingsMenu();
                 leftFileMenu = new LeftFileMenu(opener_worlds);
+                leftFileMenu.OnActive();
                 leftOptionsMenu = new LeftOptionsMenu();
 
                 var leftsl = new PageSlider(this, true, true, () => (int)mainGrid.ColumnDefinitions[0].ActualWidth - (int)opener_worlds.ActualWidth - 10, 10,
@@ -144,7 +145,7 @@ namespace Mcasaenk.UI {
                         ), 
                         (opener_worlds, () => {
                             settings_cont.Child = leftFileMenu;
-                            leftFileMenu.OnActive();
+                            //leftFileMenu.OnActive();
                         }
                         )]);
 

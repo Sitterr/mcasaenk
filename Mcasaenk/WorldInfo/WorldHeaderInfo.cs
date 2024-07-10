@@ -8,9 +8,24 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Mcasaenk.Resources;
 
 namespace Mcasaenk.WorldInfo {
     public class LevelDatInfo {
+        static BitmapImage defaultIcon;
+        static LevelDatInfo() {
+            defaultIcon = new BitmapImage();
+            using(MemoryStream memoryStream = new MemoryStream(ResourceMapping.unknown_server)) {
+                defaultIcon.BeginInit();
+                defaultIcon.StreamSource = memoryStream;
+                defaultIcon.CacheOption = BitmapCacheOption.OnLoad;
+                defaultIcon.EndInit();
+            }
+            defaultIcon.Freeze();
+        }
+
         public DateOnly lastopened { get; private set; }
         public Difficulty difficulty { get; private set; }
         public Gamemode gamemode { get; private set; }
@@ -19,7 +34,7 @@ namespace Mcasaenk.WorldInfo {
         public int version_id { get; private set; }
         public long seed { get; private set; }
         public bool hardcore { get; private set; }
-        public string imagepath { get; private set; }
+        public ImageSource image { get; private set; }
         public string foldername { get; private set; }
 
         public int px { get; private set; }
@@ -29,9 +44,11 @@ namespace Mcasaenk.WorldInfo {
         public int sy { get; private set; }
         public int sz { get; private set; }
 
-        private LevelDatInfo(Tag _tag, string foldername, string imagepath, DateOnly lastopened) {
-            this.foldername = foldername;
-            this.imagepath = imagepath;
+        private LevelDatInfo(Tag _tag, string foldername, ImageSource image, DateOnly lastopened) {
+            if(image == null) image = defaultIcon;
+            if(image.CanFreeze) image.Freeze();
+            this.image = image;
+            this.foldername = foldername;         
             this.lastopened = lastopened;
 
             var tag = (CompoundTag)_tag;
@@ -84,7 +101,11 @@ namespace Mcasaenk.WorldInfo {
 
                 var globaltag = (CompoundTag)_g;
 
-                return new LevelDatInfo(globaltag, new DirectoryInfo(path).Name, Path.Combine(path, "icon.png"), DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
+                ImageSource icon = null;
+                if(File.Exists(Path.Combine(path, "icon.png"))) {
+                    icon = new BitmapImage(new Uri(Path.Combine(path, "icon.png")));
+                }
+                return new LevelDatInfo(globaltag, new DirectoryInfo(path).Name, icon, DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
             }
             catch {
                 return null;
@@ -94,7 +115,6 @@ namespace Mcasaenk.WorldInfo {
         public static LevelDatInfo ReadRegionFolder() {
             return new LevelDatInfo() { };
         }
-
     }
     public enum Difficulty : sbyte {
         [Description("peaceful")]

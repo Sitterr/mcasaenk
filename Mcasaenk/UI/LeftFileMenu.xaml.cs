@@ -111,7 +111,7 @@ namespace Mcasaenk.UI {
                     string filename = dialog.FileName;
 
                     // code here
-                    Global.App.OpenedSave = new Save(Path.GetDirectoryName(filename));
+                    Global.App.OpenedSave = Save.FromPath(Path.GetDirectoryName(filename));
 
                     opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
@@ -170,7 +170,7 @@ namespace Mcasaenk.UI {
             b.BorderThickness = new Thickness(0, 0, 0, 1);
 
             btn.Click += (o, e) => {
-                Global.App.OpenedSave = new Save(dir, level, new DatapacksInfo(dir));
+                Global.App.OpenedSave = new Save(dir, level, DatapacksInfo.FromPath(dir, level.version_id));
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
@@ -216,9 +216,9 @@ namespace Mcasaenk.UI {
 
             javaCont.Children.Clear();
 
-            if(property == "Name") levels = levels.OrderBy(l => l.l.name).ToList();
-            else if(property == "Version") levels = levels.OrderBy(l => l.l.version_id).ToList();
-            else if(property == "Last open") levels = levels.OrderByDescending(l => l.l.lastopened).ToList();
+            if(property == "Name") levels = levels.OrderBy(l => l.l.name).ThenBy(l => l.l.foldername).ToList();
+            else if(property == "Version") levels = levels.OrderBy(l => l.l.version_id).ThenBy(l => l.l.foldername).ToList();
+            else if(property == "Last open") levels = levels.OrderByDescending(l => l.l.lastopened).ThenBy(l => l.l.foldername).ToList();
 
             if(mode == "Desc") levels.Reverse();
 
@@ -267,7 +267,7 @@ namespace Mcasaenk.UI {
             fr = true;
             filterName.Text = "";
             filterVersion.SelectedIndex = 0;
-            orderProperty.SelectedIndex = 0;
+            orderProperty.SelectedIndex = 2;
             orderMode.SelectedIndex = 0;
             fr = false;
 

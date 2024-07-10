@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Text;
@@ -205,7 +206,7 @@ namespace Mcasaenk.UI.Canvas {
                     mousemiddle = false;
                     goto case MouseButton.Left;
                 case MouseButton.Right:
-                    GC.Collect(2, GCCollectionMode.Aggressive);
+                    GC.Collect(2, GCCollectionMode.Aggressive); 
                     //screenshotManager.Rotate();
                     break;
                 default: break;

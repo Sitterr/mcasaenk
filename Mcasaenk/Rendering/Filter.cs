@@ -24,7 +24,8 @@ namespace Mcasaenk.Rendering {
         }
     }
     public static class AirFilter {
-        public static short Def(IChunkInterpreter data, int x, int z, short startY) {
+        static ISet<ushort> ids = new HashSet<ushort>();
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
             for(int h = startY; h >= 0; h--) {
                 if(h % 16 == 15) {
                     if(IsEmpty(data.SingleBlockSection(h / 16))) {
@@ -40,12 +41,10 @@ namespace Mcasaenk.Rendering {
             return -1;
         }
 
-        public static short List(IChunkInterpreter data, int x, int z, short startY) {
-            return Def(data, x, z, startY); // TODO
-        }
-
-        static bool IsEmpty(ushort blockid) {
-            if(blockid == Colormap.BLOCK_AIR || blockid == Colormap.INVBLOCK) return true;
+        public static bool IsEmpty(ushort blockid) {
+            if(blockid == Colormap.INVBLOCK) return true;
+            if(blockid == Colormap.BLOCK_AIR) return true;
+            if(ids.Contains(blockid)) return true;
             return false;
         }
     }
@@ -54,39 +53,24 @@ namespace Mcasaenk.Rendering {
         public static void ReInit(Colormap colormap) {
             ids = new HashSet<ushort>();
             TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.shade3d_filter, (_, parts) => {
-                string name = parts[0];
-                if(!name.Contains(":")) name = "minecraft:" + name;
+                string name = parts[0].minecraftname();
                 ushort id = colormap.Block.GetId(name);
                 ids.Add(id);
             });
             ids = ids.ToFrozenSet();
         }
 
-        public static short Inner(IChunkInterpreter data, int x, int z, short startY) {
-            for(int h = startY; h >= 0; h--) {
-                var block = data.GetBlock(x, z, h);
-
-                bool isEmpty = ids.Contains(block);
-                if(!isEmpty) return (short)h;
-            }
-            return -1;
-        }
-
-        public static short List(IChunkInterpreter data, int x, int z, short startY) {
-            while(true) {
-                short a = startY;
-                startY = AirFilter.List(data, x, z, startY);
-                startY = Inner(data, x, z, startY);
-                startY = DepthFilter.List(data, x, z, startY);
-
-                if(a == startY) break;
-            }
-            return startY;
+        public static bool IsShade3D(ushort blockid) {
+            if(AirFilter.IsEmpty(blockid)) return true;
+            if(DepthFilter.IsDepth(blockid)) return true;
+            if(ids.Contains(blockid)) return true;
+            return false;
         }
     }
 
     public static class DepthFilter {
-        public static short Def(IChunkInterpreter data, int x, int z, short startY) {
+        static ISet<ushort> ids = new HashSet<ushort>();
+        public static short List(IChunkInterpreter data, int x, int z, short startY) {
             for(int h = startY; h >= 0; h--) {
                 var block = data.GetBlock(x, z, h);
 
@@ -96,26 +80,27 @@ namespace Mcasaenk.Rendering {
             return -1;
         }
 
-        public static short List(IChunkInterpreter data, int x, int z, short startY) {
-            return Def(data, x, z, startY); // TODO
-        }
-
-        static bool IsDepth(ushort blockid) {
-            if(blockid == Global.App.Colormap.depth || blockid == Colormap.INVBLOCK) return true;
+        public static bool IsDepth(ushort blockid) {
+            if(blockid == Colormap.INVBLOCK) return true;
+            if(blockid == Global.App.Colormap.depth) return true;
+            if(ids.Contains(blockid)) return true;
             return false;
         }
     }
 
+
+
+
     public static class HeightmapFilter {
         public static short FilterAir(IChunkInterpreter data, int x, int z, short startY) {
-            if(data.ContainsHeightmaps() == false) return AirFilter.Def(data, x, z, startY);
+            if(data.ContainsHeightmaps() == false) return AirFilter.List(data, x, z, startY);
             short hm = data.GetHeight(x, z);
-            hm = AirFilter.Def(data, x, z, hm);
+            hm = AirFilter.List(data, x, z, hm);
             return hm;
         }
 
         public static short FilterWater(IChunkInterpreter data, int x, int z, short startY) {
-            if(data.ContainsHeightmaps() == false) return DepthFilter.Def(data, x, z, startY);
+            if(data.ContainsHeightmaps() == false) return DepthFilter.List(data, x, z, startY);
 
             short surface_height = data.GetHeight(x, z);
             short floor_height = data.GetTerrainHeight(x, z);
@@ -126,7 +111,7 @@ namespace Mcasaenk.Rendering {
             }
 
             short hm = surface_height;
-            hm = AirFilter.Def(data, x, z, hm);
+            hm = AirFilter.List(data, x, z, hm);
             return hm;
         }
     }

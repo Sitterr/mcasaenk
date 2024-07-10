@@ -117,7 +117,8 @@ namespace Mcasaenk
             ],
             PREFERHEIGHTMAPS = true,
 
-            COLOR_MAPPING_MODE = "texture",
+            COLOR_MAPPING_MODE = "default",
+            SHADETYPE = ShadeType.OG,
 
             SUN_LIGHT = 15, BLOCK_LIGHT = 0,
 
@@ -127,7 +128,7 @@ namespace Mcasaenk
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
 
-            ADEG = 20, BDEG = 15,
+            ADEG = 120, BDEG = 15,
         };
 
         private Action onLightChange, onHardChange;
@@ -166,6 +167,7 @@ namespace Mcasaenk
                 }
             }
         }
+        [JsonIgnore]
         public short Y_OFFICIAL { get => y; set { 
                 value = Math.Clamp(value, MINY, MAXY);
                 y = value; Y = value; 
@@ -592,6 +594,27 @@ namespace Mcasaenk
             }
         }
         public Resolution[] PREDEFINEDRES { get => PredifinedReses; set => PredifinedReses = value; }
+
+
+
+        private ushort defbiome;
+        [JsonIgnore]
+        public ushort DEFBIOME {
+            get => defbiome;
+            set {
+                if(defbiome == value) return;
+                defbiome = value;
+                if(Global.App.Colormap != null) {
+                    if(Global.App.Colormap.GetTints().Any(t => t.Settings()?.On == false)) {
+                        OnLightChange(nameof(DEFBIOME));
+                    } else {
+                        OnAutoChange(nameof(DEFBIOME));
+                    }
+                }
+            }
+        }
+
+
 
         #region depr
         public bool WATERDEPTH { get => true; set { } }

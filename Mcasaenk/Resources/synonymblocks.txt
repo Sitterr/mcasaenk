@@ -1,1 +1,2 @@
 ﻿grass;short_grass
+lily_pad;waterlily

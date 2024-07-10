@@ -59,9 +59,14 @@ namespace Mcasaenk {
 
             // colormap
             {
-                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "texture")) == false) {
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "default")) == false) {
                     using var stream = new MemoryStream(ResourceMapping.colormap_texture);
-                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "texture"));
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "default"));
+                }
+
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "beta")) == false) {
+                    using var stream = new MemoryStream(ResourceMapping.colormap_beta);
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "beta"));
                 }
 
                 if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
@@ -91,7 +96,7 @@ namespace Mcasaenk {
 
 
 
-
+        public double RAND;
         public MainWindow Window { get => (MainWindow)this.MainWindow; }
         public TileMap TileMap { get; set; }
         public Settings Settings { get; set; }
@@ -108,17 +113,20 @@ namespace Mcasaenk {
                 if(value != null) if(!Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) return;
                 changingsave = true;
 
+                var oldv = _openedSave;
                 _openedSave = value;
 
                 if(value != null) {
+                    RAND = Global.rand.NextDouble();
+
                     {
                         if(_openedSave.GetDimension(Global.Settings.DIMENSION) == null) {
                             Global.Settings.DIMENSION = Settings.DEF().DIMENSION;
                         }
-                        var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight(_openedSave.levelDatInfo.version_id);
+                        var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
                         Settings.MINY = (short)h.miny;
                         Settings.MAXABSHEIGHT = (short)h.height;
-                        Settings.Y_OFFICIAL = Settings.Y_OFFICIAL;
+                        
                     }
 
                     ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
@@ -126,7 +134,7 @@ namespace Mcasaenk {
                     TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
                     TileMap.SetSettings();
 
-                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.datapackInfo);
+                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
                     Shade3DFilter.ReInit(Colormap);
 
                     foreach(var tint in Colormap.GetTints()) {
@@ -136,6 +144,10 @@ namespace Mcasaenk {
                     }
                 } else {
                     Settings.MINY = -64; Settings.MAXABSHEIGHT = 384;
+                }
+
+                if(oldv?.path != OpenedSave?.path) {
+                    Settings.Y_OFFICIAL = Settings.MAXY;
                 }
 
                 Settings.OnAutoChange(nameof(Settings.MINY));

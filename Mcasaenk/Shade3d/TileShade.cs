@@ -1,5 +1,6 @@
 ﻿using Accessibility;
 using Mcasaenk.Rendering;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;

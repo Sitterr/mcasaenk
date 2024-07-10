@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using Mcasaenk.Rendering.ChunkRenderData;
 using System.Transactions;
 using System.Windows.Media.Media3D;
+using System.Reflection.Metadata;
 
 namespace Mcasaenk.Rendering
 {
@@ -33,6 +34,8 @@ namespace Mcasaenk.Rendering
                     int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
                     int regionIndex = (z + cz) * 512 + x + cx;
 
+                    int xtotal = x0 + x + cx, ztotal = z0 + z + cz;
+
                     short airHeight = Filter.AIR_FILTER(y, maxh - 1)(data, cx, cz, (short)y);
                     rdata.heights[regionIndex] = airHeight;
                     rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
@@ -46,26 +49,24 @@ namespace Mcasaenk.Rendering
                     if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
                         {
                             int hs = maxh - airHeight;
-                            double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
+                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
                             SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
                         }
 
-                        short height = waterHeight;
-                        while(height >= 0) {
-
-                            short nheight = Shade3DFilter.List(data, cx, cz, height);
-                            height = nheight;
+                        for(int height = waterHeight; height >= 0; height--) {
+                            //short nheight = Shade3DFilter.List(data, cx, cz, height);
+                            var bl = data.GetBlock(cx, cz, height);
+                            if(Shade3DFilter.IsShade3D(bl)) continue;
 
                             //if(height <= 0) break;
 
                             int hs = maxh - height;
-                            double x1 = (x0 + x + cx) + ShadeConstants.GLB.cosAcotgB * hs, z1 = (z0 + z + cz) + -ShadeConstants.GLB.sinAcotgB * hs;
-                            bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
-                            if(!alreadyshade) {
-                                SetLine(rdata.shadeFrame, true, SHADEX, SHADEZ, x1, z1);
-                            }
+                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                            //bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
+                            //if(!alreadyshade) {
+                            SetLine(rdata.shadeFrame, true, SHADEX, SHADEZ, x1, z1);
+                            //}
 
-                            height--;
                         }
 
                     }
@@ -74,28 +75,26 @@ namespace Mcasaenk.Rendering
         }
 
 
-
-
         static void SetLine(bool[] shadeFrame, bool value, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
 
             foreach(var p in ShadeConstants.GLB.blockReach) {
-                if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
-                    continue;
-                if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX) 
-                    continue;
-                shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)] = value;
+                //if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
+                //    continue;
+                //if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX) 
+                //    continue;
+                shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] = value;
             }
         }
         static bool CheckLine(bool[] shadeFrame, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
 
             foreach(var p in ShadeConstants.GLB.blockReach) {
-                if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
+                if((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) 
                     continue;
-                if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX)
+                if((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)
                     continue;
-                if(shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)] == false) return false;
+                if(shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] == false) return false;
             }
             return true;
         }
@@ -104,16 +103,16 @@ namespace Mcasaenk.Rendering
 
             var blockReach = ShadeConstants.GLB.blockReach;
 
-            shadesLen = (byte)blockReach.Count;
-            for(int i = 0; i < blockReach.Count; i++) {
+            shadesLen = (byte)blockReach.Length;
+            for(int i = 0; i < blockReach.Length; i++) {
                 var p = blockReach[i];
 
-                if(((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) || ((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX)) {
+                if(((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) || ((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)) {
                     shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] = false;
                     continue;
                 }
 
-                bool val = shadeFrame[(z1 + p.p.Z) * SHADEX + (x1 + p.p.X)];
+                bool val = shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)];
                 shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] |= val;
             }
         }

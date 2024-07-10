@@ -26,7 +26,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             IChunkInterpreter chunkreader = null;
             if(version > 0) {
 
-                var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight(version);
+                var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
 
                 if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
                 else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17

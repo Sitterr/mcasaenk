@@ -24,28 +24,26 @@ namespace Mcasaenk.Rendering {
             var st = Stopwatch.StartNew();
             //uint[] tintcolors = very_temp.Rent(512 * 512);
 
-            if(colormap.HasActiveTints()) {
-                foreach(var tint in colormap.GetTints()) {
-                    if(tint.Settings() == null) continue;
+            foreach(var tint in colormap.GetTints()) {
+                if(tint.Settings() == null) continue;
 
-                    int radius = (tint.Settings().Blend - 1) / 2;
-                    switch(tint.GetBlendMode()) {
-                        case Tint.Blending.none:
-                        case Tint.Blending.heightonly:
-                            break;
-                        case Tint.Blending.biomeonly:
-                            //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
-                            //PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
-                            ColorGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
-                            //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
-                            break;
-                        case Tint.Blending.full:
-                            //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
-                            PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
-                            //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
-                            //ColorGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
-                            break;
-                    }
+                int radius = (tint.Settings().Blend - 1) / 2;
+                switch(tint.GetBlendMode()) {
+                    case Tint.Blending.none:
+                    case Tint.Blending.heightonly:
+                        break;
+                    case Tint.Blending.biomeonly:
+                        //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
+                        //PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
+                        ColorGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
+                        //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
+                        break;
+                    case Tint.Blending.full:
+                        //GausBlur.BoxBlur<PrecBlur>(radius, pixels, tint, colormap, PrecBlur.pool, neighbours);
+                        PrecGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
+                        //GausBlur.BoxBlur<ColorBlur>(radius, pixels, tint, colormap, ColorBlur.pool, neighbours);
+                        //ColorGausBlur.BoxBlur(radius, pixels, tint, colormap, neighbours);
+                        break;
                 }
             }
 
@@ -54,7 +52,7 @@ namespace Mcasaenk.Rendering {
                 var block = colormap.Value(blockid);
 
                 if(block.tint.GetBlendMode() == Tint.Blending.none) {
-                    pixels[i] = block.GetColor(Colormap.DEFBIOME, Colormap.DEFHEIGHT);
+                    pixels[i] = block.GetColor(Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
                 } else if(block.tint.GetBlendMode() == Tint.Blending.heightonly) {
                     pixels[i] = block.GetColor(genData.biomeIds(i), genData.heights(i));
                 }

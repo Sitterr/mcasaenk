@@ -55,7 +55,7 @@
 
                             
                             
-                            <Border x:Name="cont_general" Visibility="Visible">
+                            <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -149,7 +149,7 @@
                                     <Border Height="30"/>
                                     <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
                                     <Border Height="30"/>
-                                    
+
                                     <StackPanel Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:ShadeType.OG}, Mode=OneWay}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -161,11 +161,7 @@
                                                 <RowDefinition Height="auto"/>
                                                 <RowDefinition Height="2"/>
                                                 <RowDefinition Height="auto" MinHeight="10"/>
-                                                <RowDefinition Height="40"/>
-                                                <RowDefinition Height="auto"/>
-                                                <RowDefinition Height="2"/>
-                                                <RowDefinition Height="auto" MinHeight="10"/>
-                                                <RowDefinition Height="60"/>
+                                                <RowDefinition Height="20"/>
                                                 <RowDefinition Height="auto"/>
                                                 <RowDefinition Height="2"/>
                                                 <RowDefinition Height="auto" MinHeight="10"/>
@@ -250,40 +246,67 @@
 
 
 
-                                            <DockPanel Grid.Row="8" Grid.Column="0">
-                                                <TextBlock Text="depth transparency"/>
-                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
-                                            </DockPanel>
-                                            <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
-                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
-
-                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="8" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
-                                                <TextBlock Text="softer depth shade"/>
-                                                <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
-                                            </StackPanel>
 
 
                                         </Grid>
+
+
+                                        <TextBlock Text="Water settings" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto"/>
+                                                <RowDefinition Height="2"/>
+                                                <RowDefinition Height="auto" MinHeight="10"/>
+                                                <RowDefinition Height="40"/>
+                                                <RowDefinition Height="auto"/>
+                                                <RowDefinition Height="2"/>
+                                                <RowDefinition Height="auto" MinHeight="10"/>
+                                            </Grid.RowDefinitions>
+
+                                            <DockPanel Grid.Row="0" Grid.Column="0">
+                                                <TextBlock Text="depth transparency"/>
+                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+                                            <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
+
+
+                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
+                                                <TextBlock Text="softer depth shade"/>
+                                                <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
+                                            </StackPanel>
+                                        </Grid>
+
                                     </StackPanel>
                                     
                                     
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Collapsed">
+                            <Border x:Name="cont_color" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <TextBlock VerticalAlignment="Center">
-                                        <Run Text="colormap"/>
-                                        <Run Text="✶">
-                                            <Run.Foreground>
-                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="ColorMapping" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="COLOR_MAPPING_MODE" />
-                                                </MultiBinding>
-                                            </Run.Foreground>  
-                                        </Run>
-                                        </TextBlock>
+                                        <Label>
+                                            <TextBlock VerticalAlignment="Center">
+                                                <Run Text="colormap"/>
+                                                <Run Text="✶">
+                                                    <Run.Foreground>
+                                                        <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                            <Binding Source="{x:Static gl:Global.Settings}" Path="ColorMapping" />
+                                                            <Binding Source="{x:Static gl:Global.Settings}" Path="COLOR_MAPPING_MODE" />
+                                                        </MultiBinding>
+                                                    </Run.Foreground>  
+                                                </Run>
+                                            </TextBlock>
+                                            <Label.ToolTip>
+                                                <TextBlock Text="the colormap specific settings will appear after a world is loaded and reset after an update"/>
+                                            </Label.ToolTip>
+                                        </Label>
                                         <ComboBox Margin="10 0 0 0"
                                               ItemsSource="{Binding Source={x:Static gl:Global.ViewModel}, Path=AllColormaps}"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
@@ -297,15 +320,55 @@
                                     <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
                                     <Border Height="30"/>
 
-                                    <Grid x:Name="tintGrid">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                            <ColumnDefinition Width="20"/>
-                                            <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                        </Grid.RowDefinitions>
-                                    </Grid>
+                                    <StackPanel  x:Name="macroGrid" Margin="0 0 0 60">
+                                        <TextBlock Text="Meta settings" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto"/>
+                                                <RowDefinition Height="2"/>
+                                                <RowDefinition Height="auto" MinHeight="10"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock x:Name="label_defbiome" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Text="default biome"/>
+                                            <ComboBox x:Name="combo_defbiome" Width="auto" Grid.Row="2" Grid.Column="0"/>
+
+                                            <DockPanel Grid.Row="0" Grid.Column="2">
+                                                <Label x:Name="label_yvarvanilla">
+                                                    <TextBlock Text="y variance for vanilla tints"/>
+                                                    <Label.ToolTip>
+                                                        <StackPanel>
+                                                            <TextBlock Text="from 1.7.1 up until 1.15 most biomes would change color "/>
+                                                            <TextBlock Text="slightly as the temperature decreases in higher elevations"/>
+                                                        </StackPanel>
+                                                    </Label.ToolTip>
+                                                </Label>
+                                                <TextBlock x:Name="text_yvarvanilla" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+                                            <Slider x:Name="slider_yvarvanilla" Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                 Value="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast}"/>
+                                        
+                                        </Grid>
+                                    </StackPanel>
+
+
+                                    <StackPanel x:Name="tintSettings">
+                                        <TextBlock Text="Tint settings" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                        <Grid x:Name="tintGrid">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                            </Grid.RowDefinitions>
+                                        </Grid>
+                                    </StackPanel>
+
                                 </StackPanel>
                             </Border>
 
