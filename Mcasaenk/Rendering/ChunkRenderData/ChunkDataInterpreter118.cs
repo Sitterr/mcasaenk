@@ -10,8 +10,6 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter118 : IChunkInterpreter {
         private static ArrayPool<ushort> pallattePool = ArrayPool<ushort>.Shared;
-        private static ArrayPool<ArrTag<long>> paletteDataPool = ArrayPool<ArrTag<long>>.Shared;
-        private static ArrayPool<ArrTag<byte>> lightsPool = ArrayPool<ArrTag<byte>>.Shared;
 
         private CompoundTag tag;
 
@@ -40,11 +38,11 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                 motion_blocking = (ArrTag<long>)heightmaps["MOTION_BLOCKING"];
             }
 
-            blockStates = paletteDataPool.Rent(SECTIONS);
+            blockStates = new ArrTag<long>[SECTIONS];
             blockStates_palette = new ushort[SECTIONS][];
-            biomes = paletteDataPool.Rent(SECTIONS);
+            biomes = new ArrTag<long>[SECTIONS];
             biomes_palette = new ushort[SECTIONS][];
-            blocklights = lightsPool.Rent(SECTIONS);
+            blocklights = new ArrTag<byte>[SECTIONS];
             var sections = (ListTag)tag["sections"];
             if(sections != null) {
                 foreach(var _section in (List<Tag>)sections) {
@@ -109,7 +107,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
 
         public ushort GetBiome(int cx, int cz, int cy) {
-            //cy += negy;
             if(cy < 0 || cy >= height) return default;
             int i = cy / 16;
             if(biomes_palette[i] == null) return 0;
@@ -121,10 +118,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         }
 
         public ushort GetBlock(int cx, int cz, int cy) {
-            //cy += negy;
-            if(cy < 0 || cy >= height) return default;
+            if(cy < 0 || cy >= height) return Colormap.INVBLOCK;
             int i = cy / 16;
-            if(blockStates_palette[i] == null) return Colormap.BLOCK_AIR;
+            if(blockStates_palette[i] == null) return Colormap.INVBLOCK;
             if(blockStates[i] == null) return blockStates_palette[i][0 + 1];
 
             int paletteIndex = (this as IChunkInterpreter).GetValueFromBitArray(getIndexXYZ(cx, cy % 16, cz, 16), blockStates[i], blockStates_palette[i][0]);
@@ -144,7 +140,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
 
         public byte GetBlockLight(int cx, int cz, int cy) {
-            //cy += negy;
             if(cy < 0 || cy >= height) return default;
             int i = cy / 16;
             if(blocklights[i] == null) return 0;
@@ -187,9 +182,6 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                     pallattePool.Return(biomes_palette[i]);
                 }
             }
-            paletteDataPool.Return(blockStates);
-            paletteDataPool.Return(biomes);
-            lightsPool.Return(blocklights);
         }
     }
 }

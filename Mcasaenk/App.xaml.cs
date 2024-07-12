@@ -47,13 +47,24 @@ namespace Mcasaenk {
 
 
                 Settings.SetActions(
-                    () => {
+                    (changed) => {
                         TileMap?.RedrawAll();
+
+                        if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
                     },
-                    () => {
-                        if(Global.App.OpenedSave != null && changingsave == false) {
-                            Global.App.OpenedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
+                    (_changed) => {
+                        if(_changed.Count == 0) return;
+                        var changed = new List<string>(_changed);
+                        Settings.Freeze();
+
+                        if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
+                            SetColormap();
                         }
+
+                        _openedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
+                        SetWorld();
+
+                        Settings.FinishFreeze(false);
                     });
             }
 
@@ -102,7 +113,6 @@ namespace Mcasaenk {
         public Settings Settings { get; set; }
         public Colormap Colormap { get; set; }
 
-        private bool changingsave = false;
         private Save _openedSave;
         public Save OpenedSave { // hard reset
             get {
@@ -110,58 +120,61 @@ namespace Mcasaenk {
             }
 
             set {
-                if(value != null) if(!Colormap.IsColormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) return;
-                changingsave = true;
+                Settings.Freeze();
 
-                var oldv = _openedSave;
                 _openedSave = value;
-
                 if(value != null) {
-                    RAND = Global.rand.NextDouble();
+                    SetColormap();
+                    SetWorld();
 
-                    {
-                        if(_openedSave.GetDimension(Global.Settings.DIMENSION) == null) {
-                            Global.Settings.DIMENSION = Settings.DEF().DIMENSION;
-                        }
-                        var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
-                        Settings.MINY = (short)h.miny;
-                        Settings.MAXABSHEIGHT = (short)h.height;
-                        
-                    }
-
-                    ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
-
-                    TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
-                    TileMap.SetSettings();
-
-                    Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
-                    Shade3DFilter.ReInit(Colormap);
-
-                    foreach(var tint in Colormap.GetTints()) {
-                        tint.Settings()?.SetActions(() => {
-                            TileMap?.RedrawAll();
-                        });
-                    }
-                } else {
-                    Settings.MINY = -64; Settings.MAXABSHEIGHT = 384;
-                }
-
-                if(oldv?.path != OpenedSave?.path) {
                     Settings.Y_OFFICIAL = Settings.MAXY;
                 }
 
-                Settings.OnAutoChange(nameof(Settings.MINY));
-                Settings.OnAutoChange(nameof(Settings.MAXY));
-                Settings.OnAutoChange(nameof(Settings.MAXABSHEIGHT));
-                Settings.OnAutoChange(nameof(Settings.ABSY));
-
-                Window.OnHardReset();
-                Window.canvasControl.OnTilemapChanged();
-
-                GC.Collect(2, GCCollectionMode.Forced);
-
-                changingsave = false;
+                Settings.FinishFreeze(false);
             }
+        }
+
+        void SetColormap() {
+            if(OpenedSave == null) return;
+
+            Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
+            Shade3DFilter.ReInit(Colormap);
+
+            foreach(var tint in Colormap.GetTints()) {
+                tint.Settings()?.SetActions(() => {
+                    TileMap?.RedrawAll();
+                });
+            }
+
+            Window.OnColormapChange();
+        }
+        void SetWorld() {
+            RAND = Global.rand.NextDouble();
+
+            {
+                if(_openedSave.GetDimension(Global.Settings.DIMENSION) == null) {
+                    Global.Settings.DIMENSION = Settings.DEF().DIMENSION;
+                }
+                var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
+                Settings.MINY = (short)h.miny;
+                Settings.MAXABSHEIGHT = (short)h.height;
+                Settings.Y_OFFICIAL = Settings.Y_OFFICIAL;
+            }
+
+            ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
+
+            TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
+            TileMap.SetSettings();
+
+            Window.OnHardReset();
+            Window.canvasControl.OnTilemapChanged();
+
+            GC.Collect(2, GCCollectionMode.Forced);
+
+            Settings.OnAutoChange(nameof(Settings.MINY));
+            Settings.OnAutoChange(nameof(Settings.MAXY));
+            Settings.OnAutoChange(nameof(Settings.MAXABSHEIGHT));
+            Settings.OnAutoChange(nameof(Settings.ABSY));
         }
     }
 

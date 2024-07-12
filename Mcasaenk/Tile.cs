@@ -76,6 +76,8 @@ namespace Mcasaenk
             return fr;
         }
 
+        public bool Empty() => possibleTiles.Count == 0;
+
         public int ShadeTiles() => tiles.Values.Where(t => t.shade.IsActive).Count();
 
         public int ShadeFrames() => shadeFrames.Values.Select(t => t.frames.Count).Sum();

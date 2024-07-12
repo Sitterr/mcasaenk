@@ -68,6 +68,8 @@ namespace Mcasaenk.UI.Canvas {
 
             secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
             CompositionTarget.Rendering += OnFastTick;
+
+            msg.Visibility = Visibility.Collapsed;
         }
 
         TileMap tileMap { get => Global.App.TileMap; }
@@ -75,6 +77,14 @@ namespace Mcasaenk.UI.Canvas {
         public void OnTilemapChanged() { 
             scenePainter.SetTileMap(tileMap);
             screenshotManager = null;
+
+            msg.Visibility = Visibility.Collapsed;
+            if(tileMap != null) {
+                if(tileMap.Empty()) {
+                    msg.Text = "This dimension is empty";
+                    msg.Visibility = Visibility.Visible;
+                }
+            }
         }
 
         protected override void OnRender(DrawingContext drawingContext) {

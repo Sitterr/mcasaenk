@@ -299,6 +299,38 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to acacia_door;196;
+        ///acacia_fence;192;0
+        ///acacia_fence_gate;187;0,1,2,3,4,5,6,7
+        ///acacia_leaves;161;0,4,8,12
+        ///acacia_log;162;0,4,8,12
+        ///acacia_planks;5;4
+        ///acacia_sapling;6;4,12
+        ///acacia_slab;126;4
+        ///acacia_slab_top;126;12
+        ///acacia_stairs;163;
+        ///activator_rail;157;0,1,2,3,4,5,6,7,8,9,10,11,12,13
+        ///air;0;0
+        ///allium;38;2
+        ///andesite;1;5
+        ///anvil;145;0,1,2,3
+        ///azure_bluet;38;3
+        ///barrier;166;0
+        ///beacon;138;0
+        ///bed;26;0,1,2,3,8,9,10,11
+        ///bedrock;7;0
+        ///beetroots;207;0,1,2,3
+        ///birch_door;194;
+        ///birch_fence;189;0
+        ///birch_fence_gate;184;0,1, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string oldblocks {
+            get {
+                return ResourceManager.GetString("oldblocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] question {
@@ -383,7 +415,8 @@ namespace Mcasaenk.Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to grass;short_grass
-        ///lily_pad;waterlily.
+        ///lily_pad;waterlily
+        ///dirt_path;grass_path.
         /// </summary>
         public static string synonymblocks {
             get {

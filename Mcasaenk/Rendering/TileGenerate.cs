@@ -22,14 +22,14 @@ using Mcasaenk.Nbt;
 using CommunityToolkit.HighPerformance.Buffers;
 using Mcasaenk.Rendering.ChunkRenderData;
 using System.Buffers;
-using static System.Net.WebRequestMethods;
 
 namespace Mcasaenk.Rendering
 {
     public class TileGenerate {
         public static unsafe GenData StandartGenerate(Tile tile) {
-            var rawData = new RawData();
+            if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
 
+            var rawData = new RawData();
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
 
@@ -47,8 +47,9 @@ namespace Mcasaenk.Rendering
         }
 
         public static unsafe GenData ShadeGenerate(Tile tile) {
-            var rawData = new RawData();
+            if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
 
+            var rawData = new RawData();
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
 

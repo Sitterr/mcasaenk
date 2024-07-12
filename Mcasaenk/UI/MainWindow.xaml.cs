@@ -209,11 +209,12 @@ namespace Mcasaenk.UI {
         }
 
 
-
+        public void OnColormapChange() {
+            leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
+        }
+        
 
         public void OnHardReset() {
-            leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
-
             if(Global.App.OpenedSave != null) {
                 btn_dim_overworld.IsEnabled = Global.App.OpenedSave.overworld != null;
                 btn_dim_nether.IsEnabled = Global.App.OpenedSave.nether != null;

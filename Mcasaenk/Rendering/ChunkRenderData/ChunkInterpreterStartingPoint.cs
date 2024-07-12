@@ -22,17 +22,16 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             //try {
             var globaltag = (CompoundTag)_g;
 
-            int version = (NumTag<int>)globaltag["DataVersion"];
+
+            int version = globaltag["DataVersion"] != null ? (NumTag<int>)globaltag["DataVersion"] : -1;
+
+            var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
+
             IChunkInterpreter chunkreader = null;
-            if(version > 0) {
-
-                var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
-
-                if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
-                else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17
-                
-
-            }
+            if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
+            else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17
+            else if(version >= 1344) chunkreader = new ChunkDataInterpreter115(globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
+            else chunkreader = new ChunkDataInterpreter112(globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
 
             if(chunkreader == null) throw new Exception();
             else return chunkreader;

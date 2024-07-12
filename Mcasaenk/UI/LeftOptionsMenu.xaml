@@ -179,7 +179,7 @@
                                 <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
                                     <Label>
                                         <TextBlock Margin="0">
-                                            <Run Text="use heightmaps filter"/>
+                                            <Run Text="use heightmap filters"/>
                                             <Run Text="✶">
                                                 <Run.Foreground>
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">

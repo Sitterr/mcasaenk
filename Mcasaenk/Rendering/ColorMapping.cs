@@ -27,6 +27,7 @@ using Mcasaenk.WorldInfo;
 using System.Windows.Documents;
 using static Mcasaenk.Rendering.Tint;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 
 namespace Mcasaenk.Rendering {
     public class DynamicNameToIdBiMap {
@@ -42,16 +43,20 @@ namespace Mcasaenk.Rendering {
         private ushort counter;
         private bool frozen;
 
+        protected ushort def;
         private readonly Action<string, ushort> onAdd;
-        public DynamicNameToIdBiMap(Action<string, ushort> onAdd) { 
+        public DynamicNameToIdBiMap(ushort def, Action<string, ushort> onAdd) {
+            this.def = def;
             this.onAdd = onAdd;
         }
 
         public ushort GetId(string name) {
             if(nameToId.TryGetValue(name, out var id)) return id;
             else if(frozen == false) return assignNew(name);
-            else return Colormap.INVBLOCK;
+            else return def;
         }
+
+        public bool ContainsName(string name) => nameToId.ContainsKey(name);
 
         public string GetName(ushort id) {
             return idToName[id];
@@ -112,10 +117,15 @@ namespace Mcasaenk.Rendering {
     public class BiomeRegistry : DynamicNameToIdBiMap {
         private static IDictionary<int, ushort> oldBiomeIdToId;
 
-        public BiomeRegistry(Action<string, ushort> onAdd) : base(onAdd) { }
+        public BiomeRegistry(Action<string, ushort> onAdd) : base(Global.Settings.DEFBIOME, onAdd) { }
+
+        public void UpdateDef() {
+            this.def = Global.Settings.DEFBIOME;
+        }
 
         public ushort GetId(int oldid) {
-            return oldBiomeIdToId[oldid];
+            if(oldBiomeIdToId.TryGetValue(oldid, out var newid)) return newid;
+            return def;
         }
         
         public void SetUp(List<BiomeInfo> biomes) {
@@ -134,6 +144,37 @@ namespace Mcasaenk.Rendering {
         }
     }
 
+    public class BlockRegistry : DynamicNameToIdBiMap {
+        private static IDictionary<int, ushort> oldBlockIdToId;
+        public BlockRegistry(Action<string, ushort> onAdd) : base(Colormap.INVBLOCK, onAdd) { }
+
+        public ushort GetId(int oldid) {
+            if(oldBlockIdToId.ContainsKey(oldid)) return oldBlockIdToId[oldid];
+            return Colormap.NONEBLOCK;
+        }
+
+        public void LoadOldBlocks() {
+            oldBlockIdToId = new Dictionary<int, ushort>();
+            TxtFormatReader.ReadStandartFormat(Resources.ResourceMapping.oldblocks, (_, parts) => {
+                string name = parts[0].minecraftname();
+                if(base.ContainsName(name)) {
+                    int oldidpart1 = Convert.ToInt32(parts[1]) << 4;
+                    if(parts[2].Length > 0) {
+                        foreach(var s in parts[2].Split(',')) {
+                            int oldid = oldidpart1 + Convert.ToInt32(s);
+                            oldBlockIdToId[oldid] = base.GetId(name);
+                        }
+                    } else {
+                        for(int i = 0; i < 16; i++) {
+                            oldBlockIdToId[oldidpart1 + i] = base.GetId(name);
+                        }
+                    }
+                }
+            });
+            oldBlockIdToId = oldBlockIdToId.ToFrozenDictionary();
+        }
+    }
+
     public class Colormap {
         public const int DEFHEIGHT = 64;
 
@@ -142,7 +183,7 @@ namespace Mcasaenk.Rendering {
 
         public readonly ushort depth;
 
-        public readonly DynamicNameToIdBiMap Block;
+        public readonly BlockRegistry Block;
         public readonly BiomeRegistry Biome;
         private IDictionary<ushort, BlockValue> blocks;
         private List<Tint> tints;
@@ -214,6 +255,7 @@ namespace Mcasaenk.Rendering {
 
             def = blocks[0];
 
+            Block.LoadOldBlocks();
             depth = Block.GetId("minecraft:water"); // todo!
             Global.Settings.DEFBIOME = PLAINSBIOME; // todo!
         }

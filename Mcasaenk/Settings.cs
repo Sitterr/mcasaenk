@@ -53,22 +53,23 @@ namespace Mcasaenk
 
 
     public class Settings : INotifyPropertyChanged {
+        List<string> frozenChanges = new List<string>();
+
         public void SetFromBack() {
-            frozen = true;
+            Freeze();
 
-            Y_OFFICIAL = Y;
-            ADEG = ADeg;
-            BDEG = BDeg;
-            SHADE3D = Shade3d;
-            MAXCONCURRENCY = RegionConcurrency;
-            CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
-            DRAWMAXCONCURRENCY = DrawConcurrency;
-            COLOR_MAPPING_MODE = ColorMapping;
-            SHADETYPE = ShadeType;
-            PREFERHEIGHTMAPS = PreferHeightmap;
+            if(Y_OFFICIAL != Y) Y_OFFICIAL = Y;
+            if(ADEG != ADeg) ADEG = ADeg;
+            if(BDEG != BDeg) BDEG = BDeg;
+            if(SHADE3D != Shade3d) SHADE3D = Shade3d;
+            if(MAXCONCURRENCY != RegionConcurrency) MAXCONCURRENCY = RegionConcurrency;
+            if(CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency) CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
+            if(DRAWMAXCONCURRENCY != DrawConcurrency) DRAWMAXCONCURRENCY = DrawConcurrency;
+            if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
+            if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
+            if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
 
-            frozen = false;
-            OnHardChange("");
+            FinishFreeze(true);
         }
         public void Reset() {
             Y = Y_OFFICIAL;
@@ -84,17 +85,26 @@ namespace Mcasaenk
         }
 
         public bool frozen { get; private set; } = true;
+        public void Freeze() {
+            frozen = true;
+            frozenChanges.Clear();
+        }
+        public void FinishFreeze(bool execute) {
+            frozen = false;
+            if(execute) onHardChange(frozenChanges);
+        }
+
+
         public void OnAutoChange(string propertyName) {
             OnPropertyChanged(propertyName);
         }
-
         public void OnLightChange(string propertyName) {
-            if(frozen == false) onLightChange();
-            if(propertyName != "") OnPropertyChanged(propertyName);
+            if(frozen == false) onLightChange(propertyName);
+            OnPropertyChanged(propertyName);
         }
-
         public void OnHardChange(string propertyName) {
-            if(frozen == false) onHardChange();
+            if(frozen) frozenChanges.Add(propertyName); 
+            else onHardChange([propertyName]);
             OnPropertyChanged(propertyName);
         }
 
@@ -131,8 +141,9 @@ namespace Mcasaenk
             ADEG = 120, BDEG = 15,
         };
 
-        private Action onLightChange, onHardChange;
-        public void SetActions(Action onLightChange, Action onHardChange) {
+        private Action<List<string>> onHardChange;
+        private Action<string> onLightChange;
+        public void SetActions(Action<string> onLightChange, Action<List<string>> onHardChange) {
             this.onLightChange = onLightChange;
             this.onHardChange = onHardChange;
             frozen = false;
@@ -301,7 +312,6 @@ namespace Mcasaenk
 
                 if(SHADE3D == false) {
                     adeg = value;
-                    ShadeConstants.GLB = new ShadeConstants(ADEG);
                     OnAutoChange(nameof(ADeg));
                     OnLightChange(nameof(ADEG));
                 } else {

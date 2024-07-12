@@ -1,2 +1,15 @@
 ﻿grass;short_grass
 lily_pad;waterlily
+dirt_path;grass_path
+furnace;furnace_on
+melon_stem;attached_melon_stem
+oak_log;log
+portal;nether_portal
+pumpkin;carved_pumpkin
+pumpkin_stem;attached_pumpkin_stem
+redstone_lamp;redstone_lamp_off
+redstone_lamp;redstone_lamp_on
+redstone_torch;redstone_wall_torch
+redstone_torch;redstone_wall_torch
+stone;smooth_stone
+white_wool;wool

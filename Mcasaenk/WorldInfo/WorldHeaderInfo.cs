@@ -37,6 +37,7 @@ namespace Mcasaenk.WorldInfo {
         public ImageSource image { get; private set; }
         public string foldername { get; private set; }
 
+        public string pd { get; private set; }
         public int px { get; private set; }
         public int py { get; private set; }
         public int pz { get; private set; }
@@ -54,13 +55,18 @@ namespace Mcasaenk.WorldInfo {
             var tag = (CompoundTag)_tag;
             var data = (CompoundTag)tag["Data"];
             {
-                this.difficulty = (Difficulty)(sbyte)(NumTag<sbyte>)data["Difficulty"];
+                var d = (NumTag<sbyte>)data["Difficulty"];
+                this.difficulty = d != null ? (Difficulty)(sbyte)d : Difficulty.Normal;
+
                 this.name = (NumTag<string>)data["LevelName"];
                 this.gamemode = (Gamemode)(int)(NumTag<int>)data["GameType"];
                 var version = (CompoundTag)data["Version"];
-                {
+                if(version != null) {
                     this.version_name = (NumTag<string>)version["Name"];
                     this.version_id = (NumTag<int>)version["Id"];
+                } else {
+                    this.version_name = "unknown";
+                    this.version_id = -1;
                 }
                 var worldGenSettings = (CompoundTag)data["WorldGenSettings"];
                 if(worldGenSettings != null) {
@@ -74,12 +80,20 @@ namespace Mcasaenk.WorldInfo {
                 this.sz = (NumTag<int>)data["SpawnZ"];
                 var player = (CompoundTag)data["Player"];
                 {
-                    if(player["SpawnX"] != null) {
-                        this.px = (NumTag<int>)player["SpawnX"];
-                        this.py = (NumTag<int>)player["SpawnY"];
-                        this.pz = (NumTag<int>)player["SpawnZ"];
+                    if(player["Pos"] != null) {
+                        var pos = (List<Tag>)(ListTag)player["Pos"];
+                        this.px = (int)(NumTag<double>)pos[0];
+                        this.py = (int)(NumTag<double>)pos[1];
+                        this.pz = (int)(NumTag<double>)pos[2];
+                        if(player["Dimension"] is NumTag<string> st) this.pd = st;
+                        else if(player["Dimension"] is NumTag<int> it) {
+                            if(it == 0) this.pd = "minecraft:overworld";
+                            if(it == 1) this.pd = "minecraft:the_nether";
+                            if(it == 2) this.pd = "minecraft:the_end";
+                        }
                     } else {
                         this.px = this.py = this.pz = int.MaxValue;
+                        this.pd = "";
                     }
                 }
             }

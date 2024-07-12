@@ -166,6 +166,9 @@
   <data name="oldbiomes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>oldbiomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="oldblocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>oldblocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="question" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\question.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
