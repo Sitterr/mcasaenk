@@ -27,6 +27,8 @@ namespace Mcasaenk {
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "mcasaenk");
 
+        public const string VERSION = "0.9.0";
+
         [STAThread]
         protected override void OnStartup(StartupEventArgs e) {
             Debug.WriteLine("int main()?");
@@ -179,5 +181,4 @@ namespace Mcasaenk {
             Settings.OnAutoChange(nameof(Settings.ABSY));
         }
     }
-
 }

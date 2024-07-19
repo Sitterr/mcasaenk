@@ -45,7 +45,7 @@
                         </StackPanel.Resources>
 
 
-                        <Border x:Name="cont_config" Visibility="Visible">
+                        <Border x:Name="cont_config" Visibility="Collapsed">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -218,12 +218,26 @@
 
                             </Grid>
                         </Border>
-                        <Border x:Name="cont_about" Visibility="Collapsed">
-                            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                                <TextBlock FontSize="16">
-                                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/Sitterr/mcasaenk">Github</Hyperlink>
-                                </TextBlock>
-                            </StackPanel>
+                        <Border x:Name="cont_about" Visibility="Visible">
+                            <Border BorderBrush="{StaticResource BORDER}" BorderThickness="1" Padding="10">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="{Binding Source={x:Static resx:ResourceMapping.img31_}}" Stretch="UniformToFill"/>
+                                </Border.Background>
+                                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                                    <TextBlock FontSize="20" FontWeight="Bold" Text="About MCA Saenk"/>
+                                    <Border Height="15"/>
+                                    <TextBlock FontSize="16">
+                                        Github: 
+                                        <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/Sitterr/mcasaenk">mcasaenk</Hyperlink>
+                                    </TextBlock>
+                                    <Border Height="5"/>
+                                    <TextBlock FontSize="16">
+                                        <Run Text="Version:"/>
+                                        <Run x:Name="txt_version"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
                         </Border>
 
 

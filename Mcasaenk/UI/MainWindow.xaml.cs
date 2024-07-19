@@ -37,6 +37,8 @@ namespace Mcasaenk.UI {
         public MainWindow() {
             InitializeComponent();
 
+            this.Title = "v" + App.VERSION;
+
             footer = footerControl.@interface;
             footerControl.Init();
 

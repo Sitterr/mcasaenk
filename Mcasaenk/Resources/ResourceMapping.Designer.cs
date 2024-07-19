@@ -246,7 +246,21 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] img31_ {
+            get {
+                object obj = ResourceManager.GetObject("img31_", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to bubble_column
+        ///kelp
+        ///kelp_plant
+        ///seagrass
+        ///tall_seagrass.
         /// </summary>
         public static string inherent_water_logged {
             get {
@@ -380,41 +394,42 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to allium
+        ///   Looks up a localized string similar to // q = 0
+        ///acacia_sapling
+        ///allium
+        ///amethyst_cluster
         ///attached_melon_stem
         ///attached_pumpkin_stem
         ///azure_bluet
         ///bamboo_sapling
-        ///beacon
         ///beetroots
-        ///bell
-        ///black_candle
-        ///black_stained_glass_pane
-        ///blue_candle
+        ///big_dripleaf_stem
+        ///birch_sapling
         ///blue_orchid
-        ///blue_stained_glass_pane
-        ///brown_candle
+        ///brain_coral
         ///brown_mushroom
-        ///brown_stained_glass_pane
-        ///calibrated_sculk_sensor
-        ///candle
+        ///brown_mushroom_block
+        ///bubble_coral
         ///carrots
+        ///cave_vines
+        ///cave_vines_plant
         ///chain
-        ///cocoa
+        ///cherry_sapling
+        ///cobweb
         ///cornflower
         ///crimson_fungus
-        ///cyan_candle
-        ///cyan_stained_glass_pane
+        ///crimson_roots
         ///dandelion
-        ///end_rod
-        ///flower_pot
-        ///glass
-        ///glass_pane
-        ///gray_candle
-        ///gray_stained_glass_pane
-        ///green_candle
-        ///green_stained_glass_pane
-        ///grindsto [rest of string was truncated]&quot;;.
+        ///dark_oak_sapling
+        ///dead_brain_coral
+        ///dead_bubble_coral
+        ///dead_bush
+        ///dead_fire_coral
+        ///dead_horn_coral
+        ///dead_tube_coral
+        ///fern
+        ///fire_coral
+        ///glow_ [rest of string was truncated]&quot;;.
         /// </summary>
         public static string shade3d_filter {
             get {

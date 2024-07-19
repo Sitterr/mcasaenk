@@ -319,7 +319,7 @@
                         <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
                             <Grid Name="DropDown" Margin="0 0 0 1" SnapsToDevicePixels="True" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder" Margin="0 -1 0.2 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-                                <ScrollViewer SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 1 0">
+                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 1 0">
                                     <StackPanel Margin="4,6,4,6" TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
@@ -494,7 +494,7 @@ TargetType="{x:Type ScrollBar}">
             </Trigger>
         </Style.Triggers>
     </Style>
-    <Style TargetType="{x:Type ScrollViewer}">
+    <Style x:Key="comboboxScrollViewer" TargetType="{x:Type ScrollViewer}">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Template">
@@ -737,7 +737,6 @@ TargetType="{x:Type ScrollBar}">
 
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
-        <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="Foreground" Value="{StaticResource FORE}" />
         <Setter Property="CaretBrush" Value="{StaticResource FORE}"/>
         <Setter Property="Background" Value="{StaticResource BACKCTRL}" />
@@ -751,7 +750,7 @@ TargetType="{x:Type ScrollBar}">
                             x:Name="PART_ContentHost"
                             BorderThickness="0"                               
                             Background="{x:Null}"
-                             Focusable="True"
+                            Focusable="True"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             VerticalContentAlignment="Bottom"

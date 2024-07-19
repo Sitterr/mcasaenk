@@ -160,6 +160,9 @@
   <data name="Icon2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Icon2.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="img31_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Images\img31_.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="inherent_water_logged" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>inherent_water_logged.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
