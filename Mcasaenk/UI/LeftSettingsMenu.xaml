@@ -53,8 +53,8 @@
                                 </Style>
                             </StackPanel.Resources>
 
-                            
-                            
+
+
                             <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -96,8 +96,8 @@
                                     </DockPanel>
                                     <Slider Grid.Row="2" Grid.Column="0" Minimum="{Binding Source={x:Static gl:Global.Settings}, Path=MINY}" Maximum="{Binding Source={x:Static gl:Global.Settings}, Path=MAXY}" TickFrequency="16"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
-                                    
-                                    
+
+
 
                                     <DockPanel Grid.Row="4" Grid.Column="0">
                                         <TextBlock Text="contrast"/>
@@ -114,7 +114,7 @@
                                     <Slider Grid.Row="10" Grid.Column="0" Minimum="0" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=SunLight}"/>
 
-                                    
+
                                     <DockPanel Grid.Row="8" Grid.Column="2">
                                         <TextBlock Text="artificial light"/>
                                         <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=BlockLight}" HorizontalAlignment="Right"/>
@@ -145,7 +145,7 @@
                                                   DisplayMemberPath="Description"
                                                   SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType}"/>
                                     </StackPanel>
-                                    
+
                                     <Border Height="30"/>
                                     <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
                                     <Border Height="30"/>
@@ -284,8 +284,8 @@
                                         </Grid>
 
                                     </StackPanel>
-                                    
-                                    
+
+
                                 </StackPanel>
                             </Border>
                             <Border x:Name="cont_color" Visibility="Visible">
@@ -351,7 +351,7 @@
                                             </DockPanel>
                                             <Slider x:Name="slider_yvarvanilla" Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="1" IsSnapToTickEnabled="True"
                                                  Value="{Binding Source={x:Static gl:Global.Settings}, Path=Contrast}"/>
-                                        
+
                                         </Grid>
                                     </StackPanel>
 

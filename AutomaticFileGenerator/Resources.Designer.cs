@@ -61,37 +61,73 @@ namespace Utils {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to the_void;0
-        ///plains;1
-        ///sunflower_plains;2
-        ///snowy_plains;3
-        ///ice_spikes;4
-        ///desert;5
-        ///swamp;6
-        ///mangrove_swamp;7
-        ///forest;8
-        ///flower_forest;9
-        ///birch_forest;10
-        ///dark_forest;11
-        ///old_growth_birch_forest;12
-        ///old_growth_pine_taiga;13
-        ///old_growth_spruce_taiga;14
-        ///taiga;15
-        ///snowy_taiga;16
-        ///savanna;17
-        ///savanna_plateau;18
-        ///windswept_hills;19
-        ///windswept_gravelly_hills;20
-        ///windswept_forest;21
-        ///windswept_savanna;22
-        ///jungle;23
-        ///sparse_jungle;24
-        ///bamboo_jungle;25
-        ///badlands;26
-        ///eroded_badlands;27
-        ///wooded_badlands;28
-        ///meadow;29
-        /// [rest of string was truncated]&quot;;.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap beta_water {
+            get {
+                object obj = ResourceManager.GetObject("beta_water", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap foliage {
+            get {
+                object obj = ResourceManager.GetObject("foliage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap grass {
+            get {
+                object obj = ResourceManager.GetObject("grass", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the_void
+        ///plains
+        ///sunflower_plains
+        ///snowy_plains
+        ///ice_spikes
+        ///desert
+        ///swamp
+        ///mangrove_swamp
+        ///forest
+        ///flower_forest
+        ///birch_forest
+        ///dark_forest
+        ///old_growth_birch_forest
+        ///old_growth_pine_taiga
+        ///old_growth_spruce_taiga
+        ///taiga
+        ///snowy_taiga
+        ///savanna
+        ///savanna_plateau
+        ///windswept_hills
+        ///windswept_gravelly_hills
+        ///windswept_forest
+        ///windswept_savanna
+        ///jungle
+        ///sparse_jungle
+        ///bamboo_jungle
+        ///badlands
+        ///eroded_badlands
+        ///wooded_badlands
+        ///meadow
+        ///cherry_grove
+        ///grove
+        ///snowy_slopes
+        ///frozen_peaks
+        ///jagged_peaks
+        ///stony_peaks
+        ///rive [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string javabiomes {
             get {
@@ -100,29 +136,15 @@ namespace Utils {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to --TINT--
-        ///j,b;grass_block;grass
-        ///j,b;short_grass;grass
-        ///j,b;tall_grass;grass
-        ///j,b;large_fern;grass
-        ///j,b;fern;grass
-        ///j,b;sugar_cane;grass
-        ///j,b;oak_leaves;foliage
-        ///j,b;jungle_leaves;foliage
-        ///j,b;acacia_leaves;foliage
-        ///j,b;dark_oak_leaves;foliage
-        ///j,b;mangrove_leaves;foliage
-        ///j,b;vine;foliage
-        ///j,b;water;water
-        ///--TINT--
+        ///   Looks up a localized string similar to grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane;91BD59;
+        ///foliage;vanilla_foliage;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine;77AB2F;
+        ///water;vanilla_water;water;3F76E4;
         ///
-        ///--JAVACANTINT--
-        ///birch_leaves;foliage;(#80A755)
-        ///spruce_leaves;foliage;(#619961)
-        ///lily_pad;grass;(#208030)
-        ///melon_stem;grass;(#E0C71C)
-        ///attached_melon_stem;grass;(#E0C71C)
-        ///pumpkin_stem;grass [rest of string was truncated]&quot;;.
+        ///birch_leaves;fixed;birch_leaves;80A755;
+        ///spruce_leaves;fixed;spruce_leaves;619961;
+        ///lily_pad;fixed;lily_pad;208030;
+        ///stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
+        ///redstone_wire;fixed;redstone_wire;AF1805;.
         /// </summary>
         internal static string tintblocks {
             get {

@@ -70,8 +70,20 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                             foreach(var _p in (List<Tag>)palette) {
                                 var p = (CompoundTag)_p;
 
-                                var name = (NumTag<string>)p["Name"];
-                                palettes[y][i] = Global.App.Colormap.Block.GetId(name);
+                                var name = (string)(NumTag<string>)p["Name"];
+                                bool waterlogged = false;
+
+                                var properties = (CompoundTag)p["Properties"];
+                                if(properties != null) {
+                                    var wl = properties["waterlogged"];
+                                    if(wl != null) waterlogged = (NumTag<string>)wl == "true";
+                                }
+                                waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name.minecraftname());
+
+                                ushort id = Global.App.Colormap.Block.GetId(name);
+                                if(waterlogged && (id == Colormap.INVBLOCK || Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER)) id = Global.App.Colormap.BLOCK_WATER;
+                                palettes[y][i] = id;
+
                                 i++;
                             }
                         }
@@ -96,7 +108,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             return world_surface != null && ocean_floor != null;
         }
         public ushort SingleBlockSection(int i) {
-            if(blockStates[i] == null && palettes[i] == null) return Colormap.BLOCK_AIR;
+            if(blockStates[i] == null && palettes[i] == null) return Global.App.Colormap.BLOCK_AIR;
             return Colormap.NONEBLOCK;
         }
 

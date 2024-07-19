@@ -59,7 +59,8 @@ namespace Mcasaenk.Rendering {
         public bool ContainsName(string name) => nameToId.ContainsKey(name);
 
         public string GetName(ushort id) {
-            return idToName[id];
+            if(idToName.TryGetValue(id, out string name)) return name;
+            return "_unknown_";
         }
 
         private ushort assignNew(string name) {
@@ -93,25 +94,6 @@ namespace Mcasaenk.Rendering {
         }
 
         public List<string> GetAllNames() => nameToId.Keys.ToList();
-    }
-
-    public static class TxtFormatReader {
-        public static void ReadStandartFormat(string data, Action<string, string[]> onRead) {
-            string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
-            string group = "";
-            foreach(string _line in lines) {
-                var line = _line.Trim();
-                if(line.Length == 0) continue;
-                if(line.StartsWith("//")) continue;
-                if(line.StartsWith("--") && line.EndsWith("--")) {
-                    group = line.Substring(2, line.Length - 4).Trim();
-                    continue;
-                }
-                string[] parts = line.Split(';').Select(a => a.Trim()).ToArray();
-                onRead(group, parts);
-            }
-        }
     }
 
     public class BiomeRegistry : DynamicNameToIdBiMap {
@@ -179,7 +161,8 @@ namespace Mcasaenk.Rendering {
         public const int DEFHEIGHT = 64;
 
         public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1;
-        public static ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
+
+        public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
 
         public readonly ushort depth;
 
@@ -187,6 +170,7 @@ namespace Mcasaenk.Rendering {
         public readonly BiomeRegistry Biome;
         private IDictionary<ushort, BlockValue> blocks;
         private List<Tint> tints;
+        
         public Colormap(string path, int world_version, DatapacksInfo datapacksInfo) {
             ushort PLAINSBIOME = 0;
             Biome = new BiomeRegistry((name, id) => {
@@ -245,8 +229,7 @@ namespace Mcasaenk.Rendering {
                 } else {
                     blocks[id] = new BlockValue() { color = color, tint = NullTint.Tint }; 
                 }
-            });
-
+            }, '=');
 
 
             blocks = blocks.ToFrozenDictionary();
@@ -257,15 +240,13 @@ namespace Mcasaenk.Rendering {
 
             Block.LoadOldBlocks();
             depth = Block.GetId("minecraft:water"); // todo!
-            Global.Settings.DEFBIOME = PLAINSBIOME; // todo!
+            Global.Settings.DEFBIOME = PLAINSBIOME;
         }
 
         public List<Tint> GetTints() => tints;
 
         private BlockValue def;
         public BlockValue Value(ushort block) => blocks.GetValueOrDefault(block, def);
-
-
 
         public static bool IsColormap(string path) {
             //try {
@@ -277,6 +258,20 @@ namespace Mcasaenk.Rendering {
 
             return true;
         }
+
+
+
+
+        public readonly static ISet<string> INHERENT_WATER_LOGGED;
+        static Colormap() {
+            INHERENT_WATER_LOGGED = new HashSet<string>();
+            foreach(string bl in ResourceMapping.inherent_water_logged.Split(Environment.NewLine)) {
+                INHERENT_WATER_LOGGED.Add(bl.minecraftname());
+            }
+
+            INHERENT_WATER_LOGGED = INHERENT_WATER_LOGGED.ToFrozenSet();
+        }
+
     }
 
 
@@ -379,16 +374,16 @@ namespace Mcasaenk.Rendering {
 
                 switch(line.Substring(0, line.IndexOf('='))) {
                     case "source":
-                        source = line.Substring(line.IndexOf("=") + 1);
+                        source = line.Substring(line.IndexOf("=") + 1).Trim();
                         break;
                     case "format":                   
-                        format = line.Substring(line.IndexOf("=") + 1);
+                        format = line.Substring(line.IndexOf("=") + 1).Trim();
                         break;
                     case "blocks":
-                        blocks = line.Substring(line.IndexOf("=") + 1).Split(" ").Select(l => l.minecraftname()).ToArray();
+                        blocks = line.Substring(line.IndexOf("=") + 1).Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(l => l.minecraftnamecomplex()).ToArray();
                         break;
                     case "color":
-                        color = 0xFF000000 | Convert.ToUInt32(line.Substring(line.IndexOf("=") + 1), 16);
+                        color = 0xFF000000 | Convert.ToUInt32(line.Substring(line.IndexOf("=") + 1).Trim(), 16);
                         break;
                 }
             }

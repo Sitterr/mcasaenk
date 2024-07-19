@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         
         
-        Title="Mcasaenk" Height="625" Width="1000" MinHeight="400">
+        Title="MCA Saenk 1.0" Height="625" Width="1000" MinHeight="400">
 
     <Grid x:Name="mainGrid">
 
@@ -45,11 +45,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="10" />
-                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
                     <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
-                        <ContentControl x:Name="currs" DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
+                        <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
 
                         <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
                             <StackPanel Orientation="Horizontal">
@@ -77,7 +77,7 @@
                 <Border x:Name="screenshotPanel" Grid.Row="2" VerticalAlignment="Top" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
                     <DockPanel>
                         <local:Rad x:Name="rad" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="10 0 0 0" VerticalAlignment="Stretch" HorizontalContentAlignment="Center">
+                        <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="25 0 25 0" VerticalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <ComboBoxItem>1:1</ComboBoxItem>
                             <ComboBoxItem>2:1</ComboBoxItem>
                             <ComboBoxItem>4:1</ComboBoxItem>
@@ -88,7 +88,7 @@
                         <local:EButton x:Name="scr_stop" Width="34" Height="34" BorderColor="{StaticResource RED_B}" DockPanel.Dock="Right" Margin="10 0 0 0" HorizontalAlignment="Right">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.discard}}"/>
                         </local:EButton>
-                        <local:EButton x:Name="scr_capture" Width="34" Height="34" BorderColor="{StaticResource GREEN_B}" DockPanel.Dock="Right" Margin="15 0 0 0" HorizontalAlignment="Right">
+                        <local:EButton x:Name="scr_capture" Width="34" Height="34" BorderColor="{StaticResource GREEN_B}" DockPanel.Dock="Right" Margin="0 0 0 0" HorizontalAlignment="Right">
                             <Image Source="{Binding Source={x:Static resx:ResourceMapping.capture}}"/>
                         </local:EButton>
 
@@ -141,9 +141,10 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+            
         </StackPanel>
 
-        <DockPanel x:Name="ss" Margin="0 10 0 10" Grid.Row="1" Grid.Column="0" Height="auto" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+        <DockPanel x:Name="ss" Margin="0 10 0 10" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="auto" VerticalAlignment="Stretch" HorizontalAlignment="Left">
             <Border x:Name="settings_cont" Background="{StaticResource BACK}" CornerRadius="3"/>
             <Border BorderThickness="0">
                 <DockPanel Margin="10 0 0 0" x:Name="openers">

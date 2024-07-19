@@ -62,10 +62,12 @@ namespace Mcasaenk.Rendering {
             Array.Fill<double>(fd, 1);
             if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
                 double watercontrast = -45 * Math.Pow(Global.App.Settings.CONTRAST, 8) + -15 * Global.App.Settings.CONTRAST;
-                double wateropacity = -30 * Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 8) + -30 * Global.App.Settings.WATER_TRANSPARENCY;
+                double wateropacity = -10 * Math.Pow(1 - Global.App.Settings.WATER_TRANSPARENCY, 8) + -50 * (1 - Global.App.Settings.WATER_TRANSPARENCY);
 
                 for(int i = 0; i < 512 * 512; i++) {
                     var block = genData.block(i);
+
+
 
                     if(Global.App.Settings.WATERDEPTH) {
                         if(block == colormap.depth) {
@@ -73,8 +75,8 @@ namespace Mcasaenk.Rendering {
 
                             uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
 
-                            double ratio = I(waterDepth, Global.App.Settings.WATER_TRANSPARENCY, 1.5 * wateropacity);
-                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = (1 - ratio) * 1 + ratio * 0.3;
+                            double ratio = I(waterDepth, 1 - Global.App.Settings.WATER_TRANSPARENCY, 1.5 * wateropacity);
+                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = (1 - ratio) + Global.App.Settings.WATER_TRANSPARENCY / 2;
                             pixels[i] = Global.Blend(pixels[i], terrainColor, ratio);
 
                             double multintensity = 1 - I(waterDepth, 0, watercontrast);
@@ -99,6 +101,7 @@ namespace Mcasaenk.Rendering {
                 if(genData.isShade(i)) {
                     double max = (Global.App.Settings.CONTRAST * 150);
                     var c = Global.FromARGBInt(pixels[i]);
+
                     sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * fd[i])), ((c.r + c.g + c.b) / 3 - max) / 256), 0, 15);
 
                     //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
@@ -108,7 +111,10 @@ namespace Mcasaenk.Rendering {
                     //if(c.a < 255) pixels[i] = 0;
                     //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
                 }
-                sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
+                // option 1:
+                sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
+                // option 2:
+                //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
 
                 sh = sh / 15;
                 pixels[i] = Global.MultShade(pixels[i], sh, sh, sh);

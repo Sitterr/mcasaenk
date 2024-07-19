@@ -44,7 +44,7 @@ namespace Mcasaenk.UI {
                 var screenshottaker = canvasControl?.ScreenshotManager;
                 if(screenshottaker == null) return;
                 if(screenshottaker.Rect().Width == 0 || screenshottaker.Rect().Height == 0) {
-                    MessageBox.Show("Cannot make screenshot with no widht/height :(");
+                    MessageBox.Show("Cannot make screenshot with no width/height :(");
                     return;
                 }
                 if(screenshottaker.Rect().Width > 16384 || screenshottaker.Rect().Height > 16384) {
@@ -145,6 +145,7 @@ namespace Mcasaenk.UI {
                         ), 
                         (opener_worlds, () => {
                             settings_cont.Child = leftFileMenu;
+                            mainGrid.UpdateLayout();
                             //leftFileMenu.OnActive();
                         }
                         )]);

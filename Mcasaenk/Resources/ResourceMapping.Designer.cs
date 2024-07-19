@@ -246,6 +246,15 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string inherent_water_logged {
+            get {
+                return ResourceManager.GetString("inherent_water_logged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] nether8 {
@@ -416,7 +425,19 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized string similar to grass;short_grass
         ///lily_pad;waterlily
-        ///dirt_path;grass_path.
+        ///dirt_path;grass_path
+        ///furnace;furnace_on
+        ///melon_stem;attached_melon_stem
+        ///oak_log;log
+        ///portal;nether_portal
+        ///pumpkin;carved_pumpkin
+        ///pumpkin_stem;attached_pumpkin_stem
+        ///redstone_lamp;redstone_lamp_off
+        ///redstone_lamp;redstone_lamp_on
+        ///redstone_torch;redstone_wall_torch
+        ///redstone_torch;redstone_wall_torch
+        ///stone;smooth_stone
+        ///white_wool;wool.
         /// </summary>
         public static string synonymblocks {
             get {

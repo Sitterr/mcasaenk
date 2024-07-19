@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Transactions;
 using System.Configuration;
+using static Mcasaenk.Global;
 
 namespace Mcasaenk.WorldInfo {
 

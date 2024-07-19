@@ -22,6 +22,7 @@ using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.UI.Canvas;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Mcasaenk {
     public class Global {
@@ -52,6 +53,25 @@ namespace Mcasaenk {
 
             st.Stop();
             time = st.ElapsedMilliseconds;
+        }
+
+        public static class TxtFormatReader {
+            public static void ReadStandartFormat(string data, Action<string, string[]> onRead, char split = ';') {
+                string[] lines = data.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+                string group = "";
+                foreach(string _line in lines) {
+                    var line = _line.Trim();
+                    if(line.Length == 0) continue;
+                    if(line.StartsWith("//")) continue;
+                    if(line.StartsWith("--") && line.EndsWith("--")) {
+                        group = line.Substring(2, line.Length - 4).Trim();
+                        continue;
+                    }
+                    string[] parts = line.Split(split).Select(a => a.Trim()).ToArray();
+                    onRead(group, parts);
+                }
+            }
         }
 
         public static uint ToARGBInt(string hex6) {
@@ -259,6 +279,13 @@ namespace Mcasaenk {
             if(name.StartsWith("minecraft:")) return name.Substring(10);
             return name;
         }
+        static Regex tominecraftname_regex = new Regex("^((\\w*:)?\\w+)(:(\\w+=\\w+)(,(\\w+=\\w+))*)?$");
+        public static string minecraftnamecomplex(this string name) {
+            var match = tominecraftname_regex.Match(name);
+            if(match.Success) {
+                return match.Groups[1].Value.minecraftname();
+            } else return name;
+        }
 
         public static TValue GetValueOrDefault<TKey, TValue>(
     this IDictionary<TKey, TValue> dictionary,
@@ -314,6 +341,7 @@ namespace Mcasaenk {
 
             return Color.FromArgb(aA, aR, aG, aB);
         }
+        public static (byte a, byte r, byte g, byte b) ToARGB(this uint color) => Global.FromARGBInt(color);
         public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
             foreach(var el in list) {
                 if(el.p == p) return true;

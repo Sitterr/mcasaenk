@@ -191,8 +191,8 @@ namespace Mcasaenk.UI {
 
                 combo_defbiome.ItemsSource = colormap.Biome.GetAllNames().Select(l => l.simplifyminecraftname());
                 combo_defbiome.SetBinding(ComboBox.SelectedValueProperty, new Binding("DEFBIOME") { Source = Global.Settings, Converter = new IHateWPF_DefBiomeConverter(colormap) });
-                combo_defbiome.SetBinding(ComboBox.IsEnabledProperty, defbiomeisenabled);
-                label_defbiome.SetBinding(Label.IsEnabledProperty, defbiomeisenabled);
+                //combo_defbiome.SetBinding(ComboBox.IsEnabledProperty, defbiomeisenabled);
+                //label_defbiome.SetBinding(Label.IsEnabledProperty, defbiomeisenabled);
 
                 macroGrid.Visibility = colormap.GetTints().Any(t => t.Settings() != null) ? Visibility.Visible : Visibility.Collapsed;
             }

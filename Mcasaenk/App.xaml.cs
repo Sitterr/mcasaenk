@@ -75,10 +75,10 @@ namespace Mcasaenk {
                     ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "default"));
                 }
 
-                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "beta")) == false) {
-                    using var stream = new MemoryStream(ResourceMapping.colormap_beta);
-                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "beta"));
-                }
+                //if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "beta")) == false) {
+                //    using var stream = new MemoryStream(ResourceMapping.colormap_beta);
+                //    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "beta"));
+                //}
 
                 if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
                     using var stream = new MemoryStream(ResourceMapping.colormap_java);
@@ -136,6 +136,8 @@ namespace Mcasaenk {
 
         void SetColormap() {
             if(OpenedSave == null) return;
+
+            if(!Path.Exists(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) Settings.COLOR_MAPPING_MODE = Settings.DEF().COLOR_MAPPING_MODE;
 
             Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
             Shade3DFilter.ReInit(Colormap);

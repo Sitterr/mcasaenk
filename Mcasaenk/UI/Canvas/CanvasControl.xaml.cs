@@ -133,12 +133,31 @@ namespace Mcasaenk.UI.Canvas {
 
             if(window.footer != null) {
                 { // footer update
-                    window.footer.RegionQueue = tileMap.generateTilePool.GetLoadingQueue();
-                    window.footer.HardDraw_Raw = $"{(TileDraw.drawTime / TileDraw.drawCount)} / {(GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount)}";
+                    window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
+                    window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
+
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
 
-                    //window.footer.Biome = tileMap?.GetTile(screen.GetRegionPos(mousePos))?.genData?.biomeIds(screen.GetRelBlockPos(mousePos).ToRegionInt()).ToString();
+                    var globalPos = new Point2i(screen.GetGlobalPos(mousePos).Floor());
+                    window.footer.X = globalPos.X;
+                    window.footer.Z = globalPos.Z;
+
+                    var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
+                    int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
+                    if(tile?.genData != null) {
+                        window.footer.Y = tile.genData.heights(i) + Global.Settings.MINY;
+                        window.footer.Y_Terrain = tile.genData.terrainHeights(i) + Global.Settings.MINY;
+
+                        window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
+                        window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));
+                    } else {
+                        window.footer.Y = Global.Settings.MINY - 1;
+                        window.footer.Y_Terrain = Global.Settings.MINY - 1;
+
+                        window.footer.Block = "_unknown_";
+                        window.footer.Biome = "_unknown_";
+                    }
                 }
             }
         }

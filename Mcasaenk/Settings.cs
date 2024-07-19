@@ -45,8 +45,8 @@ namespace Mcasaenk
     public enum ShadeType {
         [Description("standard")]
         OG,
-        [Description("map")]
-        jmap,
+        //[Description("map")]
+        //jmap,
     }
 
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
@@ -312,6 +312,7 @@ namespace Mcasaenk
 
                 if(SHADE3D == false) {
                     adeg = value;
+                    ShadeConstants.GLB = new ShadeConstants(ADEG);
                     OnAutoChange(nameof(ADeg));
                     OnLightChange(nameof(ADEG));
                 } else {

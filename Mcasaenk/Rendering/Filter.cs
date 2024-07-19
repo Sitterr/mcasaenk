@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Mcasaenk.Global;
 
 namespace Mcasaenk.Rendering {
     public static class Filter {
@@ -19,7 +20,7 @@ namespace Mcasaenk.Rendering {
             else return AirFilter.List;
         }
         public static Filter.filter DEPTH_FILTER(int renderheight, int maxheight) {
-            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight && Global.App.Colormap.depth == Colormap.BLOCK_WATER/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterWater;
+            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight && Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterWater;
             else return DepthFilter.List;
         }
     }
@@ -43,7 +44,7 @@ namespace Mcasaenk.Rendering {
 
         public static bool IsEmpty(ushort blockid) {
             if(blockid == Colormap.INVBLOCK) return true;
-            if(blockid == Colormap.BLOCK_AIR) return true;
+            if(blockid == Global.App.Colormap.BLOCK_AIR) return true;
             if(ids.Contains(blockid)) return true;
             return false;
         }

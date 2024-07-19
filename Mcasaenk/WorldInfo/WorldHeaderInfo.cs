@@ -80,7 +80,8 @@ namespace Mcasaenk.WorldInfo {
                 this.sz = (NumTag<int>)data["SpawnZ"];
                 var player = (CompoundTag)data["Player"];
                 {
-                    if(player["Pos"] != null) {
+                    
+                    if(player?["Pos"] != null) {
                         var pos = (List<Tag>)(ListTag)player["Pos"];
                         this.px = (int)(NumTag<double>)pos[0];
                         this.py = (int)(NumTag<double>)pos[1];
