@@ -102,7 +102,7 @@ namespace Mcasaenk.UI {
             get => txt_block.Text;
             set {
                 bool unknown = value == "_unknown_";
-                if(unknown) value = "unknown";
+                if(unknown) value = "unknown block";
                 txt_block.Text = value; 
                 txt_block.FontStyle = unknown ? FontStyles.Italic : FontStyles.Normal;
                 txt_block.Foreground = unknown ? lred : lblue;
@@ -112,7 +112,7 @@ namespace Mcasaenk.UI {
             get => txt_biome.Text;
             set {
                 bool unknown = value == "_unknown_";
-                if(unknown) value = "unknown";
+                if(unknown) value = "unknown biome";
                 txt_biome.Text = value; 
                 txt_biome.FontStyle = unknown ? FontStyles.Italic : FontStyles.Normal;
                 txt_biome.Foreground = unknown ? lred : lblue;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using Mcasaenk.Rendering;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -220,7 +221,8 @@ namespace Mcasaenk.UI.Canvas {
                         }
                         for(int xx = xxst; xx < xxend; xx++) {
                             for(int zz = zzst; zz < zzend; zz++) {
-                                if(tile.genData.block(zz * 512 + xx) == default) {
+                                var block = tile.genData.block(zz * 512 + xx);
+                                if(block == default || block == Colormap.INVBLOCK) {
                                     outline = orangePen;
                                     z = int.MaxValue - 1;
                                     x = int.MaxValue - 1;

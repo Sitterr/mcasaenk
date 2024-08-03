@@ -125,7 +125,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -285,10 +285,32 @@
 
                                     </StackPanel>
 
+                                    <StackPanel Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:ShadeType.jmap}, Mode=OneWay}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto"/>
+                                                <RowDefinition Height="2"/>
+                                                <RowDefinition Height="auto" MinHeight="10"/>
+                                            </Grid.RowDefinitions>
+
+                                            <DockPanel Grid.Row="0" Grid.Column="0">
+                                                <TextBlock Text="revealed depth"/>
+                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+                                            <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
+                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater}"/>
+
+                                        </Grid>
+                                    </StackPanel>
 
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Visible">
+                            <Border x:Name="cont_color" Visibility="Collapsed">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <Label>

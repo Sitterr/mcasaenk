@@ -134,6 +134,12 @@ namespace Mcasaenk
                             if(tile.genData != null) tile.RegisterRedraw();
                         }
                     }
+                } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
+                    var tile = map.GetTile(pos + new Point2i(0, 1));
+                    if(tile != null) {
+                        tile.RegisterRedraw();
+                    }
+                    this.RegisterRedraw();
                 } else this.RegisterRedraw();
             }
         }
@@ -166,6 +172,12 @@ namespace Mcasaenk
                         if(tile == null) continue;
                         neighbours[i + 1, j + 1] = tile.genData;
                     }
+                }
+            } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
+                neighbours = new GenData[3, 3];
+                var tile = map.GetTile(pos + new Point2i(0, -1));
+                if(tile != null) {
+                    neighbours[1, 0] = tile.genData;
                 }
             }
             TileDraw.FillPixels(pixels, Global.App.Colormap, this.genData, neighbours);

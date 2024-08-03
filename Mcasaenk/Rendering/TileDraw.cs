@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -91,6 +92,8 @@ namespace Mcasaenk.Rendering {
                 if(Global.App.Settings.SHADE3D) q = q / 2;
 
                 embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+            } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
+                mapshade(new Span<uint>(pixels, 512 * 512), genData, neighbours[1, 0], Global.Settings.REVEALED_WATER);
             }
 
 
@@ -174,6 +177,48 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
+        private static void mapshade(Span<uint> pixelBuffer, IGenData gdata, IGenData upperdata, double q) {
+            double normal = 1, dark = 180 / 220d, darker = 135 / 220d, light = 255 / 220d;
+            dark += (1 - dark) * (0.5 - Global.Settings.CONTRAST) * 2;
+            darker += (1 - darker) * (0.5 - Global.Settings.CONTRAST) * 2;
+            light -= (light - 1) * (0.5 - Global.Settings.CONTRAST) * 2;
+
+            for(int z = 0; z < 512; z++) {
+                for(int x = 0; x < 512; x++) {
+                    int i = z * 512 + x;
+
+                    int heightAtComp = gdata.heights(i);
+                    if(i < 512 && upperdata != null) {
+                        heightAtComp = upperdata.heights(511 * 512 + x);
+                    } else if(i >= 512) {
+                        heightAtComp = gdata.heights(i - 512);
+                    }
+
+                    if(gdata.depth(i)) {
+                        int h = gdata.heights(i) - gdata.terrainHeights(i);
+
+                        if(h > 9 * q) {
+                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                        } else if(h <= 2 * q) {
+                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                        } else if(h <= 4 * q) {
+                            if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                            else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                        } else if(h <= 6 * q) {
+                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                        } else if(h <= 9 * q) {
+                            if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                            else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                        }
+
+                    } else {                 
+                        if(gdata.heights(i) < heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                        else if(gdata.heights(i) > heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                    }
+                }
+            }
+        }
+
     }
 
     interface Blur<T> where T : Blur<T> {

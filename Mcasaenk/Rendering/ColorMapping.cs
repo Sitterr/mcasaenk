@@ -216,7 +216,11 @@ namespace Mcasaenk.Rendering {
                 }
             }
 
-            TxtFormatReader.ReadStandartFormat(File.ReadAllText(Path.Combine(path, "__colormap__")), (group, parts) => {
+            string blockstext = "";
+            if(File.Exists(Path.Combine(path, "__palette__.txt"))) blockstext = File.ReadAllText(Path.Combine(path, "__palette__.txt"));
+            if(File.Exists(Path.Combine(path, "__colormap__"))) blockstext = File.ReadAllText(Path.Combine(path, "__colormap__"));
+
+            TxtFormatReader.ReadStandartFormat(blockstext, (group, parts) => {
                 string name = parts[0].minecraftname(); ushort id = Block.GetId(name);
                 string strcolor = parts[1];
                 if(strcolor.StartsWith('#')) strcolor = strcolor.Substring(1);
@@ -361,6 +365,37 @@ namespace Mcasaenk.Rendering {
         public enum Blending { none, heightonly, biomeonly, full }
 
 
+        public static (string name, string format, string[] blocks, string source, uint color) ReadTint(string path_properties, ReadInterface readInterface) {
+            string name = Path.GetFileNameWithoutExtension(path_properties);
+            string format = "vanilla";
+            string[] blocks = [name.minecraftname()];
+            string source = name + ".png";
+            uint color = 0xFFFFFFFF;
+
+            foreach(string _line in readInterface.ReadAllLines(path_properties)) {
+                string line = _line.Trim();
+                if(line.Length == 0) continue;
+
+                switch(line.Substring(0, line.IndexOf('='))) {
+                    case "source":
+                        source = line.Substring(line.IndexOf("=") + 1).Trim();
+                        break;
+                    case "format":                   
+                        format = line.Substring(line.IndexOf("=") + 1).Trim();
+                        break;
+                    case "blocks":
+                        blocks = line.Substring(line.IndexOf("=") + 1).Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(l => l.minecraftnamecomplex()).ToArray();
+                        break;
+                    case "color":
+                        color = 0xFF000000 | Convert.ToUInt32(line.Substring(line.IndexOf("=") + 1).Trim(), 16);
+                        break;
+                }
+            }
+
+            source = Path.Combine(Path.GetDirectoryName(path_properties), source);
+            return (name, format, blocks, source, color);
+        }
+
         public static (string name, string format, string[] blocks, string source, uint color) ReadTint(string path_properties) {
             string name = Path.GetFileNameWithoutExtension(path_properties);
             string format = "vanilla";
@@ -376,7 +411,7 @@ namespace Mcasaenk.Rendering {
                     case "source":
                         source = line.Substring(line.IndexOf("=") + 1).Trim();
                         break;
-                    case "format":                   
+                    case "format":
                         format = line.Substring(line.IndexOf("=") + 1).Trim();
                         break;
                     case "blocks":

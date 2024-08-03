@@ -21,7 +21,7 @@ class Program {
         //ColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, new Bitmap("D:\\map\\java_img1.png"));
         //ColormapMaker.FromResourcePacks("D:\\greenfield.zip", [vanillapack, "D:\\Greenfield.Texture.Pack.1.17"], 0);
 
-        ResourcepackColormapMaker.Make("D:\\v", [vanillapack], 
+        ResourcepackColormapMaker.Make("D:\\biomes", [vanillapack, "D:\\resource packs\\biomes"], 
             new Options() {
                 minQ = 0.00,
                 for_Q0_try_with_sides = true,

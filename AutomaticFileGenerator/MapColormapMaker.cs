@@ -24,7 +24,7 @@ namespace Utils {
 
             var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
 
-            output.SaveLines("__colormap__", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
+            output.SaveLines("__palette__.txt", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
         }
 
 
@@ -100,7 +100,7 @@ namespace Utils {
                 }
             }
 
-            output.SaveLines("__colormap__", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
+            output.SaveLines("__palette__.txt", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
 
             output.SaveLines("grass.properties", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "grass").blocks.Select(b => b.simplifyminecraftname()))}", "source=grass.png"]);
             output.SaveImage("grass.png", newGrassColors);

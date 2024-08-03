@@ -134,19 +134,9 @@ namespace Utils.ColormapMaker {
 
                 blocklines.Add(line);
             }
-            output.SaveLines("__colormap__", blocklines);
 
             // tints
             {
-                {
-                    Print(); Print(); Print();
-                    Print("---------- TINTED BLOCKS ----------", ConsoleColor.Gray);
-                    foreach(var bl in blocks.Where(l => l.vanillatinted)) {
-                        Print(bl.block, ConsoleColor.DarkGray);
-                    }
-                    Print("-----------------------------------", ConsoleColor.Gray);
-                    Print(); Print(); Print();
-                }
 
                 List<(string name, string format, Bitmap source, uint color)> tints = new();
                 var blocktint = new Dictionary<string, int>();
@@ -318,10 +308,20 @@ namespace Utils.ColormapMaker {
                         SaveTint(tints[i], blocksforthistint, i >= vtintsi);
                     }
                 }
+
+
+                {
+                    blocklines.Add(""); blocklines.Add("");
+                    blocklines.Add("// These blocks were detected to have tintindex. However, the ones marked with an X do not currently have any tint, so you will need to apply it manually.");
+                    foreach(var bl in blocks.Where(l => l.vanillatinted)) {
+                        char symbol = blocktint.Any(b => b.Key == bl.block && b.Value >= 0) ? '✓' : 'X';
+                        blocklines.Add($"//{bl.block.simplifyminecraftname()} - {symbol}");
+                    }
+                }
             }
 
 
-
+            output.SaveLines("__palette__.txt", blocklines);
 
 
 
@@ -388,6 +388,7 @@ namespace Utils.ColormapMaker {
 
 
             void SaveTint((string name, string format, Bitmap source, uint color) tint, string[] blocks, bool optifine = false) {
+                if(tint.format == "fixed" && tint.color == uint.MaxValue) return;
                 if(optifine) tint.name += "_optifine";
                 List<string> lines = new List<string>();
 

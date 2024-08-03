@@ -45,8 +45,8 @@ namespace Mcasaenk
     public enum ShadeType {
         [Description("standard")]
         OG,
-        //[Description("map")]
-        //jmap,
+        [Description("map")]
+        jmap,
     }
 
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
@@ -137,6 +137,7 @@ namespace Mcasaenk
             SHADE3D = true, STATIC_SHADE = true,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
+            REVEALED_WATER = 1,
 
             ADEG = 120, BDEG = 15,
         };
@@ -221,6 +222,20 @@ namespace Mcasaenk
             }
         }
         public double WATER_TRANSPARENCY { get => WaterTransparency; set => WaterTransparency = value; }
+
+
+        private double revealedWater;
+        [JsonIgnore]
+        public double RevealedWater {
+            get => revealedWater;
+            set {
+                if(revealedWater == value) return;
+
+                revealedWater = value;
+                this.OnLightChange(nameof(RevealedWater));
+            }
+        }
+        public double REVEALED_WATER { get => RevealedWater; set => RevealedWater = value; }
 
 
         private int sunlight;

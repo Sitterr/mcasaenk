@@ -73,7 +73,7 @@ namespace Mcasaenk.Rendering {
             if(empty == 0) {
                 empty = 2;
                 for(int i = 0; i < 512 * 512; i++) {
-                    if(block(i) == default) {
+                    if(block(i) == default || block(i) == Colormap.INVBLOCK) {
                         empty = 1; 
                         break;
                     }
