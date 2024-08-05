@@ -200,17 +200,22 @@ namespace Mcasaenk.UI.Canvas {
             if(saveFileDialog.ShowDialog() == true) {
                 using CompoundTag_Allgemein root = new CompoundTag_Allgemein();
                 var data = new CompoundTag_Allgemein();
-                root.Add("DataVersion", NumTag<int>.Get(version));
+                if(version >= 1484) root.Add("DataVersion", NumTag<int>.Get(version));
                 root.Add("data", data);
                 {
-                    data.Add("scale", NumTag<sbyte>.Get((sbyte)Global.Pow2((int)(1 / scale.Scale))));
+                    data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / scale.Scale))));
                     data.Add("dimension", NumTag<sbyte>.Get(0));
                     data.Add("trackingPosition", NumTag<sbyte>.Get(0));
                     data.Add("unlimitedTracking", NumTag<sbyte>.Get(0));
                     data.Add("xCenter", NumTag<int>.Get((int)(Loc1.X + Loc2.X) / 2));
                     data.Add("zCenter", NumTag<int>.Get((int)(Loc1.Y + Loc2.Y) / 2));
-                    data.Add("banners", ListTag.Get(TagType.Compound));
-                    data.Add("frames", ListTag.Get(TagType.Compound));
+                    if(version < 1519) {
+                        data.Add("height", NumTag<short>.Get(128));
+                        data.Add("width", NumTag<short>.Get(128));
+                    } else {
+                        data.Add("banners", ListTag.Get(TagType.Compound));
+                        data.Add("frames", ListTag.Get(TagType.Compound));
+                    }
 
                     uint[] pixels = new uint[16384];
                     var screenshot = this.TakeScreenshot(BitmapScalingMode.NearestNeighbor);
