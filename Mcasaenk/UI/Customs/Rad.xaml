@@ -127,7 +127,7 @@
     </UserControl.Resources>
 
 
-    <Grid>
+    <Grid x:Name="grid">
         <Grid.Resources>
             <SolidColorBrush x:Key="text">#FFAFAFAF</SolidColorBrush>
             <SolidColorBrush x:Key="border">#FFAFAFAF</SolidColorBrush>
@@ -147,19 +147,31 @@
         <Border Grid.Row="0" Grid.Column="0" BorderThickness="1 1 0 1" BorderBrush="{StaticResource BORDER}">
             <local:AButton SelectedIndex="0" 
                            ItemTemplate="{DynamicResource ResTempl}"
-                           x:Name="btn_pre">
+                           x:Name="slot1_topdown">
             </local:AButton>
         </Border>
 
-        <Border Grid.Row="0" Grid.Column="1" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
+        <Border x:Name="sl1sl2" Grid.Row="0" Grid.Column="1" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}">
             <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
         </Border>
 
-        <Border Grid.Row="0" Grid.Column="2" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}">
-            <Button x:Name="btn_custom" Style="{StaticResource radbtn}">
+        <Border x:Name="sl2_b" Grid.Row="0" Grid.Column="2" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}">
+            <Button x:Name="slot2_static" Style="{StaticResource radbtn}">
                 <ContentControl 
                     ContentTemplate="{StaticResource ResTempl}" 
                     Content="{x:Static ui:Resolution.custom}"/>
+            </Button>
+        </Border>
+
+        <Border x:Name="sl2sl3" Grid.Row="0" Grid.Column="3" BorderThickness="0 1 0 1" BorderBrush="{StaticResource BORDER}" Visibility="Collapsed">
+            <Border Height="30" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+        </Border>
+
+        <Border x:Name="sl3_b" Grid.Row="0" Grid.Column="4" BorderThickness="0 1 1 1" BorderBrush="{StaticResource BORDER}" Visibility="Collapsed">
+            <Button x:Name="slot3_static" Style="{StaticResource radbtn}">
+                <ContentControl 
+                    ContentTemplate="{StaticResource ResTempl}" 
+                    Content="{x:Static ui:Resolution.map}"/>
             </Button>
         </Border>
     </Grid>

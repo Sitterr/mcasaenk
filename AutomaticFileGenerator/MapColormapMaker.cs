@@ -24,6 +24,10 @@ namespace Utils {
 
             var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
 
+            uint watercolor = 0xFF000000 | Convert.ToUInt32(map["minecraft:water"], 16);
+            watercolor = Global.MultShade(watercolor, 220 / 255d);
+            map["minecraft:water"] = watercolor.ToString("x8").Substring(2);
+
             output.SaveLines("__palette__.txt", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
         }
 

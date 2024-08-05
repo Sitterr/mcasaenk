@@ -95,7 +95,7 @@ namespace Mcasaenk.Rendering {
     public static class HeightmapFilter {
         public static short FilterAir(IChunkInterpreter data, int x, int z, short startY) {
             if(data.ContainsHeightmaps() == false) return AirFilter.List(data, x, z, startY);
-            return data.GetHeight(x, z);
+            return AirFilter.List(data, x, z, data.GetHeight(x, z));
         }
 
         public static short FilterWater(IChunkInterpreter data, int x, int z, short startY) {
@@ -106,10 +106,10 @@ namespace Mcasaenk.Rendering {
             short motion_height = data.GetMotionHeight(x, z);
 
             if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == Global.App.Colormap.depth) {
-                return floor_height;
+                return AirFilter.List(data, x, z, floor_height);
             }
 
-            return surface_height;
+            return AirFilter.List(data, x, z, surface_height);
         }
     }
 }

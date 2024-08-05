@@ -332,13 +332,41 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
     }
+    class MapGridPainter : Painter {
+        private Pen pen;
+        public MapGridPainter() {
+            pen = new Pen(new SolidColorBrush(Global.FromArgb(0.50, Colors.Yellow)), 1);
+        }
+
+        protected override void Render(DrawingContext graphics, WorldPosition screen) {
+            int size = Global.Settings.MAPGRID switch { 
+                MapGridType.zoom0 => 128,
+                MapGridType.zoom1 => 256,
+                MapGridType.zoom2 => 512,
+                MapGridType.zoom3 => 1024,
+                _ => 0,
+            };
+
+            double tx = Global.Coord.absMod(screen.Start.X - size / 2, size) * screen.zoom, tz = Global.Coord.absMod(screen.Start.Y - size / 2, size) * screen.zoom;
+            graphics.PushTransform(new TranslateTransform(-tx, -tz));
+
+            for(int zz = 0; zz < screen.ScreenHeight + tz; zz += (int)(size * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(1, zz), new Point(tx + screen.ScreenWidth, zz));
+            }
+            for(int xx = 0; xx < screen.ScreenWidth + tx; xx += (int)(size * screen.zoom)) {
+                graphics.DrawLine(pen, new Point(xx, 1), new Point(xx, 0 + tz + screen.ScreenHeight));
+            }
+        }
+    }
     public class GridPainter2 : Painter {
         ChunkGridPainter chunkPainter;
         RegionGridPainter regionPainter;
+        MapGridPainter mapPainter;
 
         public GridPainter2() {
             chunkPainter = new ChunkGridPainter();
             regionPainter = new RegionGridPainter();
+            mapPainter = new MapGridPainter();
         }
     
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
@@ -352,6 +380,13 @@ namespace Mcasaenk.UI.Canvas {
             if(Global.App.Settings.REGIONGRID != RegionGridType.None) {
                 regionPainter.Update(screen);
                 graphics.DrawDrawing(regionPainter.GetDrawing());
+            }
+
+            if(Global.App.Settings.MAPGRID != MapGridType.None) {
+                if(screen.ZoomScale >= -1) {
+                    mapPainter.Update(screen);
+                    graphics.DrawDrawing(mapPainter.GetDrawing());
+                }
             }
         }
     }

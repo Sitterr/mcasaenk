@@ -37,15 +37,23 @@ namespace Mcasaenk
         [Description("checker")]
         Checker,
     }
-    public enum ScreenshotType {
-        [Description("standard")]
+    public enum MapGridType {
+        [Description("none")]
         None,
+        [Description("1:1")]
+        zoom0,
+        [Description("1:2")]
+        zoom1,
+        [Description("1:4")]
+        zoom2,
+        [Description("1:8")]
+        zoom3,
     }
 
     public enum ShadeType {
         [Description("standard")]
         OG,
-        [Description("map")]
+        [Description("in-game map")]
         jmap,
     }
 
@@ -116,19 +124,21 @@ namespace Mcasaenk
             Y_OFFICIAL = 319,
 
             MAXZOOM = 5, MINZOOM = -5,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, Screenshot = ScreenshotType.None,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
             FOOTER = true, OVERLAYS = false, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
-                new Resolution() { Name = "Full HD", X = 1920, Y = 1080 },
-                new Resolution() { Name = "WQHD", X = 2560, Y = 1440 },
-                new Resolution() { Name = "4K UHD", X = 3840, Y = 2160 },
+                new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 },
+                new Resolution() { Name = "WQHD", type = ResolutionType.stat, X = 2560, Y = 1440 },
+                new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
             PREFERHEIGHTMAPS = true,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
+
+            USEMAPPALETTE = false,
 
             SUN_LIGHT = 15, BLOCK_LIGHT = 0,
 
@@ -208,6 +218,20 @@ namespace Mcasaenk
             }
         }
         public double CONTRAST { get => Contrast; set => Contrast = value; }
+
+
+        private bool usemapPalette;
+        [JsonIgnore]
+        public bool UseMapPalette {
+            get => usemapPalette;
+            set {
+                if(usemapPalette == value) return;
+
+                usemapPalette = value;
+                this.OnLightChange(nameof(UseMapPalette));
+            }
+        }
+        public bool USEMAPPALETTE { get => UseMapPalette; set => UseMapPalette = value; }
 
 
         private double waterTransparency;
@@ -480,9 +504,9 @@ namespace Mcasaenk
         public BackgroundType BACKGROUND { get => Background; set => Background = value; }
 
 
-        private ScreenshotType screenshot;
+        private MapGridType screenshot;
         [JsonIgnore]
-        public ScreenshotType Screenshot {
+        public MapGridType MapGrid {
             get => screenshot;
             set {
                 if(screenshot == value) return;
@@ -491,7 +515,7 @@ namespace Mcasaenk
                 OnAutoChange(nameof(Background));
             }
         }
-        public ScreenshotType SCREENSHOT { get => Screenshot; set => Screenshot = value; }
+        public MapGridType MAPGRID { get => MapGrid; set => MapGrid = value; }
 
 
         private int regionConcurrency, regionConcurrency_back;

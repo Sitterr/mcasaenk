@@ -11,7 +11,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter118 : IChunkInterpreter {
         private static ArrayPool<ushort> pallattePool = ArrayPool<ushort>.Shared;
 
-        private CompoundTag tag;
+        private CompoundTag_Optimal tag;
 
         private ArrTag<long> world_surface, ocean_floor, motion_blocking;
 
@@ -29,9 +29,9 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
             this.error = error;
 
-            tag = (CompoundTag)_tag;
+            tag = (CompoundTag_Optimal)_tag;
 
-            var heightmaps = (CompoundTag)tag["Heightmaps"];
+            var heightmaps = (CompoundTag_Optimal)tag["Heightmaps"];
             if(heightmaps != null) {
                 world_surface = (ArrTag<long>)heightmaps["WORLD_SURFACE"];
                 ocean_floor = (ArrTag<long>)heightmaps["OCEAN_FLOOR"];
@@ -46,13 +46,13 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             var sections = (ListTag)tag["sections"];
             if(sections != null) {
                 foreach(var _section in (List<Tag>)sections) {
-                    var section = (CompoundTag)_section;
+                    var section = (CompoundTag_Optimal)_section;
 
                     sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + negys);
                     if(y < 0 || y >= blocklights.Length) continue;
                     blocklights[y] = (ArrTag<byte>)section["BlockLight"];
 
-                    var blockStatesTag = (CompoundTag)section["block_states"];
+                    var blockStatesTag = (CompoundTag_Optimal)section["block_states"];
                     if(blockStatesTag != null) {
                         blockStates[y] = (ArrTag<long>)blockStatesTag["data"];
                         var palette = (ListTag)blockStatesTag["palette"];
@@ -62,12 +62,12 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                             else blockStates_palette[y][0] = 0;
                             int i = 1;
                             foreach(var _p in (List<Tag>)palette) {
-                                var p = (CompoundTag)_p;
+                                var p = (CompoundTag_Optimal)_p;
 
                                 var name = (string)(NumTag<string>)p["Name"];
                                 bool waterlogged = false;
 
-                                var properties = (CompoundTag)p["Properties"];
+                                var properties = (CompoundTag_Optimal)p["Properties"];
                                 if(properties != null) {
                                     var wl = properties["waterlogged"];
                                     if(wl != null) waterlogged = (NumTag<string>)wl == "true";
@@ -83,7 +83,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                         }
                     }
 
-                    var biomesTag = (CompoundTag)section["biomes"];
+                    var biomesTag = (CompoundTag_Optimal)section["biomes"];
                     if(biomesTag != null) {
                         biomes[y] = (ArrTag<long>)biomesTag["data"];
                         var palette = (ListTag)biomesTag["palette"];

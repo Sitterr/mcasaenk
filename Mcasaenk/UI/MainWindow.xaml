@@ -48,35 +48,41 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
-                    <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
-                        <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
+                    <Grid>
+                        <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
+                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
 
-                        <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
-                            <StackPanel Orientation="Horizontal">
-                                <Border Width="7"/>
-                                <local:EButton x:Name="btn_dim_overworld" Width="34" Height="34" BorderThickness="2" BorderColor="#08689b">
-                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.grass8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                </local:EButton>
-                                <local:EButton x:Name="btn_dim_nether" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#119B84">
-                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.nether8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                </local:EButton>
-                                <local:EButton x:Name="btn_dim_end" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#931054">
-                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.end8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                </local:EButton>
-                                <local:EButton x:Name="btn_dim_others" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#121093">
-                                    <Image Source="{Binding Source={x:Static resx:ResourceMapping.unknown_pack}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </local:EButton>
-                                <Border Width="7"/>
-                            </StackPanel>
-                        </Border>
+                            <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="7"/>
+                                    <local:EButton x:Name="btn_dim_overworld" Width="34" Height="34" BorderThickness="2" BorderColor="#08689b">
+                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.grass8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                    </local:EButton>
+                                    <local:EButton x:Name="btn_dim_nether" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#119B84">
+                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.nether8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                    </local:EButton>
+                                    <local:EButton x:Name="btn_dim_end" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#931054">
+                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.end8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                    </local:EButton>
+                                    <local:EButton x:Name="btn_dim_others" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#121093">
+                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.unknown_pack}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </local:EButton>
+                                    <Border Width="7"/>
+                                </StackPanel>
+                            </Border>
 
-                    </DockPanel>
+                        </DockPanel>
+
+                        <TextBlock x:Name="title" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Run Text="MCA Saenk" FontSize="24" FontWeight="Light"/>
+                        </TextBlock>
+                    </Grid>
                 </Border>
 
                 <Border Grid.Row="1"/>
                 <Border x:Name="screenshotPanel" Grid.Row="2" VerticalAlignment="Top" CornerRadius="3" Height="50" Background="{StaticResource BACK}">
                     <DockPanel>
-                        <local:Rad x:Name="rad" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <local:Rad x:Name="rad" x:FieldModifier="public" DockPanel.Dock="Left" Margin="10 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <ComboBox x:Name="scale" Height="34" Width="54" FontSize="16" DockPanel.Dock="Left" Margin="25 0 25 0" VerticalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <ComboBoxItem>1:1</ComboBoxItem>
                             <ComboBoxItem>2:1</ComboBoxItem>

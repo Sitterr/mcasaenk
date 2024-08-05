@@ -52,15 +52,15 @@ namespace Mcasaenk.WorldInfo {
             this.foldername = foldername;         
             this.lastopened = lastopened;
 
-            var tag = (CompoundTag)_tag;
-            var data = (CompoundTag)tag["Data"];
+            var tag = (CompoundTag_Optimal)_tag;
+            var data = (CompoundTag_Optimal)tag["Data"];
             {
                 var d = (NumTag<sbyte>)data["Difficulty"];
                 this.difficulty = d != null ? (Difficulty)(sbyte)d : Difficulty.Normal;
 
                 this.name = (NumTag<string>)data["LevelName"];
                 this.gamemode = (Gamemode)(int)(NumTag<int>)data["GameType"];
-                var version = (CompoundTag)data["Version"];
+                var version = (CompoundTag_Optimal)data["Version"];
                 if(version != null) {
                     this.version_name = (NumTag<string>)version["Name"];
                     this.version_id = (NumTag<int>)version["Id"];
@@ -68,7 +68,7 @@ namespace Mcasaenk.WorldInfo {
                     this.version_name = "unknown";
                     this.version_id = -1;
                 }
-                var worldGenSettings = (CompoundTag)data["WorldGenSettings"];
+                var worldGenSettings = (CompoundTag_Optimal)data["WorldGenSettings"];
                 if(worldGenSettings != null) {
                     this.seed = (NumTag<long>)worldGenSettings["seed"];
                 } else {
@@ -78,7 +78,7 @@ namespace Mcasaenk.WorldInfo {
                 this.sx = (NumTag<int>)data["SpawnX"];
                 this.sy = (NumTag<int>)data["SpawnY"];
                 this.sz = (NumTag<int>)data["SpawnZ"];
-                var player = (CompoundTag)data["Player"];
+                var player = (CompoundTag_Optimal)data["Player"];
                 {
                     
                     if(player?["Pos"] != null) {
@@ -114,7 +114,7 @@ namespace Mcasaenk.WorldInfo {
                 var nbtreader = new NbtReader(decompressedStream);
                 bool error = nbtreader.TryRead(out var _g);
 
-                var globaltag = (CompoundTag)_g;
+                var globaltag = (CompoundTag_Optimal)_g;
 
                 ImageSource icon = null;
                 if(File.Exists(Path.Combine(path, "icon.png"))) {

@@ -45,7 +45,7 @@
                         </StackPanel.Resources>
 
 
-                        <Border x:Name="cont_config" Visibility="Collapsed">
+                        <Border x:Name="cont_config" Visibility="Visible">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -132,6 +132,15 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="4" Grid.Column="0" Orientation="Horizontal">
+                                    <TextBlock Text="map grid" VerticalAlignment="Center"/>
+                                    <ComboBox Margin="10 0 0 0"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=MapGrid, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=MapGrid}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">
                                     <TextBlock Text="background" VerticalAlignment="Center"/>
                                     <ComboBox Margin="10 0 0 0"
                                               ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Background, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
@@ -139,16 +148,7 @@
                                               DisplayMemberPath="Description"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Background}"/>
                                 </StackPanel>
-
-                                <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">
-                                    <TextBlock Text="screenshot" VerticalAlignment="Center"/>
-                                    <ComboBox Margin="10 0 0 0"
-                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Screenshot, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                              SelectedValuePath="Value"
-                                              DisplayMemberPath="Description"
-                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Screenshot}"/>
-                                </StackPanel>
-
+                                
 
                                 <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
                                     <Grid.ColumnDefinitions>
@@ -218,7 +218,7 @@
 
                             </Grid>
                         </Border>
-                        <Border x:Name="cont_about" Visibility="Visible">
+                        <Border x:Name="cont_about" Visibility="Collapsed">
                             <Border BorderBrush="{StaticResource BORDER}" BorderThickness="1" Padding="10">
                                 <Border.Background>
                                     <ImageBrush ImageSource="{Binding Source={x:Static resx:ResourceMapping.img31_}}" Stretch="UniformToFill"/>

@@ -53,7 +53,7 @@ namespace Mcasaenk.UI {
                     MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
                     return;
                 }
-                canvasControl?.ScreenshotManager?.TakeAndSaveScreenShot();
+                canvasControl?.ScreenshotManager?.TakeAndSaveScreenshot();
             };
             this.scr_stop.Click += (o, e) => {
                 rad.Reset(true);
@@ -63,25 +63,39 @@ namespace Mcasaenk.UI {
             };
             this.rad.SetCallback(() => {
                 var res = this.rad.GetResolution();
-                if(res.type == Rad.ResolutionType.frame) {
+                if(res?.type == ResolutionType.frame) {
                     var canvasSize = canvasControl.ScreenSize();
-                    res.res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
-                    res.res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
+                    res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
+                    res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
                 }
-                if(res.type == Rad.ResolutionType.resizeable) {
+                if(res?.type == ResolutionType.map) {
+                    scale.Items.Clear();
+                    scale.Items.Add("1:1");
+                    scale.Items.Add("1:2");
+                    scale.Items.Add("1:4");
+                    scale.Items.Add("1:8");
+                    scale.SelectedIndex = 0;
+                } else {
+                    scale.Items.Clear();
+                    scale.Items.Add("1:1");
+                    scale.Items.Add("2:1");
+                    scale.Items.Add("4:1");
+                    scale.SelectedIndex = 0;
+                }
+                if(res?.type == ResolutionType.resizeable) {
                     scale.SelectedIndex = 0;
                     scale.IsEnabled = false;
                 } else {
                     scale.IsEnabled = true;
                 }
 
-                canvasControl?.SetUpScreenShot(res.res, resScale, res.type == Rad.ResolutionType.resizeable);
+                canvasControl?.SetUpScreenShot(res, resScale, res?.type == ResolutionType.resizeable);
 
-                scr_capture.IsEnabled = res.res != null;
-                scr_stop.IsEnabled = res.res != null;
-                scr_rotate.IsEnabled = res.res != null;
+                scr_capture.IsEnabled = res != null;
+                scr_stop.IsEnabled = res != null;
+                scr_rotate.IsEnabled = res != null;
 
-                if(res.type == Rad.ResolutionType.frame) {
+                if(res?.type == ResolutionType.frame) {
                     scr_capture.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                     scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
@@ -227,6 +241,7 @@ namespace Mcasaenk.UI {
 
             currs.Content = Global.App.OpenedSave?.levelDatInfo;
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
+            title.Visibility = wrldPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
             //Grid.SetRow(screenshotPanel, Global.App.OpenedSave?.levelDat != null ? 2 : 0);
 
             rad.Reset(Global.App.OpenedSave != null);

@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows;
 
 namespace Mcasaenk.UI {
+    public enum ResolutionType { stat, frame, resizeable, map, nul }
     public class Resolution : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName) { PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); }
@@ -70,9 +71,14 @@ namespace Mcasaenk.UI {
             }
         }
 
-        public static Resolution screen = new Resolution() { Name = "Screen1", FontStyle = FontStyles.Oblique };
-        public static Resolution custom = new Resolution() { Name = "Custom", X = 120, Y = 120, FontStyle = FontStyles.Oblique };
-        public static Resolution frame = new Resolution() { Name = "Frame", X = 5000, Y = 3000, FontStyle = FontStyles.Oblique };
+
+        public ResolutionType type;
+
+
+        public static Resolution screen = new Resolution() { Name = "Screen1", type = ResolutionType.stat, FontStyle = FontStyles.Oblique };
+        public static Resolution custom = new Resolution() { Name = "Custom", type = ResolutionType.resizeable, X = 500, Y = 500, FontStyle = FontStyles.Oblique };
+        public static Resolution map = new Resolution() { Name = "In-game map", type = ResolutionType.map, X = 128, Y = 128, FontStyle = FontStyles.Oblique };
+        public static Resolution frame = new Resolution() { Name = "Frame", type = ResolutionType.frame, X = 5000, Y = 3000, FontStyle = FontStyles.Oblique };
 
 
         public static (int w, int h) CurrentResolution(Control control) {

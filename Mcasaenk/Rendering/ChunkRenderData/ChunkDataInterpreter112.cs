@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter112 : IChunkInterpreter {
-        private CompoundTag tag;
+        private CompoundTag_Optimal tag;
       
         private ArrTag<long> world_surface, ocean_floor, motion_blocking;
 
@@ -26,12 +26,12 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             this.error = error;
 
             //try {
-            tag = (CompoundTag)_tag;
-            var level = (CompoundTag)tag["Level"];
+            tag = (CompoundTag_Optimal)_tag;
+            var level = (CompoundTag_Optimal)tag["Level"];
             {
                 biomes = (ArrTag<byte>)level["Biomes"];
 
-                var heightmaps = (CompoundTag)level["Heightmaps"];
+                var heightmaps = (CompoundTag_Optimal)level["Heightmaps"];
                 if(heightmaps != null) {
                     world_surface = (ArrTag<long>)heightmaps["WORLD_SURFACE"];
                     ocean_floor = (ArrTag<long>)heightmaps["OCEAN_FLOOR"];
@@ -44,7 +44,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                 var sections = (ListTag)level["Sections"];
                 if(sections != null) {
                     foreach(var _section in (List<Tag>)sections) {
-                        var section = (CompoundTag)_section;
+                        var section = (CompoundTag_Optimal)_section;
 
                         sbyte y = (sbyte)((NumTag<sbyte>)section["Y"] + negys);
                         if(y < 0 || y >= SECTIONS) continue;

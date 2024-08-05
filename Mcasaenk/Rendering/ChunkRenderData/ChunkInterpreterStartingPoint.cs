@@ -20,7 +20,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             var nbtreader = new NbtReader(decompressedStream);
             bool error = nbtreader.TryRead(out var _g);
             //try {
-            var globaltag = (CompoundTag)_g;
+            var globaltag = (CompoundTag_Optimal)_g;
 
 
             int version = globaltag["DataVersion"] != null ? (NumTag<int>)globaltag["DataVersion"] : -1;

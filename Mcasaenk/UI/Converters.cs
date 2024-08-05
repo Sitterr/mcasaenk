@@ -49,8 +49,13 @@ namespace Mcasaenk.UI
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-
-            if(((ComboBoxItem)value).Content is string str) {
+            if(value == null) return 1;
+            if(value is ComboBoxItem) {
+                if(((ComboBoxItem)value).Content is string str) {
+                    var parts = str.Split(':');
+                    return double.Parse(parts[0].Trim()) / double.Parse(parts[1].Trim());
+                }
+            } else if(value is string str) {
                 var parts = str.Split(':');
                 return double.Parse(parts[0].Trim()) / double.Parse(parts[1].Trim());
             }

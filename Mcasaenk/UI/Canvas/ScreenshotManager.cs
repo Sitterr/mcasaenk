@@ -15,6 +15,8 @@ using System.Text.Json.Serialization;
 using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
 using System.Reflection;
+using Mcasaenk.Nbt;
+using System.IO.Compression;
 
 namespace Mcasaenk.UI.Canvas {
     public class ScreenshotManager {
@@ -109,7 +111,7 @@ namespace Mcasaenk.UI.Canvas {
 
 
 
-        public RenderTargetBitmap TakeScreenshot() {
+        public RenderTargetBitmap TakeScreenshot(BitmapScalingMode scalingMode) {
             try {
                 var Size = Rect().Size.AsPoint();
                 var NW = Rect().TopLeft;
@@ -128,7 +130,7 @@ namespace Mcasaenk.UI.Canvas {
                          */
 
                         drawing.GetType().GetProperty("VisualEdgeMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, EdgeMode.Aliased);
-                        drawing.GetType().GetProperty("VisualBitmapScalingMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, BitmapScalingMode.NearestNeighbor);
+                        drawing.GetType().GetProperty("VisualBitmapScalingMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, scalingMode);
                     }
                     // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
                     // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
@@ -160,7 +162,17 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
-        public void TakeAndSaveScreenShot() {
+        public void TakeAndSaveScreenshot() {
+            if(resolution.type == ResolutionType.map) {
+                if(resolution.X != 128 || resolution.Y != 128) {
+                    MessageBox.Show("The map screenshot must be 128x128");
+                    return;
+                }
+                TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id);
+            } else TakeScreenshotAsImage();
+        }
+
+        void TakeScreenshotAsImage() {
             var saveFileDialog = new SaveFileDialog {
                 Filter = "PNG Image|*.png",
                 Title = "Save screenshot",
@@ -169,11 +181,52 @@ namespace Mcasaenk.UI.Canvas {
 
             if(saveFileDialog.ShowDialog() == true) {
                 var encoder = new PngBitmapEncoder();
-                var screenshot = this.TakeScreenshot();
+                var screenshot = this.TakeScreenshot(BitmapScalingMode.NearestNeighbor);
                 if(screenshot == null) return;
                 encoder.Frames.Add(BitmapFrame.Create(screenshot));
                 using(var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
                     encoder.Save(fileStream);
+                }
+            }
+        }
+
+        void TakeScreenshotAsMap(int version) {
+            var saveFileDialog = new SaveFileDialog {
+                Filter = "Dat file|*.dat",
+                Title = "Save screenshot",
+                FileName = $"map_"
+            };
+
+            if(saveFileDialog.ShowDialog() == true) {
+                using CompoundTag_Allgemein root = new CompoundTag_Allgemein();
+                var data = new CompoundTag_Allgemein();
+                root.Add("DataVersion", NumTag<int>.Get(version));
+                root.Add("data", data);
+                {
+                    data.Add("scale", NumTag<sbyte>.Get((sbyte)Global.Pow2((int)(1 / scale.Scale))));
+                    data.Add("dimension", NumTag<sbyte>.Get(0));
+                    data.Add("trackingPosition", NumTag<sbyte>.Get(0));
+                    data.Add("unlimitedTracking", NumTag<sbyte>.Get(0));
+                    data.Add("xCenter", NumTag<int>.Get((int)(Loc1.X + Loc2.X) / 2));
+                    data.Add("zCenter", NumTag<int>.Get((int)(Loc1.Y + Loc2.Y) / 2));
+                    data.Add("banners", ListTag.Get(TagType.Compound));
+                    data.Add("frames", ListTag.Get(TagType.Compound));
+
+                    uint[] pixels = new uint[16384];
+                    var screenshot = this.TakeScreenshot(BitmapScalingMode.NearestNeighbor);
+                    screenshot.CopyPixels(pixels, 512, 0);
+
+                    var bytetag = ArrTag<byte>.Get(16384);
+                    for(int i = 0; i < 16384; i++) {
+                        bytetag[i] = JavaMapColors.Nearest(pixels[i], version).id;
+                    }             
+                    data.Add("colors", bytetag);
+                }
+
+                using(var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
+                    using(var zipStream = new GZipStream(fs, CompressionMode.Compress, false)) {
+                        new NbtWriter(zipStream, root, "");
+                    }
                 }
             }
         }

@@ -20,34 +20,49 @@ namespace Mcasaenk.UI {
     /// Interaction logic for Rad.xaml
     /// </summary>
     public partial class Rad : UserControl {
+        Control[] slots;
         public Rad() {
             InitializeComponent();
 
-            btn_pre.Clicked += (o, e) => {
-                RecalcSelected(btn_pre);
-            };
-            btn_custom.Click += (o, e) => {
-                RecalcSelected(btn_custom);
-            };
+            slots = [slot1_topdown, slot2_static, slot3_static];
+            foreach(var slot in slots) {
+                if(slot is Button static_slot) {
+                    static_slot.Click += (o, e) => RecalcSelected(slot);
 
+                    static_slot.MouseEnter += (o, e) => {
+                        if(selectedc == static_slot) return;
+                        static_slot.Background = this.TryFindResource("HOVER") as Brush;
+                    };
+                    static_slot.MouseLeave += (o, e) => {
+                        if(selectedc == static_slot) {
+                            //btn_custom.Background = this.TryFindResource("PRESS") as Brush;
+                        } else {
+                            static_slot.Background = transp;
+                        }
+                    };
 
-            btn_custom.MouseEnter += (o, e) => {
-                if(selectedc == btn_custom) return;
-                btn_custom.Background = this.TryFindResource("HOVER") as Brush;
-            };
-            btn_custom.MouseLeave += (o, e) => {
-                if(selectedc == btn_custom) {
-                    //btn_custom.Background = this.TryFindResource("PRESS") as Brush;
-                } else {
-                    btn_custom.Background = transp;
-                }
-            };
+                } else if(slot is AButton topdown_slot) topdown_slot.Clicked += (o, e) => RecalcSelected(slot);
+            }
         }
 
-        public enum ResolutionType { frame, resizeable, pre, nul }
+
+        public void ShowSlot3(bool visible) {
+            if(visible) {
+                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(85) });
+            } else {
+                grid.ColumnDefinitions.RemoveAt(3);
+                grid.ColumnDefinitions.RemoveAt(3);
+            }
+
+            sl2_b.BorderThickness = visible ? new Thickness(0, 1, 0, 1) : new Thickness(0, 1, 1, 1);
+
+            sl2sl3.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            sl3_b.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
 
         private Resolution selected;
-        private ResolutionType selectedType;
         private Control selectedc;
 
 
@@ -56,38 +71,29 @@ namespace Mcasaenk.UI {
             this.onSelect = onSelect;
         }
 
-        public (Resolution res, ResolutionType type) GetResolution() {
-            return (selected, selectedType);
+        public Resolution GetResolution() {
+            return selected;
         }
 
         Brush transp = new SolidColorBrush(Colors.Transparent);
         private void RecalcSelected(Control control) {
             if(control != null) {
-                btn_pre.IsEnabled = control == btn_pre;
-                btn_custom.IsEnabled = control == btn_custom;
+                foreach(var slot in slots) slot.IsEnabled = control == slot;
             } else {
-                btn_pre.IsEnabled = true;
-                btn_custom.IsEnabled = true;
+                foreach(var slot in slots) slot.IsEnabled = true;
             }
 
-            //if(control != null) { 
-            if(control == btn_custom) btn_custom.Background = this.TryFindResource("PRESS") as Brush;
-            else btn_custom.Background = transp;
-
-            if(control == btn_pre) btn_pre.Background = this.TryFindResource("PRESS") as Brush;
-            else btn_pre.Background = transp;
-            //}
+            foreach(var slot in slots) {
+                if(control == slot) slot.Background = this.TryFindResource("PRESS") as Brush;
+                else slot.Background = transp;
+            }
 
             if(control is Button b) {
                 selected = (Resolution)((ContentControl)(b.Content)).Content;
             } else if(control is AButton ab) {
                 selected = (Resolution)(ab.SelectedItem);
             }
-
             selectedc = control;
-            if(control == btn_custom) selectedType = ResolutionType.resizeable;
-            else if(control == btn_pre) selectedType = ResolutionType.pre;
-            else selectedType = ResolutionType.nul;
 
             onSelect();
         }
@@ -96,10 +102,11 @@ namespace Mcasaenk.UI {
             RecalcSelected(null);
 
             selected = null;
-            selectedType = ResolutionType.nul;
             onSelect();
 
-            btn_pre.clicked = false;
+            foreach(var slot in slots) {
+                if(slot is AButton slot_topdown) slot_topdown.clicked = false;
+            }
         }
 
         public void PreDefined(Resolution[] resolutions) {
@@ -110,7 +117,7 @@ namespace Mcasaenk.UI {
 
             var list = resolutions.ToList();
             list.Insert(0, Resolution.screen);
-            btn_pre.ItemsSource = list;
+            slot1_topdown.ItemsSource = list;
         }
     }
 
