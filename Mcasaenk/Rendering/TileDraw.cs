@@ -93,7 +93,7 @@ namespace Mcasaenk.Rendering {
 
                 embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
-                mapshade(new Span<uint>(pixels, 512 * 512), genData, neighbours[1, 0], Global.Settings.REVEALED_WATER);
+                mapshade(new Span<uint>(pixels, 512 * 512), genData, neighbours, Global.Settings.REVEALED_WATER);
             }
 
 
@@ -126,7 +126,7 @@ namespace Mcasaenk.Rendering {
 
             if(Global.Settings.USEMAPPALETTE) {
                 for(int i = 0; i < 512 * 512; i++) {
-                    pixels[i] = JavaMapColors.Nearest(pixels[i], Global.App.OpenedSave.levelDatInfo.version_id).color;
+                    pixels[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], Global.App.OpenedSave.levelDatInfo.version_id).color;
                 }
             }
 
@@ -184,21 +184,35 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
-        private static void mapshade(Span<uint> pixelBuffer, IGenData gdata, IGenData upperdata, double q) {
+        private static void mapshade(Span<uint> pixelBuffer, IGenData gdata, IGenData[,] neighbours, double q) {
             double normal = 1, dark = 180 / 220d, darker = 135 / 220d, light = 255 / 220d;
             dark += (1 - dark) * (0.5 - Global.Settings.CONTRAST) * 2;
             darker += (1 - darker) * (0.5 - Global.Settings.CONTRAST) * 2;
             light -= (light - 1) * (0.5 - Global.Settings.CONTRAST) * 2;
+
+            Point2i p = Global.Settings.MAP_DIRECTION switch {
+                Direction.North => new Point2i(0, -1),
+                Direction.South => new Point2i(0, 1),
+                Direction.East => new Point2i(1, 0),
+                Direction.West => new Point2i(-1, 0),
+            };
 
             for(int z = 0; z < 512; z++) {
                 for(int x = 0; x < 512; x++) {
                     int i = z * 512 + x;
 
                     int heightAtComp = gdata.heights(i);
-                    if(i < 512 && upperdata != null) {
-                        heightAtComp = upperdata.heights(511 * 512 + x);
-                    } else if(i >= 512) {
-                        heightAtComp = gdata.heights(i - 512);
+                    if(z + p.Z < 0 || z + p.Z >= 512 || x + p.X < 0 || x + p.X >= 512) {
+                        if(neighbours[p.X + 1, p.Z + 1] != null) {
+                            heightAtComp = neighbours[p.X + 1, p.Z + 1].heights(Global.Settings.MAP_DIRECTION switch {
+                                Direction.North => 511 * 512 + x,
+                                Direction.South => 0 * 512 + x,
+                                Direction.East => z * 512 + 0,
+                                Direction.West => z * 512 + 511,
+                            });
+                        }
+                    } else {
+                        heightAtComp = gdata.heights(i + p.Z * 512 + p.X);
                     }
 
                     if(gdata.depth(i)) {

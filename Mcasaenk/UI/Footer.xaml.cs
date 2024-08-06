@@ -101,21 +101,21 @@ namespace Mcasaenk.UI {
         public string Block {
             get => txt_block.Text;
             set {
-                bool unknown = value == "_unknown_";
-                if(unknown) value = "unknown block";
+                bool italic = value.StartsWith('_') && value.EndsWith('_');
+                if(italic) value = value.Substring(1, value.Length - 2);
                 txt_block.Text = value; 
-                txt_block.FontStyle = unknown ? FontStyles.Italic : FontStyles.Normal;
-                txt_block.Foreground = unknown ? lred : lblue;
+                txt_block.FontStyle = italic ? FontStyles.Italic : FontStyles.Normal;
+                txt_block.Foreground = italic ? lred : lblue;
             }
         }
         public string Biome {
             get => txt_biome.Text;
             set {
-                bool unknown = value == "_unknown_";
-                if(unknown) value = "unknown biome";
-                txt_biome.Text = value; 
-                txt_biome.FontStyle = unknown ? FontStyles.Italic : FontStyles.Normal;
-                txt_biome.Foreground = unknown ? lred : lblue;
+                bool italic = value.StartsWith('_') && value.EndsWith('_');
+                if(italic) value = value.Substring(1, value.Length - 2);
+                txt_biome.Text = value;
+                txt_biome.FontStyle = italic ? FontStyles.Italic : FontStyles.Normal;
+                txt_biome.Foreground = italic ? lred : lblue;
             }
         }
     }

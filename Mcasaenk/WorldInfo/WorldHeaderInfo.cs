@@ -37,6 +37,10 @@ namespace Mcasaenk.WorldInfo {
         public ImageSource image { get; private set; }
         public string foldername { get; private set; }
 
+        public string[] datapacks { get; private set; }
+        public string[] mods { get; private set; }
+        public bool resourcepack { get; private set; }
+
         public string pd { get; private set; }
         public int px { get; private set; }
         public int py { get; private set; }
@@ -45,12 +49,13 @@ namespace Mcasaenk.WorldInfo {
         public int sy { get; private set; }
         public int sz { get; private set; }
 
-        private LevelDatInfo(Tag _tag, string foldername, ImageSource image, DateOnly lastopened) {
+        private LevelDatInfo(Tag _tag, DirectoryInfo folder, ImageSource image, DateOnly lastopened) {
             if(image == null) image = defaultIcon;
             if(image.CanFreeze) image.Freeze();
             this.image = image;
-            this.foldername = foldername;         
+            this.foldername = folder.Name;         
             this.lastopened = lastopened;
+            this.resourcepack = folder.GetFiles().Any(f => f.Name == "resources.zip");
 
             var tag = (CompoundTag_Optimal)_tag;
             var data = (CompoundTag_Optimal)tag["Data"];
@@ -97,6 +102,13 @@ namespace Mcasaenk.WorldInfo {
                         this.pd = "";
                     }
                 }
+                var datapacks = (CompoundTag_Optimal)data["DataPacks"];
+                if(datapacks != null) {
+                    var enabled = ((List<Tag>)(ListTag)datapacks["Enabled"]).Select(e => (string)(NumTag<string>)e);
+
+                    this.datapacks = enabled.Where(e => e.StartsWith("file/")).Select(e => e.Substring(5)).ToArray();
+                    this.mods = enabled.Where(e => e.StartsWith("mod:")).Select(e => e.Substring(4)).ToArray();
+                }
             }
         }
         private LevelDatInfo() { }
@@ -120,7 +132,7 @@ namespace Mcasaenk.WorldInfo {
                 if(File.Exists(Path.Combine(path, "icon.png"))) {
                     icon = new BitmapImage(new Uri(Path.Combine(path, "icon.png")));
                 }
-                return new LevelDatInfo(globaltag, new DirectoryInfo(path).Name, icon, DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
+                return new LevelDatInfo(globaltag, new DirectoryInfo(path), icon, DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
             }
             catch {
                 return null;

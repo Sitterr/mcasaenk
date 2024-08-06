@@ -50,7 +50,7 @@
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
                     <Grid>
                         <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
-                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp}" VerticalAlignment="Center"/>
+                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp_kurz}" VerticalAlignment="Center"/>
 
                             <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
                                 <StackPanel Orientation="Horizontal">

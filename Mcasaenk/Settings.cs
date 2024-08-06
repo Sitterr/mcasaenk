@@ -17,6 +17,16 @@ using System.Windows.Markup;
 
 namespace Mcasaenk
 {
+    public enum Direction {
+        [Description("north")]
+        North,
+        [Description("south")]
+        South,
+        [Description("east")]
+        East,
+        [Description("west")]
+        West,
+    }
     public enum ChunkGridType {
         [Description("none")]
         None,
@@ -147,7 +157,7 @@ namespace Mcasaenk
             SHADE3D = true, STATIC_SHADE = true,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
-            REVEALED_WATER = 1,
+            REVEALED_WATER = 1, MAP_DIRECTION = Direction.North,
 
             ADEG = 120, BDEG = 15,
         };
@@ -260,6 +270,20 @@ namespace Mcasaenk
             }
         }
         public double REVEALED_WATER { get => RevealedWater; set => RevealedWater = value; }
+
+
+        private Direction mapdirection;
+        [JsonIgnore]
+        public Direction MapDirection {
+            get => mapdirection;
+            set {
+                if(mapdirection == value) return;
+
+                mapdirection = value;
+                this.OnLightChange(nameof(MapDirection));
+            }
+        }
+        public Direction MAP_DIRECTION { get => MapDirection; set => MapDirection = value; }
 
 
         private int sunlight;

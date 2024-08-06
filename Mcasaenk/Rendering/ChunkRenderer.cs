@@ -20,55 +20,68 @@ namespace Mcasaenk.Rendering
 {
     public class ChunkRenderer {
         public static void Extract(IChunkInterpreter data, int x, int z, int y, RawData rdata) {
-            int maxh = Global.Settings.MAXABSHEIGHT;
-            if(data == null) return;
-            if(data.ContainsInformation() == false) return;
+            try {
+                int maxh = Global.Settings.MAXABSHEIGHT;
+                if(data == null) return;
+                if(data.ContainsInformation() == false) return;
 
-            int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
-            int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
-            int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
+                int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
+                int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
+                int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
 
-            for(int _cx = 0; _cx < 16; _cx++) {
-                int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
-                for(int _cz = 0; _cz < 16; _cz++) {
-                    int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
-                    int regionIndex = (z + cz) * 512 + x + cx;
+                for(int _cx = 0; _cx < 16; _cx++) {
+                    int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
+                    for(int _cz = 0; _cz < 16; _cz++) {
+                        int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
+                        int regionIndex = (z + cz) * 512 + x + cx;
 
-                    int xtotal = x0 + x + cx, ztotal = z0 + z + cz;
+                        int xtotal = x0 + x + cx, ztotal = z0 + z + cz;
 
-                    short airHeight = Filter.AIR_FILTER(y, maxh - 1)(data, cx, cz, (short)y);
-                    rdata.heights[regionIndex] = airHeight;
-                    rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
+                        short airHeight = Filter.AIR_FILTER(y, maxh - 1)(data, cx, cz, (short)y);
+                        rdata.heights[regionIndex] = airHeight;
+                        rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
 
-                    short waterHeight = Filter.DEPTH_FILTER(y, maxh - 1)(data, cx, cz, airHeight);
-                    rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
-                    rdata.terrainHeights[regionIndex] = waterHeight;
+                        short waterHeight = Filter.DEPTH_FILTER(y, maxh - 1)(data, cx, cz, airHeight);
+                        rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
+                        rdata.terrainHeights[regionIndex] = waterHeight;
 
-                    rdata.blockLights[regionIndex] = Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1));
+                        rdata.blockLights[regionIndex] = Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1));
 
-                    if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
-                        {
-                            int hs = maxh - airHeight;
-                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
-                            SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
+                        if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
+                            {
+                                int hs = maxh - airHeight;
+                                double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                                SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
+                            }
+
+                            for(int height = waterHeight; height >= 0; height--) {
+                                //short nheight = Shade3DFilter.List(data, cx, cz, height);
+                                var bl = data.GetBlock(cx, cz, height);
+                                if(Shade3DFilter.IsShade3D(bl)) continue;
+
+                                //if(height <= 0) break;
+
+                                int hs = maxh - height;
+                                double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                                //bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
+                                //if(!alreadyshade) {
+                                SetLine(rdata.shadeFrame, true, SHADEX, SHADEZ, x1, z1);
+                                //}
+
+                            }
+
                         }
+                    }
+                }
+            }
+            catch {
+                for(int _cx = 0; _cx < 16; _cx++) {
+                    int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
+                    for(int _cz = 0; _cz < 16; _cz++) {
+                        int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
+                        int regionIndex = (z + cz) * 512 + x + cx;
 
-                        for(int height = waterHeight; height >= 0; height--) {
-                            //short nheight = Shade3DFilter.List(data, cx, cz, height);
-                            var bl = data.GetBlock(cx, cz, height);
-                            if(Shade3DFilter.IsShade3D(bl)) continue;
-
-                            //if(height <= 0) break;
-
-                            int hs = maxh - height;
-                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
-                            //bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
-                            //if(!alreadyshade) {
-                            SetLine(rdata.shadeFrame, true, SHADEX, SHADEZ, x1, z1);
-                            //}
-
-                        }
-
+                        rdata.blockIds[regionIndex] = Colormap.ERRORBLOCK;
                     }
                 }
             }

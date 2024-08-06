@@ -60,9 +60,9 @@
                 --><Run Text="}" Foreground="{StaticResource FORE}"/>
                 
                 <Run Text="over" Foreground="{StaticResource FORE}"/>           
-                <Run x:Name="txt_block" Text="unknown block" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>               
+                <Run x:Name="txt_block" Text="void" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>               
                 <Run Text="in" Foreground="{StaticResource FORE}"/>              
-                <Run x:Name="txt_biome" Text="unknown biome" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>
+                <Run x:Name="txt_biome" Text="void" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>
                 
             </TextBlock>
 

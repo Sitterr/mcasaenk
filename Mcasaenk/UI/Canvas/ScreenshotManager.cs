@@ -205,8 +205,8 @@ namespace Mcasaenk.UI.Canvas {
                 {
                     data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / scale.Scale))));
                     data.Add("dimension", NumTag<sbyte>.Get(0));
-                    data.Add("trackingPosition", NumTag<sbyte>.Get(0));
-                    data.Add("unlimitedTracking", NumTag<sbyte>.Get(0));
+                    data.Add("trackingPosition", NumTag<sbyte>.Get(1));
+                    data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
                     data.Add("xCenter", NumTag<int>.Get((int)(Loc1.X + Loc2.X) / 2));
                     data.Add("zCenter", NumTag<int>.Get((int)(Loc1.Y + Loc2.Y) / 2));
                     if(version < 1519) {
@@ -223,7 +223,7 @@ namespace Mcasaenk.UI.Canvas {
 
                     var bytetag = ArrTag<byte>.Get(16384);
                     for(int i = 0; i < 16384; i++) {
-                        bytetag[i] = JavaMapColors.Nearest(pixels[i], version).id;
+                        bytetag[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], version).id;
                     }             
                     data.Add("colors", bytetag);
                 }

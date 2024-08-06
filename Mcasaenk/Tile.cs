@@ -135,11 +135,18 @@ namespace Mcasaenk
                         }
                     }
                 } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
-                    var tile = map.GetTile(pos + new Point2i(0, 1));
+                    this.RegisterRedraw();
+
+                    var tile = map.GetTile(pos + Global.Settings.MAP_DIRECTION switch { 
+                        Direction.North => new Point2i(0, 1),
+                        Direction.South => new Point2i(0, -1),
+                        Direction.East => new Point2i(-1, 0),
+                        Direction.West => new Point2i(1, 0),
+                    });
                     if(tile != null) {
                         tile.RegisterRedraw();
                     }
-                    this.RegisterRedraw();
+                    
                 } else this.RegisterRedraw();
             }
         }
@@ -175,9 +182,15 @@ namespace Mcasaenk
                 }
             } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
                 neighbours = new GenData[3, 3];
-                var tile = map.GetTile(pos + new Point2i(0, -1));
+                Point2i p = Global.Settings.MAP_DIRECTION switch {
+                    Direction.North => new Point2i(0, -1),
+                    Direction.South => new Point2i(0, 1),
+                    Direction.East => new Point2i(1, 0),
+                    Direction.West => new Point2i(-1, 0),
+                };
+                var tile = map.GetTile(pos + p);
                 if(tile != null) {
-                    neighbours[1, 0] = tile.genData;
+                    neighbours[p.X + 1, p.Z + 1] = tile.genData;
                 }
             }
             TileDraw.FillPixels(pixels, Global.App.Colormap, this.genData, neighbours);

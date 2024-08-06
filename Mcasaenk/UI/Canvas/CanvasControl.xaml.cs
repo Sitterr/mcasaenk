@@ -155,8 +155,8 @@ namespace Mcasaenk.UI.Canvas {
                         window.footer.Y = Global.Settings.MINY - 1;
                         window.footer.Y_Terrain = Global.Settings.MINY - 1;
 
-                        window.footer.Block = "_unknown_";
-                        window.footer.Biome = "_unknown_";
+                        window.footer.Block = "_void_";
+                        window.footer.Biome = "_void_";
                     }
                 }
             }

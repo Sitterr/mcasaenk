@@ -55,7 +55,7 @@
 
 
 
-                            <Border x:Name="cont_general" Visibility="Visible">
+                            <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -135,7 +135,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -308,11 +308,22 @@
                                                 <RowDefinition Height="auto" MinHeight="10"/>
                                             </Grid.RowDefinitions>
 
-                                            <DockPanel Grid.Row="0" Grid.Column="0">
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Orientation="Horizontal">
+                                                <TextBlock VerticalAlignment="Center">
+                                                    <Run Text="direction"/>
+                                                </TextBlock>
+                                                <ComboBox Margin="10 0 0 0"
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=MapDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedValuePath="Value"
+                                                  DisplayMemberPath="Description"
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=MapDirection}"/>
+                                            </StackPanel>
+
+                                            <DockPanel Grid.Row="0" Grid.Column="2">
                                                 <TextBlock Text="revealed depth"/>
                                                 <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
                                             </DockPanel>
-                                            <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
+                                            <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater}"/>
 
                                         </Grid>

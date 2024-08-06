@@ -163,14 +163,14 @@ namespace Mcasaenk.UI {
             f.Margin = new Thickness(0, 8, 0, 8);
             var btn = new EButton() { Background2 = new SolidColorBrush(Colors.Transparent) };
             btn.BorderThickness = new Thickness(0);
-            btn.HorizontalContentAlignment = HorizontalAlignment.Left; btn.VerticalContentAlignment = VerticalAlignment.Top;
+            btn.HorizontalContentAlignment = HorizontalAlignment.Stretch; btn.VerticalContentAlignment = VerticalAlignment.Top;
             btn.Content = f;
 
             b.Child = btn;
             b.BorderThickness = new Thickness(0, 0, 0, 1);
 
             btn.Click += (o, e) => {
-                Global.App.OpenedSave = new Save(dir, level, DatapacksInfo.FromPath(dir, level.version_id));
+                Global.App.OpenedSave = new Save(dir, level, DatapacksInfo.FromPath(dir, level.datapacks, level.version_id));
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };

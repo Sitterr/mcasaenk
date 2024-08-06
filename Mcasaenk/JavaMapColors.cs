@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Mcasaenk {
     public static class JavaMapColors {
         private static MapColor nullcolor = new MapColor(0, 0, 0);
-        private static MapColor[] originals = [
+        public static readonly MapColor[] originals = [
             new MapColor(1, 0xFF7fb238),
             new MapColor(2, 0xFFf7e9a3),
             new MapColor(3, 0xFFc7c7c7),
@@ -72,13 +72,13 @@ namespace Mcasaenk {
             new MapColor(61, 0xFF7fa796, 3105),
         ];
 
-        public static MapColor[] derivatives = originals.SelectMany(o => 
+        public static readonly MapColor[] derivatives = originals.SelectMany(o => 
         new MapColor[] { new MapColor(o, 0), new MapColor(o, 1), new MapColor(o, 2), new MapColor(o, 3) }).ToArray();
 
-        public static MapColor Nearest(uint color, int version) {
+        public static MapColor Nearest(MapColor[] set, uint color, int version) {
             MapColor nearest = nullcolor;
             int bestscore = int.MaxValue;
-            foreach(var mapcolor in derivatives) {
+            foreach(var mapcolor in set) {
                 if(mapcolor.version > version) continue;
 
                 var rgbColor = Global.FromARGBInt(color);

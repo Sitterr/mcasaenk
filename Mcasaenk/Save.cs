@@ -43,7 +43,7 @@ namespace Mcasaenk {
         }
         public static Save FromPath(string path) {
             var level = LevelDatInfo.ReadWorld(path);
-            return new Save(path, level, DatapacksInfo.FromPath(path, level.version_id));
+            return new Save(path, level, DatapacksInfo.FromPath(path, level.datapacks, level.version_id));
         }
 
 

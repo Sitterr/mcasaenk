@@ -59,8 +59,9 @@ namespace Mcasaenk.Rendering {
         public bool ContainsName(string name) => nameToId.ContainsKey(name);
 
         public string GetName(ushort id) {
+            if(id == Colormap.ERRORBLOCK) return "_error block_";
             if(idToName.TryGetValue(id, out string name)) return name;
-            return "_unknown_";
+            return "_unknown block_";
         }
 
         private ushort assignNew(string name) {
@@ -160,7 +161,7 @@ namespace Mcasaenk.Rendering {
     public class Colormap {
         public const int DEFHEIGHT = 64;
 
-        public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1;
+        public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1, ERRORBLOCK = ushort.MaxValue - 2;
 
         public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
 
@@ -241,6 +242,7 @@ namespace Mcasaenk.Rendering {
             Biome.Freeze();
 
             def = blocks[0];
+            error = new BlockValue() { color = 0xFFFF0000, tint = NullTint.Tint };
 
             Block.LoadOldBlocks();
             depth = Block.GetId("minecraft:water"); // todo!
@@ -249,8 +251,11 @@ namespace Mcasaenk.Rendering {
 
         public List<Tint> GetTints() => tints;
 
-        private BlockValue def;
-        public BlockValue Value(ushort block) => blocks.GetValueOrDefault(block, def);
+        private BlockValue def, error;
+        public BlockValue Value(ushort block) {
+            if(block == ERRORBLOCK) return error;
+            else return blocks.GetValueOrDefault(block, def);
+        }
 
         public static bool IsColormap(string path) {
             //try {

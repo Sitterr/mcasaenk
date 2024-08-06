@@ -104,6 +104,7 @@ namespace Mcasaenk.Shade3d {
         }
 
         public bool Recalc() {
+            if(shadeValues == null) return false;
             bool changes = false;
             for(int i = 0; i < shadeValues.Length / shadeStride; i++) {
                 if(genData.isShade(i)) continue;

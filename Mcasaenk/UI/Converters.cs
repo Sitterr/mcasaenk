@@ -42,6 +42,25 @@ namespace Mcasaenk.UI
         }
     }
 
+    public class PlusNumberConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value is int intvalue) {
+                if(intvalue == 0) return "";
+
+                string a = $"+ {intvalue} {parameter}";
+                if(intvalue > 1) a += "s";
+                return a;
+            } else if(value is bool boolvalue) {
+                if(boolvalue == false) return "";
+                else return $"+ a {parameter}";
+            } else return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
     public class ResolutionScaleTextToDouble : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if(value is double fr) return ConvertToFraction(fr);
