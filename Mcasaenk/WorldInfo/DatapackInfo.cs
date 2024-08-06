@@ -56,10 +56,10 @@ namespace Mcasaenk.WorldInfo {
                 foreach(var fileorfolder in Directory.GetFiles(path, "", SearchOption.TopDirectoryOnly).Concat(Directory.GetDirectories(path, "", SearchOption.TopDirectoryOnly)) ) {
                     if(!enabled.Contains(Path.GetFileName(fileorfolder))) continue;
 
-                    var read = ReadInterface.GetSuitable(fileorfolder);
+                    using var read = ReadInterface.GetSuitable(fileorfolder);
                     if(read == null) continue;
 
-                    ImageSource image = read.ReadBitmap("pack.png");
+                    ImageSource image = read.ReadBitmap("pack.png").ToBitmapSource();
 
                     {
                         var biome_regex = new Regex("data/([^/]+)/worldgen/biome/(.+)\\.json", RegexOptions.Multiline);

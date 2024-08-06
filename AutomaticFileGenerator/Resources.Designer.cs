@@ -61,32 +61,32 @@ namespace Utils {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static System.Drawing.Bitmap beta_water {
+        internal static byte[] beta_water {
             get {
                 object obj = ResourceManager.GetObject("beta_water", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ((byte[])(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static System.Drawing.Bitmap foliage {
+        internal static byte[] foliage {
             get {
                 object obj = ResourceManager.GetObject("foliage", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ((byte[])(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static System.Drawing.Bitmap grass {
+        internal static byte[] grass {
             get {
                 object obj = ResourceManager.GetObject("grass", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ((byte[])(obj));
             }
         }
         
@@ -144,7 +144,8 @@ namespace Utils {
         ///spruce_leaves;fixed;spruce_leaves;619961;
         ///lily_pad;fixed;lily_pad;208030;
         ///stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
-        ///redstone_wire;fixed;redstone_wire;AF1805;.
+        ///redstone_wire;fixed;redstone_wire;AF1805;
+        ///notintblocks;fixed;cherry_le [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string tintblocks {
             get {

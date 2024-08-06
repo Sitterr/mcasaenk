@@ -23,6 +23,10 @@ using Mcasaenk.UI.Canvas;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows.Media.Media3D;
+using static Mcasaenk.Rendering.ColorGausBlur;
+using System.Threading.Channels;
+using static Mcasaenk.Global;
 
 namespace Mcasaenk {
     public class Global {
@@ -74,23 +78,11 @@ namespace Mcasaenk {
             }
         }
 
-        public static uint ToARGBInt(string hex6) {
-            return 0xFF000000 | (uint)Convert.ToInt32(hex6, 16);
-        }
-        public static uint ToARGBInt(byte r, byte g, byte b, byte a = 255) {
-            return (uint)((a << 24) | (r << 16) | (g << 8) | (b));
-        }
-        public static (byte a, byte r, byte g, byte b) FromARGBInt(uint color) {
-            byte a = (byte)((color >> 24) & 0xFF);
-            byte r = (byte)((color >> 16) & 0xFF);
-            byte g = (byte)((color >> 8) & 0xFF);
-            byte b = (byte)(color & 0xFF);
-            return (a, r, g, b);
-        }
-        public static Color FromArgb(double alpha, Color baseColor) {
-            return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
-        }
+        
 
+        public static System.Windows.Media.Color FromArgb(double alpha, System.Windows.Media.Color baseColor) {
+            return System.Windows.Media.Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
+        }
 
         public static uint ColorAdd(uint color, uint other) {
             byte oa = (byte)((other >> 24) & 0xFF);
@@ -249,7 +241,7 @@ namespace Mcasaenk {
                 if(hexString.StartsWith("0x")) {
                     hexString = hexString.Substring(2);
                 }
-                return Global.ToARGBInt(hexString);
+                return 0xFF000000 | (uint)Convert.ToInt32(hexString, 16);
             }
 
             public override void Write(Utf8JsonWriter writer, uint value, JsonSerializerOptions options) {
@@ -259,17 +251,6 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
-        public static ImageSource ToWPFImage(this byte[] imageData) {
-            BitmapImage biImg = new BitmapImage();
-            MemoryStream ms = new MemoryStream(imageData);
-            biImg.BeginInit();
-            biImg.StreamSource = ms;
-            biImg.EndInit();
-
-            ImageSource imgSrc = biImg as ImageSource;
-
-            return imgSrc;
-        }
         public static string minecraftname(this string name) {
             if(name.Contains(":") == false) name = "minecraft:" + name;
             return name;
@@ -305,17 +286,7 @@ namespace Mcasaenk {
             return dictionary.TryGetValue(key, out var value) ? value : defaultValueProvider();
         }
 
-        public static uint[,] ToUIntMatrix(this BitmapSource bitmap) {
-            if(bitmap.Format != PixelFormats.Bgra32) bitmap = new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0);
 
-            int width = bitmap.PixelWidth;
-            int height = bitmap.PixelHeight;
-
-            uint[] result = new uint[width * height];
-            bitmap.CopyPixels(result, width * 4, 0);
-
-            return result.D2(width, height);
-        }
 
         public static T[,] D2<T>(this T[] input, int width, int height) {
             T[,] output = new T[width, height];
@@ -327,25 +298,6 @@ namespace Mcasaenk {
             return output;
         }
 
-        public static BitmapImage ToImage(this byte[] array) {
-            using(var ms = new System.IO.MemoryStream(array)) {
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad; // here
-                image.StreamSource = ms;
-                image.EndInit();
-                return image;
-            }
-        }
-        public static Color ToColor(this uint color) {
-            byte aA = (byte)(color >> 24 & 0xFF);
-            byte aR = (byte)(color >> 16 & 0xFF);
-            byte aG = (byte)(color >> 8 & 0xFF);
-            byte aB = (byte)(color & 0xFF);
-
-            return Color.FromArgb(aA, aR, aG, aB);
-        }
-        public static (byte a, byte r, byte g, byte b) ToARGB(this uint color) => Global.FromARGBInt(color);
         public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
             foreach(var el in list) {
                 if(el.p == p) return true;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Mcasaenk {
     public static class JavaMapColors {
@@ -81,10 +82,10 @@ namespace Mcasaenk {
             foreach(var mapcolor in set) {
                 if(mapcolor.version > version) continue;
 
-                var rgbColor = Global.FromARGBInt(color);
-                if(rgbColor.a < 255) return nullcolor;
+                var rgbColor = color.ToColor();
+                if(rgbColor.A < 255) return nullcolor;
 
-                int score = (rgbColor.r - mapcolor.r) * (rgbColor.r - mapcolor.r) + (rgbColor.g - mapcolor.g) * (rgbColor.g - mapcolor.g) + (rgbColor.b - mapcolor.b) * (rgbColor.b - mapcolor.b);
+                int score = (rgbColor.R - mapcolor.color.R) * (rgbColor.R - mapcolor.color.R) + (rgbColor.G - mapcolor.color.G) * (rgbColor.G - mapcolor.color.G) + (rgbColor.B - mapcolor.color.B) * (rgbColor.B - mapcolor.color.B);
                 if(score < bestscore) { 
                     bestscore = score;
                     nearest = mapcolor;
@@ -97,13 +98,13 @@ namespace Mcasaenk {
     public struct MapColor {
         public readonly byte id;
         public readonly int version;
-        public uint color;
-        public int r, g, b;
+        public uint uintcolor;
+        public WPFColor color;
 
-        public MapColor(byte id, uint color, int version = 0) {
+        public MapColor(byte id, uint uintcolor, int version = 0) {
             this.id = id;
-            this.color = color;
-            (_, r, g, b) = Global.FromARGBInt(color);
+            this.uintcolor = uintcolor;
+            this.color = uintcolor.ToColor();
             this.version = version;
         }
 
@@ -115,8 +116,8 @@ namespace Mcasaenk {
                 2 => 1,
                 3 => 135 / 255d,
             };
-            color = Global.MultShade(mapColor.color, a);
-            (_, r, g, b) = Global.FromARGBInt(color);
+            uintcolor = Global.MultShade(mapColor.uintcolor, a);
+            color = uintcolor.ToColor();
             version = mapColor.version;
         }
     }

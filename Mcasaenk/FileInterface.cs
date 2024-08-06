@@ -7,20 +7,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
+using static Mcasaenk.Global;
 
 namespace Mcasaenk {
-    public interface SaveInterface {
-        void SaveImage(string loc, BitmapSource img);
+    public interface SaveInterface : IDisposable {
+        void SaveImage(string loc, WPFBitmap img);
         void SaveLines(string loc, IEnumerable<string> lines);
     }
 
-    public interface ReadInterface {
+    public interface ReadInterface : IDisposable {
         bool Exists(string path);
         string AllEntries();
 
         string ReadAllText(string path);
         IEnumerable<string> ReadAllLines(string path);
-        BitmapSource ReadBitmap(string path);
+        WPFBitmap ReadBitmap(string path);
      
 
         string[] GetFiles(string path);
@@ -39,28 +40,31 @@ namespace Mcasaenk {
         private readonly string concatentries;
         public FileRead(string baselocation) {
             this.baselocation = baselocation;
-            this.concatentries = string.Join(Environment.NewLine, Directory.GetFiles(baselocation, "*.*", SearchOption.AllDirectories).Select(f => f.Substring(Path.GetFullPath(baselocation).Length + 1).Replace("\\", "/")));
+            if(baselocation != "") this.concatentries = string.Join(Environment.NewLine, Directory.GetFiles(baselocation, "*.*", SearchOption.AllDirectories).Select(f => f.Substring(Path.GetFullPath(baselocation).Length + 1).Replace("\\", "/")));
         }
+        public FileRead() : this("") { }
+        public void Dispose() { }
 
         public bool Exists(string path) => File.Exists(Path.Combine(baselocation, path));
         public string AllEntries() => concatentries;
 
         public string ReadAllText(string path) => File.ReadAllText(Path.Combine(baselocation, path));
         public IEnumerable<string> ReadAllLines(string path) => File.ReadLines(Path.Combine(baselocation, path));
-        public BitmapSource ReadBitmap(string path) {
+        public static WPFBitmap ReadFromFile(string path) {
             BitmapImage bitmap = new BitmapImage();
 
             // Initialize the BitmapImage from the file path
             bitmap.BeginInit();
-            bitmap.UriSource = new Uri(Path.Combine(baselocation, path), UriKind.RelativeOrAbsolute);
-            bitmap.CacheOption = BitmapCacheOption.OnLoad; // Optional: to cache the image
+            bitmap.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            //bitmap.CacheOption = BitmapCacheOption.OnLoad; // Optional: to cache the image
             bitmap.EndInit();
 
             // Optionally, freeze the bitmap to make it cross-thread accessible
             bitmap.Freeze();
 
-            return bitmap;
+            return new WPFBitmap(bitmap);
         }
+        public WPFBitmap ReadBitmap(string path) => ReadFromFile(Path.Combine(baselocation, path));
 
         public string[] GetFiles(string path) => Directory.GetFiles(Path.Combine(baselocation, path));
     }
@@ -79,13 +83,14 @@ namespace Mcasaenk {
                 }
             }
         }
+        public void Dispose() { }
 
-        public void SaveImage(string loc, BitmapSource img) {
+        public void SaveImage(string loc, WPFBitmap img) {
             //img.Save(Path.Combine(baselocation, loc));
             PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(img));
+            encoder.Frames.Add(BitmapFrame.Create(img.ToBitmapSource()));
 
-            using(FileStream fileStream = new FileStream(loc, FileMode.Create)) {
+            using(FileStream fileStream = new FileStream(Path.Combine(baselocation, loc), FileMode.Create)) {
                 encoder.Save(fileStream);
             }
         } 
@@ -96,11 +101,13 @@ namespace Mcasaenk {
         private readonly ZipArchive archive;
         private readonly Dictionary<string, ZipArchiveEntry> entries;
         private readonly string concatentries;
-        public ZipRead(string baselocation) {
-            this.archive = ZipFile.Open(baselocation, ZipArchiveMode.Read);
-            this.entries = archive.Entries.ToDictionary(entr => entr.FullName);
-            this.concatentries = string.Join(Environment.NewLine, archive.Entries);
+        public ZipRead(string file, string inside = "") {
+            this.archive = ZipFile.Open(file, ZipArchiveMode.Read);
+            this.entries = archive.Entries.Where(entr => entr.FullName.StartsWith(inside)).ToDictionary(entr => entr.FullName);
+            this.concatentries = string.Join(Environment.NewLine, entries.Values);
         }
+
+        public void Dispose() => archive.Dispose();
 
         public bool Exists(string path) => entries.ContainsKey(path);
         public string AllEntries() => concatentries;
@@ -111,10 +118,10 @@ namespace Mcasaenk {
             return streamReader.ReadToEnd();
         }
         public IEnumerable<string> ReadAllLines(string path) => this.ReadAllText(path).Split(Environment.NewLine);
-        public BitmapSource ReadBitmap(string path) {
+        public WPFBitmap ReadBitmap(string path) {
             using var stream = entries[path].Open();
             var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-            return decoder.Frames[0];
+            return new WPFBitmap(decoder.Frames[0]);
         }
 
         public string[] GetFiles(string path) { 
@@ -122,7 +129,7 @@ namespace Mcasaenk {
         }
     }
 
-    public class ZipSave : SaveInterface, IDisposable {
+    public class ZipSave : SaveInterface {
         private readonly FileStream _fileStream;
         private readonly ZipArchive _archive;
         public ZipSave(string ziplocation) {
@@ -136,7 +143,7 @@ namespace Mcasaenk {
 
 
 
-        public void SaveImage(string loc, BitmapSource img) => SaveFile(loc, ImageToByte2(img));
+        public void SaveImage(string loc, WPFBitmap img) => SaveFile(loc, ImageToByte2(img));
         public void SaveLines(string loc, IEnumerable<string> lines) => SaveFile(loc, Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, lines)));
 
 
@@ -145,10 +152,10 @@ namespace Mcasaenk {
             using var w = _archive.CreateEntry(loc, CompressionLevel.NoCompression).Open();
             w.Write(content, 0, content.Length);
         }
-        private static byte[] ImageToByte2(BitmapSource img) {
+        private static byte[] ImageToByte2(WPFBitmap img) {
             using var stream = new MemoryStream();
             PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(img));
+            encoder.Frames.Add(BitmapFrame.Create(img.ToBitmapSource()));
             encoder.Save(stream);
             return stream.ToArray();
         }

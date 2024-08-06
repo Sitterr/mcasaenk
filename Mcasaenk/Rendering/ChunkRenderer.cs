@@ -74,7 +74,7 @@ namespace Mcasaenk.Rendering
                     }
                 }
             }
-            catch {
+            catch(Exception e) {
                 for(int _cx = 0; _cx < 16; _cx++) {
                     int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
                     for(int _cz = 0; _cz < 16; _cz++) {
@@ -84,6 +84,9 @@ namespace Mcasaenk.Rendering
                         rdata.blockIds[regionIndex] = Colormap.ERRORBLOCK;
                     }
                 }
+#if DEBUG
+                throw e;
+#endif
             }
         }
 

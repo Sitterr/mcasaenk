@@ -103,9 +103,9 @@ namespace Mcasaenk.Rendering {
                 sh += Global.App.Settings.SUN_LIGHT;
                 if(genData.isShade(i)) {
                     double max = (Global.App.Settings.CONTRAST * 150);
-                    var c = Global.FromARGBInt(pixels[i]);
+                    var c = pixels[i].ToColor();
 
-                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * fd[i])), ((c.r + c.g + c.b) / 3 - max) / 256), 0, 15);
+                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * fd[i])), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
 
                     //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
                     //int addcontr = (int)(-Settings.CONTRAST * 100);
@@ -126,7 +126,7 @@ namespace Mcasaenk.Rendering {
 
             if(Global.Settings.USEMAPPALETTE) {
                 for(int i = 0; i < 512 * 512; i++) {
-                    pixels[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], Global.App.OpenedSave.levelDatInfo.version_id).color;
+                    pixels[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], Global.App.OpenedSave.levelDatInfo.version_id).uintcolor;
                 }
             }
 
@@ -273,23 +273,23 @@ namespace Mcasaenk.Rendering {
         }
 
         public void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = Global.FromARGBInt(gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
-            r += f.r;
-            g += f.g;
-            b += f.b;
+            var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+            r += f.R;
+            g += f.G;
+            b += f.B;
             br++;
         }
         public void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = Global.FromARGBInt(gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
-            r = f.r;
-            g = f.g;
-            b = f.b;
+            var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+            r += f.R;
+            g += f.G;
+            b += f.B;
             br = 1;
         }
 
         public uint GenerateColor(BlockValue gb, IGenData gen, int i, DynBiome dynbiomes) {
             if(br == 0) return 0xFFFF0000;
-            return Global.ColorMult(gb.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+            return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
         }
     }
     unsafe struct PrecBlur : Blur<PrecBlur> {
@@ -326,14 +326,14 @@ namespace Mcasaenk.Rendering {
         public uint GenerateColor(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
             int r = 0, g = 0, b = 0, br = 0;
             for(int i = 0; i < dynbiomes.max(); i++) {
-                var c = Global.FromARGBInt(gb.tint.TintColorFor(dynbiomes.back(i), gen.heights(ri)));
-                r += c.r * biome[i];
-                g += c.g * biome[i];
-                b += c.b * biome[i];
+                var c = gb.tint.TintColorFor(dynbiomes.back(i), gen.heights(ri)).ToColor();
+                r += c.R * biome[i];
+                g += c.G * biome[i];
+                b += c.B * biome[i];
                 br += biome[i];
             }
             if(br == 0) return 0xFFFF0000;
-            return Global.ColorMult(gb.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+            return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
         }
     }
 
@@ -549,14 +549,14 @@ namespace Mcasaenk.Rendering {
                 if(block.tint == tint) {
                     int r = 0, g = 0, b = 0, br = 0;
                     for(int i = 0; i < dynbiomes.max(); i++) {
-                        var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(0 * 512 + x)));
-                        r += c.r * acc_biome[i];
-                        g += c.g * acc_biome[i];
-                        b += c.b * acc_biome[i];
+                        var c = tint.TintColorFor(dynbiomes.back(i), genData.heights(0 * 512 + x)).ToColor();
+                        r += c.R * acc_biome[i];
+                        g += c.G * acc_biome[i];
+                        b += c.B * acc_biome[i];
                         br += acc_biome[i];
                     }
 
-                    pixels[0 * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+                    pixels[0 * 512 + x] = Global.ColorMult(block.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
                 }
 
                 for(int z = 1; z < 512; z++) {
@@ -576,14 +576,14 @@ namespace Mcasaenk.Rendering {
                     if(block.tint == tint) {
                         int r = 0, g = 0, b = 0, br = 0;
                         for(int i = 0; i < dynbiomes.max(); i++) {
-                            var c = Global.FromARGBInt(tint.TintColorFor(dynbiomes.back(i), genData.heights(z * 512 + x)));
-                            r += c.r * acc_biome[i];
-                            g += c.g * acc_biome[i];
-                            b += c.b * acc_biome[i];
+                            var c = tint.TintColorFor(dynbiomes.back(i), genData.heights(z * 512 + x)).ToColor();
+                            r += c.R * acc_biome[i];
+                            g += c.G * acc_biome[i];
+                            b += c.B * acc_biome[i];
                             br += acc_biome[i];
                         }
 
-                        pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(r / br), (byte)(g / br), (byte)(b / br)));
+                        pixels[z * 512 + x] = Global.ColorMult(block.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
                     }
                 }
             }
@@ -617,14 +617,14 @@ namespace Mcasaenk.Rendering {
 
                     if(gen != null) {
                         if(colormap.Value(gen.block(ri)).tint == tint) {
-                            var f = Global.FromARGBInt(tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
-                            acc.r += f.r;
-                            acc.g += f.g;
-                            acc.b += f.b;
+                            var f = tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+                            acc.r += f.R;
+                            acc.g += f.G;
+                            acc.b += f.B;
                             acc.br++;
-                            cx2[R + r].r = f.r;
-                            cx2[R + r].g = f.g;
-                            cx2[R + r].b = f.b;
+                            cx2[R + r].r = f.R;
+                            cx2[R + r].g = f.G;
+                            cx2[R + r].b = f.B;
                             cx2[R + r].br = 1;
                         }
                     }
@@ -651,14 +651,14 @@ namespace Mcasaenk.Rendering {
 
                     if(gen != null) {
                         if(colormap.Value(gen.block(ri)).tint == tint) {
-                            var f = Global.FromARGBInt(tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)));
-                            acc.r += f.r;
-                            acc.g += f.g;
-                            acc.b += f.b;
+                            var f = tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+                            acc.r += f.R;
+                            acc.g += f.G;
+                            acc.b += f.B;
                             acc.br++;
-                            cx2[R + x + R].r = f.r;
-                            cx2[R + x + R].g = f.g;
-                            cx2[R + x + R].b = f.b;
+                            cx2[R + x + R].r = f.R;
+                            cx2[R + x + R].g = f.G;
+                            cx2[R + x + R].b = f.B;
                             cx2[R + x + R].br = 1;
                         }
                     }
@@ -694,7 +694,7 @@ namespace Mcasaenk.Rendering {
 
                 var block = colormap.Value(genData.block(0 * 512 + x));
                 if(block.tint == tint) {
-                    pixels[0 * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
+                    pixels[0 * 512 + x] = Global.ColorMult(block.color, WPFColor.FromRgb((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)).ToUInt());
                 }
 
                 for(int z = 1; z < 512; z++) {
@@ -720,7 +720,7 @@ namespace Mcasaenk.Rendering {
 
                     block = colormap.Value(genData.block(z * 512 + x));
                     if(block.tint == tint) {
-                        pixels[z * 512 + x] = Global.ColorMult(block.color, Global.ToARGBInt((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)));
+                        pixels[z * 512 + x] = Global.ColorMult(block.color, WPFColor.FromRgb((byte)(acc.r / acc.br), (byte)(acc.g / acc.br), (byte)(acc.b / acc.br)).ToUInt());
                     }
                 }
             }

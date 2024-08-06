@@ -3,8 +3,6 @@ using Mcasaenk;
 using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Policy;
@@ -12,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Xml.Linq;
 using static Mcasaenk.Global;
 using static Utils.AssetsUtils;
@@ -19,7 +18,7 @@ using static Utils.AssetsUtils;
 namespace Utils {
     public static class MapColormapMaker {
 
-        public static void FromJavaMap(string path, string resourcepack, Bitmap blockMap) {
+        public static void FromJavaMap(string path, string resourcepack, WPFBitmap blockMap) {
             using ZipSave output = new ZipSave(path);
 
             var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
@@ -32,7 +31,7 @@ namespace Utils {
         }
 
 
-        public static void FromBedrockMap(string path, string resourcepack, Bitmap blockMap, Bitmap[] biomeMaps) {
+        public static void FromBedrockMap(string path, string resourcepack, WPFBitmap blockMap, WPFBitmap[] biomeMaps) {
             using ZipSave output = new ZipSave(path);
 
             var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
@@ -54,23 +53,23 @@ namespace Utils {
 
 
             // https://minecraft.wiki/w/Plains
-            Color BEDROCK_PLAINS_GRASS_TINT = ColorTranslator.FromHtml("#91BD59");
-            Color BEDROCK_PLAINS_FOLIAGE_TINT = ColorTranslator.FromHtml("#77AB2F");
+            WPFColor BEDROCK_PLAINS_GRASS_TINT = WPFColor.FromHex("#91BD59");
+            WPFColor BEDROCK_PLAINS_FOLIAGE_TINT = WPFColor.FromHex("#77AB2F");
 
 
-            Dictionary<string, (string tint, List<Color> colors)> colors = new();
+            Dictionary<string, (string tint, List<WPFColor> colors)> colors = new();
             {
                 foreach(var entry in ReadBiomeInGameMap()) {
                     if(colors.ContainsKey(entry.block) == false) {
-                        colors[entry.block] = (entry.tint, new List<Color>());
+                        colors[entry.block] = (entry.tint, new List<WPFColor>());
                     }
 
                     colors[entry.block].colors.Add(entry.color);
                 }
             }
 
-            Bitmap newWaterColors = new Bitmap(biomes.Length, 1);
-            Bitmap newFoliageColors = new Bitmap(biomes.Length, 1), newGrassColors = new Bitmap(biomes.Length, 1);
+            WPFBitmap newWaterColors = new WPFBitmap(biomes.Length, 1);
+            WPFBitmap newFoliageColors = new WPFBitmap(biomes.Length, 1), newGrassColors = new WPFBitmap(biomes.Length, 1);
 
             // asume java and bedrock use the same tint for plains
             {
@@ -87,7 +86,7 @@ namespace Utils {
 
             foreach(var f in colors) {
                 if(f.Value.colors.Distinct().Count() > 1) {
-                    Color fColor = default;
+                    WPFColor fColor = default;
                     if(f.Value.tint == "foliage") {
                         fColor = newFoliageColors.GetPixel(0, 0);
                     } else if(f.Value.tint == "grass") {
@@ -116,10 +115,10 @@ namespace Utils {
             output.SaveImage("water.png", newWaterColors);
 
 
-            Color Dev(Color c1, Color c2) => Color.FromArgb((int)(c1.R / (double)c2.R * 255), (int)(c1.G / (double)c2.G * 255), (int)(c1.B / (double)c2.B * 255));
-            Color Mult(Color c1, Color c2) => Color.FromArgb((int)(c1.R * (double)c2.R / 255), (int)(c1.G * (double)c2.G / 255), (int)(c1.B * (double)c2.B / 255));
+            WPFColor Dev(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R / (double)c2.R * 255), (byte)(c1.G / (double)c2.G * 255), (byte)(c1.B / (double)c2.B * 255));
+            WPFColor Mult(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R * (double)c2.R / 255), (byte)(c1.G * (double)c2.G / 255), (byte)(c1.B * (double)c2.B / 255));
 
-            IEnumerable<(string block, string tint, int biome, Color color)> ReadBiomeInGameMap() {
+            IEnumerable<(string block, string tint, int biome, WPFColor color)> ReadBiomeInGameMap() {
                 int bi = 0;
                 for(int i = 0; i < biomeMaps.Length; i++) {
                     var biomemap = biomeMaps[i];
@@ -160,7 +159,7 @@ namespace Utils {
 
 
 
-        static Dictionary<string, string> ReadIngameMap(Bitmap bitmap, string[] blocks) {
+        static Dictionary<string, string> ReadIngameMap(WPFBitmap bitmap, string[] blocks) {
             Dictionary<string, string> map = new Dictionary<string, string>();
 
             string airColor = "";

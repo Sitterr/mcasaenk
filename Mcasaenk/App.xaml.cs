@@ -26,6 +26,7 @@ namespace Mcasaenk {
         public string APPFOLDER = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "mcasaenk");
+        //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
         public const string VERSION = "0.9.0";
 

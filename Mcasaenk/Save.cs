@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static Mcasaenk.Global;
 
 namespace Mcasaenk {
     public class Save {
@@ -26,19 +27,19 @@ namespace Mcasaenk {
             this.levelDatInfo = levelDat;
             this.datapackInfo = datapackInfo;
 
-            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], ResourceMapping.grass8.ToWPFImage());
-            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], ResourceMapping.nether8.ToWPFImage());
-            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], ResourceMapping.end8.ToWPFImage());
+            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
+            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
+            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
 
             dimensions = new List<Dimension>() { overworld, nether, end };
 
-            var unknownPack = ResourceMapping.unknown_pack.ToWPFImage();
+            var unknownPack = WPFBitmap.FromBytes(ResourceMapping.unknown_pack);
             foreach(var dim in datapackInfo.dimensions.Values) {
                 if(dimensions.Any(d => d.name == dim.name)) continue;
                 var name = dim.name.fromminecraftname();
                 string regionpath = Path.Combine(path, "dimensions", name.@namespace, name.name, "region");
                 if(Path.Exists(regionpath) == false) continue;
-                dimensions.Add(new Dimension(this, regionpath, dim, dim.image != null ? dim.image : unknownPack));
+                dimensions.Add(new Dimension(this, regionpath, dim, dim.image != null ? dim.image : unknownPack.ToBitmapSource()));
             }          
         }
         public static Save FromPath(string path) {

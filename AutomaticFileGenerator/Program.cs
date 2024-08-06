@@ -3,9 +3,9 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using System.Drawing;
 using Utils;
 using Utils.ColormapMaker;
+using System.Windows.Media.Imaging;
 class Program {
     // !!!!!!!!!!!! console not showing https://github.com/dotnet/project-system/issues/6613 !!!!!!!!!!!!!!!!!!!!!!!!!!
     public static void Main(String[] args) {       
@@ -18,31 +18,15 @@ class Program {
         // json.TryGetValue("carvers", out var el);
 
         //ColormapMaker.FromBedrockMap("D:\\bedrockmap.zip", vanillapack, new Bitmap("D:\\map\\bedrock_img1.png"), [new Bitmap("D:\\map\\bedrock_img2.png"), new Bitmap("D:\\map\\bedrock_img3.png"), new Bitmap("D:\\map\\bedrock_img4.png")]);
-        MapColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, new Bitmap("D:\\map\\java_img1.png"));
+        //MapColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map\\java_img1.png"));
         //MapColormapMaker.FromResourcePacks("D:\\greenfield.zip", [vanillapack, "D:\\Greenfield.Texture.Pack.1.17"], 0);
 
-        //ResourcepackColormapMaker.Make("D:\\biomes", [vanillapack, "D:\\resource packs\\biomes"], 
-        //    new Options() {
-        //        minQ = 0.00,
-        //        for_Q0_try_with_sides = true,
-        //    }
-        //);
+        ResourcepackColormapMaker.Make("D:\\test", [vanillapack, "D:\\resource packs\\aether"],
+            new Options() {
+                minQ = 0.00,
+                for_Q0_try_with_sides = true,
+            }
+        );
     }
 }
-
-public static class Extensions {
-    public static uint ToUInt(this Color color) {
-        // Extract ARGB values
-        byte alpha = color.A;
-        byte red = color.R;
-        byte green = color.G;
-        byte blue = color.B;
-
-        // Combine them into a single uint
-        uint result = (uint)((alpha << 24) | (red << 16) | (green << 8) | blue);
-
-        return result;
-    }
-}
-
 

@@ -201,7 +201,7 @@ namespace Mcasaenk.Rendering {
             foreach(var file in Directory.GetFiles(path)) {
                 if(Path.GetExtension(file) != ".properties") continue;
 
-                var t = Tint.ReadTint(file);
+                var t = Tint.ReadTint(new FileRead(), file);
                 Tint tint = t.format switch {
                     "vanilla" => new OrthodoxVanillaTint(t.name, world_version, t.source, datapacksInfo),
                     "vanilla_grass" => new HardcodedVanillaTint(t.name, "grass", world_version, t.source, datapacksInfo),
@@ -401,14 +401,14 @@ namespace Mcasaenk.Rendering {
             return (name, format, blocks, source, color);
         }
 
-        public static (string name, string format, string[] blocks, string source, uint color) ReadTint(string path_properties) {
+        public static (string name, string format, string[] blocks, string source, uint color) ReadTint(ReadInterface read, string path_properties) {
             string name = Path.GetFileNameWithoutExtension(path_properties);
             string format = "vanilla";
             string[] blocks = [name.minecraftname()];
             string source = name + ".png";
             uint color = 0xFFFFFFFF;
 
-            foreach(string _line in File.ReadAllLines(path_properties)) {
+            foreach(string _line in read.ReadAllLines(path_properties)) {
                 string line = _line.Trim();
                 if(line.Length == 0) continue;
 
@@ -431,6 +431,7 @@ namespace Mcasaenk.Rendering {
             source = Path.Combine(Path.GetDirectoryName(path_properties), source);
             return (name, format, blocks, source, color);
         }
+
     }
 
     public class OrthodoxVanillaTint : Tint {
@@ -446,8 +447,12 @@ namespace Mcasaenk.Rendering {
             this.version = verion;
             this.datapacksInfo = datapacksInfo;
 
-            this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
-            if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
+            if(File.Exists(source)) {
+                this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+                if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
+            } else {
+                this.sprite = new uint[256, 256];
+            }
         }
         string Tint.Name() => name; string Tint.Kurz() => "vn";
         DynamicTintSettings Tint.Settings() => settings;
@@ -481,6 +486,8 @@ namespace Mcasaenk.Rendering {
             if(File.Exists(source)) {
                 this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
                 if(sprite.GetLength(0) != 256 && sprite.GetLength(0) != 256) throw new Exception();
+            } else {
+                this.sprite = new uint[256, 256];
             }
         }
 
@@ -538,7 +545,11 @@ namespace Mcasaenk.Rendering {
         public GridTint(string name, string source) {
             this.name = name;
 
-            this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+            if(File.Exists(source)) {
+                this.sprite = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)).ToUIntMatrix();
+            } else {
+                this.sprite = new uint[1, 1];
+            }
 
             heightparity = true;
             for(int x = 0; x < sprite.GetLength(0); x++) { 

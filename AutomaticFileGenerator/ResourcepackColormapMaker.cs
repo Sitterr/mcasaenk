@@ -2,11 +2,11 @@
 using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Mcasaenk.Global;
 
@@ -19,8 +19,10 @@ namespace Utils.ColormapMaker {
     enum BlockCreationMethod { AboveQ, BelowQ, Sides, Texture, None }
     public static class ResourcepackColormapMaker {
 
-        public static void Make(string outputpath, string[] resourcepacks, Options options) {
-            var reversepacks = resourcepacks.Reverse().ToArray();
+        public static void Make(string outputpath, string[] resourcepacks_, Options options) {
+            ReadInterface[] resourcepacks = resourcepacks_.Select(ReadInterface.GetSuitable).ToArray();
+            ReadInterface[] reversepacks = resourcepacks.Reverse().ToArray();
+
             options.minQ = Math.Round(options.minQ, 3);
             SaveInterface output;
             if(outputpath.EndsWith(".zip")) output = new ZipSave(outputpath);
@@ -38,7 +40,7 @@ namespace Utils.ColormapMaker {
                 foreach(var f in state_to_model) {
                     string blockname = f.Key;
 
-                    Dictionary<string, (Bitmap image, string loc)> textures = new();
+                    Dictionary<string, (WPFBitmap image, string loc)> textures = new();
                     var el = ReadModel(f.Value);
                     if(el == null) continue;
                     while(el.elements == null) {
@@ -50,7 +52,7 @@ namespace Utils.ColormapMaker {
                                     }
                                 } else {
                                     string loc = toLocation(t.Value, "textures", "png");
-                                    if(rightLocation<Bitmap>(loc, out var bitmap)) {
+                                    if(rightLocation<WPFBitmap>(loc, out var bitmap)) {
                                         textures[t.Key] = (bitmap, t.Value);
                                     }
                                 }
@@ -64,13 +66,13 @@ namespace Utils.ColormapMaker {
                     if(el.parent == null && el.elements == null) {
                         if(textures.Count == 0) {
                             Print($"{blockname} has no data, no textures even and is thus being skipped", ConsoleColor.DarkRed);
-                            blocks.Add((blockname, 0xFFFFFFFF, default, BlockCreationMethod.None));
+                            blocks.Add((blockname, 0, default, BlockCreationMethod.None));
                         } else {
                             ConsoleColor color = ConsoleColor.DarkYellow;
                             Print($"{blockname} has no data. However at least one texture *{textures.First().Value.loc}* has been found", color);
 
                             var answer = ColorOfTexture(textures.First().Value.image);
-                            blocks.Add((blockname, answer, VanillaTints.IsNormallyTinted(blockname), BlockCreationMethod.Texture));
+                            blocks.Add((blockname, answer, VanillaTints.IsNormallyTinted(blockname), answer > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None));
                         }
 
                     } else {
@@ -80,7 +82,7 @@ namespace Utils.ColormapMaker {
                                     textures[t.Key] = textures[t.Value.Substring(1)];
                                 } else {
                                     string loc = toLocation(t.Value, "textures", "png");
-                                    if(rightLocation<Bitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
+                                    if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
                                         textures[t.Key] = (bitmap, t.Value);
                                     }
                                 }
@@ -115,7 +117,10 @@ namespace Utils.ColormapMaker {
             };
             blocks = blocks.OrderBy(bl => bl.creationMethod).ToList();
             for(int i = 0; i < blocks.Count; i++) {
-                string line = $"{blocks[i].block.simplifyminecraftname()}={blocks[i].color.ToString("X").Substring(2)}";
+                string line = $"{blocks[i].block.simplifyminecraftname()}";
+                if(blocks[i].color > 0) {
+                    line += "=" + blocks[i].color.ToString("X").Substring(2);
+                }
                 if(i > 0) {
                     if(blocks[i - 1].creationMethod != blocks[i].creationMethod) {
                         blocklines.Add("");
@@ -138,16 +143,16 @@ namespace Utils.ColormapMaker {
             // tints
             {
 
-                List<(string name, string format, Bitmap source, uint color)> tints = new();
+                List<(string name, string format, WPFBitmap source, uint color)> tints = new();
                 var blocktint = new Dictionary<string, int>();
 
                 // vanilla tints
                 foreach(var vtint in VanillaTints.tints) {
-                    Bitmap source = vtint.name switch {
+                    WPFBitmap source = WPFBitmap.FromBytes(vtint.name switch {
                         "grass" => Resources.grass,
                         "foliage" => Resources.foliage,
                         _ => null,
-                    };
+                    });
                     tints.Add((vtint.name, vtint.format, source, vtint.deftint));
                 }
                 int vtintsi = tints.Count;
@@ -164,27 +169,27 @@ namespace Utils.ColormapMaker {
 
                 // optifine tints
                 foreach(var pack in reversepacks) {
-                    var colormapdir = Path.Combine(pack, "assets", "minecraft", "optifine", "colormap");
-                    if(!Path.Exists(colormapdir)) continue;
+                    var colormapdir = Path.Combine("assets", "minecraft", "optifine", "colormap");
+                    if(!pack.Exists(colormapdir)) continue;
 
                     // custom
                     {
-                        if(Path.Exists(Path.Combine(colormapdir, "custom"))) {
+                        if(pack.Exists(Path.Combine(colormapdir, "custom"))) {
                             foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "custom"), "*.properties")) {
-                                var r = Tint.ReadTint(file);
+                                var r = Tint.ReadTint(pack, file);
 
-                                tints.Add((r.name, r.format, new Bitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
+                                tints.Add((r.name, r.format, pack.ReadBitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
                                 foreach(var bl in r.blocks) {
                                     blocktint[bl] = tints.Count - 1;
                                 }
                             }
                         }
 
-                        if(Path.Exists(Path.Combine(colormapdir, "blocks"))) {
+                        if(pack.Exists(Path.Combine(colormapdir, "blocks"))) {
                             foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "blocks"), "*.properties")) {
-                                var r = Tint.ReadTint(file);
+                                var r = Tint.ReadTint(pack, file);
 
-                                tints.Add((r.name, r.format, new Bitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
+                                tints.Add((r.name, r.format, pack.ReadBitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
                                 foreach(var bl in r.blocks) {
                                     blocktint[bl] = tints.Count - 1;
                                 }
@@ -196,20 +201,20 @@ namespace Utils.ColormapMaker {
                     // static
                     {
                         {
-                            if(File.Exists(Path.Combine(colormapdir, "swampgrass.properties")) || File.Exists(Path.Combine(colormapdir, "swampgrass.png"))) {
+                            if(pack.Exists(Path.Combine(colormapdir, "swampgrass.properties")) || pack.Exists(Path.Combine(colormapdir, "swampgrass.png"))) {
                                 Print("Detected optifine tint swampgrass, which cannot be converted!", ConsoleColor.Red);
                             }
                         }
                         {
-                            if(File.Exists(Path.Combine(colormapdir, "swampfoliage.properties")) || File.Exists(Path.Combine(colormapdir, "swampfoliage.png"))) {
+                            if(pack.Exists(Path.Combine(colormapdir, "swampfoliage.properties")) || pack.Exists(Path.Combine(colormapdir, "swampfoliage.png"))) {
                                 Print("Detected optifine tint swampfoliage, which cannot be converted!", ConsoleColor.Red);
                             }
                         }
 
                         {
-                            string path = Path.Combine(pack, "assets", "minecraft", "optifine", "color.properties");
-                            if(File.Exists(path)) {
-                                var lines = File.ReadAllLines(path).Select(l => l.Split("=").Select(p => p.Trim()).ToArray());
+                            string path = Path.Combine("assets", "minecraft", "optifine", "color.properties");
+                            if(pack.Exists(path)) {
+                                var lines = pack.ReadAllLines(path).Select(l => l.Split("=").Select(p => p.Trim()).ToArray());
                                 foreach(var line in lines) {
                                     if(line[0] == "lilypad") {
                                         tints.Add(("lily_pad", "fixed", null, 0xFF000000 | Convert.ToUInt32(line[1], 16)));
@@ -221,50 +226,50 @@ namespace Utils.ColormapMaker {
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(File.Exists(Path.Combine(colormapdir, "pine.properties"))) {
-                                tint = Tint.ReadTint(Path.Combine(colormapdir, "pine.properties"));
-                            } else if(Path.Exists(Path.Combine(colormapdir, "pine.png"))) {
+                            if(pack.Exists(Path.Combine(colormapdir, "pine.properties"))) {
+                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "pine.properties"));
+                            } else if(pack.Exists(Path.Combine(colormapdir, "pine.png"))) {
                                 tint = ("pine", "vanilla", default, Path.Combine(colormapdir, "pine.png"), default);
                             }
 
                             if(tint != default) {
-                                tints.Add((tint.name, tint.format, new Bitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
+                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
                                 blocktint["minecraft:spruce_leaves"] = tints.Count - 1;
                             }
                         }
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(File.Exists(Path.Combine(colormapdir, "birch.properties"))) {
-                                tint = Tint.ReadTint(Path.Combine(colormapdir, "birch.properties"));
-                            } else if(Path.Exists(Path.Combine(colormapdir, "birch.png"))) {
+                            if(pack.Exists(Path.Combine(colormapdir, "birch.properties"))) {
+                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "birch.properties"));
+                            } else if(pack.Exists(Path.Combine(colormapdir, "birch.png"))) {
                                 tint = ("birch", "vanilla", default, Path.Combine(colormapdir, "birch.png"), default);
                             }
 
                             if(tint != default) {
-                                tints.Add((tint.name, tint.format, new Bitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
+                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
                                 blocktint["minecraft:birch_leaves"] = tints.Count - 1;
                             }
                         }
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(File.Exists(Path.Combine(colormapdir, "water.properties"))) {
-                                tint = Tint.ReadTint(Path.Combine(colormapdir, "water.properties"));
-                            } else if(Path.Exists(Path.Combine(colormapdir, "water.png"))) {
+                            if(pack.Exists(Path.Combine(colormapdir, "water.properties"))) {
+                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "water.properties"));
+                            } else if(pack.Exists(Path.Combine(colormapdir, "water.png"))) {
                                 tint = ("water", "vanilla", default, Path.Combine(colormapdir, "water.png"), default);
                             }
 
                             if(tint != default) {
-                                tints.Add((tint.name, tint.format, new Bitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
+                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
                                 blocktint["minecraft:water"] = tints.Count - 1;
                             }
                         }
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(Path.Exists(Path.Combine(colormapdir, "redstone.png"))) {
-                                tint = ("redstone_wire", "fixed", default, default, ColorOfTexture(new Bitmap(Path.Combine(colormapdir, "redstone.png"))));
+                            if(pack.Exists(Path.Combine(colormapdir, "redstone.png"))) {
+                                tint = ("redstone_wire", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "redstone.png"))));
                             }
 
                             if(tint != default) {
@@ -275,8 +280,8 @@ namespace Utils.ColormapMaker {
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(Path.Exists(Path.Combine(colormapdir, "pumpkinstem.png"))) {
-                                tint = ("pumpkin", "fixed", default, default, ColorOfTexture(new Bitmap(Path.Combine(colormapdir, "pumpkinstem.png"))));
+                            if(pack.Exists(Path.Combine(colormapdir, "pumpkinstem.png"))) {
+                                tint = ("pumpkin", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "pumpkinstem.png"))));
                             }
 
                             if(tint != default) {
@@ -288,8 +293,8 @@ namespace Utils.ColormapMaker {
 
                         {
                             (string name, string format, string[] blocks, string source, uint color) tint = default;
-                            if(Path.Exists(Path.Combine(colormapdir, "melonstem.png"))) {
-                                tint = ("melon", "fixed", default, default, ColorOfTexture(new Bitmap(Path.Combine(colormapdir, "melonstem.png"))));
+                            if(pack.Exists(Path.Combine(colormapdir, "melonstem.png"))) {
+                                tint = ("melon", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "melonstem.png"))));
                             }
 
                             if(tint != default) {
@@ -367,18 +372,17 @@ namespace Utils.ColormapMaker {
             bool rightLocation<T>(string loc, out T file) {
                 file = default;
                 foreach(var pack in reversepacks) {
-                    string ret = Path.Combine(pack, loc);
-                    if(File.Exists(ret)) {
-                        if(Path.GetExtension(ret) == ".json") {
+                    if(pack.Exists(loc)) {
+                        if(Path.GetExtension(loc) == ".json") {
                             try {
-                                file = JsonSerializer.Deserialize<T>(File.ReadAllText(ret), new JsonSerializerOptions() { IncludeFields = true });
+                                file = JsonSerializer.Deserialize<T>(pack.ReadAllText(loc), new JsonSerializerOptions() { IncludeFields = true });
                                 return true;
                             }
                             catch {
                                 return false;
                             }
-                        } else if(typeof(T) == typeof(Bitmap)) {
-                            file = (T)(object)new Bitmap(ret);
+                        } else if(typeof(T) == typeof(WPFBitmap)) {
+                            file = (T)(object)pack.ReadBitmap(loc);
                             return true;
                         }
                     }
@@ -387,7 +391,7 @@ namespace Utils.ColormapMaker {
             }
 
 
-            void SaveTint((string name, string format, Bitmap source, uint color) tint, string[] blocks, bool optifine = false) {
+            void SaveTint((string name, string format, WPFBitmap source, uint color) tint, string[] blocks, bool optifine = false) {
                 if(tint.format == "fixed" && tint.color == uint.MaxValue) return;
                 if(optifine) tint.name += "_optifine";
                 List<string> lines = new List<string>();
@@ -408,17 +412,13 @@ namespace Utils.ColormapMaker {
             Dictionary<string, string> BlockStatesToModel() {
                 Dictionary<string, string> dict = new();
                 foreach(var resourcepack in reversepacks) {
-                    foreach(var mnamespace in
+                    foreach(Match match in new Regex("assets/(.+)/blockstates/(.+)\\.json", RegexOptions.Multiline).Matches(resourcepack.AllEntries())) { 
+                        string mnamespace = match.Groups[1].Value;
+                        string filename = match.Groups[2].Value;
 
-                        Directory.GetDirectories(Path.Combine(resourcepack, "assets"))) {
-                        if(Path.Exists(Path.Combine(mnamespace, "blockstates"))) {
-                            foreach(var file in Directory.GetFiles(Path.Combine(mnamespace, "blockstates"))) {
-                                if(Path.GetExtension(file) != ".json") continue;
-                                string name = new DirectoryInfo(mnamespace).Name + ":" + Path.GetFileNameWithoutExtension(file);
-                                string model = ReadModelFromBlockState(File.ReadAllText(file));
-                                if(model != null && model != "") dict[name] = model;
-                            }
-                        }
+                        string name = mnamespace + ":" + filename;
+                        string model = ReadModelFromBlockState(resourcepack.ReadAllText(match.Value));
+                        if(model != null && model != "") dict[name] = model;
                     }
                 }
                 return dict;
@@ -453,7 +453,7 @@ namespace Utils.ColormapMaker {
             }
 
 
-            uint ColorOfTexture(Bitmap image) {
+            uint ColorOfTexture(WPFBitmap image) {
                 int r = 0, g = 0, b = 0, br = 0;
 
                 for(int i = 0; i < image.Width; i++) {
@@ -467,8 +467,9 @@ namespace Utils.ColormapMaker {
                         br++;
                     }
                 }
+                if(br == 0) return 0;
 
-                return Color.FromArgb(r / br, g / br, b / br).ToUInt();
+                return WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt();
             }
 
 
@@ -478,7 +479,8 @@ namespace Utils.ColormapMaker {
                 Console.ResetColor();
             }
 
-            if(output is IDisposable disposableOutput) disposableOutput.Dispose();
+            output.Dispose();
+            foreach(var pack in resourcepacks) pack.Dispose();
         }
     }
 
@@ -510,7 +512,7 @@ namespace Utils.ColormapMaker {
             }
         }
 
-        public static (uint topdowncolor, double q, int tintedindex) ReadTopDown(string block, JsonElement[] elements, Dictionary<string, (Bitmap image, string loc)> textures) {
+        public static (uint topdowncolor, double q, int tintedindex) ReadTopDown(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
             (uint color, int y, int tintindex)[,] topdown = new (uint color, int y, int tintindex)[16, 16];
             for(int i = 0; i < 16 * 16; i++) topdown[i / 16, i % 16] = (0, -1, -1);
 
@@ -543,7 +545,7 @@ namespace Utils.ColormapMaker {
                         uv[3] = f;
                     }
                     if(uv[1] == uv[3]) uv[3]++;
-                    
+
                     for(int x = minx; x <= maxx; x++) {
                         for(int z = minz; z <= maxz; z++) {
                             if(y >= topdown[x, z].y) {
@@ -588,20 +590,20 @@ namespace Utils.ColormapMaker {
 
             int r = 0, g = 0, b = 0, br = 0;
             for(int i = 0; i < 16 * 16; i++) {
-                var argb = topdown[i / 16, i % 16].color.ToARGB();
-                if(argb.a == 0) continue;
+                var argb = topdown[i / 16, i % 16].color.ToColor();
+                if(argb.A == 0) continue;
 
-                r += argb.r;
-                g += argb.g;
-                b += argb.b;
+                r += argb.R;
+                g += argb.G;
+                b += argb.B;
                 br++;
             }
             if(br == 0) return (0, 0, -1);
 
-            return (Color.FromArgb(r / br, g / br, b / br).ToUInt(), Math.Round(br / 256d, 2), ft);
+            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt(), Math.Round(br / 256d, 2), ft);
         }
 
-        public static (uint sidecolor, double q, int tintindex) ReadSide(string block, JsonElement[] elements, Dictionary<string, (Bitmap image, string loc)> textures) {
+        public static (uint sidecolor, double q, int tintindex) ReadSide(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
             int tintedindex = -1;
             bool instatint = false, first = true;
 
@@ -612,10 +614,10 @@ namespace Utils.ColormapMaker {
 
                     if(!first) {
                         if(tintedindex != face.Value.tintindex && !instatint) {
-                            var res = VanillaTints.InstaTint(block, tintedindex, Color.FromArgb(r / br, g / br, b / br).ToUInt()).ToARGB();
-                            r = res.r * br;
-                            g = res.g * br;
-                            b = res.b * br;
+                            var res = VanillaTints.InstaTint(block, tintedindex, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt()).ToColor();
+                            r = res.R * br;
+                            g = res.G * br;
+                            b = res.B * br;
                             tintedindex = -1;
                             instatint = true;
                         }
@@ -651,11 +653,11 @@ namespace Utils.ColormapMaker {
                             if(pixel.A == 0) continue;
                             var uintpixel = pixel.ToUInt();
                             if(instatint) uintpixel = VanillaTints.InstaTint(block, face.Value.tintindex, uintpixel);
-                            var againpixel = uintpixel.ToARGB();
+                            var againpixel = uintpixel.ToColor();
 
-                            r += againpixel.r;
-                            g += againpixel.g;
-                            b += againpixel.b;
+                            r += againpixel.R;
+                            g += againpixel.G;
+                            b += againpixel.B;
                             br++;
                             break;
                         }
@@ -668,7 +670,7 @@ namespace Utils.ColormapMaker {
 
             if(br == 0) return (0, 0, -1);
 
-            return (Color.FromArgb(r / br, g / br, b / br).ToUInt(), Math.Round(br / 256d, 2), tintedindex);
+            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt(), Math.Round(br / 256d, 2), tintedindex);
         }
     }
 
