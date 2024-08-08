@@ -49,12 +49,3 @@ namespace Utils {
         
     }
 }
-
-static class Extentions {
-    public static JsonElement getObjectOrFirstElement(this JsonElement element, string objectName) {
-        if(element.ValueKind == JsonValueKind.Array) {
-            return element.EnumerateArray().First().GetProperty(objectName);
-        }
-        return element.GetProperty(objectName);
-    }
-}

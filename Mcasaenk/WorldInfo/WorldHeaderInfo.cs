@@ -103,11 +103,18 @@ namespace Mcasaenk.WorldInfo {
                     }
                 }
                 var datapacks = (CompoundTag_Optimal)data["DataPacks"];
+                this.mods = [];
+                this.datapacks = [];
                 if(datapacks != null) {
-                    var enabled = ((List<Tag>)(ListTag)datapacks["Enabled"]).Select(e => (string)(NumTag<string>)e);
+                    var enabled = ((List<Tag>)(ListTag)datapacks["Enabled"]).Select(e => (string)(NumTag<string>)e).Where(e => e != "vanilla");
 
+                    if(enabled.Any(e => e == "fabric")) {
+                        this.mods = enabled.Where(e => !e.StartsWith("file/")).ToArray();
+                    } else if(enabled.Any(e => e == "mod:forge" || e == "mod:neoforge")) {
+                        this.mods = enabled.Where(e => e.StartsWith("mod:")).Select(e => e.Substring(4)).ToArray();
+                    }
                     this.datapacks = enabled.Where(e => e.StartsWith("file/")).Select(e => e.Substring(5)).ToArray();
-                    this.mods = enabled.Where(e => e.StartsWith("mod:")).Select(e => e.Substring(4)).ToArray();
+                    
                 }
             }
         }

@@ -100,6 +100,8 @@ namespace Mcasaenk.UI {
                     scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
             });
+            rad.ShowSlot3(Global.Settings.USEMAPPALETTE);
+
             scale.SetBinding(ComboBox.SelectedItemProperty, new Binding("Scale") { Source = resScale, Converter = new ResolutionScaleTextToDouble() });
             scale.SelectedIndex = 0;
             this.resScale.PropertyChanged += (o, e) => {

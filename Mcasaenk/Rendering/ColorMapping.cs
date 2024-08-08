@@ -49,6 +49,7 @@ namespace Mcasaenk.Rendering {
             this.def = def;
             this.onAdd = onAdd;
         }
+        public void SetDef(ushort def) => this.def = def;
 
         public ushort GetId(string name) {
             if(nameToId.TryGetValue(name, out var id)) return id;
@@ -129,7 +130,7 @@ namespace Mcasaenk.Rendering {
 
     public class BlockRegistry : DynamicNameToIdBiMap {
         private static IDictionary<int, ushort> oldBlockIdToId;
-        public BlockRegistry(Action<string, ushort> onAdd) : base(Colormap.INVBLOCK, onAdd) { }
+        public BlockRegistry(ushort def, Action<string, ushort> onAdd) : base(def, onAdd) { }
 
         public ushort GetId(int oldid) {
             if(oldBlockIdToId.ContainsKey(oldid)) return oldBlockIdToId[oldid];
@@ -183,7 +184,7 @@ namespace Mcasaenk.Rendering {
             });
             Biome.SetUp(datapacksInfo.biomes.Values.ToList());
 
-            Block = new((name, id) => {
+            Block = new(Global.Settings.SKIP_UNKNOWN_BLOCKS ? INVBLOCK : NONEBLOCK, (name, id) => {
                 switch(name) {
                     case "minecraft:air":
                         BLOCK_AIR = id;

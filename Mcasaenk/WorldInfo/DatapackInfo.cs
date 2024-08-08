@@ -19,7 +19,7 @@ using static Mcasaenk.Global;
 
 namespace Mcasaenk.WorldInfo {
 
-    public class DatapacksInfoGroudwork { 
+    public class DatapacksInfoGroudwork {
         public readonly Dictionary<string, DimensionInfo> dimensions;
         public readonly Dictionary<string, BiomeInfo> biomes;
 
@@ -42,67 +42,59 @@ namespace Mcasaenk.WorldInfo {
         private static DatapacksInfoGroudwork vanilla118 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo);
         private static DatapacksInfoGroudwork vanilla117 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo117);
 
-
         public readonly ImageSource image;
         public readonly IDictionary<string, DimensionInfo> dimensions;
         public readonly IDictionary<ushort, BiomeInfo> biomes;
 
-        public DatapacksInfo(string path_world, string[] enabled, DatapacksInfoGroudwork groudwork) {
+        public DatapacksInfo(IEnumerable<(ReadInterface read, ImageSource icon)> datapacks, DatapacksInfoGroudwork groudwork) {
             this.dimensions = new Dictionary<string, DimensionInfo>(groudwork.dimensions);
             var biomes = new Dictionary<string, BiomeInfo>(groudwork.biomes);
 
-            string path = Path.Combine(path_world, "datapacks");
-            if(Path.Exists(path)) {             
-                foreach(var fileorfolder in Directory.GetFiles(path, "", SearchOption.TopDirectoryOnly).Concat(Directory.GetDirectories(path, "", SearchOption.TopDirectoryOnly)) ) {
-                    if(!enabled.Contains(Path.GetFileName(fileorfolder))) continue;
+            foreach(var datapack in datapacks) {
+                var read = datapack.read;
+                ImageSource image = datapack.icon; /*read.ReadBitmap("pack.png")?.ToBitmapSource();*/
 
-                    using var read = ReadInterface.GetSuitable(fileorfolder);
-                    if(read == null) continue;
+                {
+                    var biome_regex = new Regex("data/([^/]+)/worldgen/biome/(.+)\\.json", RegexOptions.Multiline);
+                    foreach(Match match in biome_regex.Matches(read.AllEntries())) {
+                        string mnamespace = match.Groups[1].Value;
+                        string name = match.Groups[2].Value;
 
-                    ImageSource image = read.ReadBitmap("pack.png").ToBitmapSource();
+                        string content = read.ReadAllText(match.Value);
 
-                    {
-                        var biome_regex = new Regex("data/([^/]+)/worldgen/biome/(.+)\\.json", RegexOptions.Multiline);
-                        foreach(Match match in biome_regex.Matches(read.AllEntries())) {
-                            string mnamespace = match.Groups[1].Value;
-                            string name = match.Groups[2].Value;
+                        biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content) with { image = image };
+                    }
+                }
 
-                            string content = read.ReadAllText(match.Value);
+                {
+                    var dimension_regex = new Regex("data/([^/]+)/dimension/([^/]+)\\.json", RegexOptions.Multiline);
+                    List<(string dimname, string dimloc)> pre_dimensions = [
+                        ("minecraft:overworld", "data/minecraft/dimension_type/overworld.json"),
+                        ("minecraft:overworld_caves", "data/minecraft/dimension_type/overworld_caves.json"),
+                        ("minecraft:the_nether", "data/minecraft/dimension_type/the_nether.json"),
+                        ("minecraft:the_end", "data/minecraft/dimension_type/the_end.json"),
+                    ];
+                    foreach(Match match in dimension_regex.Matches(read.AllEntries())) {
+                        string mnamespace = match.Groups[1].Value;
+                        string name = match.Groups[2].Value;
 
-                            biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content) with { image = image };
+                        string content = read.ReadAllText(match.Value);
+
+                        var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content);
+                        if(json.TryGetValue("type", out var el) == false) continue;
+                        if(el.ValueKind == JsonValueKind.String) {
+                            var dimname = el.GetString().fromminecraftname();
+                            pre_dimensions.Add((mnamespace + ":" + name, $"data/{dimname.@namespace}/dimension_type/{dimname.name}.json"));
+                        } else if(el.ValueKind == JsonValueKind.Object) {
+                            dimensions[mnamespace + ":" + name] = DimensionInfo.FromJson(mnamespace + ":" + name, el.ToString()) with { image = image };
                         }
                     }
 
-                    {
-                        var dimension_regex = new Regex("data/([^/]+)/dimension/([^/]+)\\.json", RegexOptions.Multiline);
-                        List<(string dimname, string dimloc)> pre_dimensions = [
-                            ("minecraft:overworld", "data/minecraft/dimension_type/overworld.json"),
-                            ("minecraft:overworld_caves", "data/minecraft/dimension_type/overworld_caves.json"),
-                            ("minecraft:the_nether", "data/minecraft/dimension_type/the_nether.json"),
-                            ("minecraft:the_end", "data/minecraft/dimension_type/the_end.json"),
-                        ];
-                        foreach(Match match in dimension_regex.Matches(read.AllEntries())) {
-                            string mnamespace = match.Groups[1].Value;
-                            string name = match.Groups[2].Value;
+                    foreach(var dim in pre_dimensions) {
+                        if(read.ExistsFile(dim.dimloc) == false) continue;
 
-                            string content = read.ReadAllText(match.Value);
-
-                            var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content);
-                            if(json.TryGetValue("type", out var el) == false) continue;
-                            if(el.ValueKind == JsonValueKind.String) {
-                                var dimname = el.GetString().fromminecraftname();
-                                pre_dimensions.Add((mnamespace + ":" + name, $"data/{dimname.@namespace}/dimension_type/{dimname.name}.json"));
-                            } else if(el.ValueKind == JsonValueKind.Object) {
-                                dimensions[mnamespace + ":" + name] = DimensionInfo.FromJson(mnamespace + ":" + name, el.ToString()) with { image = image };
-                            }
-                        }
-
-                        foreach(var dim in pre_dimensions) {
-                            if(read.Exists(dim.dimloc) == false) continue;
-
-                            string content = read.ReadAllText(dim.dimloc);
-                            dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content) with { image = image };
-                        }
+                        string content = read.ReadAllText(dim.dimloc);
+                        dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content) with { image = image };
                     }
                 }
             }
@@ -111,12 +103,6 @@ namespace Mcasaenk.WorldInfo {
             this.biomes = AssingIdsAndRearrange(biomes);
             this.dimensions = this.dimensions.ToFrozenDictionary();
         }
-
-        public static DatapacksInfo FromPath(string path_world, string[] enabled, int version) {
-            if(version < 2825) return new DatapacksInfo(path_world, enabled, vanilla117);
-            else return new DatapacksInfo(path_world, enabled, vanilla118);
-        }
-
 
         private static FrozenDictionary<ushort, BiomeInfo> AssingIdsAndRearrange(Dictionary<string, BiomeInfo> biomes) {
             ushort idbr = 0;
@@ -138,6 +124,38 @@ namespace Mcasaenk.WorldInfo {
 
             return list.ToFrozenDictionary(e => e.id);
         }
+
+
+
+
+
+
+
+
+
+        public static DatapacksInfo FromPath(string path_world, LevelDatInfo levelDat, ModsInfo mods) {
+            IEnumerable<(ReadInterface read, ImageSource icon)> worldsdatapacks = GetWorldDatapacks(path_world, levelDat), modsdatapacks = mods.mods.Where(f => f.meta.data).Select(f => ((ReadInterface)f.read, f.meta.icon));
+            try {
+                if(levelDat.version_id < 2825) return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla117);
+                else return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla118);
+            }
+            finally {
+                foreach(var dp in worldsdatapacks) dp.read.Dispose();
+            }
+        }
+        public static IEnumerable<(ReadInterface read, ImageSource image)> GetWorldDatapacks(string path_world, LevelDatInfo levelDat) {
+            if(levelDat.datapacks.Length == 0) yield break;
+
+            string path = Path.Combine(path_world, "datapacks");
+            if(Path.Exists(path)) {
+                foreach(var fileorfolder in Directory.GetFiles(path, "", SearchOption.TopDirectoryOnly).Concat(Directory.GetDirectories(path, "", SearchOption.TopDirectoryOnly))) {
+                    if(!levelDat.datapacks.Contains(Path.GetFileName(fileorfolder))) continue;
+                    var read = ReadInterface.GetSuitable(fileorfolder);
+                    yield return (read, read.ReadBitmap("pack.png")?.ToBitmapSource());
+                }
+            }
+        }
+
     }
 
 

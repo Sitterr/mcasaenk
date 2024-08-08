@@ -13,3 +13,4 @@ redstone_torch;redstone_wall_torch
 redstone_torch;redstone_wall_torch
 stone;smooth_stone
 white_wool;wool
+smooth_andesite;polished_andesite

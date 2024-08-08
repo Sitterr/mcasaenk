@@ -5,6 +5,7 @@ using Mcasaenk.Resources;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
 using Mcasaenk.UI.Canvas;
+using Mcasaenk.WorldInfo;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Configuration;
@@ -28,7 +29,9 @@ namespace Mcasaenk {
                     "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "0.9.0";
+        public const string VERSION = "0.10.0";
+
+        public readonly string ID = "__" + Global.rand.NextString(5);
 
         [STAThread]
         protected override void OnStartup(StartupEventArgs e) {
@@ -48,7 +51,6 @@ namespace Mcasaenk {
                 else Settings = Settings.DEF();
 
 
-
                 Settings.SetActions(
                     (changed) => {
                         TileMap?.RedrawAll();
@@ -63,15 +65,24 @@ namespace Mcasaenk {
                         var changed = new List<string>(_changed);
                         Settings.Freeze();
 
+                        _openedSave.Reset();
+                        //_openedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
+                        SetWorld();
+
                         if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
                             SetColormap();
+                        } else if(changed.Contains(nameof(Settings.SKIP_UNKNOWN_BLOCKS))) {
+                            Colormap.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
                         }
-
-                        _openedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
-                        SetWorld();
 
                         Settings.FinishFreeze(false);
                     });
+            }
+
+            {
+                if(File.Exists(Path.Combine(APPFOLDER, "vanilla_resource_pack.zip")) == false) {
+                    File.WriteAllBytes(Path.Combine(APPFOLDER, "vanilla_resource_pack.zip"), ResourceMapping.vanilla_res_pack);
+                }
             }
 
             // colormap
@@ -106,6 +117,8 @@ namespace Mcasaenk {
             string json = JsonSerializer.Serialize(this.Settings, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(Path.Combine(APPFOLDER, "settings.json"), json);
 
+            if(Path.Exists(Path.Combine(APPFOLDER, ID))) Directory.Delete(Path.Combine(APPFOLDER, ID), true);
+
             base.OnExit(e);
             Environment.Exit(Environment.ExitCode);
         }
@@ -130,8 +143,12 @@ namespace Mcasaenk {
 
                 _openedSave = value;
                 if(value != null) {
-                    SetColormap();
                     SetWorld();
+                    if(_openedSave.levelDatInfo.mods.Length > 0) {
+                        Settings.COLOR_MAPPING_MODE = "default";
+                    }
+                    SetColormap();
+                    
 
                     Settings.Y_OFFICIAL = Settings.MAXY;
                 }
@@ -145,7 +162,12 @@ namespace Mcasaenk {
 
             if(!Path.Exists(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) Settings.COLOR_MAPPING_MODE = Settings.DEF().COLOR_MAPPING_MODE;
 
-            Colormap = new Colormap(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
+            string path;
+            if(Path.Exists(Path.Combine(APPFOLDER, ID, "colormaps", Settings.COLOR_MAPPING_MODE))) path = Path.Combine(APPFOLDER, ID, "colormaps", Settings.COLOR_MAPPING_MODE);
+            else if(Path.Exists(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) path = Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE);
+            else path = Path.Combine(APPFOLDER, "colormaps", "default");
+
+            Colormap = new Colormap(path, OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
             Shade3DFilter.ReInit(Colormap);
 
             foreach(var tint in Colormap.GetTints()) {

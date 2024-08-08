@@ -461,6 +461,24 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane;91BD59;
+        ///foliage;vanilla_foliage;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine;77AB2F;
+        ///water;vanilla_water;water;3F76E4;
+        ///
+        ///birch_leaves;fixed;birch_leaves;80A755;
+        ///spruce_leaves;fixed;spruce_leaves;619961;
+        ///lily_pad;fixed;lily_pad;208030;
+        ///stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
+        ///redstone_wire;fixed;redstone_wire;AF1805;
+        ///notintblocks;fixed;cherry_le [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string tintblocks {
+            get {
+                return ResourceManager.GetString("tintblocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] undo {
@@ -486,6 +504,16 @@ namespace Mcasaenk.Resources {
         public static byte[] unknown_server {
             get {
                 object obj = ResourceManager.GetObject("unknown_server", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] vanilla_res_pack {
+            get {
+                object obj = ResourceManager.GetObject("vanilla_res_pack", resourceCulture);
                 return ((byte[])(obj));
             }
         }

@@ -170,7 +170,7 @@ namespace Mcasaenk.UI {
             b.BorderThickness = new Thickness(0, 0, 0, 1);
 
             btn.Click += (o, e) => {
-                Global.App.OpenedSave = new Save(dir, level, DatapacksInfo.FromPath(dir, level.datapacks, level.version_id));
+                Global.App.OpenedSave = new Save(dir, level);
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };

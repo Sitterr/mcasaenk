@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
 using static Mcasaenk.Global;
+using System.Collections.Frozen;
 
 namespace Mcasaenk {
     public interface SaveInterface : IDisposable {
@@ -16,7 +17,8 @@ namespace Mcasaenk {
     }
 
     public interface ReadInterface : IDisposable {
-        bool Exists(string path);
+        bool ExistsFile(string path);
+        bool ExistsFolder(string path);
         string AllEntries();
 
         string ReadAllText(string path);
@@ -45,12 +47,14 @@ namespace Mcasaenk {
         public FileRead() : this("") { }
         public void Dispose() { }
 
-        public bool Exists(string path) => File.Exists(Path.Combine(baselocation, path));
+        public bool ExistsFile(string path) => File.Exists(Path.Combine(baselocation, path));
+        public bool ExistsFolder(string path) => Path.Exists(Path.Combine(baselocation, path));
         public string AllEntries() => concatentries;
 
         public string ReadAllText(string path) => File.ReadAllText(Path.Combine(baselocation, path));
         public IEnumerable<string> ReadAllLines(string path) => File.ReadLines(Path.Combine(baselocation, path));
         public static WPFBitmap ReadFromFile(string path) {
+            if(File.Exists(path) == false) return null;
             BitmapImage bitmap = new BitmapImage();
 
             // Initialize the BitmapImage from the file path
@@ -99,27 +103,32 @@ namespace Mcasaenk {
 
     public class ZipRead : ReadInterface {
         private readonly ZipArchive archive;
-        private readonly Dictionary<string, ZipArchiveEntry> entries;
+        private readonly IDictionary<string, ZipArchiveEntry> entries;
         private readonly string concatentries;
         public ZipRead(string file, string inside = "") {
             this.archive = ZipFile.Open(file, ZipArchiveMode.Read);
-            this.entries = archive.Entries.Where(entr => entr.FullName.StartsWith(inside)).ToDictionary(entr => entr.FullName);
-            this.concatentries = string.Join(Environment.NewLine, entries.Values);
+            var e = archive.Entries.Where(entr => entr.FullName.StartsWith(inside));
+            // super ineffective but speed not important here prob
+            this.entries = e.SelectMany(e => new KeyValuePair<string, ZipArchiveEntry>[] { new(e.FullName, e), new(e.FullName.Replace("/", "\\"), e), new(e.FullName.Replace("/", "\\\\"), e) }).Distinct().ToFrozenDictionary();
+            this.concatentries = string.Join(Environment.NewLine, e);
         }
 
         public void Dispose() => archive.Dispose();
 
-        public bool Exists(string path) => entries.ContainsKey(path);
+        public bool ExistsFile(string path) => entries.ContainsKey(path);
+        public bool ExistsFolder(string path) => entries.Keys.Any(x => x.StartsWith(path));
         public string AllEntries() => concatentries;
 
         public string ReadAllText(string path) {
-            using var stream = entries[path].Open();
+            if(entries.TryGetValue(path, out var res) == false) return null;
+            using var stream = res.Open();
             using var streamReader = new StreamReader(stream);
             return streamReader.ReadToEnd();
         }
         public IEnumerable<string> ReadAllLines(string path) => this.ReadAllText(path).Split(Environment.NewLine);
         public WPFBitmap ReadBitmap(string path) {
-            using var stream = entries[path].Open();
+            if(entries.TryGetValue(path, out var res) == false) return null;
+            using var stream = res.Open();
             var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             return new WPFBitmap(decoder.Frames[0]);
         }

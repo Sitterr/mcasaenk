@@ -86,6 +86,7 @@ namespace Mcasaenk
             if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
             if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
             if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
+            if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
 
             FinishFreeze(true);
         }
@@ -100,6 +101,7 @@ namespace Mcasaenk
             ColorMapping = COLOR_MAPPING_MODE;
             ShadeType = SHADETYPE;
             PreferHeightmap = PREFERHEIGHTMAPS;
+            SkipUnknown = SKIP_UNKNOWN_BLOCKS;
         }
 
         public bool frozen { get; private set; } = true;
@@ -143,7 +145,7 @@ namespace Mcasaenk
                 new Resolution() { Name = "WQHD", type = ResolutionType.stat, X = 2560, Y = 1440 },
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
-            PREFERHEIGHTMAPS = true,
+            PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
@@ -654,6 +656,25 @@ namespace Mcasaenk
             }
         }
         public bool PREFERHEIGHTMAPS { get => preferheightmap; set { preferheightmap = value; PreferHeightmap = value; OnHardChange(nameof(PREFERHEIGHTMAPS)); } }
+
+
+        private bool skipunknown, skipunknown_back;
+        [JsonIgnore]
+        public bool SkipUnknown {
+            get => skipunknown_back;
+            set {
+                if(skipunknown_back == value) return;
+
+                skipunknown_back = value;
+                OnAutoChange(nameof(SkipUnknown));
+                if(Global.App.OpenedSave == null) {
+                    skipunknown = value;
+                    OnAutoChange(nameof(SKIP_UNKNOWN_BLOCKS));
+                }
+            }
+        }
+        public bool SKIP_UNKNOWN_BLOCKS { get => skipunknown; set { skipunknown = value; SkipUnknown = value; OnHardChange(nameof(SKIP_UNKNOWN_BLOCKS)); } }
+
 
         private Resolution[] predefined_reses;
         [JsonIgnore]

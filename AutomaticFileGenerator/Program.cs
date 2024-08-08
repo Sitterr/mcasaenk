@@ -18,15 +18,15 @@ class Program {
         // json.TryGetValue("carvers", out var el);
 
         //ColormapMaker.FromBedrockMap("D:\\bedrockmap.zip", vanillapack, new Bitmap("D:\\map\\bedrock_img1.png"), [new Bitmap("D:\\map\\bedrock_img2.png"), new Bitmap("D:\\map\\bedrock_img3.png"), new Bitmap("D:\\map\\bedrock_img4.png")]);
-        //MapColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map\\java_img1.png"));
+        MapColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map\\java_img1.png"));
         //MapColormapMaker.FromResourcePacks("D:\\greenfield.zip", [vanillapack, "D:\\Greenfield.Texture.Pack.1.17"], 0);
 
-        ResourcepackColormapMaker.Make("D:\\test", [vanillapack, "D:\\resource packs\\aether"],
-            new Options() {
-                minQ = 0.00,
-                for_Q0_try_with_sides = true,
-            }
-        );
+        //ResourcepackColormapMaker.Make("D:\\test", [vanillapack, "C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\resourcepacks\\Greenfield.Texture.Pack.1.17.zip"],
+        //    new Options() {
+        //        minQ = 0.00,
+        //        for_Q0_try_with_sides = true,
+        //    }
+        //);
     }
 }
 

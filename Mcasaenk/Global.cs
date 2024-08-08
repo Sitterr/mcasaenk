@@ -251,6 +251,23 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+        public static JsonElement getObjectOrFirstElement(this JsonElement element, string objectName) {
+            if(element.ValueKind == JsonValueKind.Array) {
+                return element.EnumerateArray().First().GetProperty(objectName);
+            }
+            return element.GetProperty(objectName);
+        }
+        public static string NextString(this Random random, int stringLength) {
+            const string allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
+            char[] chars = new char[stringLength];
+
+            for(int i = 0; i < stringLength; i++) {
+                chars[i] = allowedChars[random.Next(0, allowedChars.Length)];
+            }
+
+            return new string(chars);
+        }
+
         public static string minecraftname(this string name) {
             if(name.Contains(":") == false) name = "minecraft:" + name;
             return name;

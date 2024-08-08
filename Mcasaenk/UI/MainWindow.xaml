@@ -65,7 +65,7 @@
                                         <Image Source="{Binding Source={x:Static resx:ResourceMapping.end8}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                     </local:EButton>
                                     <local:EButton x:Name="btn_dim_others" Width="34" Height="34" Margin="15 0 0 0" BorderThickness="2" BorderColor="#121093">
-                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.unknown_pack}}" Style="{StaticResource fullbtnimg}" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <Image Source="{Binding Source={x:Static resx:ResourceMapping.unknown_pack}}" Style="{StaticResource fullbtnimg}" Stretch="Fill"  RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </local:EButton>
                                     <Border Width="7"/>
                                 </StackPanel>

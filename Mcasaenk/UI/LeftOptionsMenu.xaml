@@ -176,7 +176,7 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+                                <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
                                     <Label>
                                         <TextBlock Margin="0">
                                             <Run Text="use heightmap filters"/>
@@ -213,7 +213,21 @@
                                         </ToggleButton.IsEnabled>
                                     </ToggleButton>
 
+                                </StackPanel>
 
+                                <StackPanel Grid.Row="10" Grid.Column="2" Orientation="Horizontal">
+                                    <TextBlock>
+                                        <Run Text="skip unknown blocks"/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="SkipUnknown" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="SKIP_UNKNOWN_BLOCKS" />
+                                                </MultiBinding>
+                                            </Run.Foreground>
+                                        </Run>
+                                    </TextBlock>
+                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=SkipUnknown}"/>
                                 </StackPanel>
 
                             </Grid>

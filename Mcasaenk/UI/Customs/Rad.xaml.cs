@@ -50,7 +50,7 @@ namespace Mcasaenk.UI {
             if(visible) {
                 grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(85) });
-            } else {
+            } else if(grid.ColumnDefinitions.Count == 5) {
                 grid.ColumnDefinitions.RemoveAt(3);
                 grid.ColumnDefinitions.RemoveAt(3);
             }
