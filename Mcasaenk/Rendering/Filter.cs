@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Rendering.ChunkRenderData;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering.ChunkRenderData;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;

@@ -138,9 +138,9 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] colormap_beta {
+        public static byte[] colormap_betaplus {
             get {
-                object obj = ResourceManager.GetObject("colormap_beta", resourceCulture);
+                object obj = ResourceManager.GetObject("colormap_betaplus", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -161,6 +161,16 @@ namespace Mcasaenk.Resources {
         public static byte[] colormap_texture {
             get {
                 object obj = ResourceManager.GetObject("colormap_texture", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] default_pack {
+            get {
+                object obj = ResourceManager.GetObject("default_pack", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -438,21 +448,20 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to grass;short_grass
-        ///lily_pad;waterlily
-        ///dirt_path;grass_path
-        ///furnace;furnace_on
-        ///melon_stem;attached_melon_stem
-        ///oak_log;log
-        ///portal;nether_portal
-        ///pumpkin;carved_pumpkin
-        ///pumpkin_stem;attached_pumpkin_stem
-        ///redstone_lamp;redstone_lamp_off
-        ///redstone_lamp;redstone_lamp_on
-        ///redstone_torch;redstone_wall_torch
-        ///redstone_torch;redstone_wall_torch
-        ///stone;smooth_stone
-        ///white_wool;wool.
+        ///   Looks up a localized string similar to // the up-to-date is the most right one
+        ///grass;short_grass
+        ///grass_path;dirt_path
+        ///furnace_on;lit_furnace;furnace
+        ///carved_pumpkin;lit_pumpkin;pumpkin
+        ///redstone_lamp_on;redstone_lamp_off;lit_redstone_lamp;redstone_lamp
+        ///redstone_ore_on;redstone_ore_off;lit_redstone_ore;redstone_ore
+        ///unlit_redstone_torch;redstone_wall_torch;redstone_torch
+        ///wool;white_wool
+        ///smooth_andesite;polished_andesite
+        ///hardened_clay;terracotta
+        ///black_stained_hardened_clay;black_terracotta
+        ///blue_stained_hardened_clay;blue_terracotta
+        ///brown [rest of string was truncated]&quot;;.
         /// </summary>
         public static string synonymblocks {
             get {
@@ -470,7 +479,7 @@ namespace Mcasaenk.Resources {
         ///lily_pad;fixed;lily_pad;208030;
         ///stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
         ///redstone_wire;fixed;redstone_wire;AF1805;
-        ///notintblocks;fixed;cherry_le [rest of string was truncated]&quot;;.
+        ///notint;fixed;cherry_leaves,b [rest of string was truncated]&quot;;.
         /// </summary>
         public static string tintblocks {
             get {

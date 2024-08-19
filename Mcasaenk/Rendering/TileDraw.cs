@@ -1,5 +1,6 @@
 ﻿using Accessibility;
 using CommunityToolkit.HighPerformance;
+using Mcasaenk.Colormaping;
 using Mcasaenk.Shade3d;
 using System;
 using System.Buffers;
@@ -62,25 +63,27 @@ namespace Mcasaenk.Rendering {
             double[] fd = ArrayPool<double>.Shared.Rent(512 * 512);
             Array.Fill<double>(fd, 1);
             if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
-                double watercontrast = -45 * Math.Pow(Global.App.Settings.CONTRAST, 8) + -15 * Global.App.Settings.CONTRAST;
-                double wateropacity = -10 * Math.Pow(1 - Global.App.Settings.WATER_TRANSPARENCY, 8) + -50 * (1 - Global.App.Settings.WATER_TRANSPARENCY);
+
+                int maxdepth = Global.App.Settings.MAXABSHEIGHT;
+                double transparency = 1d / maxdepth + 0.90 * Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 6) + (0.10 - 1d / maxdepth) * Global.App.Settings.WATER_TRANSPARENCY;
+                double transparency2 = Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 0.1);
+                double contrast = 0.70 * Math.Pow(Global.App.Settings.CONTRAST, 10) + 0.17 * Math.Pow(Global.App.Settings.CONTRAST, 2) + 0.08 * Global.App.Settings.CONTRAST;
 
                 for(int i = 0; i < 512 * 512; i++) {
                     var block = genData.block(i);
 
-
-
                     if(Global.App.Settings.WATERDEPTH) {
                         if(block == colormap.depth) {
+                            uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
                             int waterDepth = genData.heights(i) - genData.terrainHeights(i);
 
-                            uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
+                            double ratio = Math.Pow(2, -4 * (1 - transparency2) * (waterDepth + 3));
+                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = ratio;
+                            pixels[i] = Global.Blend(terrainColor, pixels[i], ratio);
 
-                            double ratio = I(waterDepth, 1 - Global.App.Settings.WATER_TRANSPARENCY, 1.5 * wateropacity);
-                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = (1 - ratio) + Global.App.Settings.WATER_TRANSPARENCY / 2;
-                            pixels[i] = Global.Blend(pixels[i], terrainColor, ratio);
+                            waterDepth = (int)Math.Min(waterDepth, transparency * maxdepth);
 
-                            double multintensity = 1 - I(waterDepth, 0, watercontrast);
+                            double multintensity = Math.Pow(10.0, -5 * contrast * waterDepth / (transparency * maxdepth));
                             pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
                         }
                     }
@@ -142,9 +145,6 @@ namespace Mcasaenk.Rendering {
         }
 
         private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
-            cosA = Math.Round(cosA, 2);
-            sinA = Math.Round(sinA, 2);
-
             int index = 0;
             for(int z = 0; z < 512; z++) {
                 for(int x = 0; x < 512; x++, index++) {

@@ -1,4 +1,4 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Shade3d;
 using System;
 using System.Collections.Generic;
@@ -22,14 +22,12 @@ namespace Mcasaenk.UI {
     /// <summary>
     /// Interaction logic for LeftSettingsMenu.xaml
     /// </summary>
-    public partial class LeftSettingsMenu : UserControl
-    {
+    public partial class LeftSettingsMenu : UserControl {
         EButton[] tabs;
         FrameworkElement[] contents;
 
         Brush light_blue_b;
-        public LeftSettingsMenu()
-        {
+        public LeftSettingsMenu() {
             InitializeComponent();
 
             upd_meth_link.Click += (o, e) => {
@@ -114,6 +112,15 @@ namespace Mcasaenk.UI {
             Global.ViewModel.AllColormaps = null;
         }
 
+        private void OnCreateColormap(object sender, RoutedEventArgs e) {
+            new RespackMakerWindow(OperationMode.ColormapMaker, null).ShowDialog();
+            OnResetBasis(sender, e);
+        }
+
+        private void ViewColormap(object sender, RoutedEventArgs e) {
+            new RespackMakerWindow(OperationMode.ColormapEditor, Settings.ColormapToPath(Global.Settings.ColorMapping)).ShowDialog();
+        }
+
 
         class IHateWPF_YVarianceMultivalueConverter : IMultiValueConverter {
             public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
@@ -160,9 +167,10 @@ namespace Mcasaenk.UI {
             tintGrid.RowDefinitions.Clear();
             tintGrid.Children.Clear();
 
+            colormapNotLoaded.Visibility = colormap != null ? Visibility.Collapsed : Visibility.Visible;
+            colormapSettingsCont.Visibility = colormap != null ? Visibility.Visible : Visibility.Collapsed;
+
             if(colormap == null) {
-                macroGrid.Visibility = Visibility.Collapsed;
-                tintSettings.Visibility = Visibility.Collapsed;
                 return;
             } else {
                 var yvarvanillabind = new MultiBinding() { Converter = new IHateWPF_YVarianceMultivalueConverter() };
@@ -180,7 +188,7 @@ namespace Mcasaenk.UI {
                 text_yvarvanilla.SetBinding(TextBlock.IsEnabledProperty, yvarvanillaisenabled);
                 text_yvarvanilla.SetBinding(TextBlock.TextProperty, new Binding() { Source = slider_yvarvanilla, Path = new PropertyPath("Value"), Converter = new IHateWPF_YVarianceTextConverter() });
 
-                
+
                 slider_yvarvanilla.Visibility = yvarvanillabind.Bindings.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                 label_yvarvanilla.Visibility = slider_yvarvanilla.Visibility;
                 text_yvarvanilla.Visibility = slider_yvarvanilla.Visibility;
@@ -215,9 +223,10 @@ namespace Mcasaenk.UI {
                         Grid.SetColumn(dockPanel, (i % 2) * 2);
 
                         var txtname = new TextBlock();
-                        txtname.Inlines.Add(new Run() { Text = tint.Name() + "(" });
-                        txtname.Inlines.Add(new Run() { Text = tint.Kurz(), FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
-                        txtname.Inlines.Add(new Run() { Text = ")" });
+                        var tintformat = TintFormat.GetFormat(tint.GetType());
+                        txtname.Inlines.Add(new Run() { Text = tint.Name() + "/" });
+                        txtname.Inlines.Add(new Run() { Text = tintformat.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
+                        txtname.Inlines.Add(new Run() { Text = "/" });
                         dockPanel.Children.Add(txtname);
 
                         var tintEnable = new ToggleButton { Margin = new Thickness(10, 0, 0, 0) };

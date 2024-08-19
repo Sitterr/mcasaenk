@@ -15,6 +15,7 @@ using Mcasaenk.Rendering.ChunkRenderData;
 using System.Transactions;
 using System.Windows.Media.Media3D;
 using System.Reflection.Metadata;
+using Mcasaenk.Colormaping;
 
 namespace Mcasaenk.Rendering
 {

@@ -78,20 +78,66 @@ namespace Mcasaenk {
             }
         }
 
-        
+        public static Brush CreateCheckerBrush(Color c1, Color c2) {
+            DrawingBrush checkerBrush = new DrawingBrush();
+            checkerBrush.TileMode = TileMode.Tile;
+            checkerBrush.Viewport = new Rect(0, 0, 20, 20); // 20x20 pixel tiles
+            checkerBrush.ViewportUnits = BrushMappingMode.Absolute;
 
-        public static System.Windows.Media.Color FromArgb(double alpha, System.Windows.Media.Color baseColor) {
-            return System.Windows.Media.Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
+            // Create the DrawingGroup for the checker pattern
+            DrawingGroup drawingGroup = new DrawingGroup();
+
+            // Background (white)
+            GeometryDrawing backgroundDrawing = new GeometryDrawing();
+            backgroundDrawing.Brush = new SolidColorBrush(c1);
+            backgroundDrawing.Geometry = new RectangleGeometry(new Rect(0, 0, 20, 20));
+
+            // First light gray rectangle (top-left)
+            GeometryDrawing grayDrawing1 = new GeometryDrawing();
+            grayDrawing1.Brush = new SolidColorBrush(c2);
+            grayDrawing1.Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10));
+
+            // Second light gray rectangle (bottom-right)
+            GeometryDrawing grayDrawing2 = new GeometryDrawing();
+            grayDrawing2.Brush = new SolidColorBrush(c2);
+            grayDrawing2.Geometry = new RectangleGeometry(new Rect(10, 10, 10, 10));
+
+            // Add the drawings to the drawing group
+            drawingGroup.Children.Add(backgroundDrawing);
+            drawingGroup.Children.Add(grayDrawing1);
+            drawingGroup.Children.Add(grayDrawing2);
+
+            // Set the drawing group as the drawing of the brush
+            checkerBrush.Drawing = drawingGroup;
+
+            return checkerBrush;
         }
 
-        public static uint ColorAdd(uint color, uint other) {
-            byte oa = (byte)((other >> 24) & 0xFF);
-            byte or = (byte)((other >> 16) & 0xFF);
-            byte og = (byte)((other >> 8) & 0xFF);
-            byte ob = (byte)(other & 0xFF);
+        public static ImageSource CreateColorImageSource(Color color, int width, int height) {
+            // Step 1: Create a DrawingVisual
+            DrawingVisual visual = new DrawingVisual();
 
-            return AddShade(color, oa, or, og, ob);
+            // Step 2: Draw a rectangle with the desired color
+            using(DrawingContext context = visual.RenderOpen()) {
+                context.DrawRectangle(new SolidColorBrush(color), null, new Rect(0, 0, width, height));
+            }
+
+            // Step 3: Create a RenderTargetBitmap and render the visual into it
+            RenderTargetBitmap bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(visual);
+
+            // Step 4: Return the ImageSource
+            return bitmap;
         }
+
+
+        public static Color FromArgb(double alpha, Color baseColor) {
+            return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);
+        }
+        public static Color ColorAdd(Color baseColor, int add) {
+            return Color.FromRgb((byte)(Math.Clamp(baseColor.R + add, 0, 255)), (byte)(Math.Clamp(baseColor.B + add, 0, 255)), (byte)(Math.Clamp(baseColor.G + add, 0, 255)));
+        }
+
         public static uint AddShade(uint color, int ar, int ag, int ab, int aa = 255) {
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
@@ -156,12 +202,21 @@ namespace Mcasaenk {
             uint nb = (other & 0xFF) * (color & 0xFF) >> 8;
             return color & 0xFF000000 | nr << 16 | ng << 8 | nb;
         }
+        public static WPFColor ColorMult(WPFColor color, WPFColor other) {
+            return WPFColor.FromRgb((byte)Math.Clamp(color.R * other.R, byte.MinValue, byte.MaxValue), (byte)Math.Clamp(color.G * other.G, byte.MinValue, byte.MaxValue), (byte)Math.Clamp(color.B * other.B, byte.MinValue, byte.MaxValue));
+        }
 
         public static JsonSerializerOptions ColormapJsonOptions() {
             var options = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
             options.Converters.Add(new Global.HexConverter());
             options.Converters.Add(new JsonStringEnumConverter());
             return options;
+        }
+
+        public static string ReadName(string fileorfolder) { 
+            string filename = Path.GetFileName(fileorfolder);
+            if(filename == string.Empty) filename = Path.GetDirectoryName(fileorfolder);
+            return filename;
         }
 
         public static class Coord {

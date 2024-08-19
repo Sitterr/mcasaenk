@@ -16,6 +16,7 @@
     <local:VisibilityConverter x:Key="VisibilityConverter"/>
     <local:DifferenceBoolConverter x:Key="DifferenceBoolConverter"/>
     <local:PlusNumberConverter x:Key="PlusNumberConverter"/>
+    <local:VisibilityMultConverter x:Key="VisibilityMultConverter"/>
 
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
@@ -53,12 +54,35 @@
 
 
 
+    <Color x:Key="DARK_GREEN">#2c4224</Color>
+    <Color x:Key="DARK_RED">#422424</Color>
+    <Color x:Key="DARK_BLUE">#243b42</Color>
+    <Color x:Key="DARK_YELLOW">#424224</Color>
+
+    <SolidColorBrush x:Key="DARK_GREEN_B" Color="{StaticResource DARK_GREEN}"/>
+    <SolidColorBrush x:Key="DARK_RED_B" Color="{StaticResource DARK_RED}"/>
+    <SolidColorBrush x:Key="DARK_BLUE_B" Color="{StaticResource DARK_BLUE}"/>
+    <SolidColorBrush x:Key="DARK_YELLOW_B" Color="{StaticResource DARK_YELLOW}"/>
+
+
+
+    <Color x:Key="A_GREEN">#2200aa00</Color>
+    <Color x:Key="A_RED">#22aa0000</Color>
+    <Color x:Key="A_BLUE">#220078D4</Color>
+    <Color x:Key="A_YELLOW">#22d6d600</Color>
+
+    <SolidColorBrush x:Key="A_GREEN_B" Color="{StaticResource A_GREEN}"/>
+    <SolidColorBrush x:Key="A_RED_B" Color="{StaticResource A_RED}"/>
+    <SolidColorBrush x:Key="A_BLUE_B" Color="{StaticResource A_BLUE}"/>
+    <SolidColorBrush x:Key="A_YELLOW_B" Color="{StaticResource A_YELLOW}"/>
+
 
 
     <Style TargetType="local:EButton">
         <Style.Setters>
             <Setter Property="OverridesDefaultStyle" Value="True" />
             <Setter Property="Opacity" Value="1"/>
+            <Setter Property="Height" Value="auto"/>
             <Setter Property="Background" Value="{StaticResource BACK}"/>
             <Setter Property="Background2" Value="{StaticResource BACK}"/>
             <Setter Property="BackgroundH" Value="{StaticResource HOVER}"/>
@@ -72,8 +96,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:EButton">
-                        <Border x:Name="b" BorderBrush="{TemplateBinding BorderColor}" Padding="{TemplateBinding Padding}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
-                            <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Content="{TemplateBinding Content}"/>
+                        <Border x:Name="b" Height="auto" BorderBrush="{TemplateBinding BorderColor}" Padding="{TemplateBinding Padding}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                            <ContentPresenter Height="auto" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Content="{TemplateBinding Content}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -194,6 +218,7 @@
 
     <Style TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="{StaticResource FORE}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.3"/>
@@ -202,7 +227,6 @@
     </Style>
 
     <Style TargetType="{x:Type Label}">
-        <Setter Property="Foreground" Value="{StaticResource FORE}" />
         <Setter Property="BorderThickness" Value="0" />
 
         <Setter Property="ToolTipService.InitialShowDelay" Value="0"/>
@@ -250,6 +274,7 @@
 
 
     <Style x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="Background" Value="{StaticResource BACK}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -285,6 +310,62 @@
     </Style>
 
 
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0 0 0 1"/>
+        <Setter Property="Padding" Value="0 5 0 5"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BORDER}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="DataGridCell">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="DataGrid">
+        <Setter Property="CanUserResizeColumns" Value="False"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserDeleteRows" Value="False"/>
+        <Setter Property="CanUserReorderColumns" Value="False"/>
+        <Setter Property="CanUserResizeRows" Value="False"/>
+        <Setter Property="CanUserSortColumns" Value="False"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style TargetType="ListView">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border Background="Transparent" BorderThickness="0">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ListViewItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border Background="Transparent">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    </Style>
+
 
     <ControlTemplate x:Key="ComboBoxTextBox" TargetType="{x:Type TextBox}">
         <Border x:Name="PART_ContentHost" Focusable="False" Background="{TemplateBinding Background}" />
@@ -303,10 +384,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
-                    <Grid VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    <Grid VerticalAlignment="{TemplateBinding VerticalAlignment}" SnapsToDevicePixels="True">
                         <ToggleButton Name="ToggleButton" Style="{StaticResource ComboBoxToggleButton}" Grid.Column="1" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
 
-                        <Border Margin="0 0 20 0">
+                        <Border Margin="0 0 20 0" SnapsToDevicePixels="True">
                             <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                             ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
@@ -317,10 +398,10 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
                         </Border>
 
-                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True"  Focusable="False" PopupAnimation="Slide">
-                            <Grid Name="DropDown" Margin="0 0 0 1" SnapsToDevicePixels="True" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <Border x:Name="DropDownBorder" Margin="0 -1 0.2 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 1 0">
+                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" SnapsToDevicePixels="True"  Focusable="False" PopupAnimation="Slide">
+                            <Grid Name="DropDown" Margin="0 0 1 0.4" SnapsToDevicePixels="True" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border x:Name="DropDownBorder" Margin="0 -1 0 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
+                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 0 0">
                                     <StackPanel Margin="4,6,4,6" TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
@@ -513,7 +594,7 @@ TargetType="{x:Type ScrollBar}">
 
                         <ScrollContentPresenter Name="cnt" Grid.Row="0" Grid.Column="0"/>
 
-                        <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1" Margin="0 0 0.5 0" SnapsToDevicePixels="True"
+                        <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1" Margin="0 0 0 0" SnapsToDevicePixels="True"
                         Value="{TemplateBinding VerticalOffset}"
                         Maximum="{TemplateBinding ScrollableHeight}"
                         ViewportSize="{TemplateBinding ViewportHeight}"
@@ -671,6 +752,7 @@ TargetType="{x:Type ScrollBar}">
 
 
     <Style TargetType="{x:Type ToggleButton}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="BorderBrush" Value="{StaticResource BORDER}"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -734,6 +816,28 @@ TargetType="{x:Type ScrollBar}">
 
 
 
+    <Style TargetType="{x:Type GroupBox}">
+        <Setter Property="Foreground" Value="{StaticResource A_YELLOW_B}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type GroupBox}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{TemplateBinding Foreground}" BorderThickness="1" BorderBrush="{StaticResource BORDER}">
+                            <ContentPresenter HorizontalAlignment="Center" Margin="0" TextElement.FontSize="{Binding RelativeSource={RelativeSource AncestorType=GroupBox}, Path=Tag}" ContentSource="Header" RecognizesAccessKey="True"/>
+                        </Border>
+                        <Border Grid.Row="1" BorderThickness="1 0 1 1" BorderBrush="{StaticResource BORDER}" Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Stretch" Name="ContentSite" Content="{TemplateBinding Content}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
 
     <Style TargetType="{x:Type TextBox}">

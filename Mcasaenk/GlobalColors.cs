@@ -21,6 +21,7 @@ namespace Mcasaenk {
         public WPFColor(byte r, byte g, byte b, byte a = 255) { R = r; G = g; B = b; A = a; }
 
         public static WPFColor FromRgb(byte r, byte g, byte b, byte a = 255) => new WPFColor(r, g, b, a);
+        public static WPFColor FromRgb(byte d, byte a = 255) => new WPFColor(d, d, d, a);
         public static WPFColor FromArgb(byte a, byte r, byte g, byte b) => new WPFColor(r, g, b, a);
 
         public static WPFColor FromHex(string hex) {
@@ -38,6 +39,12 @@ namespace Mcasaenk {
                 return FromArgb(r, g, b, a);
             } else throw new Exception();
         }
+
+        public static bool operator ==(WPFColor left, WPFColor right) => left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A;
+        public static bool operator !=(WPFColor left, WPFColor right) => !(left == right);
+
+        public static readonly WPFColor Transparent = new WPFColor(0, 0, 0, 0);
+        public static readonly WPFColor White = new WPFColor(255, 255, 255);
     }
 
     public class WPFBitmap {
@@ -72,10 +79,10 @@ namespace Mcasaenk {
             pixels[x, y] = color;
         }
 
-        public BitmapSource ToBitmapSource() {
-            if(changed == true || last == null) {
+        public BitmapSource ToBitmapSource(bool save = false) {
+            if(changed == true || last == null || (last?.Dispatcher == null && save) || last?.Dispatcher?.CheckAccess() == false) {
                 changed = false;
-                last = pixels.FromRGBMatrix();
+                last = pixels.FromRGBMatrix();                
             }
             return last;
         }
@@ -138,6 +145,7 @@ namespace Mcasaenk {
             }
             bitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
             bitmap.Unlock();
+            bitmap.Freeze();
 
             return bitmap;
         }
@@ -145,12 +153,26 @@ namespace Mcasaenk {
         public static uint ToUInt(this WPFColor c) {
             return (uint)((c.A << 24) | (c.R << 16) | (c.G << 8) | (c.B));
         }
+        public static string ToHex(this WPFColor c, bool containAlpha, bool hashtag) {
+            string basec = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+            if(containAlpha) basec = c.A.ToString("X2") + basec;
+            if(hashtag) basec = "#" + basec;
+            return basec;
+        }
         public static WPFColor ToColor(this uint color) {
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
             byte g = (byte)((color >> 8) & 0xFF);
             byte b = (byte)(color & 0xFF);
             return WPFColor.FromArgb(a, r, g, b);
+        }
+
+        public static Color ToWinColor(this WPFColor c) {
+            return Color.FromArgb(c.A, c.R, c.G, c.B);
+        }
+
+        public static WPFColor Add(this WPFColor c, byte f) {
+            return WPFColor.FromArgb(c.A, (byte)Math.Clamp(c.R + f, 0, 255), (byte)Math.Clamp(c.G + f, 0, 255), (byte)Math.Clamp(c.B + f, 0, 255));
         }
     }
 }

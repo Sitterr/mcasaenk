@@ -93,7 +93,7 @@ namespace Mcasaenk.Rendering {
 
             base.Queue(tile, (() => {
                 Global.Time((() => {
-                    tile.genData = (Global.App.Settings.ShadeType == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
+                    tile.genData = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
                 }), out var time);
                 redrawAcc += time;
                 redrawCount++;

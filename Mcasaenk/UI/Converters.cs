@@ -133,6 +133,22 @@ namespace Mcasaenk.UI
         }
     }
 
+    public class VisibilityMultConverter : IMultiValueConverter {
+        public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
+            string parameter = "And";
+            if(_parameter is string s) {  parameter = s; }
+
+            bool res = true;
+            if(parameter == "And") res = value.Select(o => (bool)o).All(v => v);
+            else if(parameter == "Or") res = value.Select(o => (bool)o).Any(v => v);
+            return res ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+            return [(bool)value];
+        }
+    }
+
     public class DifferenceBoolConverter : IMultiValueConverter {
         public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
             bool res = true;

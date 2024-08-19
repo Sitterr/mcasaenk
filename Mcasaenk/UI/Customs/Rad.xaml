@@ -66,12 +66,11 @@
                     </StackPanel>
                     <StackPanel>
                         <TextBlock FontSize="12" HorizontalAlignment="Center" Visibility="{Binding Path=DisplaySize, Converter={StaticResource VisibilityConverter}}">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}x{1}">
-                                    <Binding Path="X" />
-                                    <Binding Path="Y" />
-                                </MultiBinding>
-                            </TextBlock.Text>
+                            <TextBlock.Inlines>
+                                <Run Text="{Binding Path=X}" /><!--                        
+                             --><Run Text="x" Foreground="DarkGray" /><!--                      
+                             --><Run Text="{Binding Path=Y}" />
+                            </TextBlock.Inlines>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>

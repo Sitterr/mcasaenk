@@ -11,19 +11,93 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Mcasaenk.Resources;
+using System.Text.Json;
+using Mcasaenk.UI;
+using System.Text.RegularExpressions;
 
 namespace Mcasaenk.WorldInfo {
+
+    public class PackMetadata {
+        public string id { get; set; }
+        public string name { get; set; }
+        public string path { get; set; }
+        public ImageSource icon { get; set; }
+        public string description { get; set; }
+        public PackMetadata(string path, string name, ImageSource icon, string description = null, string id = null) {
+            this.path = path;
+            this.name = name;
+            this.icon = icon;
+            this.description = description;
+            if(id == null) id = name;
+            this.id = id;
+        }
+
+        public static bool ReadModMeta(ReadInterface read, out PackMetadata metadata) {
+            metadata = null;
+            ImageSource icon = null;
+            string id = null, name = "";
+            string description = null;
+            if(read.ExistsFile(Path.Combine("META-INF", "mods.toml"))) { // forge
+                var lines = read.ReadAllLines(Path.Combine("META-INF", "mods.toml"));
+                if(lines.Count() == 1) lines = lines.First().Split(['\n']);
+
+                string chapter = "";
+                foreach(var _line in lines) {
+                    var line = _line.Trim();
+                    if(line.StartsWith("[[") && line.EndsWith("]]")) {
+                        chapter = line.Substring(2, line.Length - 4);
+                        continue;
+                    }
+
+                    if(line.Contains("=")) {
+                        var parts = line.Split('=').Select(s => s.Trim()).ToArray();
+
+                        if(parts[0] == "modId" && chapter == "mods") {
+                            name = parts[1].Substring(1, parts[1].Length - 2);
+                        } else if(parts[0] == "logoFile" && chapter == "mods") {
+                            string iconname = parts[1].Substring(1, parts[1].Length - 2);
+                            icon = read.ReadBitmap(iconname).ToBitmapSource();
+                        }
+                    }
+                }
+
+
+            } else if(read.ExistsFile("fabric.mod.json")) { // fabric
+                var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(read.ReadAllText("fabric.mod.json"));
+                if(json.TryGetValue("id", out var _id) == false) return false;
+                id = _id.GetString();
+                if(json.TryGetValue("name", out var _name)) name = _name.GetString();
+                if(json.TryGetValue("description", out var _descr)) description = _descr.GetString();
+                if(json.TryGetValue("icon", out var _icon)) icon = read.ReadBitmap(_icon.GetString())?.ToBitmapSource();
+            } else return false;
+            if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_server).ToBitmapSource();
+            metadata = new PackMetadata(read.GetBasePath(), name, icon, description, id);
+            return true;
+        }
+
+        public static bool ReadPackMeta(ReadInterface read, string name, out PackMetadata metadata) {
+            metadata = null;
+            if(read.ExistsFile("pack.mcmeta") == false) return false;
+            ImageSource icon = read.ReadBitmap("pack.png")?.ToBitmapSource();
+            if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_pack).ToBitmapSource();
+            metadata = new PackMetadata(read.GetBasePath(), name, icon, readDescription(read.ReadAllText("pack.mcmeta")));
+            return true;
+        }
+
+        private static string readDescription(string text) {
+            var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(text);
+            if(json.TryGetValue("pack", out var pack) == false) return "";
+            var descr = pack.EnumerateObject().Where(p => p.NameEquals("description"));
+            if(descr.Count() == 0) return "";
+
+            return Regex.Replace(descr.First().Value.GetString(), @"§.", "");
+        }
+    }
+
     public class LevelDatInfo {
-        static BitmapImage defaultIcon;
+        static BitmapSource defaultIcon;
         static LevelDatInfo() {
-            defaultIcon = new BitmapImage();
-            using(MemoryStream memoryStream = new MemoryStream(ResourceMapping.unknown_server)) {
-                defaultIcon.BeginInit();
-                defaultIcon.StreamSource = memoryStream;
-                defaultIcon.CacheOption = BitmapCacheOption.OnLoad;
-                defaultIcon.EndInit();
-            }
-            defaultIcon.Freeze();
+            defaultIcon = WPFBitmap.FromBytes(ResourceMapping.unknown_server).ToBitmapSource();
         }
 
         public DateOnly lastopened { get; private set; }

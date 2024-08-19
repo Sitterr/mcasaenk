@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance.Buffers;
+using Mcasaenk.Colormaping;
 using Mcasaenk.Nbt;
 using System;
 using System.Buffers;
@@ -70,7 +71,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                             foreach(var _p in (List<Tag>)palette) {
                                 var p = (CompoundTag_Optimal)_p;
 
-                                var name = (string)(NumTag<string>)p["Name"];
+                                var name = ((string)(NumTag<string>)p["Name"]).minecraftname();
                                 bool waterlogged = false;
 
                                 var properties = (CompoundTag_Optimal)p["Properties"];
@@ -78,7 +79,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                                     var wl = properties["waterlogged"];
                                     if(wl != null) waterlogged = (NumTag<string>)wl == "true";
                                 }
-                                waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name.minecraftname());
+                                waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);
 
                                 ushort id = Global.App.Colormap.Block.GetId(name);
                                 if(waterlogged && (id == Colormap.INVBLOCK || Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER)) id = Global.App.Colormap.BLOCK_WATER;

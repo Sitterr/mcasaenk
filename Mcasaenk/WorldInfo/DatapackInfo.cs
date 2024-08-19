@@ -42,17 +42,18 @@ namespace Mcasaenk.WorldInfo {
         private static DatapacksInfoGroudwork vanilla118 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo);
         private static DatapacksInfoGroudwork vanilla117 = new DatapacksInfoGroudwork(ResourceMapping.vanilladatainfo117);
 
-        public readonly ImageSource image;
+        public readonly PackMetadata[] metas;
         public readonly IDictionary<string, DimensionInfo> dimensions;
         public readonly IDictionary<ushort, BiomeInfo> biomes;
 
-        public DatapacksInfo(IEnumerable<(ReadInterface read, ImageSource icon)> datapacks, DatapacksInfoGroudwork groudwork) {
+        public DatapacksInfo(IEnumerable<(ReadInterface read, PackMetadata meta)> datapacks, DatapacksInfoGroudwork groudwork) {
             this.dimensions = new Dictionary<string, DimensionInfo>(groudwork.dimensions);
             var biomes = new Dictionary<string, BiomeInfo>(groudwork.biomes);
 
+            metas = datapacks.Select(d => d.meta).ToArray();
+
             foreach(var datapack in datapacks) {
                 var read = datapack.read;
-                ImageSource image = datapack.icon; /*read.ReadBitmap("pack.png")?.ToBitmapSource();*/
 
                 {
                     var biome_regex = new Regex("data/([^/]+)/worldgen/biome/(.+)\\.json", RegexOptions.Multiline);
@@ -62,7 +63,7 @@ namespace Mcasaenk.WorldInfo {
 
                         string content = read.ReadAllText(match.Value);
 
-                        biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content) with { image = image };
+                        biomes[mnamespace + ":" + name] = BiomeInfo.FromJson(mnamespace + ":" + name, content) with { image = datapack.meta.icon };
                     }
                 }
 
@@ -86,7 +87,7 @@ namespace Mcasaenk.WorldInfo {
                             var dimname = el.GetString().fromminecraftname();
                             pre_dimensions.Add((mnamespace + ":" + name, $"data/{dimname.@namespace}/dimension_type/{dimname.name}.json"));
                         } else if(el.ValueKind == JsonValueKind.Object) {
-                            dimensions[mnamespace + ":" + name] = DimensionInfo.FromJson(mnamespace + ":" + name, el.ToString()) with { image = image };
+                            dimensions[mnamespace + ":" + name] = DimensionInfo.FromJson(mnamespace + ":" + name, el.ToString()) with { image = datapack.meta.icon };
                         }
                     }
 
@@ -94,7 +95,7 @@ namespace Mcasaenk.WorldInfo {
                         if(read.ExistsFile(dim.dimloc) == false) continue;
 
                         string content = read.ReadAllText(dim.dimloc);
-                        dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content) with { image = image };
+                        dimensions[dim.dimname] = DimensionInfo.FromJson(dim.dimname, content) with { image = datapack.meta.icon };
                     }
                 }
             }
@@ -134,7 +135,7 @@ namespace Mcasaenk.WorldInfo {
 
 
         public static DatapacksInfo FromPath(string path_world, LevelDatInfo levelDat, ModsInfo mods) {
-            IEnumerable<(ReadInterface read, ImageSource icon)> worldsdatapacks = GetWorldDatapacks(path_world, levelDat), modsdatapacks = mods.mods.Where(f => f.meta.data).Select(f => ((ReadInterface)f.read, f.meta.icon));
+            IEnumerable<(ReadInterface read, PackMetadata meta)> worldsdatapacks = GetWorldDatapacks(path_world, levelDat), modsdatapacks = mods.mods.Select(f => ((ReadInterface)f.read, f.meta));
             try {
                 if(levelDat.version_id < 2825) return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla117);
                 else return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla118);
@@ -143,15 +144,17 @@ namespace Mcasaenk.WorldInfo {
                 foreach(var dp in worldsdatapacks) dp.read.Dispose();
             }
         }
-        public static IEnumerable<(ReadInterface read, ImageSource image)> GetWorldDatapacks(string path_world, LevelDatInfo levelDat) {
+        public static IEnumerable<(ReadInterface read, PackMetadata meta)> GetWorldDatapacks(string path_world, LevelDatInfo levelDat) {
             if(levelDat.datapacks.Length == 0) yield break;
 
             string path = Path.Combine(path_world, "datapacks");
             if(Path.Exists(path)) {
                 foreach(var fileorfolder in Directory.GetFiles(path, "", SearchOption.TopDirectoryOnly).Concat(Directory.GetDirectories(path, "", SearchOption.TopDirectoryOnly))) {
-                    if(!levelDat.datapacks.Contains(Path.GetFileName(fileorfolder))) continue;
+                    string name = Global.ReadName(fileorfolder);
                     var read = ReadInterface.GetSuitable(fileorfolder);
-                    yield return (read, read.ReadBitmap("pack.png")?.ToBitmapSource());
+                    if(PackMetadata.ReadPackMeta(read, name, out var meta) == false) continue;
+                    if(!levelDat.datapacks.Contains(meta.id)) continue; 
+                    yield return (read, meta);
                 }
             }
         }

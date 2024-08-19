@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Shade3d;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Shade3d;
 using System;
 using System.Collections;
 using System.Collections.Generic;

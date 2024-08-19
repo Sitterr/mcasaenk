@@ -443,6 +443,15 @@ namespace Mcasaenk
         }
         public string COLOR_MAPPING_MODE { get => colorMapping; set { colorMapping = value; ColorMapping = value; OnHardChange(nameof(COLOR_MAPPING_MODE)); } }
 
+        public static string ColormapToPath(string colormapping) {
+            string path;
+            if(Path.Exists(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping))) path = Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping);
+            else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping + ".zip"))) path = Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping + ".zip");
+            else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping))) path = Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping);
+            else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping + ".zip"))) path = Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping + ".zip");
+            else path = Settings.DEF().COLOR_MAPPING_MODE;
+            return path;
+        }
 
 
 

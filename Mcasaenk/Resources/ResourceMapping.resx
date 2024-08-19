@@ -127,14 +127,17 @@
   <data name="colormap_bedrock" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\bedrockmap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="colormap_beta" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Colormaps\beta.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="colormap_betaplus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Colormaps\betaplus.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="colormap_java" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\javamap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="colormap_texture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\texture.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="default_pack" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Images\default_pack.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="discard" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\discard.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

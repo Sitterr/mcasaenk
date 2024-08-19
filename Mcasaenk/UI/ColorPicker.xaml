@@ -1,0 +1,41 @@
+﻿<Window x:Class="Mcasaenk.UI.ColorPicker"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mcasaenk.UI"
+        mc:Ignorable="d"
+        Background="{StaticResource BACK}"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        Title="Color editor" Width="auto" Height="auto">
+    <StackPanel Margin="15" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="R: "/>
+                    <TextBox x:Name="txt_r" Width="30"/>
+                </StackPanel>
+                <Border Height="10"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="G: "/>
+                    <TextBox x:Name="txt_g" Width="30"/>
+                </StackPanel>
+                <Border Height="10"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="B: "/>
+                    <TextBox x:Name="txt_b" Width="30"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Margin="15 0 0 0">
+                <Border x:Name="img" BorderBrush="{StaticResource BORDER}" BorderThickness="1" Height="40">
+                </Border>
+                <Border Height="11"/>
+                <local:EButton x:Name="btn_transp" Padding="5 0 5 0">transparent</local:EButton>
+            </StackPanel>
+        </StackPanel>
+        <local:EButton Click="OnSaveClick" Padding="3" Margin="10 20 10 0" FontSize="14">Save</local:EButton>
+    </StackPanel>
+    
+</Window>

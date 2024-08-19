@@ -19,7 +19,7 @@ using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
 using System.Collections.Frozen;
 using System.Buffers;
-using static Mcasaenk.Rendering.Tint;
+using static Mcasaenk.Colormaping.Tint;
 
 namespace Mcasaenk
 {

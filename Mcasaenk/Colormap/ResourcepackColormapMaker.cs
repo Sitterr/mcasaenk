@@ -1,5 +1,4 @@
-﻿using Mcasaenk.Rendering;
-using Mcasaenk.Resources;
+﻿using Mcasaenk.Resources;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,28 +10,27 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Mcasaenk.Global;
 
-namespace Mcasaenk.WorldInfo {
+namespace Mcasaenk.Colormaping {
     public struct Options {
         public double minQ = 0;
-        public bool for_Q0_try_with_sides = true;
         public Options() { }
     }
-    enum BlockCreationMethod { AboveQ, BelowQ, Sides, Texture, None }
+    public enum BlockCreationMethod { Unknown, AboveQ, Sides, Texture, None }
+    public class CreationDetails {
+        public bool shouldTint;
+        public BlockCreationMethod creationMethod = BlockCreationMethod.Unknown;
+    }
     public static class ResourcepackColormapMaker {
 
-        public static void Make(string outputpath, ReadInterface[] resourcepacks, Options options) {
+        // the resource packs order is reverse to the minecraft way, the first has the least priority
+        public static RawColormap Make(ReadInterface[] resourcepacks, Options options) {
             ReadInterface[] reversepacks = resourcepacks.Reverse().ToArray();
+            RawColormap colormap = new RawColormap();
 
             options.minQ = Math.Round(options.minQ, 3);
-            SaveInterface output;
-            if(outputpath.EndsWith(".zip")) output = new ZipSave(outputpath);
-            else if(outputpath.Contains(".") == false) output = new FileSave(outputpath, true);
-            else return;
-
 
             Dictionary<string, JsonModel> models = new Dictionary<string, JsonModel>();
 
-            List<(string block, uint color, bool vanillatinted, BlockCreationMethod creationMethod)> blocks = new List<(string block, uint color, bool vanillatinted, BlockCreationMethod creationMethod)>();
             // blocks
             {
                 var state_to_model = BlockStatesToModel();
@@ -64,14 +62,12 @@ namespace Mcasaenk.WorldInfo {
                     if(el == null) continue;
                     if(el.parent == null && el.elements == null) {
                         if(textures.Count == 0) {
-                            Print($"{blockname} has no data, no textures even and is thus being skipped", ConsoleColor.DarkRed);
-                            blocks.Add((blockname, 0, default, BlockCreationMethod.None));
+                            colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, creationMethod = BlockCreationMethod.None } });
                         } else {
                             ConsoleColor color = ConsoleColor.DarkYellow;
-                            Print($"{blockname} has no data. However at least one texture *{textures.First().Value.loc}* has been found", color);
 
                             var answer = ColorOfTexture(textures.First().Value.image);
-                            blocks.Add((blockname, answer, VanillaTints.IsNormallyTinted(blockname), answer > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None));
+                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
                         }
 
                     } else {
@@ -88,60 +84,27 @@ namespace Mcasaenk.WorldInfo {
                         }
                         var answer = JsonModel.ReadTopDown(blockname, el.elements, textures);
 
-                        if(answer.q == 0 && options.for_Q0_try_with_sides == false) {
-                            Print($"{blockname} has no topdown and is thus being skipped", ConsoleColor.DarkRed);
-                        } else {
-                            if(answer.q == 0) {
+
+                        if(answer.q >= options.minQ) {
+                            if(answer.q > 0) {
+                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, creationMethod = BlockCreationMethod.AboveQ } });
+                            } else {
                                 var sideanswer = JsonModel.ReadSide(blockname, el.elements, textures);
                                 if(sideanswer.q > 0) {
-                                    Print($"{blockname} has no topdown, but uses sides", ConsoleColor.DarkGreen);
-                                    blocks.Add((blockname, sideanswer.sidecolor, sideanswer.tintindex != -1, BlockCreationMethod.Sides));
+                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, creationMethod = BlockCreationMethod.Sides } });
                                 }
-                            } else {
-                                Print($"{blockname} has topdown with q={answer.q}", ConsoleColor.DarkBlue);
-                                blocks.Add((blockname, answer.topdowncolor, answer.tintedindex != -1, answer.q >= options.minQ ? BlockCreationMethod.AboveQ : BlockCreationMethod.BelowQ));
                             }
                         }
 
+
                     }
 
                 }
             }
 
-            List<string> blocklines = new() {
-                "// automatically created",
-                "// Q means what part of the block has an up texture. For example a solid block would have Q = 1, while a dandelion would have Q = 0, as from exactly above it cannot be seen",
-                "", ""
-            };
-            blocks = blocks.OrderBy(bl => bl.creationMethod).ToList();
-            for(int i = 0; i < blocks.Count; i++) {
-                string line = $"{blocks[i].block.simplifyminecraftname()}";
-                if(blocks[i].color > 0) {
-                    line += "=" + blocks[i].color.ToString("X").Substring(2);
-                }
-                if(i > 0) {
-                    if(blocks[i - 1].creationMethod != blocks[i].creationMethod) {
-                        blocklines.Add("");
-                        blocklines.Add("");
-                        blocklines.Add(blocks[i].creationMethod switch {
-                            BlockCreationMethod.AboveQ => $"// the following blocks have Q above the {options.minQ} threshold",
-                            BlockCreationMethod.BelowQ => $"// the following blocks have Q below the {options.minQ} threshold and are being skipped",
-                            BlockCreationMethod.Sides => $"// the following blocks have Q = 0, but can use workaround with sides",
-                            BlockCreationMethod.Texture => $"// from the following blocks I only detected a texture",
-                            BlockCreationMethod.None => $"// the following blocks dont have a model or a texture",
-                        });
-                    }
-                } else blocklines.Add($"// the following blocks have Q above the {options.minQ} threshold");
-
-                if(blocks[i].creationMethod == BlockCreationMethod.None || blocks[i].creationMethod == BlockCreationMethod.BelowQ || blocks[i].creationMethod == BlockCreationMethod.Sides && (options.for_Q0_try_with_sides == false || options.minQ > 0)) line = "//" + line;
-
-                blocklines.Add(line);
-            }
 
             // tints
             {
-
-                List<(string name, string format, WPFBitmap source, uint color)> tints = new();
                 var blocktint = new Dictionary<string, int>();
 
                 // vanilla tints
@@ -162,18 +125,18 @@ namespace Mcasaenk.WorldInfo {
                         }
                     }
 
-                    tints.Add((vtint.name, vtint.format, source, vtint.deftint));
+                    colormap.tints.Add(new RawTint() { name = vtint.name, format = vtint.format, image = source, color = vtint.color });
                 }
-                int vtintsi = tints.Count;
-                foreach(var bl in blocks.Where(l => l.vanillatinted)) {
+                int vtintsi = colormap.tints.Count;
+                foreach(var bl in colormap.blocks.Where(l => l.Value.details.shouldTint)) {
                     int tint = -1;
                     for(int i = 0; i < VanillaTints.tints.Count; i++) {
-                        if(VanillaTints.tints[i].blocks.Contains(bl.block)) {
+                        if(VanillaTints.tints[i].blocks.Contains(bl.Key)) {
                             tint = i;
                             break;
                         }
                     }
-                    blocktint.Add(bl.block, tint);
+                    blocktint.Add(bl.Key, tint);
                 }
 
                 // optifine tints
@@ -187,20 +150,20 @@ namespace Mcasaenk.WorldInfo {
                             foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "custom"), "*.properties")) {
                                 var r = Tint.ReadTint(pack, file);
 
-                                tints.Add((r.name, r.format, pack.ReadBitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
+                                colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
-                                    blocktint[bl] = tints.Count - 1;
+                                    blocktint[bl] = colormap.tints.Count - 1;
                                 }
                             }
                         }
 
                         if(pack.ExistsFile(Path.Combine(colormapdir, "blocks"))) {
                             foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "blocks"), "*.properties")) {
-                                var r = Tint.ReadTint(pack, file);
+                                var r = Tint.ReadTint(pack, file, Path.Combine(colormapdir, "custom"));
 
-                                tints.Add((r.name, r.format, pack.ReadBitmap(Path.GetFullPath(r.source, Path.Combine(colormapdir, "custom"))), r.color));
+                                colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
-                                    blocktint[bl] = tints.Count - 1;
+                                    blocktint[bl] = colormap.tints.Count - 1;
                                 }
                             }
                         }
@@ -211,12 +174,10 @@ namespace Mcasaenk.WorldInfo {
                     {
                         {
                             if(pack.ExistsFile(Path.Combine(colormapdir, "swampgrass.properties")) || pack.ExistsFile(Path.Combine(colormapdir, "swampgrass.png"))) {
-                                Print("Detected optifine tint swampgrass, which cannot be converted!", ConsoleColor.Red);
                             }
                         }
                         {
                             if(pack.ExistsFile(Path.Combine(colormapdir, "swampfoliage.properties")) || pack.ExistsFile(Path.Combine(colormapdir, "swampfoliage.png"))) {
-                                Print("Detected optifine tint swampfoliage, which cannot be converted!", ConsoleColor.Red);
                             }
                         }
 
@@ -226,118 +187,109 @@ namespace Mcasaenk.WorldInfo {
                                 var lines = pack.ReadAllLines(path).Select(l => l.Split("=").Select(p => p.Trim()).ToArray());
                                 foreach(var line in lines) {
                                     if(line[0] == "lilypad") {
-                                        tints.Add(("lily_pad", "fixed", null, 0xFF000000 | Convert.ToUInt32(line[1], 16)));
-                                        blocktint["minecraft:lily_pad"] = tints.Count - 1;
+                                        colormap.tints.Add(new RawTint() { name = "lily_pad", format = "fixed", blocks = null, color = WPFColor.FromHex(line[1]) });
+                                        blocktint["minecraft:lily_pad"] = colormap.tints.Count - 1;
                                     }
                                 }
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "pine.properties"))) {
                                 tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "pine.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "pine.png"))) {
-                                tint = ("pine", "vanilla", default, Path.Combine(colormapdir, "pine.png"), default);
+                                tint = new RawTint() { name = "pine", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "pine.png")), color = WPFColor.White };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
-                                blocktint["minecraft:spruce_leaves"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:spruce_leaves"] = colormap.tints.Count - 1;
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "birch.properties"))) {
                                 tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "birch.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "birch.png"))) {
-                                tint = ("birch", "vanilla", default, Path.Combine(colormapdir, "birch.png"), default);
+                                tint = new RawTint() { name = "birch", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "birch.png")), color = WPFColor.White };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
-                                blocktint["minecraft:birch_leaves"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:birch_leaves"] = colormap.tints.Count - 1;
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "water.properties"))) {
                                 tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "water.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "water.png"))) {
-                                tint = ("water", "vanilla", default, Path.Combine(colormapdir, "water.png"), default);
+                                tint = new RawTint() { name = "water", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "water.png")), color = WPFColor.White };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, pack.ReadBitmap(Path.GetFullPath(tint.source, colormapdir)), tint.color));
-                                blocktint["minecraft:water"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:water"] = colormap.tints.Count - 1;
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "redstone.png"))) {
-                                tint = ("redstone_wire", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "redstone.png"))));
+                                tint = new RawTint() { name = "redstone_wire", format = "fixed", blocks = null, image = null, color = ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "redstone.png"))) };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, null, tint.color));
-                                blocktint["minecraft:redstone_wire"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:redstone_wire"] = colormap.tints.Count - 1;
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "pumpkinstem.png"))) {
-                                tint = ("pumpkin", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "pumpkinstem.png"))));
+                                tint = new RawTint() { name = "pumpkin", format = "fixed", blocks = null, image = null, color = ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "pumpkinstem.png"))) };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, null, tint.color));
-                                blocktint["minecraft:pumpkin_stem"] = tints.Count - 1;
-                                blocktint["minecraft:attached_pumpkin_stem"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:pumpkin_stem"] = colormap.tints.Count - 1;
+                                blocktint["minecraft:attached_pumpkin_stem"] = colormap.tints.Count - 1;
                             }
                         }
 
                         {
-                            (string name, string format, string[] blocks, string source, uint color) tint = default;
+                            RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "melonstem.png"))) {
-                                tint = ("melon", "fixed", default, default, ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "melonstem.png"))));
+                                tint = new RawTint() { name = "melon", format = "fixed", blocks = null, image = null, color = ColorOfTexture(pack.ReadBitmap(Path.Combine(colormapdir, "melonstem.png"))) };
                             }
 
-                            if(tint != default) {
-                                tints.Add((tint.name, tint.format, null, tint.color));
-                                blocktint["minecraft:melon_stem"] = tints.Count - 1;
-                                blocktint["minecraft:attached_melon_stem"] = tints.Count - 1;
+                            if(tint != null) {
+                                colormap.tints.Add(tint);
+                                blocktint["minecraft:melon_stem"] = colormap.tints.Count - 1;
+                                blocktint["minecraft:attached_melon_stem"] = colormap.tints.Count - 1;
                             }
                         }
                     }
                 }
 
-                var blocktintf = blocktint.Where(b => blocks.Any(bl => bl.block == b.Key)).ToList();
-                for(int i = 0; i < tints.Count; i++) {
-                    var blocksforthistint = blocktintf.Where(bl => bl.Value == i).Select(bl => bl.Key).ToArray();
-                    if(blocksforthistint.Length > 0) {
-                        SaveTint(tints[i], blocksforthistint, i >= vtintsi);
+                var blocktintf = blocktint.Where(b => colormap.blocks.Any(bl => bl.Key == b.Key)).ToList();
+                for(int i = 0; i < colormap.tints.Count; i++) {
+                    var blocksforthistint = blocktintf.Where(bl => bl.Value == i).Select(bl => bl.Key).ToList();
+                    colormap.tints[i].blocks = blocksforthistint;
+                    if(i >= vtintsi) {
+                        colormap.tints[i].name += "_optifine";
                     }
                 }
-
-
-                {
-                    blocklines.Add(""); blocklines.Add("");
-                    blocklines.Add("---------------------------------------------------------");
-                    blocklines.Add(""); blocklines.Add("");
-                    blocklines.Add("// these blocks were detected to have tintindex. However, the ones marked with an X do not currently belong to any tint(information loacking). To fix this go the tints(.properites files) themselves and add those blocks accordingly.");
-                    foreach(var bl in blocks.Where(l => l.vanillatinted)) {
-                        char symbol = blocktint.Any(b => b.Key == bl.block && b.Value >= 0) ? '✓' : 'X';
-                        blocklines.Add($"//{bl.block.simplifyminecraftname()} - {symbol}");
-                    }
-                }
+                colormap.tints = colormap.tints.Where(t => t.blocks.Count > 0).ToList();
             }
 
 
-            output.SaveLines("__palette__.txt", blocklines);
+
+            return colormap;
 
 
 
@@ -405,22 +357,19 @@ namespace Mcasaenk.WorldInfo {
             }
 
 
-            void SaveTint((string name, string format, WPFBitmap source, uint color) tint, string[] blocks, bool optifine = false) {
-                if(tint.format == "fixed" && tint.color == uint.MaxValue) return;
-                if(optifine) tint.name += "_optifine";
-                List<string> lines = new List<string>();
+            //void SaveTint((string name, string format, WPFBitmap source, uint color) tint, string[] blocks, bool optifine = false) {
+            //    if(tint.format == "fixed" && tint.color == uint.MaxValue) return;
+            //    if(optifine) tint.name += "_optifine";
+            //    List<string> lines = new List<string>();
 
-                lines.Add($"format={tint.format}");
-                if(!(tint.format == "fixed" && blocks.Length == 1 && blocks[0].minecraftname() == tint.name.minecraftname())) lines.Add($"blocks={string.Join(" ", blocks.Select(bl => bl.simplifyminecraftname()))}");
-                if(tint.source != null) lines.Add($"source={tint.name}.png");
-                if(tint.format == "fixed") lines.Add($"color={tint.color.ToString("X").Substring(2)}");
+            //    lines.Add($"format={tint.format}");
+            //    if(!(tint.format == "fixed" && blocks.Length == 1 && blocks[0].minecraftname() == tint.name.minecraftname())) lines.Add($"blocks={string.Join(" ", blocks.Select(bl => bl.simplifyminecraftname()))}");
+            //    if(tint.source != null) lines.Add($"source={tint.name}.png");
+            //    if(tint.format == "fixed") lines.Add($"color={tint.color.ToString("X").Substring(2)}");
 
-                if(tint.source != null) output.SaveImage(tint.name + ".png", tint.source);
-                output.SaveLines(tint.name + ".properties", lines);
-
-                if(optifine == false) Print($"Saving {tint.format} tint {tint.name}!", ConsoleColor.DarkGreen);
-                else Print($"Saving {tint.format} optifine tint {tint.name}!", ConsoleColor.DarkBlue);
-            }
+            //    if(tint.source != null) output.SaveImage(tint.name + ".png", tint.source);
+            //    output.SaveLines(tint.name + ".properties", lines);
+            //}
 
 
             Dictionary<string, string> BlockStatesToModel() {
@@ -467,7 +416,7 @@ namespace Mcasaenk.WorldInfo {
             }
 
 
-            uint ColorOfTexture(WPFBitmap image) {
+            WPFColor ColorOfTexture(WPFBitmap image) {
                 int r = 0, g = 0, b = 0, br = 0;
 
                 for(int i = 0; i < image.Width; i++) {
@@ -481,19 +430,12 @@ namespace Mcasaenk.WorldInfo {
                         br++;
                     }
                 }
-                if(br == 0) return 0;
+                if(br == 0) return WPFColor.Transparent;
 
-                return WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt();
+                return WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br));
             }
 
-
-            void Print(string message = "", ConsoleColor color = ConsoleColor.DarkGray) {
-                Console.ForegroundColor = color;
-                Console.WriteLine(message, color);
-                Console.ResetColor();
-            }
-
-            output.Dispose();
+            return colormap;
         }
     }
 
@@ -525,9 +467,9 @@ namespace Mcasaenk.WorldInfo {
             }
         }
 
-        public static (uint topdowncolor, double q, int tintedindex) ReadTopDown(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
-            (uint color, int y, int tintindex)[,] topdown = new (uint color, int y, int tintindex)[16, 16];
-            for(int i = 0; i < 16 * 16; i++) topdown[i / 16, i % 16] = (0, -1, -1);
+        public static (WPFColor topdowncolor, double q, int tintedindex) ReadTopDown(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
+            (WPFColor color, int y, int tintindex)[,] topdown = new (WPFColor color, int y, int tintindex)[16, 16];
+            for(int i = 0; i < 16 * 16; i++) topdown[i / 16, i % 16] = (WPFColor.Transparent, -1, -1);
 
             foreach(var element in elements) {
                 foreach(var face in element.faces) {
@@ -569,8 +511,7 @@ namespace Mcasaenk.WorldInfo {
                                 int s = Math.Min(img.Width, img.Height);
                                 var pixel = img.GetPixel(s / 16 * Math.Min(uv[0] + (x - minx), uv[2] - 1), s / 16 * Math.Min(uv[1] + (z - minz), uv[3] - 1));
                                 if(pixel.A == 0) continue;
-                                uint uintpixel = pixel.ToUInt();
-                                topdown[x, z].color = uintpixel;
+                                topdown[x, z].color = pixel;
                                 topdown[x, z].y = y;
                                 topdown[x, z].tintindex = face.Value.tintindex;
                             }
@@ -603,7 +544,7 @@ namespace Mcasaenk.WorldInfo {
 
             int r = 0, g = 0, b = 0, br = 0;
             for(int i = 0; i < 16 * 16; i++) {
-                var argb = topdown[i / 16, i % 16].color.ToColor();
+                var argb = topdown[i / 16, i % 16].color;
                 if(argb.A == 0) continue;
 
                 r += argb.R;
@@ -611,12 +552,12 @@ namespace Mcasaenk.WorldInfo {
                 b += argb.B;
                 br++;
             }
-            if(br == 0) return (0, 0, -1);
+            if(br == 0) return (WPFColor.Transparent, 0, -1);
 
-            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt(), Math.Round(br / 256d, 2), ft);
+            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)), Math.Round(br / 256d, 2), ft);
         }
 
-        public static (uint sidecolor, double q, int tintindex) ReadSide(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
+        public static (WPFColor sidecolor, double q, int tintindex) ReadSide(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
             int tintedindex = -1;
             bool instatint = false, first = true;
 
@@ -626,8 +567,8 @@ namespace Mcasaenk.WorldInfo {
                     if((face.Key == "north" || face.Key == "south" || face.Key == "west" || face.Key == "east") == false) continue;
 
                     if(!first) {
-                        if(tintedindex != face.Value.tintindex && !instatint) {
-                            var res = VanillaTints.InstaTint(block, tintedindex, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt()).ToColor();
+                        if(tintedindex != face.Value.tintindex && !instatint && br > 0) {
+                            var res = VanillaTints.InstaTint(block, tintedindex, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)));
                             r = res.R * br;
                             g = res.G * br;
                             b = res.B * br;
@@ -664,13 +605,10 @@ namespace Mcasaenk.WorldInfo {
                             int s = Math.Min(img.Width, img.Height);
                             var pixel = img.GetPixel(s / 16 * tx, s / 16 * ty);
                             if(pixel.A == 0) continue;
-                            var uintpixel = pixel.ToUInt();
-                            if(instatint) uintpixel = VanillaTints.InstaTint(block, face.Value.tintindex, uintpixel);
-                            var againpixel = uintpixel.ToColor();
-
-                            r += againpixel.R;
-                            g += againpixel.G;
-                            b += againpixel.B;
+                            if(instatint) pixel = VanillaTints.InstaTint(block, face.Value.tintindex, pixel);
+                            r += pixel.R;
+                            g += pixel.G;
+                            b += pixel.B;
                             br++;
                             break;
                         }
@@ -681,23 +619,23 @@ namespace Mcasaenk.WorldInfo {
             }
 
 
-            if(br == 0) return (0, 0, -1);
+            if(br == 0) return (WPFColor.Transparent, 0, -1);
 
-            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt(), Math.Round(br / 256d, 2), tintedindex);
+            return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)), Math.Round(br / 256d, 2), tintedindex);
         }
     }
 
 
     static class VanillaTints {
-        static uint grassTint;
-        public readonly static List<(string name, string format, List<string> blocks, uint deftint)> tints;
+        static WPFColor grassTint;
+        public readonly static List<RawTint> tints;
         static VanillaTints() {
-            tints = new List<(string name, string format, List<string> blocks, uint deftint)>();
+            tints = new List<RawTint>();
 
             TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (_, parts) => {
-                if(parts[0] == "grass") grassTint = 0xFF000000 | Convert.ToUInt32(parts[3], 16);
+                if(parts[0] == "grass") grassTint = WPFColor.FromHex(parts[3]);
 
-                tints.Add((parts[0], parts[1], parts[2].Split(",").Select(w => w.minecraftname()).ToList(), 0xFF000000 | Convert.ToUInt32(parts[3], 16)));
+                tints.Add(new RawTint() { name = parts[0], format = parts[1], blocks = parts[2].Split(",").Select(w => w.minecraftname()).ToList(), color = WPFColor.FromHex(parts[3]) });
             });
         }
 
@@ -708,12 +646,12 @@ namespace Mcasaenk.WorldInfo {
             return false;
         }
 
-        public static uint InstaTint(string block, int index, uint color) {
+        public static WPFColor InstaTint(string block, int index, WPFColor color) {
             if(index == -1) return color;
             if(block == "minecraft:pink_petals" && index == 1) return ColorMult(color, grassTint);
 
             foreach(var tint in tints) {
-                if(tint.blocks.Contains(block)) return ColorMult(color, tint.deftint);
+                if(tint.blocks.Contains(block)) return ColorMult(color, tint.color);
             }
             return color;
         }

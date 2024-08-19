@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Nbt;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
@@ -18,7 +19,8 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 
-namespace Mcasaenk {
+namespace Mcasaenk
+{
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -29,7 +31,7 @@ namespace Mcasaenk {
                     "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "0.10.0";
+        public const string VERSION = "0.11.0";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -92,11 +94,6 @@ namespace Mcasaenk {
                     ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "default"));
                 }
 
-                //if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "beta")) == false) {
-                //    using var stream = new MemoryStream(ResourceMapping.colormap_beta);
-                //    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "beta"));
-                //}
-
                 if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "java map")) == false) {
                     using var stream = new MemoryStream(ResourceMapping.colormap_java);
                     ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "java map"));
@@ -105,6 +102,12 @@ namespace Mcasaenk {
                 if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "bedrock map")) == false) {
                     using var stream = new MemoryStream(ResourceMapping.colormap_bedrock);
                     ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "bedrock map"));
+                }
+
+
+                if(Directory.Exists(Path.Combine(APPFOLDER, "colormaps", "betaplus")) == false) {
+                    using var stream = new MemoryStream(ResourceMapping.colormap_betaplus);
+                    ZipFile.ExtractToDirectory(stream, Path.Combine(APPFOLDER, "colormaps", "betaplus"));
                 }
             }
 
@@ -160,14 +163,7 @@ namespace Mcasaenk {
         void SetColormap() {
             if(OpenedSave == null) return;
 
-            if(!Path.Exists(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) Settings.COLOR_MAPPING_MODE = Settings.DEF().COLOR_MAPPING_MODE;
-
-            string path;
-            if(Path.Exists(Path.Combine(APPFOLDER, ID, "colormaps", Settings.COLOR_MAPPING_MODE))) path = Path.Combine(APPFOLDER, ID, "colormaps", Settings.COLOR_MAPPING_MODE);
-            else if(Path.Exists(Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE))) path = Path.Combine(APPFOLDER, "colormaps", Settings.COLOR_MAPPING_MODE);
-            else path = Path.Combine(APPFOLDER, "colormaps", "default");
-
-            Colormap = new Colormap(path, OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
+            Colormap = new Colormap(RawColormap.Load(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
             Shade3DFilter.ReInit(Colormap);
 
             foreach(var tint in Colormap.GetTints()) {

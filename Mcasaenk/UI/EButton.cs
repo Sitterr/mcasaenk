@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows;
 using WPF.ImageEffects;
+using System.Windows.Shapes;
 
 namespace Mcasaenk.UI {
     public class EButton : Button {
@@ -70,13 +71,23 @@ namespace Mcasaenk.UI {
                     else if(IsMouseOver) img.Effect = new BrightnessContrastEffect() { Brightness = 0.06, Contrast = 0.05 };
                     else img.Effect = new BrightnessContrastEffect() { Brightness = 0, Contrast = 0 };
                 }
+            } else if(this.Content is Path path) {
+                if(path.Fill is SolidColorBrush sfill) {
+                    if(IsPressed) path.Fill = BackgroundP;
+                    else if(IsMouseOver) path.Fill = BackgroundH;
+                    else path.Fill = Background2;
+                }
+                return;
             }
-            if(IsPressed) {
-                this.Background = BackgroundP;
-            } else if(IsMouseOver) {
-                this.Background = BackgroundH;
-            } else if(IsPressed == false && IsMouseOver == false) {
-                this.Background = Background2;
+            
+            {
+                if(IsPressed) {
+                    this.Background = BackgroundP;
+                } else if(IsMouseOver) {
+                    this.Background = BackgroundH;
+                } else if(IsPressed == false && IsMouseOver == false) {
+                    this.Background = Background2;
+                }
             }
         }
         protected override void OnIsPressedChanged(DependencyPropertyChangedEventArgs e) {

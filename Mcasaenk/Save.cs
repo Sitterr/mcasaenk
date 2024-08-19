@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Resources;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Resources;
 using Mcasaenk.UI;
 using Mcasaenk.WorldInfo;
 using System;
@@ -18,7 +19,7 @@ namespace Mcasaenk {
     public class Save {
         public readonly LevelDatInfo levelDatInfo;
         public readonly DatapacksInfo datapackInfo;
-        public readonly ModMetadata[] mods;
+        public readonly PackMetadata[] mods;
         public readonly string path;
         public readonly Dimension overworld, nether, end;
         public readonly List<Dimension> dimensions;
@@ -48,15 +49,15 @@ namespace Mcasaenk {
             }
 
             if(Path.Exists(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps"))) Directory.Delete(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps"), true);
-            if(levelDatInfo.resourcepack || modsInfo.mods.Where(f => f.meta.assets).Count() > 0) {
+            if(levelDatInfo.resourcepack || modsInfo.mods.Count() > 0) {
                 List<ReadInterface> respacks = new List<ReadInterface>();
                 using ReadInterface vanilla = new ZipRead(Path.Combine(Global.App.APPFOLDER, "vanilla_resource_pack.zip"));
                 using ReadInterface buildin = levelDatInfo.resourcepack ? new ZipRead(Path.Combine(path, "resources.zip")) : null;
 
-                var list = new[] { vanilla }.Concat(modsInfo.mods.Where(f => f.meta.assets).Select(m => m.read)).ToList();
+                var list = new[] { vanilla }.Concat(modsInfo.mods.Select(m => m.read)).ToList();
                 if(buildin != null) list.Add(buildin);
 
-                ResourcepackColormapMaker.Make(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", "default"), list.ToArray(), new Options());
+                RawColormap.Save(ResourcepackColormapMaker.Make(list.ToArray(), new Options()), Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", "default"));
             }
         }
 
@@ -110,7 +111,7 @@ namespace Mcasaenk {
             return Path.Combine(path, $"r.{pos.X}.{pos.Z}.mca");
         }
 
-        private HashSet<Point2i> ExistingRegions() { 
+        private HashSet<Point2i> ExistingRegions() {
             var set = new HashSet<Point2i>();
 
             if(Directory.Exists(this.path)) {

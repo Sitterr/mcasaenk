@@ -1,0 +1,172 @@
+﻿<UserControl x:Class="Mcasaenk.UI.ColormapMaker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mcasaenk.UI"
+             xmlns:resx="clr-namespace:Mcasaenk.Resources"
+             xmlns:worldinfo="clr-namespace:Mcasaenk.WorldInfo"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="3" HorizontalAlignment="Center">
+            <TextBlock Text="-- Colormap maker --" FontSize="24" HorizontalAlignment="Center"/>
+            <Label Content="Select resource packs and/or mods" FontSize="16">
+                <Label.ToolTip>
+                    <StackPanel>
+                        <TextBlock Text="This tool attempts to map each block in a resource pack to a single color by following the path blockstate->model->texture"/>
+                        <TextBlock Text="• supports pre-1.12(unstable) and 1.13+ vanilla resource packs"/>
+                        <TextBlock Text="• can also extract useful information from optifine packs"/>
+                        <TextBlock Text="• many mods have an internal /assets folder where custom blocks are defined. This tool attempts to read from that folder as well"/>
+                    </StackPanel>
+                </Label.ToolTip>
+            </Label>
+        </StackPanel>
+
+
+        <GroupBox Grid.Row="2" Grid.Column="0" Header="Available (resource packs)" Tag="16">
+            <ScrollViewer x:Name="group_available" HorizontalContentAlignment="Right" VerticalScrollBarVisibility="Auto">
+            </ScrollViewer>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2" Grid.Column="2" Header="Selected" Tag="16">
+            <ScrollViewer x:Name="group_selected" HorizontalContentAlignment="Right" VerticalScrollBarVisibility="Auto">
+            </ScrollViewer>
+        </GroupBox>
+
+
+        <StackPanel Grid.Row="5" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30">
+            <local:EButton Padding="5 0" FontSize="14" Click="OnAddManuallyMod">Add mod</local:EButton>
+            <Border Width="20"/>
+            <local:EButton Padding="5 0" FontSize="14" Click="OnAddManuallyPack">Add other resource pack</local:EButton>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" Height="50">
+            <local:EButton Width="120" FontSize="16" Click="OnDone">Done</local:EButton>
+        </StackPanel>
+        
+    </Grid>
+
+    
+    
+    
+    
+    <UserControl.Resources>
+        <Style TargetType="local:ArrowButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="local:ArrowButton">
+                        <Grid Grid.Column="0" Grid.RowSpan="3" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.ColumnSpan="2" Grid.RowSpan="2" BorderThickness="1" BorderBrush="{StaticResource BORDER}">
+                                <ContentControl Content="{TemplateBinding Content}"/>
+                            </Border>
+
+                            <local:EButton x:Name="_right_" Grid.ColumnSpan="2" Grid.RowSpan="2" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Fill="Blue" Stroke="{StaticResource BORDER}" StrokeThickness="1">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="20,22" IsClosed="True">
+                                                <LineSegment Point="0,0" />
+                                                <LineSegment Point="0,44" />
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </local:EButton>
+
+
+                            <local:EButton x:Name="_left_" Grid.Column="0" Grid.RowSpan="2" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Fill="Blue" Stroke="{StaticResource BORDER}" StrokeThickness="1">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="0,22" IsClosed="True">
+                                                <LineSegment Point="20,0" />
+                                                <LineSegment Point="20,44" />
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </local:EButton>
+
+                            <local:EButton x:Name="_upright_" Grid.Column="2" Grid.Row="0" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center">
+                                <Path Fill="Blue" Stroke="{StaticResource BORDER}" StrokeThickness="1">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="10,0" IsClosed="True">
+                                                <LineSegment Point="0,12" />
+                                                <LineSegment Point="21,12" />
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </local:EButton>
+
+                            <local:EButton x:Name="_downright_" Grid.Column="2" Grid.Row="1" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Fill="Blue" Stroke="{StaticResource BORDER}" StrokeThickness="1">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="10,12" IsClosed="True">
+                                                <LineSegment Point="0,0" />
+                                                <LineSegment Point="21,0" />
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </local:EButton>
+
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="packmeta" DataType="{x:Type worldinfo:PackMetadata}">
+            <Grid Margin="0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="64"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="28"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition Height="33"/>
+                </Grid.RowDefinitions>
+
+
+                <local:ArrowButton Margin="1" x:Name="btn_arrow" Grid.Column="0" Grid.RowSpan="3" UpRightArrow="True" DownRightArrow="True" LeftArrow="True">
+                    <Image Source="{Binding Path=icon, Mode=OneTime}"/>
+                </local:ArrowButton>
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Path=name, Mode=OneTime}" FontSize="20"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Path=description, Mode=OneTime}" TextWrapping="WrapWithOverflow" TextTrimming="None" FontSize="12"/>
+            </Grid>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+</UserControl>

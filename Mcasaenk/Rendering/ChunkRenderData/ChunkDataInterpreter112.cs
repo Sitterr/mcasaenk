@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Nbt;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Nbt;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
