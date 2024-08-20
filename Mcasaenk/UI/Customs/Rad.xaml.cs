@@ -48,7 +48,7 @@ namespace Mcasaenk.UI {
 
         public void ShowSlot3(bool visible) {
             if(visible) {
-                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(85) });
             } else if(grid.ColumnDefinitions.Count == 5) {
                 grid.ColumnDefinitions.RemoveAt(3);

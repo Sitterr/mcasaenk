@@ -384,10 +384,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
-                    <Grid VerticalAlignment="{TemplateBinding VerticalAlignment}" SnapsToDevicePixels="True">
+                    <Grid VerticalAlignment="{TemplateBinding VerticalAlignment}">
                         <ToggleButton Name="ToggleButton" Style="{StaticResource ComboBoxToggleButton}" Grid.Column="1" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
 
-                        <Border Margin="0 0 20 0" SnapsToDevicePixels="True">
+                        <Border Margin="0 0 20 0">
                             <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                             ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
@@ -398,10 +398,10 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
                         </Border>
 
-                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" SnapsToDevicePixels="True"  Focusable="False" PopupAnimation="Slide">
-                            <Grid Name="DropDown" Margin="0 0 1 0.4" SnapsToDevicePixels="True" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                            <Grid Name="DropDown" Margin="0 0 1 0.4" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder" Margin="0 -1 0 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" SnapsToDevicePixels="True" HorizontalContentAlignment="Right" Margin="0 0 0 0">
+                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" HorizontalContentAlignment="Right" Margin="0 0 0 0">
                                     <StackPanel Margin="4,6,4,6" TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
@@ -431,7 +431,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                    <Border Name="Border" Padding="2" SnapsToDevicePixels="true">
+                    <Border Name="Border" Padding="2">
                         <ContentPresenter />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -913,9 +913,9 @@ TargetType="{x:Type ScrollBar}">
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <local:EButton Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BackgroundH="{StaticResource BACK}" BackgroundP="{StaticResource BACK}" BorderBrush="{StaticResource BORDER}">
-                <Image Source="{Binding Path=image, Mode=OneTime}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-            </local:EButton>
+            <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BorderBrush="{StaticResource BORDER}">
+                <Image Source="{Binding Path=image, Mode=OneTime}" Margin="-0.5 -0.2 0 0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            </Border>
             <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
                 <Run Text="{Binding Path=name, Mode=OneTime}" FontSize="16"/>
                 

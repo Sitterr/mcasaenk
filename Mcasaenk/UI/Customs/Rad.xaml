@@ -126,7 +126,7 @@
     </UserControl.Resources>
 
 
-    <Grid x:Name="grid">
+    <Grid x:Name="grid" SnapsToDevicePixels="True">
         <Grid.Resources>
             <SolidColorBrush x:Key="text">#FFAFAFAF</SolidColorBrush>
             <SolidColorBrush x:Key="border">#FFAFAFAF</SolidColorBrush>
@@ -136,7 +136,7 @@
         </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="85" />
-            <ColumnDefinition Width="2" />
+            <ColumnDefinition Width="1" />
             <ColumnDefinition Width="85" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>

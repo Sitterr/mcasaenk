@@ -5,9 +5,7 @@ using System.Windows;
 
 namespace Mcasaenk.UI {
     public static partial class MouseHook {
-        public static event EventHandler<Point> MouseDown = delegate { };
-        public static event EventHandler<Point> MouseUp = delegate { };
-        public static event EventHandler<Point> MouseMove = delegate { };
+        public static event Action<Point, MouseMessages> MouseEvent = delegate { };
 
         public static void Start() => _hookID = SetHook(_proc);
         public static void Stop() => UnhookWindowsHookEx(_hookID);
@@ -31,17 +29,8 @@ namespace Mcasaenk.UI {
 
                 Point point = new Point(hookStruct.Value.pt.x, hookStruct.Value.pt.y).CalibrateToDpiScale();
 
-                switch((MouseMessages)wParam) {
-                    case MouseMessages.WM_LBUTTONDOWN:
-                        MouseDown?.Invoke(null, point);
-                        break;
-                    case MouseMessages.WM_MOUSEMOVE:
-                        MouseMove?.Invoke(null, point);
-                        break;
-                    case MouseMessages.WM_LBUTTONUP:
-                        MouseUp?.Invoke(null, point);
-                        break;
-                }
+
+                MouseEvent(point, (MouseMessages)wParam);
             }
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
@@ -49,13 +38,18 @@ namespace Mcasaenk.UI {
 
         private const int WH_MOUSE_LL = 14;
 
-        private enum MouseMessages {
+        public enum MouseMessages {
             WM_LBUTTONDOWN = 0x0201,
             WM_LBUTTONUP = 0x0202,
+
             WM_MOUSEMOVE = 0x0200,
             WM_MOUSEWHEEL = 0x020A,
+
             WM_RBUTTONDOWN = 0x0204,
-            WM_RBUTTONUP = 0x0205
+            WM_RBUTTONUP = 0x0205,
+
+            WM_MBUTTONDOWN = 0x0207,
+            WM_MBUTTONUP =0x0208,
         }
 
         [StructLayout(LayoutKind.Sequential)]

@@ -17,6 +17,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Xsl;
+using static Mcasaenk.Rendering.Filter;
 
 
 namespace Mcasaenk.UI.Canvas {
@@ -59,9 +60,9 @@ namespace Mcasaenk.UI.Canvas {
         
             this.SizeChanged += OnSizeChange;
             this.MouseWheel += OnMouseWheel;
-            this.MouseDown += OnMouseDown;
-            this.MouseUp += OnMouseUp;
-            this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
+            this.MouseDown += (o, e) => OnMouseDown(e.ChangedButton);
+            this.MouseUp += (o, e) => OnMouseUp(e.ChangedButton);
+            //this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
             this.MouseLeave += OnMouseLeave;
 
             this.KeyDown += OnKeyDown;
@@ -70,6 +71,49 @@ namespace Mcasaenk.UI.Canvas {
             CompositionTarget.Rendering += OnFastTick;
 
             msg.Visibility = Visibility.Collapsed;
+
+
+            this.Loaded += CanvasControl_Loaded;
+        }
+
+        private void CanvasControl_Loaded(object sender, RoutedEventArgs e) {
+            MouseHook.Start();
+
+            MouseHook.MouseEvent += (pos, button) => {
+                switch(button) {
+                    case MouseHook.MouseMessages.WM_MOUSEMOVE:
+                        var off = pos.Add(this.PointFromScreen(new Point(0, 0)));
+                        pos = off;
+
+                        OnMouseMove(pos);
+                        window.footer.X = (int)pos.X;
+                        window.footer.Z = (int)pos.Y;
+                        break;
+
+                    //case MouseHook.MouseMessages.WM_MOUSEWHEEL:
+                    //    break;
+
+                    //case MouseHook.MouseMessages.WM_LBUTTONDOWN:
+                    //    OnMouseDown(MouseButton.Left);
+                    //    break;
+                    //case MouseHook.MouseMessages.WM_RBUTTONDOWN:
+                    //    OnMouseDown(MouseButton.Right);
+                    //    break;
+                    //case MouseHook.MouseMessages.WM_MBUTTONDOWN:
+                    //    OnMouseDown(MouseButton.Middle);
+                    //    break;
+
+                    case MouseHook.MouseMessages.WM_LBUTTONUP:
+                        if(mousedown) OnMouseUp(MouseButton.Left);
+                        break;
+                    case MouseHook.MouseMessages.WM_RBUTTONUP:
+                        if(mousedown) OnMouseUp(MouseButton.Right);
+                        break;
+                    case MouseHook.MouseMessages.WM_MBUTTONUP:
+                        if(mousedown) OnMouseUp(MouseButton.Middle);
+                        break;
+                }
+            };
         }
 
         TileMap tileMap { get => Global.App.TileMap; }
@@ -114,7 +158,6 @@ namespace Mcasaenk.UI.Canvas {
                     tick_accumulation = 0;
                     tick_count = 0;
                 }
-                //window.footer.Region = screen.GetGlobalPos(mousePos);
             }
         }
 
@@ -140,8 +183,6 @@ namespace Mcasaenk.UI.Canvas {
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
 
                     var globalPos = new Point2i(screen.GetGlobalPos(mousePos).Floor());
-                    window.footer.X = globalPos.X;
-                    window.footer.Z = globalPos.Z;
 
                     var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
                     int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
@@ -173,7 +214,6 @@ namespace Mcasaenk.UI.Canvas {
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
             screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
             screenshotPainer.SetManager(screenshotManager);
-            //this.InvalidateVisual();
         }
         public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }
         public void GoTo(Point p) {
@@ -185,19 +225,11 @@ namespace Mcasaenk.UI.Canvas {
 
 
         #region INPUT
-        public Point GetRelativeMouse(Point screenMouse) {
-            Point pos;
-            Dispatcher.Invoke(() => {
-                pos = this.TranslatePoint(window.PointFromScreen(screenMouse), this);
-            });
-            return pos;
-        }
-
         private Point mousePos = default, mouseStart = default;
-        public bool mousedown = false, mousemiddle, mousescreenshot = false;
+        public bool mousein = false, mousedown = false, mousemiddle, mousescreenshot = false;
         public Cursor mousedownCursor;
-        public void OnMouseDown(object sender, MouseButtonEventArgs e) {
-            switch(e.ChangedButton) {
+        public void OnMouseDown(MouseButton button) {
+            switch(button) {
                 case MouseButton.Left:
                     mouseStart = screen.GetGlobalPos(mousePos);
                     mousedown = true;
@@ -224,8 +256,8 @@ namespace Mcasaenk.UI.Canvas {
             }
             this.Focus();
         }
-        public void OnMouseUp(object sender, MouseButtonEventArgs e) {
-            switch(e?.ChangedButton) {
+        public void OnMouseUp(MouseButton button) {
+            switch(button) {
                 case MouseButton.Left:
                     mouseStart = default;
                     mousedown = false;
@@ -284,11 +316,10 @@ namespace Mcasaenk.UI.Canvas {
             int delta = e.Delta > 0 ? 1 : -1;
             if(screen.ZoomScale + delta < Global.App.Settings.MINZOOM || screen.ZoomScale + delta > Global.App.Settings.MAXZOOM) return;
 
-            Point mouseRel = e.GetPosition((IInputElement)sender);
-            Point mouseGl = screen.GetGlobalPos(mouseRel);
+            Point globalMousePos = screen.GetGlobalPos(mousePos);
 
             screen.ZoomScale += delta;
-            screen.Start = mouseGl.Sub(mouseRel.Dev(screen.zoom));
+            screen.Start = globalMousePos.Sub(mousePos.Dev(screen.zoom));
             UpdateUILocation();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
@@ -297,10 +328,6 @@ namespace Mcasaenk.UI.Canvas {
             UpdateUILocation();
         }
         private void OnMouseLeave(object sender, MouseEventArgs e) {
-            //mousePos = default;
-            //mouseStart = default;
-            //origScreenPos = default;
-
             Mouse.OverrideCursor = null;
         }
 

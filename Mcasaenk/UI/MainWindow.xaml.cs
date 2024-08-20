@@ -244,7 +244,6 @@ namespace Mcasaenk.UI {
             currs.Content = Global.App.OpenedSave?.levelDatInfo;
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
             title.Visibility = wrldPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-            //Grid.SetRow(screenshotPanel, Global.App.OpenedSave?.levelDat != null ? 2 : 0);
 
             rad.Reset(Global.App.OpenedSave != null);
 

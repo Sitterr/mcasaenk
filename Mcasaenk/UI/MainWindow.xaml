@@ -8,8 +8,7 @@
         xmlns:resx="clr-namespace:Mcasaenk.Resources"
         xmlns:gl="clr-namespace:Mcasaenk"
         mc:Ignorable="d"
-        
-        
+        SnapsToDevicePixels="True"
         Title="MCA Saenk 1.0" Height="625" Width="1000" MinHeight="400">
 
     <Grid x:Name="mainGrid">
@@ -50,7 +49,7 @@
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
                     <Grid>
                         <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
-                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="10 0 5 0" ContentTemplate="{StaticResource saveTemp_kurz}" VerticalAlignment="Center"/>
+                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="0 0 5 0" ContentTemplate="{StaticResource saveTemp_kurz}" VerticalAlignment="Center"/>
 
                             <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
                                 <StackPanel Orientation="Horizontal">

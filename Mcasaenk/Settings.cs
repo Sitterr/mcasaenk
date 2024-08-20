@@ -103,6 +103,19 @@ namespace Mcasaenk
             PreferHeightmap = PREFERHEIGHTMAPS;
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
         }
+        public bool CHANGED_BACK {
+            get => Y_OFFICIAL != Y ||
+                   ADEG != ADeg ||
+                   BDEG != BDeg ||
+                   SHADE3D != Shade3d ||
+                   MAXCONCURRENCY != RegionConcurrency ||
+                   CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency ||
+                   DRAWMAXCONCURRENCY != DrawConcurrency ||
+                   COLOR_MAPPING_MODE != ColorMapping ||
+                   SHADETYPE != ShadeType ||
+                   PREFERHEIGHTMAPS != PreferHeightmap ||
+                   SKIP_UNKNOWN_BLOCKS != SkipUnknown;
+        }
 
         public bool frozen { get; private set; } = true;
         public void Freeze() {
@@ -117,19 +130,18 @@ namespace Mcasaenk
 
         public void OnAutoChange(string propertyName) {
             OnPropertyChanged(propertyName);
+            OnPropertyChanged(nameof(CHANGED_BACK));
         }
         public void OnLightChange(string propertyName) {
             if(frozen == false) onLightChange(propertyName);
             OnPropertyChanged(propertyName);
         }
         public void OnHardChange(string propertyName) {
+            OnPropertyChanged(propertyName);
+            OnPropertyChanged(nameof(CHANGED_BACK));
             if(frozen) frozenChanges.Add(propertyName); 
             else onHardChange([propertyName]);
-            OnPropertyChanged(propertyName);
         }
-
-
-        public Settings() { }
 
         public static Settings DEF() => new Settings() {
             DIMENSION = "minecraft:overworld",

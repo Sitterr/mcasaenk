@@ -78,10 +78,12 @@ namespace Mcasaenk.UI {
         }
 
         public void OnAddManuallyMod(object sender, RoutedEventArgs e) {
-            var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.FileName = ""; // Default file name
-            dialog.DefaultExt = ".jar"; // Default file extension
-            dialog.Filter = "Jar mods (.jar)|*.jar"; // Filter files by extension
+            var dialog = new Microsoft.Win32.OpenFileDialog() {
+                FileName = "",
+                DefaultExt = ".jar",
+                Filter = "Jar mods (.jar)|*.jar",
+                DefaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods")
+            };
 
             if(dialog.ShowDialog() == true) {
                 using var read = new ZipRead(dialog.FileName);

@@ -29,9 +29,7 @@ namespace Mcasaenk.UI {
             txt_version.Text = App.VERSION;
 
             upd_meth_link.Click += (o, e) => {
-                var window = new UpdateMethodClarifyWindow();
-                window.Owner = Window.GetWindow(this);
-                window.ShowDialog();
+                // depr
             };
             btn_change.Click += (o, e) => {
                 Global.App.Settings.SetFromBack();

@@ -32,7 +32,7 @@ namespace Mcasaenk.Nbt {
 
         public UnmanagedMcaReader(string path) : base(path) {
             int len;
-            using(FileStream _baseStream = new FileStream(path, FileMode.Open, FileAccess.Read)) { // read whole file into unmanaged
+            using(FileStream _baseStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) { // read whole file into unmanaged
                 len = (int)_baseStream.Length;
                 if(len > 0) {
                     memIntPtr = Marshal.AllocHGlobal(len);

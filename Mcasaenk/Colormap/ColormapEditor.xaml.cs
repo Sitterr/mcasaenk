@@ -275,18 +275,12 @@ namespace Mcasaenk.UI {
 
         public void OnSave(object sender, RoutedEventArgs e) {
             if(savepath == "" || savepath == null) {
-                var saveFileDialog = new SaveFileDialog {
-                    Filter = "Colormap|*.zip",
-                    Title = "Save the colormap",
-                    FileName = $"mycolormap",
-                    DefaultDirectory = Path.Combine(Global.App.APPFOLDER, "colormaps"),
-                };
-
-                if(saveFileDialog.ShowDialog() == true) {
-                    savepath = saveFileDialog.FileName;
-                    OnSave(sender, e);
-                    return;
-                }
+                string colormapspath = Path.Combine(Global.App.APPFOLDER, "colormaps");
+                var nameinputdialog = new ChooseNameDialog(colormapspath, ["", ".zip"]);
+                nameinputdialog.ShowDialog();
+                if(nameinputdialog.Result(out string selectedpath)) {
+                    savepath = Path.Combine(colormapspath, selectedpath);
+                } else return;
             }
 
             RawColormap.Save(rawcolormap, savepath);

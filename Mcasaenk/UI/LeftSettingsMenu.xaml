@@ -55,7 +55,7 @@
 
 
 
-                            <Border x:Name="cont_general" Visibility="Visible">
+                            <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -135,7 +135,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -360,9 +360,9 @@
                                                       ItemsSource="{Binding Source={x:Static gl:Global.ViewModel}, Path=AllColormaps}"
                                                       SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
 
-                                            <local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="ViewColormap">
+                                            <!--<local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="ViewColormap">
                                                 <Image Source="{Binding Source={x:Static resx:ResourceMapping.settings}}"/>
-                                            </local:EButton>
+                                            </local:EButton>-->
 
                                             <local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="OnResetBasis">
                                                 <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
@@ -456,7 +456,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="10 0 0 0" Orientation="Vertical" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Margin="10 0 0 0" Orientation="Vertical" VerticalAlignment="Center" Visibility="Hidden">
                     <TextBlock>
                             Update method:
                     </TextBlock>
@@ -469,11 +469,11 @@
                     </DockPanel>
                 </StackPanel>
 
-                <local:EButton x:Name="btn_change" Grid.Column="0" Grid.ColumnSpan="2" Width="140" Margin="10 5 10 5">
+                <local:EButton x:Name="btn_change" Grid.Column="0" Grid.ColumnSpan="2" Width="140" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=CHANGED_BACK, Mode=OneWay}">
                     <TextBlock Text="Update" FontSize="16"/>
                 </local:EButton>
 
-                <local:EButton x:Name="btn_undo" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10 5 10 5">
+                <local:EButton x:Name="btn_undo" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=CHANGED_BACK, Mode=OneWay}">
                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
                 </local:EButton>
 

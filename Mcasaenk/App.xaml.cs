@@ -14,6 +14,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using System.Runtime;
 using System.Text;
 using System.Text.Json;
@@ -26,12 +27,10 @@ namespace Mcasaenk
     /// </summary>
     public partial class App : Application {
 
-        public string APPFOLDER = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "mcasaenk");
+        public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "0.11.0";
+        public const string VERSION = "0.11.1";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -68,7 +67,6 @@ namespace Mcasaenk
                         Settings.Freeze();
 
                         _openedSave.Reset();
-                        //_openedSave = new Save(Global.App.OpenedSave.path, Global.App.OpenedSave.levelDatInfo, Global.App.OpenedSave.datapackInfo);
                         SetWorld();
 
                         if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
@@ -148,6 +146,9 @@ namespace Mcasaenk
                 if(value != null) {
                     SetWorld();
                     if(_openedSave.levelDatInfo.mods.Length > 0) {
+                        Settings.COLOR_MAPPING_MODE = "default";
+                    }
+                    if(Path.Exists(Settings.COLOR_MAPPING_MODE) == false) {
                         Settings.COLOR_MAPPING_MODE = "default";
                     }
                     SetColormap();
