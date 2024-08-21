@@ -1,37 +1,34 @@
-# MCA Saenk /NOT READY/
+# MCA Saenk
 
 #### A highly customizable top-down rendering tool for minecraft which produces beautiful screenshots.
 ![mcasaenk](https://github.com/user-attachments/assets/fc954868-ef88-420e-947a-3ac84f536670)
 
 
 
-## Notable Features
-* **3D shadows**
-* **In-game mapping style**
-* **Colormaps**
-* **Instant settings**
-* **Night view**
-* **Support for mods, datapacks and resourcepacks**
-* **Extensive interface for screenshot capturing**
+## Download
+### Windows universal: [**Download Version 1.0.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0/mcasaenk.zip)
 
+Simply extract the zip file and run the `.exe`. If .NET 8 is already installed, you can download the lightweight framework version
+
+
+
+## Notable Features
+* **3D shadows:** can render accurate pixel-perfect 3D shades from all angles
+* **In-game mapping style:** by calibrating the specific settings, this tool is able to reproduce an exact copy of what minecraft's in-game maps would render
+* **Colormaps:** apart from the 4 build-in distinct colormaps/styles(_default_, _java map_, _bedrock map_, _betaplus_), this tool allows the user to create new styles based on resource packs and mods
+* **Support for mods and datapacks:** can identify and read custom blocks, biomes, and dimensions defined in datapacks and mods
+* **30+ different individual settings:** _contrast_, _lightning_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen real-time and do not require a re-render
+* **Extensive interface for screenshot capturing:** drag and scale a virtual window representing the screenshot, before capturing. Can also export screenshots as in-game minecraft maps
 
 
 ## Supported Versions
-MCA Saenk currently supports every Java Edition release from 1.2.1 up to 1.21+.
-
-
-## Acknowledgments
-This program took much inspiration from the many already existing external mappers(and in this regard with MCA Saenk I tried to combine my favorite parts of each one of those tools). The main ones being:
-- [MCA Selector](https://github.com/Querz/mcaselector)
-- [Mapee](https://www.mapee.net/home)
-- [mcview](https://github.com/kbinani/mcview)
+Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 1.21+.
+Additionally, it strives to support modded worlds(Fabric and Forge), making efforts to extract information about custom blocks, as well as biomes(1.16+) and dimensions(1.16+).
 
 
 
 ## Sample screenshots/1440p/
-![img56](https://github.com/user-attachments/assets/53969416-6cbd-4661-a8c3-eac8bdefe67b)
-
-![img68](https://github.com/user-attachments/assets/9b9a90b8-ac89-4579-9410-22a0d64e26b2)
+![img86](https://github.com/user-attachments/assets/770095bb-9f4e-4e48-ae57-a3ae6d651cba)
 
 ![img21](https://github.com/user-attachments/assets/d0445c4f-7c7b-41fc-9bfb-a7f29e39d319)
 
@@ -44,3 +41,16 @@ This program took much inspiration from the many already existing external mappe
 ![img59](https://github.com/user-attachments/assets/36b88da5-768b-435d-992b-1ae8dfa67494)
 
 ![umg13](https://github.com/user-attachments/assets/a3fad97f-360d-482e-b78b-ae383b85963f)
+
+
+
+## Acknowledgments
+This program took much inspiration from the many already existing external mappers(and in this regard with MCA Saenk I tried to combine and build upon my favorite parts of each one of those tools). The main ones being:
+- [MCA Selector](https://github.com/Querz/mcaselector)
+- [Mapee](https://www.mapee.net/home)
+- [mcview](https://github.com/kbinani/mcview)
+
+
+
+## Honorable mention
+* Bulgarian Dream Team
