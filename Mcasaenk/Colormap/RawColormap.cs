@@ -45,9 +45,10 @@ namespace Mcasaenk.Colormaping {
                 output.SaveLines(tint.name + ".properties", lines);
             }
 
-            output.SaveLines("__palette__.txt", colormap.blocks.Where(bl => {
-                return bl.Value.color.A > 0;
-            }).Select(bl => $"{bl.Key}={bl.Value.color.ToHex(false, false)}"));
+            output.SaveLines("__palette__.txt", colormap.blocks.Select(bl => {
+                if(bl.Value.color.A > 0) return $"{bl.Key}={bl.Value.color.ToHex(false, false)}";
+                else return $"{bl.Key}=-";
+            }));
 
         }
 

@@ -72,9 +72,10 @@ namespace Mcasaenk.Colormaping {
                         blocks[Block.GetId(block.minecraftname())] = new BlockValue() { color = 0xFFFFFFFF, tint = tint };
                     }
                 }
-                foreach(var b in rawmap.blocks) {
-                    ushort id = Block.GetId(b.Key);
+                foreach(var b in rawmap.blocks) {               
                     uint color = b.Value.color.ToUInt();
+                    if(color == 0) continue; // todo
+                    ushort id = Block.GetId(b.Key);
 
                     if(blocks.TryGetValue(id, out var block)) {
                         block.color = color;

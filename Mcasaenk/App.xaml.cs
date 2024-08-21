@@ -30,7 +30,7 @@ namespace Mcasaenk
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.0.1";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 

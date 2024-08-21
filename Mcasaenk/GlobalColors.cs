@@ -25,19 +25,24 @@ namespace Mcasaenk {
         public static WPFColor FromArgb(byte a, byte r, byte g, byte b) => new WPFColor(r, g, b, a);
 
         public static WPFColor FromHex(string hex) {
-            hex = hex.Replace("#", string.Empty);
-            if(hex.Length == 6) {
-                byte r = Convert.ToByte(hex.Substring(0, 2), 16);
-                byte g = Convert.ToByte(hex.Substring(2, 2), 16);
-                byte b = Convert.ToByte(hex.Substring(4, 2), 16);
-                return FromRgb(r, g, b);
-            } else if(hex.Length == 8) {
-                byte a = Convert.ToByte(hex.Substring(0, 2), 16);
-                byte r = Convert.ToByte(hex.Substring(2, 2), 16);
-                byte g = Convert.ToByte(hex.Substring(4, 2), 16);
-                byte b = Convert.ToByte(hex.Substring(6, 2), 16);
-                return FromArgb(r, g, b, a);
-            } else throw new Exception();
+            try {
+                hex = hex.Replace("#", string.Empty);
+                if(hex.Length == 6) {
+                    byte r = Convert.ToByte(hex.Substring(0, 2), 16);
+                    byte g = Convert.ToByte(hex.Substring(2, 2), 16);
+                    byte b = Convert.ToByte(hex.Substring(4, 2), 16);
+                    return FromRgb(r, g, b);
+                } else if(hex.Length == 8) {
+                    byte a = Convert.ToByte(hex.Substring(0, 2), 16);
+                    byte r = Convert.ToByte(hex.Substring(2, 2), 16);
+                    byte g = Convert.ToByte(hex.Substring(4, 2), 16);
+                    byte b = Convert.ToByte(hex.Substring(6, 2), 16);
+                    return FromArgb(r, g, b, a);
+                } else throw new Exception();
+            }
+            catch {
+                return WPFColor.Transparent;
+            }
         }
 
         public static bool operator ==(WPFColor left, WPFColor right) => left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A;
