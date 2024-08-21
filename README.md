@@ -6,7 +6,7 @@
 
 
 ## Download
-### Windows universal: [**Download Version 1.0.0**](https://github.com/Sitterr/mcasaenk/releases/download/1.0.0/MCA_Selector_Setup.exe)
+### Windows universal: [**Download Version 1.0.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0/mcasaenk.zip)
 
 Simply extract the zip file and run the `.exe`. If .NET 8 is already installed, you can download the lightweight framework version
 
