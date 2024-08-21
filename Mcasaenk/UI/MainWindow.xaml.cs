@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.HighPerformance;
 using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
+using Mcasaenk.WorldInfo;
 using Microsoft.Windows.Themes;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
@@ -179,6 +180,18 @@ namespace Mcasaenk.UI {
                 //        }
                 //        )]);
 
+                currs_icon_btn.MouseEnter += (sender, e) => {
+                    currs_icon.Source = WPFBitmap.FromBytes(ResourceMapping.folder).ToBitmapSource();
+                };
+                currs_icon_btn.MouseLeave += (sender, e) => {
+                    currs_icon.Source = Global.App.OpenedSave?.levelDatInfo.image;
+                };
+                currs_icon_btn.Click += (sender, e) => {
+                    if(leftsl.GetActive() != opener_worlds) {
+                        opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                    }
+                };
+
                 Global.App.OpenedSave = null;
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
@@ -241,7 +254,7 @@ namespace Mcasaenk.UI {
                 btn_dim_others.Visibility = Global.App.OpenedSave.dimensions.Any(d => !d.name.StartsWith("minecraft:")) ? Visibility.Visible : Visibility.Collapsed;
             }
 
-            currs.Content = Global.App.OpenedSave?.levelDatInfo;
+            SetCurrs(Global.App.OpenedSave?.levelDatInfo);
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
             title.Visibility = wrldPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
@@ -250,6 +263,18 @@ namespace Mcasaenk.UI {
             canvasControl.Focus();
 
             dim_onchange();
+        }
+
+
+        public void SetCurrs(LevelDatInfo level) {
+            if(level == null) return;
+
+            currs_icon.Source = level.image;
+
+            currs_lastopened.Text = level.lastopened.ToString();
+            currs_folder.Text = level.foldername;
+            currs_name.Text = level.name;
+            currs_version.Text = level.version_name;
         }
 
     }

@@ -96,7 +96,7 @@ namespace Mcasaenk.Rendering {
 
                 embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
-                mapshade(new Span<uint>(pixels, 512 * 512), genData, neighbours, Global.Settings.REVEALED_WATER);
+                mapshade(new Span<uint>(pixels, 512 * 512), colormap, genData, neighbours);
             }
 
 
@@ -184,27 +184,30 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
-        private static void mapshade(Span<uint> pixelBuffer, IGenData gdata, IGenData[,] neighbours, double q) {
+        private static void mapshade(Span<uint> pixelBuffer, Colormap colormap, IGenData gdata, IGenData[,] neighbours) {
             double normal = 1, dark = 180 / 220d, darker = 135 / 220d, light = 255 / 220d;
             dark += (1 - dark) * (0.5 - Global.Settings.CONTRAST) * 2;
             darker += (1 - darker) * (0.5 - Global.Settings.CONTRAST) * 2;
             light -= (light - 1) * (0.5 - Global.Settings.CONTRAST) * 2;
 
-            Point2i p = Global.Settings.MAP_DIRECTION switch {
+            Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
                 Direction.North => new Point2i(0, -1),
                 Direction.South => new Point2i(0, 1),
                 Direction.East => new Point2i(1, 0),
                 Direction.West => new Point2i(-1, 0),
             };
 
+            Func<IGenData, int, short> h = Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla ? (gendata, i) => gendata.heights(i)
+            : (gendata, i) => gendata.terrainHeights(i);
+
             for(int z = 0; z < 512; z++) {
                 for(int x = 0; x < 512; x++) {
                     int i = z * 512 + x;
 
-                    int heightAtComp = gdata.heights(i);
+                    int heightAtComp = h(gdata, i);
                     if(z + p.Z < 0 || z + p.Z >= 512 || x + p.X < 0 || x + p.X >= 512) {
                         if(neighbours[p.X + 1, p.Z + 1] != null) {
-                            heightAtComp = neighbours[p.X + 1, p.Z + 1].heights(Global.Settings.MAP_DIRECTION switch {
+                            heightAtComp = h(neighbours[p.X + 1, p.Z + 1], Global.Settings.Jmap_MAP_DIRECTION switch {
                                 Direction.North => 511 * 512 + x,
                                 Direction.South => 0 * 512 + x,
                                 Direction.East => z * 512 + 0,
@@ -212,30 +215,42 @@ namespace Mcasaenk.Rendering {
                             });
                         }
                     } else {
-                        heightAtComp = gdata.heights(i + p.Z * 512 + p.X);
+                        heightAtComp = h(gdata, i + p.Z * 512 + p.X);
                     }
+
 
                     if(gdata.depth(i)) {
-                        int h = gdata.heights(i) - gdata.terrainHeights(i);
+                        if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla) {
+                            int hd = gdata.heights(i) - gdata.terrainHeights(i);
+                            double q = Global.Settings.Jmap_REVEALED_WATER;
 
-                        if(h > 9 * q) {
-                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
-                        } else if(h <= 2 * q) {
-                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
-                        } else if(h <= 4 * q) {
-                            if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
-                            else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                        } else if(h <= 6 * q) {
-                            pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                        } else if(h <= 9 * q) {
-                            if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                            else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                            if(hd > 9 * q) {
+                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                            } else if(hd <= 2 * q) {
+                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                            } else if(hd <= 4 * q) {
+                                if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                                else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                            } else if(hd <= 6 * q) {
+                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                            } else if(hd <= 9 * q) {
+                                if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
+                                else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                            }
+                        } else if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.translucient) {
+                            uint terrainColor = colormap.Value(gdata.terrainBlock(i)).GetColor(gdata.biomeIds(i), gdata.terrainHeights(i));
+
+                            if(h(gdata, i) < heightAtComp) terrainColor = Global.MultShade(terrainColor, dark);
+                            else if(h(gdata, i) > heightAtComp) terrainColor = Global.MultShade(terrainColor, light);
+
+                            pixelBuffer[i] = Global.Blend(terrainColor, pixelBuffer[i], Global.Settings.WATER_TRANSPARENCY);
                         }
-
-                    } else {                 
-                        if(gdata.heights(i) < heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
-                        else if(gdata.heights(i) > heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
+                    } else {
+                        if(h(gdata, i) < heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
+                        else if(h(gdata, i) > heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
                     }
+
+
                 }
             }
         }

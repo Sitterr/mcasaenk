@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mcasaenk.WorldInfo;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -58,6 +59,22 @@ namespace Mcasaenk.UI
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             throw new NotImplementedException();
+        }
+    }
+    public class GamemodeColorConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value is not Gamemode gm) return "";
+
+            return gm switch { 
+                Gamemode.Survival => (SolidColorBrush)Application.Current.FindResource("LIGHT_YELLOW_B"),
+                Gamemode.Hardcore => (SolidColorBrush)Application.Current.FindResource("LIGHT_RED_B"),
+                Gamemode.Creative => (SolidColorBrush)Application.Current.FindResource("LIGHT_GREEN_B"),
+                _ => (SolidColorBrush)Application.Current.FindResource("FORE"),
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return Math.Round((double)value, System.Convert.ToInt32(parameter));
         }
     }
 
@@ -172,6 +189,7 @@ namespace Mcasaenk.UI
             throw new NotImplementedException();
         }
     }
+
     public class StarConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return (bool)value ? "✶" : "";
@@ -196,6 +214,14 @@ namespace Mcasaenk.UI
     public class EnumToCollectionConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return EnumHelper.GetAllValuesAndDescriptions(value.GetType());
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return null;
+        }
+    }
+    public class EnumToStringConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return ((Enum)value).Description();
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             return null;

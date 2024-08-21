@@ -121,7 +121,6 @@ namespace Mcasaenk.WorldInfo {
         public string version_name { get; private set; }
         public int version_id { get; private set; }
         public long seed { get; private set; }
-        public bool hardcore { get; private set; }
         public ImageSource image { get; private set; }
         public string foldername { get; private set; }
 
@@ -145,6 +144,8 @@ namespace Mcasaenk.WorldInfo {
             this.lastopened = lastopened;
             this.resourcepack = folder.GetFiles().Any(f => f.Name == "resources.zip");
 
+            bool hardcore = false;
+
             var tag = (CompoundTag_Optimal)_tag;
             var data = (CompoundTag_Optimal)tag["Data"];
             {
@@ -167,7 +168,7 @@ namespace Mcasaenk.WorldInfo {
                 } else {
                     this.seed = (NumTag<long>)data["RandomSeed"];
                 }
-                this.hardcore = ((NumTag<sbyte>)data["hardcore"]) > 0;
+                hardcore = ((NumTag<sbyte>)data["hardcore"]) > 0;
                 this.sx = (NumTag<int>)data["SpawnX"];
                 this.sy = (NumTag<int>)data["SpawnY"];
                 this.sz = (NumTag<int>)data["SpawnZ"];
@@ -205,6 +206,9 @@ namespace Mcasaenk.WorldInfo {
                     
                 }
             }
+
+
+            if(hardcore && gamemode == Gamemode.Survival) gamemode = Gamemode.Hardcore;
         }
         private LevelDatInfo() { }
 
@@ -257,5 +261,7 @@ namespace Mcasaenk.WorldInfo {
         Adventure = 2,
         [Description("spectator")]
         Spectator = 3,
+        [Description("hardcore")]
+        Hardcore = 10,
     }
 }

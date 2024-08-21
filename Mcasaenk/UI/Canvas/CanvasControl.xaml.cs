@@ -86,8 +86,6 @@ namespace Mcasaenk.UI.Canvas {
                         pos = off;
 
                         OnMouseMove(pos);
-                        window.footer.X = (int)pos.X;
-                        window.footer.Z = (int)pos.Y;
                         break;
 
                     //case MouseHook.MouseMessages.WM_MOUSEWHEEL:
@@ -183,6 +181,8 @@ namespace Mcasaenk.UI.Canvas {
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
 
                     var globalPos = new Point2i(screen.GetGlobalPos(mousePos).Floor());
+                    window.footer.X = globalPos.X;
+                    window.footer.Z = globalPos.Z;
 
                     var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
                     int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);

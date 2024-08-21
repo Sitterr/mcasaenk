@@ -67,6 +67,13 @@ namespace Mcasaenk
         jmap,
     }
 
+    public enum JsmapWaterMode {
+        [Description("vanilla")]
+        vanilla,
+        [Description("translucient")]
+        translucient,
+    }
+
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
 
@@ -171,7 +178,7 @@ namespace Mcasaenk
             SHADE3D = true, STATIC_SHADE = true,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
-            REVEALED_WATER = 1, MAP_DIRECTION = Direction.North,
+            Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
 
             ADEG = 120, BDEG = 15,
         };
@@ -272,32 +279,46 @@ namespace Mcasaenk
         public double WATER_TRANSPARENCY { get => WaterTransparency; set => WaterTransparency = value; }
 
 
-        private double revealedWater;
+        private double jmaprevealedWater;
         [JsonIgnore]
-        public double RevealedWater {
-            get => revealedWater;
+        public double Jmap_RevealedWater {
+            get => jmaprevealedWater;
             set {
-                if(revealedWater == value) return;
+                if(jmaprevealedWater == value) return;
 
-                revealedWater = value;
-                this.OnLightChange(nameof(RevealedWater));
+                jmaprevealedWater = value;
+                this.OnLightChange(nameof(Jmap_RevealedWater));
             }
         }
-        public double REVEALED_WATER { get => RevealedWater; set => RevealedWater = value; }
+        public double Jmap_REVEALED_WATER { get => Jmap_RevealedWater; set => Jmap_RevealedWater = value; }
 
 
-        private Direction mapdirection;
+        private JsmapWaterMode jmapwatermode;
         [JsonIgnore]
-        public Direction MapDirection {
-            get => mapdirection;
+        public JsmapWaterMode Jmap_WaterMode {
+            get => jmapwatermode;
             set {
-                if(mapdirection == value) return;
+                if(jmapwatermode == value) return;
 
-                mapdirection = value;
-                this.OnLightChange(nameof(MapDirection));
+                jmapwatermode = value;
+                this.OnLightChange(nameof(Jmap_WaterMode));
             }
         }
-        public Direction MAP_DIRECTION { get => MapDirection; set => MapDirection = value; }
+        public JsmapWaterMode Jmap_WATER_MODE { get => Jmap_WaterMode; set => Jmap_WaterMode = value; }
+
+
+        private Direction jmapmapdirection;
+        [JsonIgnore]
+        public Direction Jmap_MapDirection {
+            get => jmapmapdirection;
+            set {
+                if(jmapmapdirection == value) return;
+
+                jmapmapdirection = value;
+                this.OnLightChange(nameof(Jmap_MapDirection));
+            }
+        }
+        public Direction Jmap_MAP_DIRECTION { get => Jmap_MapDirection; set => Jmap_MapDirection = value; }
 
 
         private int sunlight;

@@ -137,7 +137,7 @@ namespace Mcasaenk
                 } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
                     this.RegisterRedraw();
 
-                    var tile = map.GetTile(pos + Global.Settings.MAP_DIRECTION switch { 
+                    var tile = map.GetTile(pos + Global.Settings.Jmap_MAP_DIRECTION switch { 
                         Direction.North => new Point2i(0, 1),
                         Direction.South => new Point2i(0, -1),
                         Direction.East => new Point2i(-1, 0),
@@ -182,7 +182,7 @@ namespace Mcasaenk
                 }
             } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
                 neighbours = new GenData[3, 3];
-                Point2i p = Global.Settings.MAP_DIRECTION switch {
+                Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
                     Direction.North => new Point2i(0, -1),
                     Direction.South => new Point2i(0, 1),
                     Direction.East => new Point2i(1, 0),

@@ -30,7 +30,7 @@ namespace Mcasaenk
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "0.11.1";
+        public const string VERSION = "0.11.2";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -113,6 +113,7 @@ namespace Mcasaenk
         }
 
         protected override void OnExit(ExitEventArgs e) {
+            MouseHook.Stop();
             if(!Directory.Exists(APPFOLDER)) Directory.CreateDirectory(APPFOLDER);
 
             string json = JsonSerializer.Serialize(this.Settings, new JsonSerializerOptions() { WriteIndented = true });

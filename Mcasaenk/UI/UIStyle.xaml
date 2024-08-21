@@ -17,6 +17,8 @@
     <local:DifferenceBoolConverter x:Key="DifferenceBoolConverter"/>
     <local:PlusNumberConverter x:Key="PlusNumberConverter"/>
     <local:VisibilityMultConverter x:Key="VisibilityMultConverter"/>
+    <local:EnumToStringConverter x:Key="EnumToStringConverter"/>
+    <local:GamemodeColorConverter x:Key="GamemodeColorConverter"/>
 
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
@@ -919,10 +921,14 @@ TargetType="{x:Type ScrollBar}">
             <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
                 <Run Text="{Binding Path=name, Mode=OneTime}" FontSize="16"/>
                 
+               <Run Text="/" FontSize="10"/><!--
+            --><Run Text="{Binding Path=gamemode, Mode=OneTime, Converter={StaticResource EnumToStringConverter}}" FontSize="10" Foreground="{Binding Path=gamemode, Mode=OneTime, Converter={StaticResource GamemodeColorConverter}}"/><!--
+            --><Run Text="/," FontSize="10"/>
+                
                 <Run Text="/" FontSize="10"/><!--
              --><Run Text="{Binding Path=version_name, Mode=OneTime}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
              --><Run Text="/" FontSize="10"/>
-                
+
             </TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">
                 <Run Text="{Binding Path=foldername, Mode=OneTime}"/>
@@ -951,46 +957,6 @@ TargetType="{x:Type ScrollBar}">
             <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}" />
         </DataTemplate.Resources>
     </DataTemplate>
-
-
-    <DataTemplate x:Key="saveTemp_kurz" DataType="{x:Type worldinfo:LevelDatInfo}">
-        <Grid Margin="10 0 10 0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48" />
-                <ColumnDefinition Width="7" />
-                <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-            </Grid.RowDefinitions>
-
-            <local:EButton Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BackgroundH="{StaticResource BACK}" BackgroundP="{StaticResource BACK}" BorderBrush="{StaticResource BORDER}">
-                <Image Source="{Binding Path=image, Mode=OneTime}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-            </local:EButton>
-            <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
-                <Run Text="{Binding Path=name, Mode=OneTime}" FontSize="16"/>
-                
-                <Run Text="/" FontSize="10"/><!--
-             --><Run Text="{Binding Path=version_name, Mode=OneTime}" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
-             --><Run Text="/" FontSize="10"/>
-
-            </TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">
-                <Run Text="{Binding Path=foldername, Mode=OneTime}"/>
-                <Run Text="("/><!--
-             --><Run Text="{Binding Path=lastopened, Mode=OneTime}"/><!--
-             --><Run Text=")"/>
-            </TextBlock>
-
-        </Grid>
-        <DataTemplate.Resources>
-            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}" />
-        </DataTemplate.Resources>
-    </DataTemplate>
-
-
 
 
 

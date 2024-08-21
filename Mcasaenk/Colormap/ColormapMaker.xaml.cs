@@ -82,7 +82,7 @@ namespace Mcasaenk.UI {
                 FileName = "",
                 DefaultExt = ".jar",
                 Filter = "Jar mods (.jar)|*.jar",
-                DefaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods")
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods")
             };
 
             if(dialog.ShowDialog() == true) {

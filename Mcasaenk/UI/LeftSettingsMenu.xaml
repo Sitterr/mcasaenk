@@ -262,7 +262,7 @@
                                         </Grid>
 
 
-                                        <TextBlock Text="Water settings" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
+                                        <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -313,25 +313,61 @@
                                                     <Run Text="direction"/>
                                                 </TextBlock>
                                                 <ComboBox Margin="10 0 0 0"
-                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=MapDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_MapDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                                   SelectedValuePath="Value"
                                                   DisplayMemberPath="Description"
-                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=MapDirection}"/>
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_MapDirection}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto"/>
+                                                <RowDefinition Height="2"/>
+                                                <RowDefinition Height="auto" MinHeight="10"/>
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Orientation="Horizontal">
+                                                <TextBlock VerticalAlignment="Center">
+                                                    <Run Text="water mode"/>
+                                                </TextBlock>
+                                                <ComboBox Margin="10 0 0 0"
+                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedValuePath="Value"
+                                                  DisplayMemberPath="Description"
+                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode}"/>
                                             </StackPanel>
 
-                                            <DockPanel Grid.Row="0" Grid.Column="2">
+                                            <DockPanel Grid.Row="0" Grid.Column="2"
+                                                       Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}">
                                                 <TextBlock Text="revealed depth"/>
-                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
                                             </DockPanel>
                                             <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
-                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=RevealedWater}"/>
+                                                    Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}"
+                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater}"/>
+
+                                            <DockPanel Grid.Row="0" Grid.Column="2"
+                                                       Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}">
+                                                <TextBlock Text="transparency"/>
+                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+                                            <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                                    Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}"
+                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
                                         </Grid>
                                     </StackPanel>
 
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Visible">
+                            <Border x:Name="cont_color" Visibility="Collapsed">
                                 <StackPanel>
 
                                     <Grid Margin="10 0 10 0">

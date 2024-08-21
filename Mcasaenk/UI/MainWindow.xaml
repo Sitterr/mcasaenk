@@ -49,7 +49,36 @@
                 <Border Grid.Row="0" VerticalAlignment="Stretch" CornerRadius="3" Background="{StaticResource BACK}">
                     <Grid>
                         <DockPanel x:Name="wrldPanel" Visibility="Collapsed">
-                            <ContentControl MaxWidth="300" x:Name="currs" HorizontalAlignment="Left" Margin="0 0 5 0" ContentTemplate="{StaticResource saveTemp_kurz}" VerticalAlignment="Center"/>
+
+                            <Grid x:Name="currs" Margin="10 0 15 0" MaxWidth="300" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48" />
+                                    <ColumnDefinition Width="7" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
+
+                                <local:EButton x:Name="currs_icon_btn" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="48" BorderThickness="1" BorderBrush="{StaticResource BORDER}">
+                                    <Image x:Name="currs_icon" Style="{StaticResource fullbtnimg}" Margin="-0.5 -0.2 0 0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                </local:EButton>
+                                <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Top">
+                                    <Run x:Name="currs_name" FontSize="16"/>
+        
+                                    <Run Text="/" FontSize="10"/><!--
+                                 --><Run x:Name="currs_version" FontSize="10" Foreground="{StaticResource LIGHT_BLUE_B}"/><!--
+                                 --><Run Text="/" FontSize="10"/>
+                                </TextBlock>
+                                <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontSize="12">
+                                    <Run x:Name="currs_folder"/>
+                                    <Run Text="("/><!--
+                                 --><Run x:Name="currs_lastopened"/><!--
+                                 --><Run Text=")"/>
+                                </TextBlock>
+                            </Grid>
 
                             <Border x:Name="dim_bor" DockPanel.Dock="Right" HorizontalAlignment="Right" Height="48" Margin="5 0 10 0">
                                 <StackPanel Orientation="Horizontal">
