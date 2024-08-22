@@ -105,7 +105,7 @@ namespace Mcasaenk {
             this.tileMap = new TileMap(this, ExistingRegions());
         }
 
-        public (int height, int miny) GetHeight() => (info.height, info.miny);
+        public (short height, short miny, short defheight) GetHeight() => (info.height, info.miny, info.defHeight);
 
         public string GetRegionPath(Point2i pos) {
             return Path.Combine(path, $"r.{pos.X}.{pos.Z}.mca");

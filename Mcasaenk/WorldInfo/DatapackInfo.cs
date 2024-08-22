@@ -276,8 +276,9 @@ namespace Mcasaenk.WorldInfo {
         public bool fromparts;
 
         public string name;
-        public int miny = 0;
-        public int height = 256;
+        public short miny = 0;
+        public short height = 256;
+        public short defHeight = short.MaxValue;
         public double ambientLight;
         public string effects;
 
@@ -285,7 +286,7 @@ namespace Mcasaenk.WorldInfo {
 
 
         public string[] ToParts() {
-            return [name, height.ToString(), miny.ToString(), Math.Round(ambientLight, 2).ToString(), effects];
+            return [name, height.ToString(), miny.ToString(), defHeight.ToString(), Math.Round(ambientLight, 2).ToString(), effects];
         }
 
         public static DimensionInfo FromParts(string[] parts) {
@@ -293,10 +294,11 @@ namespace Mcasaenk.WorldInfo {
                 fromparts = true,
 
                 name = parts[0],
-                height = Convert.ToInt32(parts[1]),
-                miny = Convert.ToInt32(parts[2]),
-                ambientLight = Convert.ToDouble(parts[3]),
-                effects = parts[4],
+                height = Convert.ToInt16(parts[1]),
+                miny = Convert.ToInt16(parts[2]),
+                defHeight = Convert.ToInt16(parts[3]),
+                ambientLight = Convert.ToDouble(parts[4]),
+                effects = parts[5],
             };
         }
 
@@ -306,10 +308,10 @@ namespace Mcasaenk.WorldInfo {
             DimensionInfo info = new DimensionInfo() { name = name };
 
             if(json.TryGetValue("height", out var height)) {
-                info.height = height.GetInt32();
+                info.height = height.GetInt16();
             }
             if(json.TryGetValue("min_y", out var min_y)) {
-                info.miny = min_y.GetInt32();
+                info.miny = min_y.GetInt16();
             }
             if(json.TryGetValue("ambient_light", out var ambient_light)) {
                 info.ambientLight = ambient_light.GetDouble();

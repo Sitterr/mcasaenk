@@ -62,7 +62,7 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseWheel += OnMouseWheel;
             this.MouseDown += (o, e) => OnMouseDown(e.ChangedButton);
             this.MouseUp += (o, e) => OnMouseUp(e.ChangedButton);
-            //this.MouseMove += (a, e) => OnMouseMove(e.GetPosition(this));
+            this.MouseMove += (a, e) => { if(!mousedown) OnMouseMove(e.GetPosition(this)); };
             this.MouseLeave += OnMouseLeave;
 
             this.KeyDown += OnKeyDown;
@@ -82,10 +82,12 @@ namespace Mcasaenk.UI.Canvas {
             MouseHook.MouseEvent += (pos, button) => {
                 switch(button) {
                     case MouseHook.MouseMessages.WM_MOUSEMOVE:
-                        var off = pos.Add(this.PointFromScreen(new Point(0, 0)));
-                        pos = off;
+                        if(mousedown) {
+                            var off = pos.Add(this.PointFromScreen(new Point(0, 0)));
+                            pos = off;
 
-                        OnMouseMove(pos);
+                            OnMouseMove(pos);
+                        }
                         break;
 
                     //case MouseHook.MouseMessages.WM_MOUSEWHEEL:
@@ -116,9 +118,14 @@ namespace Mcasaenk.UI.Canvas {
 
         TileMap tileMap { get => Global.App.TileMap; }
         MainWindow window { get => Global.App.Window; }
-        public void OnTilemapChanged() { 
+        public void OnTilemapChanged(bool dimchange) { 
             scenePainter.SetTileMap(tileMap);
             screenshotManager = null;
+
+            if(dimchange) {
+                screen.Mid = new Point(0, 0);
+                UpdateUILocation();
+            }
 
             msg.Visibility = Visibility.Collapsed;
             if(tileMap != null) {

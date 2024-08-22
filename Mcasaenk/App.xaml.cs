@@ -30,7 +30,7 @@ namespace Mcasaenk
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "1.0.1";
+        public const string VERSION = "1.0.2";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -67,7 +67,7 @@ namespace Mcasaenk
                         Settings.Freeze();
 
                         _openedSave.Reset();
-                        SetWorld();
+                        SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
 
                         if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
                             SetColormap();
@@ -145,7 +145,7 @@ namespace Mcasaenk
 
                 _openedSave = value;
                 if(value != null) {
-                    SetWorld();
+                    SetWorld(true);
                     if(_openedSave.levelDatInfo.mods.Length > 0) {
                         Settings.COLOR_MAPPING_MODE = "default";
                     }
@@ -154,8 +154,6 @@ namespace Mcasaenk
                     }
                     SetColormap();
                     
-
-                    Settings.Y_OFFICIAL = Settings.MAXY;
                 }
 
                 Settings.FinishFreeze(false);
@@ -176,17 +174,17 @@ namespace Mcasaenk
 
             Window.OnColormapChange();
         }
-        void SetWorld() {
+        void SetWorld(bool dimchange) {
             RAND = Global.rand.NextDouble();
 
             {
                 if(_openedSave.GetDimension(Global.Settings.DIMENSION) == null) {
-                    Global.Settings.DIMENSION = Settings.DEF().DIMENSION;
+                    Global.Settings.DIMENSION = "minecraft:overworld";
                 }
                 var h = _openedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
-                Settings.MINY = (short)h.miny;
-                Settings.MAXABSHEIGHT = (short)h.height;
-                Settings.Y_OFFICIAL = Settings.Y_OFFICIAL;
+                Settings.MINY = h.miny;
+                Settings.MAXABSHEIGHT = h.height;
+                Settings.Y_OFFICIAL = dimchange ? h.defheight : Settings.Y_OFFICIAL;
             }
 
             ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
@@ -195,7 +193,7 @@ namespace Mcasaenk
             TileMap.SetSettings();
 
             Window.OnHardReset();
-            Window.canvasControl.OnTilemapChanged();
+            Window.canvasControl.OnTilemapChanged(dimchange);
 
             GC.Collect(2, GCCollectionMode.Forced);
 

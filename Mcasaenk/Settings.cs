@@ -151,9 +151,6 @@ namespace Mcasaenk
         }
 
         public static Settings DEF() => new Settings() {
-            DIMENSION = "minecraft:overworld",
-            Y_OFFICIAL = 319,
-
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
@@ -727,7 +724,7 @@ namespace Mcasaenk
 
                 predefined_reses = value;
                 OnAutoChange(nameof(PredifinedReses));
-                Global.App.Window?.rad.PreDefined(value);
+                if(this == Global.App.Settings) Global.App.Window?.rad.PreDefined(value);
             }
         }
         public Resolution[] PREDEFINEDRES { get => PredifinedReses; set => PredifinedReses = value; }
