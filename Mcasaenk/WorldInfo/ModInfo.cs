@@ -15,7 +15,7 @@ namespace Mcasaenk.WorldInfo {
         public ModsInfo(LevelDatInfo levelDat) {
             mods = new List<(PackMetadata meta, ZipRead read)>();
             if(levelDat.mods.Length > 0) {
-                foreach(var exmod in Directory.GetFiles(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods"))) {
+                foreach(var exmod in Global.FromFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods"), true, false)) {
                     if(Path.GetExtension(exmod) != ".jar") continue;
                     ZipRead read = new ZipRead(exmod);
                     if(PackMetadata.ReadModMeta(read, out var meta) == false) continue;

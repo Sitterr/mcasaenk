@@ -78,7 +78,7 @@ namespace Mcasaenk {
         }
         public WPFBitmap ReadBitmap(string path) => ReadFromFile(Path.Combine(baselocation, path));
 
-        public string[] GetFiles(string path) => Directory.GetFiles(Path.Combine(baselocation, path));
+        public string[] GetFiles(string path) => Global.FromFolder(Path.Combine(baselocation, path), true, false).ToArray();
     }
 
     public class FileSave : SaveInterface {

@@ -236,7 +236,7 @@ namespace Mcasaenk.UI {
         public void OnActive() {          
             List<LevelDatInfo> levels = new();
             int br = 0;
-            foreach(var dir in Directory.GetDirectories(Global.Settings.McDir).Shuffle()) {
+            foreach(var dir in Global.FromFolder(Global.Settings.McDir, false, true).Shuffle()) {
                 var level = LevelDatInfo.ReadWorld(dir);
                 if(level == null) continue;
 

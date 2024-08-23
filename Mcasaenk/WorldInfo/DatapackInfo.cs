@@ -149,7 +149,7 @@ namespace Mcasaenk.WorldInfo {
 
             string path = Path.Combine(path_world, "datapacks");
             if(Path.Exists(path)) {
-                foreach(var fileorfolder in Directory.GetFiles(path, "", SearchOption.TopDirectoryOnly).Concat(Directory.GetDirectories(path, "", SearchOption.TopDirectoryOnly))) {
+                foreach(var fileorfolder in Global.FromFolder(path, true, true)) {
                     string name = Global.ReadName(fileorfolder);
                     var read = ReadInterface.GetSuitable(fileorfolder);
                     if(PackMetadata.ReadPackMeta(read, name, out var meta) == false) continue;

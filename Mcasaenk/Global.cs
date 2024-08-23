@@ -45,6 +45,26 @@ namespace Mcasaenk {
             }
         }
 
+        public static List<string> FromFolder(string path, bool files, bool folders) {
+            if(Path.Exists(path) == false) return [];
+
+            List<string> res = new List<string>();
+            if(files) res.AddRange(Directory.GetFiles(path));
+            if(folders) res.AddRange(Directory.GetDirectories(path));
+
+            return res;
+        }
+        public static string ReadName(string fileorfolder, bool extention=true) {
+            string filename = extention ? Path.GetFileName(fileorfolder) : Path.GetFileNameWithoutExtension(fileorfolder);
+            if(filename == string.Empty) filename = Path.GetDirectoryName(fileorfolder);
+            return filename;
+        }
+
+
+
+
+
+
         private static int[] pows2;
         public static int Pow2(int i) { 
             return pows2[i];
@@ -211,12 +231,6 @@ namespace Mcasaenk {
             options.Converters.Add(new Global.HexConverter());
             options.Converters.Add(new JsonStringEnumConverter());
             return options;
-        }
-
-        public static string ReadName(string fileorfolder) { 
-            string filename = Path.GetFileName(fileorfolder);
-            if(filename == string.Empty) filename = Path.GetDirectoryName(fileorfolder);
-            return filename;
         }
 
         public static class Coord {

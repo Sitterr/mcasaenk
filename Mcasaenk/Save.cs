@@ -114,12 +114,10 @@ namespace Mcasaenk {
         private HashSet<Point2i> ExistingRegions() {
             var set = new HashSet<Point2i>();
 
-            if(Directory.Exists(this.path)) {
-                foreach(var file in Directory.GetFiles(this.path)) {
-                    var match = regionNamingConvention.Match(file);
-                    if(match.Success) {
-                        set.Add(new Point2i(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value)));
-                    }
+            foreach(var file in Global.FromFolder(this.path, true, false)) {
+                var match = regionNamingConvention.Match(file);
+                if(match.Success) {
+                    set.Add(new Point2i(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value)));
                 }
             }
 

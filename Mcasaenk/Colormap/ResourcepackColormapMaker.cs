@@ -147,7 +147,9 @@ namespace Mcasaenk.Colormaping {
                     // custom
                     {
                         if(pack.ExistsFile(Path.Combine(colormapdir, "custom"))) {
-                            foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "custom"), "*.properties")) {
+                            foreach(var file in Global.FromFolder(Path.Combine(colormapdir, "custom"), true, false)) {
+                                if(!file.EndsWith(".properties")) continue;
+
                                 var r = Tint.ReadTint(pack, file);
 
                                 colormap.tints.Add(r);
@@ -158,7 +160,9 @@ namespace Mcasaenk.Colormaping {
                         }
 
                         if(pack.ExistsFile(Path.Combine(colormapdir, "blocks"))) {
-                            foreach(var file in Directory.GetFiles(Path.Combine(colormapdir, "blocks"), "*.properties")) {
+                            foreach(var file in Global.FromFolder(Path.Combine(colormapdir, "blocks"), true, false)) {
+                                if(!file.EndsWith(".properties")) continue;
+
                                 var r = Tint.ReadTint(pack, file, Path.Combine(colormapdir, "custom"));
 
                                 colormap.tints.Add(r);

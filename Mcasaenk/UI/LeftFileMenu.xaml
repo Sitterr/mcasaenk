@@ -84,7 +84,7 @@
                                 <Border Height="1" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
                                 <StackPanel x:Name="javaCont" Margin="0 0 0 20"/>
 
-                                <StackPanel x:Name="emptyCont" HorizontalAlignment="Center" Margin="0 0 0 20" Visibility="Collapsed">
+                                <StackPanel x:Name="emptyCont" HorizontalAlignment="Center" Margin="0 40 0 20" Visibility="Collapsed">
                                     <TextBlock Text="Cannot find any worlds here!" FontSize="24" Foreground="{StaticResource LIGHT_RED_B}"/>
                                 </StackPanel>
                                 

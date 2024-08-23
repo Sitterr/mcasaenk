@@ -61,17 +61,11 @@ namespace Mcasaenk.UI {
             list_available.OItems.Clear();
             list_selected.OItems.Clear();
 
-            foreach(var file in Directory.GetFiles(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "resourcepacks"))) {
-                using var zipread = new ZipRead(file);
-                if(PackMetadata.ReadPackMeta(zipread, Path.GetFileName(file), out var meta) == false) continue;
+            foreach(var fileorfolder in Global.FromFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "resourcepacks"), true, true)) {
+                using var read = ReadInterface.GetSuitable(fileorfolder);
+                if(PackMetadata.ReadPackMeta(read, Global.ReadName(fileorfolder), out var meta) == false) continue;
                 list_available.OItems.Add(meta);
             }
-            foreach(var folder in Directory.GetDirectories(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "resourcepacks"))) {
-                using var foldread = new FileRead(folder);
-                if(PackMetadata.ReadPackMeta(foldread, new DirectoryInfo(folder).Name, out var meta) == false) continue;
-                list_available.OItems.Add(meta);
-            }
-
 
             string defpath = Path.Combine(Global.App.APPFOLDER, "vanilla_resource_pack.zip");
             if(File.Exists(defpath)) list_selected.OItems.Add(new PackMetadata(defpath, "Default", WPFBitmap.FromBytes(ResourceMapping.default_pack).ToBitmapSource(), "The default look and feel of Minecraft"));

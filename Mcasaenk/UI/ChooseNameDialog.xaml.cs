@@ -21,8 +21,9 @@ namespace Mcasaenk.UI {
         private bool saved = false;
         public ChooseNameDialog(string folder, string[] allowedextensions) {
             InitializeComponent();
+            if(Path.Exists(folder) == false) Directory.CreateDirectory(folder);
 
-            var notallowed = Directory.GetFiles(folder).Select(f => Path.GetFileName(f)).Concat(Directory.GetDirectories(folder).Select(d => new DirectoryInfo(d).Name));
+            var notallowed = Global.FromFolder(folder, true, true).Select(f => Global.ReadName(f));
 
             Regex regex = new Regex("^[\\w\\-]+" + "(" + string.Join('|', allowedextensions) + ")$");
 
@@ -44,6 +45,8 @@ namespace Mcasaenk.UI {
                 }
            
             };
+            txt_name.Text = "";
+            txt_name.Focus();
 
             btn_save.Click += (o, e) => { 
                 saved = true;
