@@ -202,5 +202,9 @@ namespace Mcasaenk
             Settings.OnAutoChange(nameof(Settings.MAXABSHEIGHT));
             Settings.OnAutoChange(nameof(Settings.ABSY));
         }
+
+        public void Reset() {
+            SetWorld(false);
+        }
     }
 }

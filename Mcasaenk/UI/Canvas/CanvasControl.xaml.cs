@@ -66,6 +66,7 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseLeave += OnMouseLeave;
 
             this.KeyDown += OnKeyDown;
+            this.KeyUp += OnKeyUp; ;
 
             secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
             CompositionTarget.Rendering += OnFastTick;
@@ -353,6 +354,11 @@ namespace Mcasaenk.UI.Canvas {
                     screenshotManager.Move(new Point(0, 1));
                     e.Handled = true;
                 }
+            }
+        }
+        private void OnKeyUp(object sender, KeyEventArgs e) {
+            if(e.Key == Key.F5) {
+                Global.App.Reset();
             }
         }
         #endregion
