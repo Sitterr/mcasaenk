@@ -106,13 +106,11 @@ namespace Mcasaenk.UI {
 
         }
 
-        private void OnResetBasis(object sender, RoutedEventArgs e) {
-            Global.ViewModel.AllColormaps = null;
-        }
-
         private void OnCreateColormap(object sender, RoutedEventArgs e) {
-            new RespackMakerWindow(OperationMode.ColormapMaker, null).ShowDialog();
-            OnResetBasis(sender, e);
+            var w = new RespackMakerWindow(OperationMode.ColormapMaker, null);
+            w.ShowDialog();
+            Global.ViewModel.AllColormaps = null;
+            Global.Settings.ColorMapping = w.ColormapResult();
         }
 
         private void ViewColormap(object sender, RoutedEventArgs e) {

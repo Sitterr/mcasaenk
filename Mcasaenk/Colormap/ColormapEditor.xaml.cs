@@ -47,7 +47,7 @@ namespace Mcasaenk.UI {
             tintblockcounts = null;
         }
 
-        private string savepath;
+        public string savepath;
 
         public void SetUp(RawColormap rawcolormap, Options options, string title, Brush titleColor, bool showall, string savepath = null) {
             //this.Dispatcher.Invoke(new Action(() => { 

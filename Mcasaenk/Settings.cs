@@ -479,7 +479,7 @@ namespace Mcasaenk
             else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping + ".zip"))) path = Path.Combine(Global.App.APPFOLDER, Global.App.ID, "colormaps", colormapping + ".zip");
             else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping))) path = Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping);
             else if(Path.Exists(Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping + ".zip"))) path = Path.Combine(Global.App.APPFOLDER, "colormaps", colormapping + ".zip");
-            else path = Settings.DEF().COLOR_MAPPING_MODE;
+            else path = "default";
             return path;
         }
 

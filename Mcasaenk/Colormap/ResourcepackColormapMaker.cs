@@ -64,15 +64,13 @@ namespace Mcasaenk.Colormaping {
                         if(textures.Count == 0) {
                             colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, creationMethod = BlockCreationMethod.None } });
                         } else {
-                            ConsoleColor color = ConsoleColor.DarkYellow;
-
                             var answer = ColorOfTexture(textures.First().Value.image);
                             colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
                         }
 
                     } else {
                         if(el.textures != null) {
-                            foreach(var t in el.textures) {
+                            foreach(var t in el.textures.OrderBy(t => t.Value.StartsWith("#"))) {
                                 if(t.Value.StartsWith("#")) {
                                     textures[t.Key] = textures[t.Value.Substring(1)];
                                 } else {

@@ -149,7 +149,7 @@ namespace Mcasaenk
                     if(_openedSave.levelDatInfo.mods.Length > 0) {
                         Settings.COLOR_MAPPING_MODE = "default";
                     }
-                    if(Path.Exists(Settings.COLOR_MAPPING_MODE) == false) {
+                    if(Path.Exists(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)) == false) {
                         Settings.COLOR_MAPPING_MODE = "default";
                     }
                     SetColormap();

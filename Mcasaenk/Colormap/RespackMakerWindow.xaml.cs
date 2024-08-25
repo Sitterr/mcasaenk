@@ -52,6 +52,10 @@ namespace Mcasaenk.UI {
             GC.Collect(2, GCCollectionMode.Aggressive);
         }
 
+        public string ColormapResult() {
+            return Global.ReadName(colormap_editor.savepath);
+        }
+
         private async void ColormapMakerClosed() {
             colormap_maker.Visibility= Visibility.Collapsed;
 

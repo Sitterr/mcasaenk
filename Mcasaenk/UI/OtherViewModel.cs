@@ -24,6 +24,7 @@ namespace Mcasaenk.UI
                     "default" => 4,
                     "java map" => 3,
                     "bedrock map" => 2,
+                    "betaplus" => 1,
                     _ => 0,
                 }).ToList();
 

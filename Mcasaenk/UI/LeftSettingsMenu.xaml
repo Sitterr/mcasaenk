@@ -135,7 +135,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Visible">
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -367,7 +367,7 @@
 
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Collapsed">
+                            <Border x:Name="cont_color" Visibility="Visible">
                                 <StackPanel>
 
                                     <Grid Margin="10 0 10 0">
@@ -400,9 +400,9 @@
                                                 <Image Source="{Binding Source={x:Static resx:ResourceMapping.settings}}"/>
                                             </local:EButton>-->
 
-                                            <local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="OnResetBasis">
+                                            <!--<local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="OnResetBasis">
                                                 <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
-                                            </local:EButton>
+                                            </local:EButton>-->
 
                                         </StackPanel>
 
