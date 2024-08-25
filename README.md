@@ -6,16 +6,16 @@
 
 
 ## Download
-### Windows universal: [**Download Version 1.0.3**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.3/mcasaenk-1.0.3.zip)
-### Windows framework-dependent: [**Download Version 1.0.3**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.3/mcasaenk-1.0.3-framework.zip)
-Simply extract the zip file and run the `.exe`. If .NET 8 is already installed, you can download the lightweight framework version
+### Windows universal: [**Download Version 1.0.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.3/mcasaenk-1.0.3.zip)
+### Windows framework-dependent: [**Download Version 1.0.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.3/mcasaenk-1.0.3-framework.zip)
+Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
 
 ## Notable Features
 * **3D shadows:** can render accurate pixel-perfect 3D shades from all angles
 * **In-game mapping style:** by calibrating the specific settings, this tool is able to reproduce an exact copy of what minecraft's in-game maps would render
-* **Colormaps:** apart from the 4 build-in distinct colormaps/styles(_default_, _java map_, _bedrock map_, _betaplus_), this tool allows the user to create new styles based on resource packs and mods
+* **Colormaps:** apart from the 4 build-in distinct styles(_default_, _java map_, _bedrock map_, _betaplus_), this tool allows you to create new styles based on resource packs(vanilla and optifine) and mods
 * **Support for mods and datapacks:** can identify and read custom blocks, biomes, and dimensions defined in datapacks and mods
 * **30+ different individual settings:** _contrast_, _lightning_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen real-time and do not require a re-render
 * **Extensive interface for screenshot capturing:** drag and scale a virtual window representing the screenshot, before capturing. Can also export screenshots as in-game minecraft maps
