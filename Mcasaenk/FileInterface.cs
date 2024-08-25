@@ -34,7 +34,7 @@ namespace Mcasaenk {
         WPFBitmap ReadBitmap(string path);
      
 
-        string[] GetFiles(string path);
+        string[] GetFiles(string path, bool toponly = true);
 
 
         public static ReadInterface GetSuitable(string path) {
@@ -78,7 +78,7 @@ namespace Mcasaenk {
         }
         public WPFBitmap ReadBitmap(string path) => ReadFromFile(Path.Combine(baselocation, path));
 
-        public string[] GetFiles(string path) => Global.FromFolder(Path.Combine(baselocation, path), true, false).ToArray();
+        public string[] GetFiles(string path, bool toponly = true) => Global.FromFolder(Path.Combine(baselocation, path), true, false, toponly).ToArray();
     }
 
     public class FileSave : SaveInterface {
@@ -134,9 +134,11 @@ namespace Mcasaenk {
             using var streamReader = new StreamReader(stream);
             return streamReader.ReadToEnd();
         }
-        public IEnumerable<string> ReadAllLines(string path) => this.ReadAllText(path).Split(Environment.NewLine);
+        public IEnumerable<string> ReadAllLines(string path) => this.ReadAllText(path).Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         public WPFBitmap ReadBitmap(string path) {
-            if(entries.TryGetValue(path, out var res) == false) return null;
+            if(entries.TryGetValue(path, out var res) == false) {
+                return null;
+            }
             using var stream = res.Open();
             MemoryStream mstream = new MemoryStream(); // ??!?!?!?!?!?!?!??!?!?!?!?!
             stream.CopyTo(mstream); // ??!?!?!?!?!?!?!??!?!?!?!?!
@@ -170,9 +172,12 @@ namespace Mcasaenk {
               ?!??!?!?!?!?!?!?!?!!?!?!?!?!?!?!?!?!?!?!?!?!?!??!!??!!??!!?!?!?!?!?!?!??!?!?!?!?!?!?!?!??!?!?!?!?!?!?!?!?!?!??!?!?!?!?!?!?
               ?!??!?!?!?!?!?!?!?!!?!?!?!?!?!?!?!?!?!?!?!?!?!??!!??!!??!!?!?!?!?!?!?!??!?!?!?!?!?!?!?!??!?!?!?!?!?!?!?!?!?!??!?!?!?!?!?!?  */
         }
+        private static string[] sep = ["/", "\\", "\\\\"];
+        public string[] GetFiles(string path, bool toponly = true) { 
+            var all = entries.Keys.Where(ek => ek.StartsWith(path));
+            if(toponly) all = all.Where(p => sep.Any(x => p.Substring(path.Length).Contains(x)) == false);
 
-        public string[] GetFiles(string path) { 
-            return entries.Keys.Where(ek => ek.StartsWith(path)).ToArray();
+            return all.ToArray();
         }
     }
 

@@ -18,6 +18,7 @@ namespace Mcasaenk.Colormaping {
         public List<string> blocks;
         public WPFBitmap image;
         public WPFColor color;
+        public int yOffset;
     }
     public class RawColormap {
         public Dictionary<string, RawBlock> blocks;
@@ -40,6 +41,7 @@ namespace Mcasaenk.Colormaping {
                 if(!(tint.format == "fixed" && tint.blocks.Count == 1 && tint.blocks[0].minecraftname() == tint.name.minecraftname())) lines.Add($"blocks={string.Join(" ", tint.blocks.Select(bl => bl.simplifyminecraftname()))}");
                 if(tint.image != null) lines.Add($"source={tint.name}.png");
                 if(tint.format == "fixed") lines.Add($"color={tint.color.ToHex(false, false)}");
+                if(tint.yOffset != 0) lines.Add($"yOffset={tint.yOffset}");
 
                 if(tint.image != null) output.SaveImage(tint.name + ".png", tint.image);
                 output.SaveLines(tint.name + ".properties", lines);

@@ -56,7 +56,8 @@ namespace Mcasaenk.Colormaping {
             RawTint tint = new RawTint() {
                 name = Path.GetFileNameWithoutExtension(path_properties),
                 format = "vanilla",
-                color = WPFColor.White
+                color = WPFColor.White,
+                yOffset = 0,
             };
             tint.blocks = [tint.name.minecraftname()];
             string source = tint.name + ".png";
@@ -79,11 +80,13 @@ namespace Mcasaenk.Colormaping {
                     case "color":
                         tint.color = WPFColor.FromHex(line.Substring(line.IndexOf("=") + 1).Trim());
                         break;
+                    case "yOffset":
+                        int.TryParse(line.Substring(line.IndexOf("=") + 1).Trim(), out tint.yOffset);
+                        break;
                 }
             }
 
-            if(relbase != "") tint.image = read.ReadBitmap(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path_properties), source), relbase));
-            else tint.image = read.ReadBitmap(Path.Combine(Path.GetDirectoryName(path_properties), source));
+            tint.image = read.ReadBitmap(Global.GetFullPath(source, relbase));
             return tint;
         }
     }
@@ -211,13 +214,15 @@ namespace Mcasaenk.Colormaping {
     public class GridTint : Tint {
         private readonly string name;
         private uint[,] sprite;
+        private int offset;
 
         private bool heightparity;
         private readonly DynamicTintSettings settings = new DynamicTintSettings();
-        public GridTint(string name, uint[,] sprite) {
+        public GridTint(string name, int offset, uint[,] sprite) {
             this.name = name;
-
+            this.offset = offset;
             this.sprite = sprite;
+
             if(sprite == null) this.sprite = new uint[1, 1];
 
             heightparity = true;
@@ -238,7 +243,7 @@ namespace Mcasaenk.Colormaping {
         uint Tint.TintColorFor(ushort biome, short height) {
             int x = settings.On ? biome : Global.Settings.DEFBIOME;
             if(x >= sprite.GetLength(0) || x < 0) x = Global.Settings.DEFBIOME;
-            int y = Math.Clamp(height, 0, sprite.GetLength(1) - 1);
+            int y = Math.Clamp(height - offset, 0, sprite.GetLength(1) - 1);
             return sprite[x, y];
         }
 

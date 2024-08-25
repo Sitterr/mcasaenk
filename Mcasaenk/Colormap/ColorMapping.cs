@@ -62,7 +62,7 @@ namespace Mcasaenk.Colormaping {
                     if(format != null) {
                         if(format.tintclass == typeof(OrthodoxVanillaTint)) tint = new OrthodoxVanillaTint(t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(HardcodedVanillaTint)) tint = new HardcodedVanillaTint(t.name, t.format, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(GridTint)) tint = new GridTint(t.name, sprite);
+                        else if(format.tintclass == typeof(GridTint)) tint = new GridTint(t.name, t.yOffset, sprite);
                         else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(t.name, t.color.ToUInt());
                     }
 

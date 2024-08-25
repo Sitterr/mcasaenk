@@ -77,8 +77,9 @@ namespace Mcasaenk.UI {
 
 
                 foreach(var block in rawcolormap.blocks) {
+                    var t = rawcolormap.tints.FirstOrDefault(t => t.blocks.Contains(block.Key));
                     var warningstips = tipsFor(block.Key, block.Value);
-                    if(showall == false && warningstips.warnings.Count == 0 && warningstips.tips.Count == 0 && rawcolormap.tints.Any(t => t.blocks.Contains(block.Key)) == false) continue;
+                    if(showall == false && warningstips.warnings.Count == 0 && warningstips.tips.Count == 0 && t == default) continue;
 
                     blgrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
                     blgrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(3) });
@@ -102,14 +103,15 @@ namespace Mcasaenk.UI {
                     color.SetBinding(WidthProperty, colorwidthbinding);
                     ComboBox combo_tint = new ComboBox();
                     combo_tint.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    
                     if(block.Value.details == null) {
                         combo_tint.Visibility = Visibility.Visible;
                     } else {
-                        combo_tint.Visibility = block.Value.details.shouldTint ? Visibility.Visible : Visibility.Hidden;
+                        combo_tint.Visibility = (block.Value.details.shouldTint || t != default) ? Visibility.Visible : Visibility.Hidden;
                     }
                     if(combo_tint.Visibility == Visibility.Visible) {
                         combo_tint.ItemsSource = tints;
-                        var t = rawcolormap.tints.FirstOrDefault(t => t.blocks.Contains(block.Key));
+                        
                         if(t != null) combo_tint.SelectedItem = t.name;
                         else combo_tint.SelectedIndex = 0;
                     }

@@ -62,7 +62,7 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseWheel += OnMouseWheel;
             this.MouseDown += (o, e) => OnMouseDown(e.ChangedButton);
             this.MouseUp += (o, e) => OnMouseUp(e.ChangedButton);
-            this.MouseMove += (a, e) => { if(!mousedown) OnMouseMove(e.GetPosition(this)); };
+            this.MouseMove += (a, e) => { if(!mousedown || !mousehook) OnMouseMove(e.GetPosition(this)); };
             this.MouseLeave += OnMouseLeave;
 
             this.KeyDown += OnKeyDown;
@@ -75,45 +75,52 @@ namespace Mcasaenk.UI.Canvas {
 
             this.Loaded += CanvasControl_Loaded;
         }
+#if DEBUG
+        bool mousehook = false;
+#else
+        bool mousehook = true;
+#endif
 
         private void CanvasControl_Loaded(object sender, RoutedEventArgs e) {
-            MouseHook.Start();
+            if(mousehook) {
+                MouseHook.Start();
 
-            MouseHook.MouseEvent += (pos, button) => {
-                switch(button) {
-                    case MouseHook.MouseMessages.WM_MOUSEMOVE:
-                        if(mousedown) {
-                            var off = pos.Add(this.PointFromScreen(new Point(0, 0)));
-                            pos = off;
+                MouseHook.MouseEvent += (pos, button) => {
+                    switch(button) {
+                        case MouseHook.MouseMessages.WM_MOUSEMOVE:
+                            if(mousedown) {
+                                var off = pos.Add(this.PointFromScreen(new Point(0, 0)));
+                                pos = off;
 
-                            OnMouseMove(pos);
-                        }
-                        break;
+                                OnMouseMove(pos);
+                            }
+                            break;
 
-                    //case MouseHook.MouseMessages.WM_MOUSEWHEEL:
-                    //    break;
+                        //case MouseHook.MouseMessages.WM_MOUSEWHEEL:
+                        //    break;
 
-                    //case MouseHook.MouseMessages.WM_LBUTTONDOWN:
-                    //    OnMouseDown(MouseButton.Left);
-                    //    break;
-                    //case MouseHook.MouseMessages.WM_RBUTTONDOWN:
-                    //    OnMouseDown(MouseButton.Right);
-                    //    break;
-                    //case MouseHook.MouseMessages.WM_MBUTTONDOWN:
-                    //    OnMouseDown(MouseButton.Middle);
-                    //    break;
+                        //case MouseHook.MouseMessages.WM_LBUTTONDOWN:
+                        //    OnMouseDown(MouseButton.Left);
+                        //    break;
+                        //case MouseHook.MouseMessages.WM_RBUTTONDOWN:
+                        //    OnMouseDown(MouseButton.Right);
+                        //    break;
+                        //case MouseHook.MouseMessages.WM_MBUTTONDOWN:
+                        //    OnMouseDown(MouseButton.Middle);
+                        //    break;
 
-                    case MouseHook.MouseMessages.WM_LBUTTONUP:
-                        if(mousedown) OnMouseUp(MouseButton.Left);
-                        break;
-                    case MouseHook.MouseMessages.WM_RBUTTONUP:
-                        if(mousedown) OnMouseUp(MouseButton.Right);
-                        break;
-                    case MouseHook.MouseMessages.WM_MBUTTONUP:
-                        if(mousedown) OnMouseUp(MouseButton.Middle);
-                        break;
-                }
-            };
+                        case MouseHook.MouseMessages.WM_LBUTTONUP:
+                            if(mousedown) OnMouseUp(MouseButton.Left);
+                            break;
+                        case MouseHook.MouseMessages.WM_RBUTTONUP:
+                            if(mousedown) OnMouseUp(MouseButton.Right);
+                            break;
+                        case MouseHook.MouseMessages.WM_MBUTTONUP:
+                            if(mousedown) OnMouseUp(MouseButton.Middle);
+                            break;
+                    }
+                };
+            }
         }
 
         TileMap tileMap { get => Global.App.TileMap; }

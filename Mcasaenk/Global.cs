@@ -45,16 +45,18 @@ namespace Mcasaenk {
             }
         }
 
-        public static List<string> FromFolder(string path, bool files, bool folders) {
+        public static List<string> FromFolder(string path, bool files, bool folders, bool toponly = true) {
             if(Path.Exists(path) == false) return [];
 
             List<string> res = new List<string>();
-            if(files) res.AddRange(Directory.GetFiles(path));
-            if(folders) res.AddRange(Directory.GetDirectories(path));
+            SearchOption searchOption = toponly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
+            if(files) res.AddRange(Directory.GetFiles(path, "", searchOption));
+            if(folders) res.AddRange(Directory.GetDirectories(path, "", searchOption));
 
             return res;
         }
         public static string ReadName(string fileorfolder, bool extention=true) {
+            if(fileorfolder == null || fileorfolder == "") return "";
             string filename = extention ? Path.GetFileName(fileorfolder) : Path.GetFileNameWithoutExtension(fileorfolder);
             if(filename == string.Empty) filename = Path.GetDirectoryName(fileorfolder);
             return filename;
@@ -150,6 +152,33 @@ namespace Mcasaenk {
             return bitmap;
         }
 
+        public static string GetFullPath(string relativePath, string basePath) {
+            // Combine the paths
+            string combinedPath = Path.Combine(basePath, relativePath);
+
+            // Split the combined path into individual components
+            string[] pathSegments = combinedPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            // Use a stack to handle the segments
+            Stack<string> pathStack = new Stack<string>();
+
+            foreach(var segment in pathSegments) {
+                if(segment == "..") {
+                    if(pathStack.Count > 0) {
+                        // Go up one directory level
+                        pathStack.Pop();
+                    }
+                } else if(segment != "." && segment != "") {
+                    // Add segment to path stack
+                    pathStack.Push(segment);
+                }
+            }
+
+            // Reconstruct the full path
+            string fullPath = string.Join(Path.DirectorySeparatorChar.ToString(), pathStack.Reverse().ToArray());
+
+            return fullPath;
+        }
 
         public static Color FromArgb(double alpha, Color baseColor) {
             return Color.FromArgb((byte)(alpha * 255), baseColor.R, baseColor.G, baseColor.B);

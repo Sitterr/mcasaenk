@@ -140,12 +140,12 @@ namespace Mcasaenk.Colormaping {
                 // optifine tints
                 foreach(var pack in reversepacks) {
                     var colormapdir = Path.Combine("assets", "minecraft", "optifine", "colormap");
-                    if(!pack.ExistsFile(colormapdir)) continue;
+                    if(!pack.ExistsFolder(colormapdir)) continue;
 
                     // custom
                     {
-                        if(pack.ExistsFile(Path.Combine(colormapdir, "custom"))) {
-                            foreach(var file in Global.FromFolder(Path.Combine(colormapdir, "custom"), true, false)) {
+                        if(pack.ExistsFolder(Path.Combine(colormapdir, "custom"))) {
+                            foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "custom"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
                                 var r = Tint.ReadTint(pack, file);
@@ -157,11 +157,11 @@ namespace Mcasaenk.Colormaping {
                             }
                         }
 
-                        if(pack.ExistsFile(Path.Combine(colormapdir, "blocks"))) {
-                            foreach(var file in Global.FromFolder(Path.Combine(colormapdir, "blocks"), true, false)) {
+                        if(pack.ExistsFolder(Path.Combine(colormapdir, "blocks"))) {
+                            foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "blocks"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
-                                var r = Tint.ReadTint(pack, file, Path.Combine(colormapdir, "custom"));
+                                var r = Tint.ReadTint(pack, file);
 
                                 colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
