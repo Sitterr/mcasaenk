@@ -1,6 +1,6 @@
 # MCA Saenk
 
-#### A highly customizable top-down rendering tool for minecraft which produces beautiful screenshots.
+#### A highly customizable top-down rendering tool for Minecraft which produces beautiful screenshots.
 ![mcasaenk](https://github.com/user-attachments/assets/fc954868-ef88-420e-947a-3ac84f536670)
 
 
@@ -49,8 +49,3 @@ This program took much inspiration from the many already existing external mappe
 - [MCA Selector](https://github.com/Querz/mcaselector)
 - [Mapee](https://www.mapee.net/home)
 - [mcview](https://github.com/kbinani/mcview)
-
-
-
-## Honorable mention
-* Bulgarian Dream Team
