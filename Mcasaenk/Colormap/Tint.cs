@@ -88,28 +88,30 @@ namespace Mcasaenk.Colormaping {
         }
     }
 
-    public class TintFormat {
+    public class TintMeta {
         public readonly Type tintclass;
         public readonly string format, kurzformat;
-        private TintFormat(string format, string kurzformat, Type tintclass) {
+        public readonly int maxblend; // the upper bound is hypotetically 1025
+        private TintMeta(string format, string kurzformat, int maxblend, Type tintclass) {
             this.format = format;
             this.kurzformat = kurzformat;
             this.tintclass = tintclass;
+            this.maxblend = maxblend;
         }
 
-        public static TintFormat[] formats = [
-            new TintFormat("vanilla", "vn", typeof(OrthodoxVanillaTint)),
-            new TintFormat("vanilla_grass", "vn_g", typeof(HardcodedVanillaTint)),
-            new TintFormat("vanilla_foliage", "vn_f", typeof(HardcodedVanillaTint)),
-            new TintFormat("vanilla_water", "vn_w", typeof(HardcodedVanillaTint)),
-            new TintFormat("fixed", "fx", typeof(FixedTint)),
-            new TintFormat("grid", "gr", typeof(GridTint)),
+        public static TintMeta[] formats = [
+            new TintMeta("vanilla", "vn", 32 + 1, typeof(OrthodoxVanillaTint)),
+            new TintMeta("vanilla_grass", "vn_g", 32 + 1, typeof(Vanilla_Grass)),
+            new TintMeta("vanilla_foliage", "vn_f", 32 + 1, typeof(Vanilla_Foliage)),
+            new TintMeta("vanilla_water", "vn_w", 128 + 1, typeof(Vanilla_Water)),
+            new TintMeta("fixed", "fx", 32 + 1, typeof(FixedTint)),
+            new TintMeta("grid", "gr", 32 + 1, typeof(GridTint)),
         ];
 
-        public static TintFormat GetFormat(string format) {
+        public static TintMeta GetFormat(string format) {
             return formats.FirstOrDefault(f => format == f.format || format == f.kurzformat);
         }
-        public static TintFormat GetFormat(Type tintclass) {
+        public static TintMeta GetFormat(Type tintclass) {
             foreach(var tint in formats) {
                 if(tint.tintclass == tintclass) return tint;
             }
@@ -149,17 +151,16 @@ namespace Mcasaenk.Colormaping {
         }
     }
     public class HardcodedVanillaTint : Tint {
-        private readonly string name, tint, kurzformat;
+        private readonly string name, tint;
         private readonly int version;
         private uint[,] sprite;
 
         private DatapacksInfo datapacksInfo;
         private DynamicVanillaTintSettings settings = new DynamicVanillaTintSettings();
 
-        public HardcodedVanillaTint(string name, string format, int version, uint[,] sprite, DatapacksInfo datapackInfo) {
+        protected HardcodedVanillaTint(string name, string format, int version, uint[,] sprite, DatapacksInfo datapackInfo) {
             this.name = name;
-            var tformat = TintFormat.GetFormat(format);
-            this.tint = tformat.format.Replace("vanilla_", "");
+            this.tint = format.Replace("vanilla_", "");
             this.version = version;
             datapacksInfo = datapackInfo;
 
@@ -181,8 +182,17 @@ namespace Mcasaenk.Colormaping {
             if(settings.TemperatureVariation > 0 && (tint == "grass" || tint == "foliage")) return Blending.full;
             else return Blending.biomeonly;
         }
-
     }
+    public class Vanilla_Grass : HardcodedVanillaTint {
+        public Vanilla_Grass(string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(name, TintMeta.GetFormat(typeof(Vanilla_Grass)).format, version, sprite, datapackInfo) { }
+    }
+    public class Vanilla_Foliage : HardcodedVanillaTint {
+        public Vanilla_Foliage(string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(name, TintMeta.GetFormat(typeof(Vanilla_Foliage)).format, version, sprite, datapackInfo) { }
+    }
+    public class Vanilla_Water : HardcodedVanillaTint {
+        public Vanilla_Water(string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(name, TintMeta.GetFormat(typeof(Vanilla_Water)).format, version, sprite, datapackInfo) { }
+    }
+
     public class FixedTint : Tint { // for every block its own tint
         private readonly string name;
 

@@ -174,7 +174,7 @@ namespace Mcasaenk
 
             SHADE3D = true, STATIC_SHADE = true,
 
-            WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
+            WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true, OCEAN_DEPTH_BLENDING = 1,
             Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
 
             ADEG = 120, BDEG = 15,
@@ -274,6 +274,20 @@ namespace Mcasaenk
             }
         }
         public double WATER_TRANSPARENCY { get => WaterTransparency; set => WaterTransparency = value; }
+
+
+        private int oceanBlending;
+        [JsonIgnore]
+        public int OceanDepthBlending {
+            get => oceanBlending;
+            set {
+                if(oceanBlending == value) return;
+
+                oceanBlending = value;
+                this.OnLightChange(nameof(OceanDepthBlending));
+            }
+        }
+        public int OCEAN_DEPTH_BLENDING { get => OceanDepthBlending; set => OceanDepthBlending = value; }
 
 
         private double jmaprevealedWater;

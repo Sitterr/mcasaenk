@@ -69,6 +69,13 @@ namespace Mcasaenk {
         public static int Pow2(int i) { 
             return pows2[i];
         }
+        public static double Pow(double a, double b) {
+            double res = Math.Pow(Math.Abs(a), b);
+            if(a < 0 && b < 1) {
+                if((1 / b) % 2 == 1) res = -res;
+            }
+            return res;
+        }
 
         public static void Time(Action func, out long time) {
             var st = Stopwatch.StartNew();

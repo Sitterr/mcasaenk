@@ -58,10 +58,12 @@ namespace Mcasaenk.Colormaping {
                 foreach(var t in rawmap.tints) {
                     var sprite = t.image?.ToBitmapSource()?.ToUIntMatrix();
                     Tint tint = NullTint.Tint;
-                    var format = TintFormat.GetFormat(t.format);
+                    var format = TintMeta.GetFormat(t.format);
                     if(format != null) {
                         if(format.tintclass == typeof(OrthodoxVanillaTint)) tint = new OrthodoxVanillaTint(t.name, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(HardcodedVanillaTint)) tint = new HardcodedVanillaTint(t.name, t.format, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Grass)) tint = new Vanilla_Grass(t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Foliage)) tint = new Vanilla_Foliage(t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Water)) tint = new Vanilla_Water(t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(GridTint)) tint = new GridTint(t.name, sprite);
                         else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(t.name, t.color.ToUInt());
                     }
@@ -168,7 +170,7 @@ namespace Mcasaenk.Colormaping {
         }
         public DynamicTintSettings() {
             On = true;
-            Blend = 7;
+            Blend = 9;
         }
 
         private Action onLightChange;

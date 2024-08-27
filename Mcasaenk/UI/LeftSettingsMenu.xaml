@@ -279,6 +279,7 @@
                                                 <RowDefinition Height="auto" MinHeight="10"/>
                                             </Grid.RowDefinitions>
 
+                                            
                                             <DockPanel Grid.Row="0" Grid.Column="0">
                                                 <TextBlock Text="transparency"/>
                                                 <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
@@ -286,11 +287,23 @@
                                             <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
+                                            <DockPanel Grid.Row="0" Grid.Column="2">
+                                                <TextBlock Text="ocean smoothness"/>
+                                                <TextBlock HorizontalAlignment="Right">
+                                                    <TextBlock.Text>
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="OceanDepthBlending" StringFormat="{}{0}x{0}"/>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DockPanel>
+                                            <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="65" TickFrequency="4" IsSnapToTickEnabled="True"
+                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=OceanDepthBlending}"/>
 
-                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
-                                                <TextBlock Text="softer depth shade"/>
+
+                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="4" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
+                                                <TextBlock Text="softer water shade"/>
                                                 <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
                                             </StackPanel>
+
                                         </Grid>
 
                                     </StackPanel>

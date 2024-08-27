@@ -171,7 +171,7 @@ namespace Mcasaenk.UI {
                 int i = 0;
                 tintblockcounts = new List<TextBlock>();
                 foreach(var tint in rawcolormap.tints) {
-                    var format = TintFormat.GetFormat(tint.format);
+                    var format = TintMeta.GetFormat(tint.format);
                     tintgrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(64) });
                     tintgrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(10) });
 
