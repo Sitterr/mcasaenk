@@ -65,8 +65,9 @@ namespace Mcasaenk.Rendering {
             if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
 
                 int maxdepth = Global.App.Settings.MAXABSHEIGHT;
-                double transparency = 1d / maxdepth + 0.90 * Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 6) + (0.10 - 1d / maxdepth) * Global.App.Settings.WATER_TRANSPARENCY;
+                double transparency = 50 * Global.Settings.WATER_TRANSPARENCY + Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 10) * (maxdepth - 50);
                 double transparency2 = Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 0.1);
+                
                 double contrast = 0.70 * Math.Pow(Global.App.Settings.CONTRAST, 10) + 0.17 * Math.Pow(Global.App.Settings.CONTRAST, 2) + 0.08 * Global.App.Settings.CONTRAST;
 
                 for(int i = 0; i < 512 * 512; i++) {
@@ -81,9 +82,7 @@ namespace Mcasaenk.Rendering {
                             if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = ratio;
                             pixels[i] = Global.Blend(terrainColor, pixels[i], ratio);
 
-                            waterDepth = (int)Math.Min(waterDepth, transparency * maxdepth);
-
-                            double multintensity = Math.Pow(10.0, -5 * contrast * waterDepth / (transparency * maxdepth));
+                            double multintensity = Math.Pow(10.0, -5 * contrast * Math.Min(waterDepth / transparency, 1));
                             pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
                         }
                     }
@@ -94,7 +93,7 @@ namespace Mcasaenk.Rendering {
                 double q = 12 * Global.App.Settings.CONTRAST;
                 if(Global.App.Settings.SHADE3D) q = q / 2;
 
-                embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+                embossshade(new Span<uint>(pixels, 512 * 512), genData, fd, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
                 mapshade(new Span<uint>(pixels, 512 * 512), colormap, genData, neighbours);
             }
@@ -118,7 +117,8 @@ namespace Mcasaenk.Rendering {
                     //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
                 }
                 // option 1:
-                sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
+                sh = Math.Clamp(sh + Global.Settings.BLOCK_LIGHT / 15d * genData.blockLights(i) * Global.Settings.WaterTransparency * 2, 0, 15);
+                //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
                 // option 2:
                 //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
 
@@ -144,7 +144,7 @@ namespace Mcasaenk.Rendering {
             return m + (1 - Math.Pow(10.0, b * ((double)x / (319 + 64)))) * (1 - m); //!!!
         }
 
-        private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
+        private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, Span<double> fd, double cosA, double sinA, double q) {
             int index = 0;
             for(int z = 0; z < 512; z++) {
                 for(int x = 0; x < 512; x++, index++) {
@@ -156,19 +156,19 @@ namespace Mcasaenk.Rendering {
 
                     {
                         if(z == 0) {
-                            zShade = (gdata.heights(index + 512)) - (gdata.heights(index));
+                            zShade = (gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index));
                         } else if(z == 512 - 1) {
-                            zShade = (gdata.heights(index)) - (gdata.heights(index - 512));
+                            zShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 512));
                         } else {
-                            zShade = ((gdata.heights(index + 512)) - (gdata.heights(index - 512))) * 2;
+                            zShade = ((gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index - 512))) * 2;
                         }
 
                         if(x == 0) {
-                            xShade = (gdata.heights(index + 1)) - (gdata.heights(index));
+                            xShade = (gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index));
                         } else if(x == 512 - 1) {
-                            xShade = (gdata.heights(index)) - (gdata.heights(index - 1));
+                            xShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 1));
                         } else {
-                            xShade = ((gdata.heights(index + 1)) - (gdata.heights(index - 1))) * 2;
+                            xShade = ((gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index - 1))) * 2;
                         }
 
                         double shade = -(cosA * xShade + -sinA * zShade);
@@ -179,7 +179,9 @@ namespace Mcasaenk.Rendering {
                             shade = 8;
                         }
 
-                        pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * q), (int)(shade * q), (int)(shade * q));
+                        int fq = (int)(shade * q * fd[index]);
+
+                        pixelBuffer[index] = Global.AddShade(pixelBuffer[index], fq, fq, fq);
                     }
                 }
             }
