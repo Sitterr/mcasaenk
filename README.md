@@ -6,8 +6,8 @@
 
 
 ## Download
-### Windows universal: [**Download Version 1.0.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.4/mcasaenk-1.0.4.zip)
-### Windows framework-dependent: [**Download Version 1.0.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.0.4/mcasaenk-1.0.4-framework.zip)
+### Windows universal: [**Download Version 1.1.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.0/mcasaenk-1.1.0.zip)
+### Windows framework-dependent: [**Download Version 1.1.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.0/mcasaenk-1.1.0-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
