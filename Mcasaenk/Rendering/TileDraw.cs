@@ -125,12 +125,12 @@ namespace Mcasaenk.Rendering {
                     //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
                 }
                 // option 1:
-                sh = Math.Clamp(sh + Global.Settings.BLOCK_LIGHT / 15d * genData.blockLights(i) * Global.Settings.WaterTransparency * 2, 0, 15);
+                sh = Math.Clamp(sh * fd[i] + Global.Settings.BLOCK_LIGHT / 15d * genData.blockLights(i) * fd[i], 0, 15);
                 //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
                 // option 2:
                 //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
 
-                sh = sh / 15;
+                sh = (sh / 15) / fd[i];
                 pixels[i] = Global.MultShade(pixels[i], sh, sh, sh);
             }
 
