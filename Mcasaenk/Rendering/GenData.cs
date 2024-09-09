@@ -1,6 +1,7 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Shade3d;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,42 +12,47 @@ using System.Threading.Tasks;
 using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Rendering {
-    public interface IGenData {
-        public ushort terrainBlock(int i);
 
-        public ushort block(int i);
+    public class GenData { // 72bit
+        public ushort[] _blockIds;
+        private ushort[] _blockIds_OG, _blocksIds_temp;
 
-        public ushort biomeIds(int i);
+        public ushort[] _biomeIds;
+        private ushort[] _biomeIds_OG, _biomeIds_temp;
 
-        public short heights(int i);
+        public short[] _heights;
+        private short[] _heights_OG, _heights_temp;
 
-        public short terrainHeights(int i);
+        public short[] _terrainHeights;
+        private short[] _terrainHeights_OG, _terrainHeights_temp;
 
-        public bool depth(int i);
-        public byte blockLights(int i);
+        public bool[] _isShade;
+        private bool[] _isShade_OG, _isShade_temp;
 
-        public bool isShade(int i);
-        public void Set_isShade(int i, bool value);
-    }
-
-    public class GenData : IGenData { // 72bit
-        private ushort[] _blockIds;
-        private ushort[] _biomeIds;
-        private short[] _heights;
-        private short[] _terrainHeights;
-        private bool[] _isShade;
-        private byte[] _blocklights;
+        public byte[] _blocklights;
+        private byte[] _blocklights_OG, _blockslights_temp;
 
         private ushort depthblock;
         public GenData(RawData rawData, ushort depthblock) { 
-            this._blockIds = rawData.blockIds;
-            this._biomeIds = rawData.biomeIds;
-            this._heights = rawData.heights;
-            this._terrainHeights = rawData.terrainHeights;
-            this._isShade = new bool[512 * 512];
-            this._blocklights = rawData.blockLights;
+            this._blockIds = this._blockIds_OG = rawData.blockIds;
+            this._biomeIds = this._biomeIds_OG = rawData.biomeIds;
+            this._heights = this._heights_OG = rawData.heights;
+            this._terrainHeights = this._terrainHeights_OG = rawData.terrainHeights;
+            this._isShade = this._isShade_OG = new bool[512 * 512];
+            this._blocklights = this._blocklights_OG = rawData.blockLights;
 
             this.depthblock = depthblock;
+        }
+        public void SetTemporal_TerrainHeights() {
+            _terrainHeights = _terrainHeights_temp = ArrayPool<short>.Shared.Rent(512 * 512);
+            for(int i=0;i<512*512;i++) _terrainHeights_temp[i] = _terrainHeights_OG[i];
+        }
+        public void ClearTemporal() {
+            if(_terrainHeights_temp != null) {
+                _terrainHeights = _terrainHeights_OG;
+                ArrayPool<short>.Shared.Return(_terrainHeights_temp);
+                _terrainHeights_temp = null;
+            }
         }
 
         public bool depth(int i) => heights(i) != terrainHeights(i);

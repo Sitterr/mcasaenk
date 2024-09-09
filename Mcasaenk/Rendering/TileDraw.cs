@@ -22,7 +22,7 @@ namespace Mcasaenk.Rendering {
     public static class TileDraw {
 
         public static long drawTime = 0, drawCount = 1;
-        public unsafe static void FillPixels(uint* pixels, Colormap colormap, IGenData genData, IGenData[,] neighbours) {
+        public unsafe static void FillPixels(uint* pixels, Colormap colormap, GenData genData, GenData[,] neighbours) {
             var st = Stopwatch.StartNew();
             //uint[] tintcolors = very_temp.Rent(512 * 512);
 
@@ -49,6 +49,14 @@ namespace Mcasaenk.Rendering {
                 }
             }
 
+            if(Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
+                genData.SetTemporal_TerrainHeights();
+                fixed(short* _terrainHeights = genData._terrainHeights) {
+                    GausBlur.BoxBlur<TerrHeightBlur, short, TerrHeightBlurData>((Global.Settings.OCEAN_DEPTH_BLENDING - 1) / 2, _terrainHeights, new TerrHeightBlurData() { mindiff = 15 }, TerrHeightBlur.pool, neighbours);
+                }
+            }
+
+
             for(int i = 0; i < 512 * 512; i++) {
                 var blockid = genData.block(i);
                 var block = colormap.Value(blockid);
@@ -64,10 +72,11 @@ namespace Mcasaenk.Rendering {
             Array.Fill<double>(fd, 1);
             if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
 
-                int maxdepth = Global.App.Settings.MAXABSHEIGHT;
-                double transparency = 1d / maxdepth + 0.90 * Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 6) + (0.10 - 1d / maxdepth) * Global.App.Settings.WATER_TRANSPARENCY;
+                //int maxdepth = Global.App.Settings.MAXABSHEIGHT;
+                //double transparency = 50 * Global.Settings.WATER_TRANSPARENCY + Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 10) * (maxdepth - 50);
                 double transparency2 = Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 0.1);
-                double contrast = 0.70 * Math.Pow(Global.App.Settings.CONTRAST, 10) + 0.17 * Math.Pow(Global.App.Settings.CONTRAST, 2) + 0.08 * Global.App.Settings.CONTRAST;
+                
+                //double contrast = 0.70 * Math.Pow(Global.App.Settings.CONTRAST, 10) + 0.17 * Math.Pow(Global.App.Settings.CONTRAST, 2) + 0.08 * Global.App.Settings.CONTRAST;
 
                 for(int i = 0; i < 512 * 512; i++) {
                     var block = genData.block(i);
@@ -78,12 +87,10 @@ namespace Mcasaenk.Rendering {
                             int waterDepth = genData.heights(i) - genData.terrainHeights(i);
 
                             double ratio = Math.Pow(2, -4 * (1 - transparency2) * (waterDepth + 3));
-                            if(Global.App.Settings.WATER_SMART_SHADE) fd[i] = ratio;
+                            fd[i] = ratio;
                             pixels[i] = Global.Blend(terrainColor, pixels[i], ratio);
 
-                            waterDepth = (int)Math.Min(waterDepth, transparency * maxdepth);
-
-                            double multintensity = Math.Pow(10.0, -5 * contrast * waterDepth / (transparency * maxdepth));
+                            double multintensity = Math.Pow(fd[i], 0.75) * Global.App.Settings.CONTRAST + 1 * (1 - Global.App.Settings.CONTRAST);
                             pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
                         }
                     }
@@ -94,7 +101,7 @@ namespace Mcasaenk.Rendering {
                 double q = 12 * Global.App.Settings.CONTRAST;
                 if(Global.App.Settings.SHADE3D) q = q / 2;
 
-                embossshade(new Span<uint>(pixels, 512 * 512), genData, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
+                embossshade(new Span<uint>(pixels, 512 * 512), genData, fd, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
             } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
                 mapshade(new Span<uint>(pixels, 512 * 512), colormap, genData, neighbours);
             }
@@ -108,7 +115,7 @@ namespace Mcasaenk.Rendering {
                     double max = (Global.App.Settings.CONTRAST * 150);
                     var c = pixels[i].ToColor();
 
-                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * fd[i])), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
+                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * (Global.App.Settings.WATER_SMART_SHADE ? fd[i] : 1))), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
 
                     //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
                     //int addcontr = (int)(-Settings.CONTRAST * 100);
@@ -118,11 +125,12 @@ namespace Mcasaenk.Rendering {
                     //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
                 }
                 // option 1:
-                sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
+                sh = Math.Clamp(sh * fd[i] + Global.Settings.BLOCK_LIGHT / 15d * genData.blockLights(i) * fd[i], 0, 15);
+                //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
                 // option 2:
                 //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
 
-                sh = sh / 15;
+                sh = (sh / 15) / fd[i];
                 pixels[i] = Global.MultShade(pixels[i], sh, sh, sh);
             }
 
@@ -135,16 +143,13 @@ namespace Mcasaenk.Rendering {
 
 
             ArrayPool<double>.Shared.Return(fd);
+            genData.ClearTemporal();
             st.Stop();
             drawTime += st.ElapsedMilliseconds;
             drawCount++;
         }
 
-        private static double I(int x, double m = 0.3, double b = -2) {
-            return m + (1 - Math.Pow(10.0, b * ((double)x / (319 + 64)))) * (1 - m); //!!!
-        }
-
-        private static void embossshade(Span<uint> pixelBuffer, IGenData gdata, double cosA, double sinA, double q) {
+        private static void embossshade(Span<uint> pixelBuffer, GenData gdata, Span<double> fd, double cosA, double sinA, double q) {
             int index = 0;
             for(int z = 0; z < 512; z++) {
                 for(int x = 0; x < 512; x++, index++) {
@@ -156,19 +161,19 @@ namespace Mcasaenk.Rendering {
 
                     {
                         if(z == 0) {
-                            zShade = (gdata.heights(index + 512)) - (gdata.heights(index));
+                            zShade = (gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index));
                         } else if(z == 512 - 1) {
-                            zShade = (gdata.heights(index)) - (gdata.heights(index - 512));
+                            zShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 512));
                         } else {
-                            zShade = ((gdata.heights(index + 512)) - (gdata.heights(index - 512))) * 2;
+                            zShade = ((gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index - 512))) * 2;
                         }
 
                         if(x == 0) {
-                            xShade = (gdata.heights(index + 1)) - (gdata.heights(index));
+                            xShade = (gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index));
                         } else if(x == 512 - 1) {
-                            xShade = (gdata.heights(index)) - (gdata.heights(index - 1));
+                            xShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 1));
                         } else {
-                            xShade = ((gdata.heights(index + 1)) - (gdata.heights(index - 1))) * 2;
+                            xShade = ((gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index - 1))) * 2;
                         }
 
                         double shade = -(cosA * xShade + -sinA * zShade);
@@ -179,12 +184,14 @@ namespace Mcasaenk.Rendering {
                             shade = 8;
                         }
 
-                        pixelBuffer[index] = Global.AddShade((uint)pixelBuffer[index], (int)(shade * q), (int)(shade * q), (int)(shade * q));
+                        int fq = (int)(shade * q * fd[index]);
+
+                        pixelBuffer[index] = Global.AddShade(pixelBuffer[index], fq, fq, fq);
                     }
                 }
             }
         }
-        private static void mapshade(Span<uint> pixelBuffer, Colormap colormap, IGenData gdata, IGenData[,] neighbours) {
+        private static void mapshade(Span<uint> pixelBuffer, Colormap colormap, GenData gdata, GenData[,] neighbours) {
             double normal = 1, dark = 180 / 220d, darker = 135 / 220d, light = 255 / 220d;
             dark += (1 - dark) * (0.5 - Global.Settings.CONTRAST) * 2;
             darker += (1 - darker) * (0.5 - Global.Settings.CONTRAST) * 2;
@@ -197,7 +204,7 @@ namespace Mcasaenk.Rendering {
                 Direction.West => new Point2i(-1, 0),
             };
 
-            Func<IGenData, int, short> h = Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla ? (gendata, i) => gendata.heights(i)
+            Func<GenData, int, short> h = Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla ? (gendata, i) => gendata.heights(i)
             : (gendata, i) => gendata.terrainHeights(i);
 
             for(int z = 0; z < 512; z++) {
@@ -257,19 +264,71 @@ namespace Mcasaenk.Rendering {
 
     }
 
-    interface Blur<T> where T : Blur<T> {
-        void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes);
-        void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes);
+    interface Blur<T, U, V> where T : Blur<T, U, V> {
+        void IncreaseNewBlock(GenData gen, V data, int ri);
+        void SetNewBlock(GenData gen, V data, int ri);
         void CopyFrom(T blur);
         void Subtract(T blur);
         void Plus(T blur);
-        uint GenerateColor(BlockValue gb, IGenData gen, int i, DynBiome dynbiomes);
+        U Generate(GenData gen, V data, int i);
     }
 
-    struct ColorBlur : Blur<ColorBlur> {
+    class TerrHeightBlurData {
+        public int mindiff;
+
+        public double q(int diff) {
+            if(diff < 8) return 0;
+            if(diff > 18) return 1;
+            return (diff - 8) / 10d;
+        }
+    }
+    struct TerrHeightBlur : Blur<TerrHeightBlur, short, TerrHeightBlurData> {
+        public static ArrayPool<TerrHeightBlur> pool = ArrayPool<TerrHeightBlur>.Create((512 * 3) * (512 * 3), 8);
+
+        double h;
+        int br;
+
+        public void CopyFrom(TerrHeightBlur blur) {
+            h = blur.h; br = blur.br;
+        }
+        public void Plus(TerrHeightBlur blur) {
+            h += blur.h;
+            br += blur.br;
+        }
+        public void Subtract(TerrHeightBlur blur) {
+            h -= blur.h;
+            br -= blur.br;
+        }
+
+        public void IncreaseNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
+            if(gen.depth(ri)) {
+                h += Math.Pow(gen.terrainHeights(ri), 5);
+                br++;
+            }
+        }
+        public void SetNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
+            if(gen.depth(ri)) {
+                h = Math.Pow(gen.terrainHeights(ri), 5);
+                br = 1;
+            }
+        }
+
+        public short Generate(GenData gen, TerrHeightBlurData data, int i) {
+            if(gen.depth(i) == false) return gen.terrainHeights(i);
+            double q = data.q(gen.heights(i) - gen.terrainHeights(i));
+            return (short)(Global.Pow(h / br, 1d / 5) * q + gen.terrainHeights(i) * (1 - q));
+        }
+    }
+
+    class ColorBlurData {
+        public GridTint tint;
+        public Colormap colormap;
+    }
+    struct ColorBlur : Blur<ColorBlur, uint, ColorBlurData> {
         public static ArrayPool<ColorBlur> pool = ArrayPool<ColorBlur>.Create((512 * 3) * (512 * 3), 8);
 
-        public int r, g, b, br;
+        public byte r, g, b;
+        public int br;
 
         public void CopyFrom(ColorBlur blur) {
             r = blur.r; g = blur.g; b = blur.b; br = blur.br;
@@ -287,29 +346,49 @@ namespace Mcasaenk.Rendering {
             br -= blur.br;
         }
 
-        public void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
-            r += f.R;
-            g += f.G;
-            b += f.B;
-            br++;
+        public void IncreaseNewBlock(GenData gen, ColorBlurData data, int ri) {
+            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+                    r += f.R;
+                    g += f.G;
+                    b += f.B;
+                    br++;
+                }
+            }
         }
-        public void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
-            r += f.R;
-            g += f.G;
-            b += f.B;
-            br = 1;
+        public void SetNewBlock(GenData gen, ColorBlurData data, int ri) {
+            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+                    r += f.R;
+                    g += f.G;
+                    b += f.B;
+                    br = 1;
+                }
+            }
         }
 
-        public uint GenerateColor(BlockValue gb, IGenData gen, int i, DynBiome dynbiomes) {
-            if(br == 0) return 0xFFFF0000;
-            return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
+        public uint Generate(GenData gen, ColorBlurData data, int i) {
+            if(data.colormap.Value(gen.block(i)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    if(br == 0) return 0xFFFF0000;
+                    return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
+                }
+            }
+            return 0;
         }
     }
-    unsafe struct PrecBlur : Blur<PrecBlur> {
+
+    class PrecBlurData {
+        public DynBiome dynbiomes;
+        public GridTint tint;
+        public Colormap colormap;
+    }
+    unsafe struct PrecBlur : Blur<PrecBlur, uint, PrecBlurData> {
         public static ArrayPool<PrecBlur> pool = ArrayPool<PrecBlur>.Create((512 * 3) * (512 * 3), 8);
         public const int MB = 15;
+
 
         public fixed ushort biome[MB];
 
@@ -327,28 +406,41 @@ namespace Mcasaenk.Rendering {
         }
 
 
-        public void IncreaseNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            int i = dynbiomes.get(gen.biomeIds(ri));
-            biome[i]++;
-        }
-        public void SetNewBlock(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            int i = dynbiomes.get(gen.biomeIds(ri));
-            biome[i] = 1;
-        }
-
-
-
-        public uint GenerateColor(BlockValue gb, IGenData gen, int ri, DynBiome dynbiomes) {
-            int r = 0, g = 0, b = 0, br = 0;
-            for(int i = 0; i < dynbiomes.max(); i++) {
-                var c = gb.tint.TintColorFor(dynbiomes.back(i), gen.heights(ri)).ToColor();
-                r += c.R * biome[i];
-                g += c.G * biome[i];
-                b += c.B * biome[i];
-                br += biome[i];
+        public void IncreaseNewBlock(GenData gen, PrecBlurData data, int ri) {
+            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    int i = data.dynbiomes.get(gen.biomeIds(ri));
+                    biome[i]++;
+                }
             }
-            if(br == 0) return 0xFFFF0000;
-            return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
+        }
+        public void SetNewBlock(GenData gen, PrecBlurData data, int ri) {
+            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    int i = data.dynbiomes.get(gen.biomeIds(ri));
+                    biome[i] = 1;
+                }
+            }
+        }
+
+
+
+        public uint Generate(GenData gen, PrecBlurData data, int ri) {
+            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
+                if(gb.tint == data.tint) {
+                    int r = 0, g = 0, b = 0, br = 0;
+                    for(int i = 0; i < data.dynbiomes.max(); i++) {
+                        var c = gb.tint.TintColorFor(data.dynbiomes.back(i), gen.heights(ri)).ToColor();
+                        r += c.R * biome[i];
+                        g += c.G * biome[i];
+                        b += c.B * biome[i];
+                        br += biome[i];
+                    }
+                    if(br == 0) return 0xFFFF0000;
+                    return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
+                }
+            }
+            return 0;
         }
     }
 
@@ -380,12 +472,8 @@ namespace Mcasaenk.Rendering {
     }
 
     unsafe static class GausBlur {
-        public static void BoxBlur<T>(int R, uint* pixels, GridTint tint, Colormap colormap, ArrayPool<T> pool, IGenData[,] neighbours) where T : struct, Blur<T> {
-            DynBiome dynbiomes = null;
-            if(typeof(T) == typeof(PrecBlur)) {
-                dynbiomes = new DynBiome(PrecBlur.MB);
-            }
-
+        public static void BoxBlur<T, U, V>(int R, U* output, V data, ArrayPool<T> pool, GenData[,] neighbours) where T : struct, Blur<T, U, V> {
+            if(R <= 0 || R > 512) return;
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R));
 
             int STRIDE = 512 + 2 * R;
@@ -402,12 +490,8 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
-                            if(gb.tint == tint) {
-                                acc.IncreaseNewBlock(gb, gen, ri, dynbiomes);
-                                cx2[R + r].SetNewBlock(gb, gen, ri, dynbiomes);
-                            }
-                        }
+                        acc.IncreaseNewBlock(gen, data, ri);
+                        cx2[R + r].SetNewBlock(gen, data, ri);
                     }
                 }
 
@@ -423,12 +507,8 @@ namespace Mcasaenk.Rendering {
                     var gen = neighbours[rx.q, rz.q];
 
                     if(gen != null) {
-                        if(colormap.Value(gen.block(ri)) is BlockValue gb) {
-                            if(gb.tint == tint) {
-                                acc.IncreaseNewBlock(gb, gen, ri, dynbiomes);
-                                cx2[R + x + R].SetNewBlock(gb, gen, ri, dynbiomes);
-                            }
-                        }
+                        acc.IncreaseNewBlock(gen, data, ri);
+                        cx2[R + x + R].SetNewBlock(gen, data, ri);
                     }
 
                     xdata2[(R + z) * STRIDE + (R + x)].CopyFrom(acc);
@@ -445,11 +525,7 @@ namespace Mcasaenk.Rendering {
                     acc.Plus(cx2[R + r]);
                 }
 
-                if(colormap.Value(genData.block(0 * 512 + x)) is BlockValue bl) {
-                    if(bl.tint == tint) {
-                        pixels[0 * 512 + x] = acc.GenerateColor(bl, genData, 0 * 512 + x, dynbiomes);
-                    }
-                }
+                output[0 * 512 + x] = acc.Generate(genData, data, 0 * 512 + x);
 
                 for(int z = 1; z < 512; z++) {
                     // old
@@ -459,11 +535,8 @@ namespace Mcasaenk.Rendering {
                     cx2[R + z + R].CopyFrom(xdata2[(z + R + R) * STRIDE + (x + R)]);
                     acc.Plus(cx2[R + z + R]);
 
-                    if(colormap.Value(genData.block(z * 512 + x)) is BlockValue bll) {
-                        if(bll.tint == tint) {
-                            pixels[z * 512 + x] = acc.GenerateColor(bll, genData, z * 512 + x, dynbiomes);
-                        }
-                    }
+
+                    output[z * 512 + x] = acc.Generate(genData, data, z * 512 + x);
                 }
             });
 
@@ -486,7 +559,7 @@ namespace Mcasaenk.Rendering {
         public static ArrayPool<ushort> pool;
         public const int MB = 15;
 
-        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, IGenData[,] neighbours) {
+        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, GenData[,] neighbours) {
             var dynbiomes = new DynBiome(MB);
 
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R) * MB);
@@ -614,7 +687,7 @@ namespace Mcasaenk.Rendering {
 
         public static ArrayPool<C> pool;
 
-        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, IGenData[,] neighbours) {
+        public static void BoxBlur(int R, uint* pixels, Tint tint, Colormap colormap, GenData[,] neighbours) {
             var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R));
 
             int STRIDE = 512 + 2 * R;

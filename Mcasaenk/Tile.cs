@@ -171,7 +171,7 @@ namespace Mcasaenk
 
             uint* pixels = (uint*)img.BackBuffer;
             GenData[,] neighbours = null;
-            if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full)) {
+            if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full) || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
                 neighbours = new GenData[3, 3];
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {

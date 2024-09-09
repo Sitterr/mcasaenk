@@ -222,9 +222,9 @@ namespace Mcasaenk.UI {
                         Grid.SetColumn(dockPanel, (i % 2) * 2);
 
                         var txtname = new TextBlock();
-                        var tintformat = TintFormat.GetFormat(tint.GetType());
+                        var tintmeta = TintMeta.GetFormat(tint.GetType());
                         txtname.Inlines.Add(new Run() { Text = tint.Name() + "/" });
-                        txtname.Inlines.Add(new Run() { Text = tintformat.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
+                        txtname.Inlines.Add(new Run() { Text = tintmeta.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
                         txtname.Inlines.Add(new Run() { Text = "/" });
                         dockPanel.Children.Add(txtname);
 
@@ -237,7 +237,7 @@ namespace Mcasaenk.UI {
 
                         var txtRaduis = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
                         txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = settings });
-                        MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{1}" };
+                        MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{0}" };
                         txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
                         txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
                         txtRaduis.SetBinding(TextBlock.TextProperty, txtMultBinding);
@@ -245,12 +245,11 @@ namespace Mcasaenk.UI {
 
                         tintGrid.Children.Add(dockPanel);
 
-
                         var slider = new Slider() {
                             IsSnapToTickEnabled = true,
                             Minimum = 1,
-                            Maximum = 33,
-                            TickFrequency = 2
+                            Maximum = tintmeta.maxblend,
+                            TickFrequency = 4
                         };
                         Grid.SetRow(slider, (i / 2) * 4 + 2);
                         Grid.SetColumn(slider, (i % 2) * 2);
