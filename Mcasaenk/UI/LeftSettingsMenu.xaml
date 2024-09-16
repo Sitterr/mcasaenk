@@ -129,13 +129,21 @@
 
 
                                     <StackPanel Grid.Row="12" Grid.Column="0" Orientation="Horizontal">
-                                        <TextBlock Text="use only map colors"/>
+                                        <Label>
+                                            <TextBlock Text="use only map colors"/>
+                                            <Label.ToolTip>
+                                                <StackPanel>
+                                                    <TextBlock Text="• when turned on, a new screenshot option will appear, allowing you to make a capture to export to ingame map"/>
+                                                    <TextBlock Text="• the .dat file then needs to replace an exising one in the data folder a minecraft world's folder"/>
+                                                </StackPanel>
+                                            </Label.ToolTip>
+                                        </Label>
                                         <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=UseMapPalette}"/>
                                     </StackPanel>
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -288,7 +296,12 @@
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
                                             <DockPanel Grid.Row="0" Grid.Column="2">
-                                                <TextBlock Text="ocean smoothness"/>
+                                                <Label>
+                                                    <TextBlock Text="ocean smoothness"/>
+                                                    <Label.ToolTip>
+                                                        <TextBlock Text="smooths the underwater releif gradually starting from 8 blocks deep"/>
+                                                    </Label.ToolTip>
+                                                </Label>
                                                 <TextBlock HorizontalAlignment="Right">
                                                     <TextBlock.Text>
                                                         <Binding Source="{x:Static gl:Global.Settings}" Path="OceanDepthBlending" StringFormat="{}{0}x{0}"/>
@@ -298,9 +311,13 @@
                                             <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="65" TickFrequency="4" IsSnapToTickEnabled="True"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=OceanDepthBlending}"/>
 
-
                                             <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="4" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
-                                                <TextBlock Text="softer water shade"/>
+                                                <Label>
+                                                    <TextBlock Text="softer water shade"/>
+                                                    <Label.ToolTip>
+                                                        <TextBlock Text="shades do not effect water itself, only solid blocks"/>
+                                                    </Label.ToolTip>
+                                                </Label>
                                                 <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
                                             </StackPanel>
 
@@ -432,13 +449,13 @@
 
                                     
 
-                                    <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
+                                    <Border Height="0.5" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
                                     <Border Height="30"/>
 
                                     <TextBlock x:Name="colormapNotLoaded" Text="The colormap(and its settings) would only load after a world is selected" TextWrapping="Wrap" FontSize="16" TextAlignment="Center" Margin="50 0 50 0"/>
                                     <StackPanel x:Name="colormapSettingsCont" Visibility="Hidden">
                                         <StackPanel x:Name="macroGrid" Margin="0 0 0 60">
-                                            <TextBlock Text="Meta settings" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                            <TextBlock Text="-- Meta settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -451,7 +468,12 @@
                                                     <RowDefinition Height="auto" MinHeight="10"/>
                                                 </Grid.RowDefinitions>
 
-                                                <TextBlock x:Name="label_defbiome" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Text="default biome"/>
+                                                <Label x:Name="label_defbiome" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left">
+                                                    <TextBlock Text="default biome"/>
+                                                    <Label.ToolTip>
+                                                        <TextBlock Text="used only either when a biome is unknown or as a default for turned-off tints"/>
+                                                    </Label.ToolTip>
+                                                </Label>
                                                 <ComboBox x:Name="combo_defbiome" Width="auto" Grid.Row="2" Grid.Column="0"/>
 
                                                 <DockPanel Grid.Row="0" Grid.Column="2">
@@ -474,7 +496,7 @@
 
 
                                         <StackPanel x:Name="tintSettings">
-                                            <TextBlock Text="Tint settings" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                            <TextBlock Text="-- Tint settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
                                             <Grid x:Name="tintGrid">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>

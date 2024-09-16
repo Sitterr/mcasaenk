@@ -163,6 +163,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{StaticResource BORDER}"/>
         <Setter Property="Background" Value="{StaticResource BACK}"/>
+        <Setter Property="Padding" Value="5"/>
     </Style>
 
     <Style x:Key="clarify" TargetType="{x:Type Label}">
@@ -241,7 +242,7 @@
         <Setter Property="ToolTipService.HasDropShadow" Value="false"/>
         <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
         <Setter Property="ToolTipService.IsEnabled" Value="true"/>
-
+        
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
@@ -401,9 +402,9 @@
                         </Border>
 
                         <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                            <Grid Name="DropDown" Margin="0 0 1 0.4" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                            <Grid Name="DropDown" Margin="0 0 0 0.4" Width="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder" Margin="0 -1 0 0" Background="{StaticResource BACK}" BorderThickness="1" BorderBrush="{StaticResource BORDER}"/>
-                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" HorizontalContentAlignment="Right" Margin="0 0 0 0">
+                                <ScrollViewer Style="{DynamicResource comboboxScrollViewer}" HorizontalContentAlignment="Right" Margin="0 0 1.5 0">
                                     <StackPanel Margin="4,6,4,6" TextElement.FontSize="{TemplateBinding FontSize}" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Grid>
