@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Transactions;
 using System.Configuration;
 using static Mcasaenk.Global;
+using System.Globalization;
 
 namespace Mcasaenk.WorldInfo {
 
@@ -228,11 +229,11 @@ namespace Mcasaenk.WorldInfo {
                 fromparts = true,
 
                 name = parts[0],
-                temp = Convert.ToDouble(parts[1]),
-                downfall = Convert.ToDouble(parts[2]),
-                grass_hardcode_color = Convert.ToUInt32(parts[3]),
-                foliage_hardcode_color = Convert.ToUInt32(parts[4]),
-                water_color = Convert.ToUInt32(parts[5]),
+                temp = Convert.ToDouble(parts[1], CultureInfo.InvariantCulture),
+                downfall = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture),
+                grass_hardcode_color = Convert.ToUInt32(parts[3], CultureInfo.InvariantCulture),
+                foliage_hardcode_color = Convert.ToUInt32(parts[4], CultureInfo.InvariantCulture),
+                water_color = Convert.ToUInt32(parts[5], CultureInfo.InvariantCulture),
                 grass_color_modifier = parts[6],
             };
         }
@@ -294,10 +295,10 @@ namespace Mcasaenk.WorldInfo {
                 fromparts = true,
 
                 name = parts[0],
-                height = Convert.ToInt16(parts[1]),
-                miny = Convert.ToInt16(parts[2]),
-                defHeight = Convert.ToInt16(parts[3]),
-                ambientLight = Convert.ToDouble(parts[4]),
+                height = Convert.ToInt16(parts[1], CultureInfo.InvariantCulture),
+                miny = Convert.ToInt16(parts[2], CultureInfo.InvariantCulture),
+                defHeight = Convert.ToInt16(parts[3], CultureInfo.InvariantCulture),
+                ambientLight = Convert.ToDouble(parts[4], CultureInfo.InvariantCulture),
                 effects = parts[5],
             };
         }
