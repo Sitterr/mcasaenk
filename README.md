@@ -1,13 +1,13 @@
 # MCA Saenk
 
-#### A highly customizable top-down rendering tool for Minecraft which produces beautiful screenshots.
+#### A highly customizable top-down rendering mapper for Minecraft which produces beautiful screenshots.
 ![mcasaenk](https://github.com/user-attachments/assets/fc954868-ef88-420e-947a-3ac84f536670)
 
 
 
 ## Download
-### Windows universal: [**Download Version 1.1.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.0/mcasaenk-1.1.0.zip)
-### Windows framework-dependent: [**Download Version 1.1.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.0/mcasaenk-1.1.0-framework.zip)
+### Windows universal: [**Download Version 1.1.1**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.1/mcasaenk-1.1.1.zip)
+### Windows framework-dependent: [**Download Version 1.1.1**](https://github.com/Sitterr/mcasaenk/releases/download/v1.1.1/mcasaenk-1.1.1-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
@@ -27,7 +27,7 @@ Additionally, it strives to support modded worlds(Fabric and Forge), making effo
 
 
 
-## Sample screenshots/1440p/
+## Sample Screenshots/1440p/
 ![img86](https://github.com/user-attachments/assets/770095bb-9f4e-4e48-ae57-a3ae6d651cba)
 
 ![img21](https://github.com/user-attachments/assets/d0445c4f-7c7b-41fc-9bfb-a7f29e39d319)
