@@ -26,8 +26,8 @@ namespace Mcasaenk.Rendering {
         public short[] _terrainHeights;
         private short[] _terrainHeights_OG, _terrainHeights_temp;
 
-        public bool[] _isShade;
-        private bool[] _isShade_OG, _isShade_temp;
+        public byte[] _isShade;
+        private byte[] _isShade_OG, _isShade_temp;
 
         public byte[] _blocklights;
         private byte[] _blocklights_OG, _blockslights_temp;
@@ -38,7 +38,7 @@ namespace Mcasaenk.Rendering {
             this._biomeIds = this._biomeIds_OG = rawData.biomeIds;
             this._heights = this._heights_OG = rawData.heights;
             this._terrainHeights = this._terrainHeights_OG = rawData.terrainHeights;
-            this._isShade = this._isShade_OG = new bool[512 * 512];
+            this._isShade = this._isShade_OG = new byte[512 * 512];
             this._blocklights = this._blocklights_OG = rawData.blockLights;
 
             this.depthblock = depthblock;
@@ -70,8 +70,8 @@ namespace Mcasaenk.Rendering {
         public byte blockLights(int i) => _blocklights[i];
 
 
-        public bool isShade(int i) => _isShade[i];
-        public void Set_isShade(int i, bool value) { _isShade[i] = value; }
+        public byte isShade(int i) => _isShade[i];
+        public void Set_isShade(int i, byte value) { _isShade[i] = value; }
 
 
 
@@ -96,8 +96,8 @@ namespace Mcasaenk.Rendering {
         public ushort[] biomeIds;
         public short[] heights;
         public short[] terrainHeights;
-        public bool[] shadeFrame;
-        public bool[] shadeValues;
+        public byte[] shadeFrame;
+        public byte[] shadeValues;
         public byte[] shadeValuesLen;
         public byte[] blockLights;
 
@@ -107,8 +107,8 @@ namespace Mcasaenk.Rendering {
             heights = new short[512 * 512];
             terrainHeights = new short[512 * 512];
             if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
-                shadeFrame = new bool[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
-                shadeValues = new bool[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
+                shadeFrame = new byte[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
+                shadeValues = new byte[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
                 shadeValuesLen = new byte[512 * 512];
             }
             blockLights = new byte[512 * 512];

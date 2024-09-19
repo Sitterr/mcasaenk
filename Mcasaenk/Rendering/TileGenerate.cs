@@ -89,7 +89,7 @@ namespace Mcasaenk.Rendering
 
                         var frPos = tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
 
-                        bool[] arr = null;
+                        byte[] arr = null;
                         {
                             if(true) {
                                 switch(p.dir) {
@@ -105,7 +105,7 @@ namespace Mcasaenk.Rendering
                                         break;
                                 }
                             }
-                            if(arr == null) arr = new bool[512 * 512];                
+                            if(arr == null) arr = new byte[512 * 512];                
                         }
 
                         int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
@@ -113,7 +113,7 @@ namespace Mcasaenk.Rendering
                         for(int xx = offsetX; xx < offsetX + 512; xx++) {
                             for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
                                 int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                                arr[ai] |= rawData.shadeFrame[si];
+                                arr[ai] = TileShade.CombineShades(arr[ai], rawData.shadeFrame[si]);
                             }
                         }
                         tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));

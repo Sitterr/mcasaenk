@@ -111,11 +111,11 @@ namespace Mcasaenk.Rendering {
                 double sh = 0;
 
                 sh += Global.App.Settings.SUN_LIGHT;
-                if(genData.isShade(i)) {
+                if(genData.isShade(i) > 0) {
                     double max = (Global.App.Settings.CONTRAST * 150);
                     var c = pixels[i].ToColor();
 
-                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * (Global.App.Settings.WATER_SMART_SHADE ? fd[i] : 1))), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
+                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * (genData.isShade(i) / 200f) * (Global.App.Settings.WATER_SMART_SHADE ? fd[i] : 1))), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
 
                     //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
                     //int addcontr = (int)(-Settings.CONTRAST * 100);

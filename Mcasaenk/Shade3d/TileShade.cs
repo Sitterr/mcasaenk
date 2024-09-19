@@ -16,7 +16,7 @@ namespace Mcasaenk.Shade3d {
             this.tile = tile;
         }
 
-        private bool[] shadeValues; // 512x512x20
+        private byte[] shadeValues; // 512x512x20
         private byte[] valuesLen; // 512x512
 
         private bool[] harvested;
@@ -62,7 +62,7 @@ namespace Mcasaenk.Shade3d {
         }
 
 
-        public void UpdateSelf(bool[] shadeFrame) {
+        public void UpdateSelf(byte[] shadeFrame) {
             lock(locker) {
                 if(!IsActive) return;
 
@@ -107,25 +107,34 @@ namespace Mcasaenk.Shade3d {
             if(shadeValues == null) return false;
             bool changes = false;
             for(int i = 0; i < shadeValues.Length / shadeStride; i++) {
-                if(genData.isShade(i)) continue;
-                int j;
-                for(j = 0; j < valuesLen[i]; j++) {
-                    if(shadeValues[i * shadeStride + j] == false) break;
+                if(genData.isShade(i) == byte.MaxValue) continue;
+
+                byte min = byte.MaxValue;
+                for(int j = 0; j < valuesLen[i]; j++) {
+                    byte val = shadeValues[i * shadeStride + j];
+
+                    min = Math.Min(min, val);
                 }
-                if(j == valuesLen[i]) {
+                
+                byte shade = min;
+                if(shade > genData.isShade(i)) {
                     changes = true;
-                    genData.Set_isShade(i, true);
+                    genData.Set_isShade(i, shade);
                 }
+
             }
             return changes;
+        }
+
+
+        public static byte CombineShades(byte old, byte add) {
+            return (byte)(old + (255 - old) * ((float)add / 255));
         }
     }
 
 
-
-
     public class TileShadeFrames {
-        public readonly ConcurrentDictionary<Point2i, (bool[] frame, bool[] harvested)> frames;
+        public readonly ConcurrentDictionary<Point2i, (byte[] frame, bool[] harvested)> frames;
 
         private readonly Point2i pos;
         private readonly TileMap tileMap;
@@ -135,8 +144,7 @@ namespace Mcasaenk.Shade3d {
             frames = new();
         }
 
-        public static int br = 0;
-        public void AddFrame(bool[] frame, Point2i dist) {
+        public void AddFrame(byte[] frame, Point2i dist) {
             bool[] harvested = new bool[ShadeConstants.GLB.regionReach.Count];
             //bool[] harvested = new bool[ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ];
             Array.Fill(harvested, true);
@@ -153,7 +161,6 @@ namespace Mcasaenk.Shade3d {
 
                     var f = (pp - tilepos).abs();
                     if(!ShadeConstants.GLB.regionReach.ContainsP(f)) {
-                        br++;
                         harvested[i] = true;
                     }
                     
@@ -169,7 +176,7 @@ namespace Mcasaenk.Shade3d {
             RemoveUnnecessary();
         }
 
-        public bool GetCombinedSuitableFrames(Point2i d, bool[] shadeFrame, int offsetX, int offsetZ, int stride) {
+        public bool GetCombinedSuitableFrames(Point2i d, byte[] shadeFrame, int offsetX, int offsetZ, int stride) {
             bool usedZeroZero = false;
 
             int i = 0, di = 0;
@@ -190,7 +197,7 @@ namespace Mcasaenk.Shade3d {
                     if(frames.TryGetValue(new Point2i(xx, zz), out var fr)) {
                         for(int lx = 0; lx < 512; lx++) {
                             for(int lz = 0; lz < 512; lz++) {
-                                shadeFrame[(offsetZ + lz) * stride + offsetX + lx] |= fr.frame[lz * 512 + lx];
+                                shadeFrame[(offsetZ + lz) * stride + offsetX + lx] = TileShade.CombineShades(shadeFrame[(offsetZ + lz) * stride + offsetX + lx], fr.frame[lz * 512 + lx]);
                             }
                         }
 
@@ -206,7 +213,7 @@ namespace Mcasaenk.Shade3d {
             return usedZeroZero;
         }
 
-        public bool[] GetFrame(Point2i dist) {
+        public byte[] GetFrame(Point2i dist) {
             if(frames.TryGetValue(dist, out var fr)) {
                 return fr.frame;
             } else return null;
