@@ -24,7 +24,6 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Media3D;
-using static Mcasaenk.Rendering.ColorGausBlur;
 using System.Threading.Channels;
 using static Mcasaenk.Global;
 

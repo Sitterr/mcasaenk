@@ -16,8 +16,7 @@ namespace Mcasaenk.Shade3d {
             this.tile = tile;
         }
 
-        private byte[] shadeValues; // 512x512x20
-        private byte[] valuesLen; // 512x512
+        private byte[][] shadeValues; // colx512x512x20
 
         private bool[] harvested;
 
@@ -26,8 +25,7 @@ namespace Mcasaenk.Shade3d {
             lock(locker) {
                 IsActive = true;
                 this.genData = genData;
-                this.shadeValues = freeRaw.shadeValues;
-                this.valuesLen = freeRaw.shadeValuesLen;
+                this.shadeValues = freeRaw.columns.Append(freeRaw.depthColumn).Select(c => c.shadeValues).ToArray();
 
                 this.shadeStride = ShadeConstants.GLB.blockReachLenMax;
 
@@ -56,7 +54,6 @@ namespace Mcasaenk.Shade3d {
         }
         protected override void Destruct() {
             this.shadeValues = null;
-            this.valuesLen = null;
             this.genData = null;
             harvested = null;
         }
@@ -82,18 +79,21 @@ namespace Mcasaenk.Shade3d {
                 int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
                 int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
                 int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
-                for(int cz = 0; cz < 512; cz++) {
-                    for(int cx = 0; cx < 512; cx++) {
-                        int regionIndex = cz * 512 + cx;
+                for(int w = 0; w < genData.columns.Length; w++) {
+                    if(shadeValues[w] == null) continue;
+                    for(int cz = 0; cz < 512; cz++) {
+                        for(int cx = 0; cx < 512; cx++) {
+                            int regionIndex = cz * 512 + cx;
+                            if(genData.columns[w].ContainsInfo(regionIndex) == false) continue;
 
-                        int h = ShadeConstants.GLB.Height - genData.heights(regionIndex); //!!!
-                        double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
+                            int h = ShadeConstants.GLB.Height - genData.columns[w].Height(regionIndex); //!!!
+                            if(w == genData.columns.Length - 1) h = ShadeConstants.GLB.Height - (genData.columns[w].Height(regionIndex) + genData.columns[w].Depth(regionIndex));
+                            double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 
-                        if(genData.heights(regionIndex) != 0) {
-                            byte a = 3;
-                            ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues, ref a, regionIndex, SHADEX, SHADEZ, x1, z1);
-                            Debug.Assert(a == valuesLen[regionIndex]);
+                            if(genData.columns[w].Height(regionIndex) != 0) {
+                                ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues[w], regionIndex, SHADEX, SHADEZ, x1, z1);
+                            }
                         }
                     }
                 }
@@ -104,31 +104,33 @@ namespace Mcasaenk.Shade3d {
         }
 
         public bool Recalc() {
-            if(shadeValues == null) return false;
             bool changes = false;
-            for(int i = 0; i < shadeValues.Length / shadeStride; i++) {
-                if(genData.isShade(i) == byte.MaxValue) continue;
+            for(int w = 0; w < this.shadeValues.Length; w++) {
+                var shadeValues = this.shadeValues[w];
 
-                byte min = byte.MaxValue;
-                for(int j = 0; j < valuesLen[i]; j++) {
-                    byte val = shadeValues[i * shadeStride + j];
-
-                    min = Math.Min(min, val);
-                }
+                if(shadeValues == null) continue;
                 
-                byte shade = min;
-                if(shade > genData.isShade(i)) {
-                    changes = true;
-                    genData.Set_isShade(i, shade);
+                for(int i = 0; i < 512 * 512; i++) {
+                    if(genData.columns[w].ContainsInfo(i) == false) continue;
+                    if(genData.columns[w].Shade(i) == 15) continue;
+
+                    byte min = 15;
+                    for(int j = 0; j < ShadeConstants.GLB.blockReachLenMax; j++) {
+                        byte val = Math.Max(ShadeConstants.GetLeft(shadeValues, i * shadeStride + j), ShadeConstants.GetRight(shadeValues, i * shadeStride + j));
+
+                        min = Math.Min(min, val);
+                    }
+
+                    byte shade = min;
+                    if(shade > genData.columns[w].Shade(i)) {
+                        changes = true;
+                        genData.columns[w].set_shade(i, shade);
+                    }
+
                 }
-
             }
+
             return changes;
-        }
-
-
-        public static byte CombineShades(byte old, byte add) {
-            return (byte)(old + (255 - old) * ((float)add / 255));
         }
     }
 
@@ -197,7 +199,9 @@ namespace Mcasaenk.Shade3d {
                     if(frames.TryGetValue(new Point2i(xx, zz), out var fr)) {
                         for(int lx = 0; lx < 512; lx++) {
                             for(int lz = 0; lz < 512; lz++) {
-                                shadeFrame[(offsetZ + lz) * stride + offsetX + lx] = TileShade.CombineShades(shadeFrame[(offsetZ + lz) * stride + offsetX + lx], fr.frame[lz * 512 + lx]);
+                                byte left = ShadeConstants.CombineShades(ShadeConstants.GetLeft(shadeFrame, (offsetZ + lz) * stride + offsetX + lx), ShadeConstants.GetLeft(fr.frame, lz * 512 + lx)),
+                                    right = ShadeConstants.CombineShades(ShadeConstants.GetRight(shadeFrame, (offsetZ + lz) * stride + offsetX + lx), ShadeConstants.GetRight(fr.frame, lz * 512 + lx));
+                                ShadeConstants.SetBoth(shadeFrame, (offsetZ + lz) * stride + offsetX + lx, left, right);
                             }
                         }
 

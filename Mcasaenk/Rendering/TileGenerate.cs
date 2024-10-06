@@ -113,7 +113,11 @@ namespace Mcasaenk.Rendering
                         for(int xx = offsetX; xx < offsetX + 512; xx++) {
                             for(int zz = offsetZ; zz < offsetZ + 512; zz++) {
                                 int ai = (zz - offsetZ) * 512 + (xx - offsetX), si = zz * (ShadeConstants.GLB.rX * 512) + xx;
-                                arr[ai] = TileShade.CombineShades(arr[ai], rawData.shadeFrame[si]);
+
+                                byte left = ShadeConstants.CombineShades(ShadeConstants.GetLeft(arr, ai), ShadeConstants.GetLeft(rawData.shadeFrame, si)),
+                                    right = ShadeConstants.CombineShades(ShadeConstants.GetRight(arr, ai), ShadeConstants.GetRight(rawData.shadeFrame, si));
+
+                                ShadeConstants.SetBoth(arr, ai, left, right);
                             }
                         }
                         tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));

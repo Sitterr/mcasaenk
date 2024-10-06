@@ -10,6 +10,7 @@ using System.Security.Policy;
 using System.DirectoryServices.ActiveDirectory;
 using System;
 using System.Xml.Linq;
+using System.Text.Json.Serialization;
 
 namespace Mcasaenk.Colormaping {
 
@@ -21,11 +22,13 @@ namespace Mcasaenk.Colormaping {
         public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
 
         public readonly ushort depth;
+        public readonly BlockValue depthVal;
 
         public readonly BlockRegistry Block;
         public readonly BiomeRegistry Biome;
         private IDictionary<ushort, BlockValue> blocks;
         private List<Tint> tints;
+        private List<Group> groups;
 
         public Colormap(RawColormap rawmap, int world_version, DatapacksInfo datapacksInfo) {
             ushort PLAINSBIOME = 0;
@@ -48,11 +51,18 @@ namespace Mcasaenk.Colormaping {
                         break;
                 }
             });
-            blocks = new Dictionary<ushort, BlockValue> {
-                { Block.GetId("minecraft:air"), new BlockValue(){ color = 0, tint = NullTint.Tint } }
+
+            tints = new List<Tint>() { InvTint.Tint, NullTint.Tint };
+            groups = new List<Group>() {
+                new Group(0, InvTint.Tint, false, true) { ABSORBTION = 0 }, /*inv*/
+                new Group(1, NullTint.Tint, false, false) { ABSORBTION = 15 }, /*err*/
+                new Group(2, NullTint.Tint, false, false) { ABSORBTION = 15 }, /*water*/
+                new Group(3, NullTint.Tint, false, false) { ABSORBTION = 15 }, /*normal*/
             };
 
-            tints = new List<Tint>();
+            blocks = new Dictionary<ushort, BlockValue> {
+                { Block.GetId("minecraft:air"), new BlockValue(){ color = 0, tint = InvTint.Tint, group = groups[0] } }
+            };
 
             if(rawmap != null) {
                 foreach(var t in rawmap.tints) {
@@ -67,11 +77,16 @@ namespace Mcasaenk.Colormaping {
                         else if(format.tintclass == typeof(GridTint)) tint = new GridTint(t.name, t.yOffset, sprite);
                         else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(t.name, t.color.ToUInt());
                     }
+                    var group = new Group(groups.Count, tint, true, false);
+                    if(format.tintclass == typeof(Vanilla_Foliage) || t.name == "spruce_leaves" || t.name == "birch_leaves") {
+                        group.ABSORBTION = 5;
+                    }
 
+                    groups.Add(group);
                     tints.Add(tint);
 
                     foreach(var block in t.blocks) {
-                        blocks[Block.GetId(block.minecraftname())] = new BlockValue() { color = 0xFFFFFFFF, tint = tint };
+                        blocks[Block.GetId(block.minecraftname())] = new BlockValue() { color = 0xFFFFFFFF, tint = tint, group = group };
                     }
                 }
                 foreach(var b in rawmap.blocks) {               
@@ -82,7 +97,7 @@ namespace Mcasaenk.Colormaping {
                     if(blocks.TryGetValue(id, out var block)) {
                         block.color = color;
                     } else {
-                        blocks[id] = new BlockValue() { color = color, tint = NullTint.Tint };
+                        blocks[id] = new BlockValue() { color = color, tint = tints[1], group = groups[3] };
                     }
                 }
             }
@@ -93,14 +108,20 @@ namespace Mcasaenk.Colormaping {
             Biome.Freeze();
 
             def = blocks[0];
-            error = new BlockValue() { color = 0xFFFF0000, tint = NullTint.Tint };
+            error = new BlockValue() { color = 0xFFFF0000, tint = NullTint.Error };
 
             Block.LoadOldBlocks();
             depth = Block.GetId("minecraft:water"); // todo!
+            depthVal = blocks[depth];
+            blocks[depth].group = groups[2];
+            groups[2].tint = blocks[depth].tint;
+            groups[2].ABSORBTION = 15;
             Global.Settings.DEFBIOME = PLAINSBIOME;
         }
 
         public List<Tint> GetTints() => tints;
+        public List<Group> GetGroups() => groups;
+
 
         private BlockValue def, error;
         public BlockValue Value(ushort block) {
@@ -135,10 +156,71 @@ namespace Mcasaenk.Colormaping {
     }
 
 
+    public class Group : StandardizedSettings {
+        public readonly bool caneditsettings, caneditblocks;
+        public Tint tint;
+        public int id;
+
+        public Group(int id, Tint tint, bool caneditsettings = true, bool caneditblocks = true) {
+            this.id = id;
+            this.tint = tint;
+            this.caneditsettings = caneditsettings;
+            this.caneditblocks = caneditblocks;
+
+            ABSORBTION = 15;
+        }
+
+        public override void SetFromBack() {
+            if(ABSORBTION != Transparency) ABSORBTION = Transparency;
+        }
+        public override void Reset() {
+            Transparency = ABSORBTION;
+        }
+        public override bool ChangedBack() =>
+                   ABSORBTION != Transparency;
 
 
 
-    public class DynamicTintSettings : INotifyPropertyChanged {
+
+
+
+
+
+
+        private int transparency, transparency_back;
+        [JsonIgnore]
+        public int Transparency {
+            get => transparency_back;
+            set {
+                if(transparency_back == value) return;
+
+                transparency_back = value;
+                OnAutoChange(nameof(Transparency));
+                if(Global.App.OpenedSave == null) {
+                    transparency = value;
+                    OnAutoChange(nameof(ABSORBTION));
+                }
+            }
+        }
+        public int ABSORBTION { get => transparency; set { transparency = value; Transparency = value; OnHardChange(nameof(ABSORBTION)); } }
+    }
+
+
+    public class DynamicTintSettings : StandardizedSettings {
+        public DynamicTintSettings() {
+            On = true;
+            Blend = 9;
+        }
+
+        public override void SetFromBack() {
+            
+        }
+        public override void Reset() {
+            
+        }
+        public override bool ChangedBack() =>
+                   false;
+
 
         private bool on;
         public bool On {
@@ -150,6 +232,7 @@ namespace Mcasaenk.Colormaping {
                 OnLightChange(nameof(On));
             }
         }
+
         private int blend;
         public int Blend {
             get => blend;
@@ -160,33 +243,13 @@ namespace Mcasaenk.Colormaping {
                 OnLightChange(nameof(Blend));
             }
         }
-
-
-
-        bool frozen = true;
-        public void OnLightChange(string propertyName) {
-            if(frozen == false) onLightChange();
-            if(propertyName != "") OnPropertyChanged(propertyName);
-        }
-        public DynamicTintSettings() {
-            On = true;
-            Blend = 9;
-        }
-
-        private Action onLightChange;
-        public void SetActions(Action onLightChange) {
-            this.onLightChange = onLightChange;
-            frozen = false;
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
     public class DynamicVanillaTintSettings : DynamicTintSettings {
+        public DynamicVanillaTintSettings() : base() {
+            TemperatureVariation = 0;
+        }
+
         private double tempHeight;
         public double TemperatureVariation {
             get => tempHeight;
@@ -194,12 +257,8 @@ namespace Mcasaenk.Colormaping {
                 if(value == tempHeight) return;
 
                 tempHeight = value;
-                OnLightChange(nameof(TemperatureVariation));
+                Global.Settings.OnLightChange(nameof(TemperatureVariation));
             }
-        }
-
-        public DynamicVanillaTintSettings() : base() {
-            TemperatureVariation = 0;
         }
     }
 
@@ -211,6 +270,7 @@ namespace Mcasaenk.Colormaping {
     public class BlockValue {
         public Tint tint;
         public uint color;
+        public Group group;
 
         public uint GetColor(ushort biome, short height) {
             return tint.GetTintedColor(color, biome, height);

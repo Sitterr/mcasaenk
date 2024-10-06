@@ -16,109 +16,214 @@ using System.Transactions;
 using System.Windows.Media.Media3D;
 using System.Reflection.Metadata;
 using Mcasaenk.Colormaping;
+using System.Windows.Documents;
+using System.Windows.Media.Animation;
 
-namespace Mcasaenk.Rendering
-{
+namespace Mcasaenk.Rendering {
     public class ChunkRenderer {
         public static void Extract(IChunkInterpreter data, int x, int z, int y, RawData rdata) {
-            try {
-                int maxh = Global.Settings.MAXABSHEIGHT;
-                if(data == null) return;
-                if(data.ContainsInformation() == false) return;
 
-                int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
-                int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
-                int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
+            int maxh = Global.Settings.MAXABSHEIGHT;
+            if(data == null) return;
+            if(data.ContainsInformation() == false) return;
 
-                for(int _cx = 0; _cx < 16; _cx++) {
-                    int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
-                    for(int _cz = 0; _cz < 16; _cz++) {
-                        int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
-                        int regionIndex = (z + cz) * 512 + x + cx;
+            int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
+            int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
+            int SHADEX = ShadeConstants.GLB.rX * 512, SHADEZ = ShadeConstants.GLB.rZ * 512;
 
-                        int xtotal = x0 + x + cx, ztotal = z0 + z + cz;
+            for(int _cx = 0; _cx < 16; _cx++) {
+                int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
+                for(int _cz = 0; _cz < 16; _cz++) {
+                    int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
+                    int regionIndex = (z + cz) * 512 + x + cx;
 
-                        short airHeight = Filter.AIR_FILTER(y, maxh - 1)(data, cx, cz, (short)y);
-                        rdata.heights[regionIndex] = airHeight;
-                        rdata.biomeIds[regionIndex] = data.GetBiome(cx, cz, airHeight);
+                    int xtotal = x0 + x + cx, ztotal = z0 + z + cz;
 
-                        short waterHeight = Filter.DEPTH_FILTER(y, maxh - 1)(data, cx, cz, airHeight);
-                        rdata.blockIds[regionIndex] = data.GetBlock(cx, cz, waterHeight);
-                        rdata.terrainHeights[regionIndex] = waterHeight;
 
-                        rdata.blockLights[regionIndex] = Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1));
 
-                        if(rdata.shadeFrame != null && rdata.shadeValues != null && rdata.shadeValuesLen != null) {
-                            {
-                                int hs = maxh - airHeight;
-                                double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
-                                SetShadeValuesLine(rdata.shadeFrame, rdata.shadeValues, ref rdata.shadeValuesLen[regionIndex], regionIndex, SHADEX, SHADEZ, x1, z1);
+
+                    short airHeight = Filter.AIR_FILTER(data, y, maxh - 1)(data, cx, cz, (short)y);
+                    if(rdata.columns.Length > 0) {
+                        short height = airHeight;
+
+                        int coli = 0;
+                        Group lastgroup = null;
+                        uint color = 0;
+                        float lcolor = 1;
+                        {
+                            BlockValue block;
+                            while(height >= 0) {
+                                ushort blockid = data.GetBlock(cx, cz, height);
+                                block = data.Colormap.Value(blockid);
+                                if(block.group.id == 0 || blockid == Colormap.ERRORBLOCK) {
+                                    height--;
+                                    continue;
+                                }
+
+                                lastgroup = block.group;
+                                color = block.color;
+                                lcolor = lastgroup.ABSORBTION / 15f;
+                                break;
+                            }
+                        }
+                        if(height < 0) continue;
+
+                        short startheight = height; height--;
+                        byte startlight = Math.Max(data.GetBlockLight(cx, cz, startheight), data.GetBlockLight(cx, cz, startheight + 1));
+                        ushort startbiome = data.GetBiome(cx, cz, startheight);
+
+                        while(true) {
+                            ushort blockid = data.GetBlock(cx, cz, height);
+                            var block = data.Colormap.Value(blockid);
+                            ushort biome = data.GetBiome(cx, cz, height);
+
+                            if(block.group != lastgroup || biome != startbiome || (lastgroup.ABSORBTION == 15 && lastgroup.id != 2)) {
+
+                                if(lastgroup.ABSORBTION > 0) {
+
+                                    if(lastgroup.id == 2) {
+                                        rdata.depthColumn.heights[regionIndex] = startheight;
+                                        rdata.depthColumn.depths[regionIndex] = (short)(startheight - height);
+
+                                        rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)2);
+                                        rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(block.GetColor(biome, height), startlight);
+
+                                        break;
+                                    } else {
+                                        RawDataColumn col;
+                                        if(coli == rdata.columns.Length) col = rdata.depthColumn;
+                                        else col = rdata.columns[coli];
+
+
+                                        col.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)lastgroup.id);
+                                        col.heights[regionIndex] = startheight;
+                                        if(col != rdata.depthColumn) col.depths[regionIndex] = (short)(startheight - height);
+                                        col.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(color, startlight);
+                                        coli++;
+                                    }
+
+                                }
+                                if(lastgroup.ABSORBTION == 15) break;
+
+                                startheight = height;
+                                lastgroup = block.group;
+                                startbiome = biome;
+                                lcolor = lastgroup.ABSORBTION / 15f;
+                                color = block.color;
+                                if(coli >= rdata.columns.Length + 1) break;
+                            } else {
+                                float q = lastgroup.ABSORBTION / 15f * (1 - lcolor);
+                                color = Global.Blend(block.color, color, q / lcolor);
+                                lcolor += q;
                             }
 
-                            for(int height = waterHeight; height >= 0; height--) {
-                                //short nheight = Shade3DFilter.List(data, cx, cz, height);
-                                var bl = data.GetBlock(cx, cz, height);
-                                if(Shade3DFilter.IsShade3D(bl)) continue;
-
-                                //if(height <= 0) break;
-
-                                int hs = maxh - height;
-                                double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
-                                //bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
-                                //if(!alreadyshade) {
-                                SetLine(rdata.shadeFrame, 255, SHADEX, SHADEZ, x1, z1);
-                                //}
-
-                            }
+                            height--;
 
                         }
-                    }
-                }
-            }
-            catch(Exception e) {
-                for(int _cx = 0; _cx < 16; _cx++) {
-                    int cx = ShadeConstants.GLB.flowX(_cx, 0, 16);
-                    for(int _cz = 0; _cz < 16; _cz++) {
-                        int cz = ShadeConstants.GLB.flowZ(_cz, 0, 16);
-                        int regionIndex = (z + cz) * 512 + x + cx;
+                    } else {
+                        short waterHeight = Filter.DEPTH_FILTER(data, y, maxh - 1)(data, cx, cz, airHeight);
+                        if(airHeight != waterHeight && rdata.depthColumn.depths != null) {
+                            rdata.depthColumn.heights[regionIndex] = waterHeight;
+                            rdata.depthColumn.depths[regionIndex] = (short)(airHeight - waterHeight);
 
-                        rdata.blockIds[regionIndex] = Colormap.ERRORBLOCK;
+                            var block = data.Colormap.Value(data.GetBlock(cx, cz, waterHeight));
+                            rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(data.GetBiome(cx, cz, airHeight), 2);
+                            rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(block.GetColor(data.GetBiome(cx, cz, waterHeight), waterHeight), Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1)));
+                        } else {
+                            rdata.depthColumn.heights[regionIndex] = airHeight;
+
+                            var block = data.Colormap.Value(data.GetBlock(cx, cz, airHeight));
+                            rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(data.GetBiome(cx, cz, airHeight), (byte)block.group.id);
+                            rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(block.color, Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1)));
+                        }
+                    }
+
+
+
+
+
+                    if(rdata.shadeFrame != null) {
+                        foreach(var col in rdata.columns) {
+                            if(col.ContainsInfo(regionIndex) == false) continue;
+
+                            int hs = maxh - col.heights[regionIndex];
+                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                            SetShadeValuesLine(rdata.shadeFrame, col.shadeValues, regionIndex, SHADEX, SHADEZ, x1, z1);
+                        }
+                        if(rdata.depthColumn.ContainsInfo(regionIndex)) {
+                            int hs = maxh - (rdata.depthColumn.heights[regionIndex] + (rdata.depthColumn.depths != null ? rdata.depthColumn.depths[regionIndex] : 0));
+                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                            SetShadeValuesLine(rdata.shadeFrame, rdata.depthColumn.shadeValues, regionIndex, SHADEX, SHADEZ, x1, z1);
+                        }
+
+
+
+                        for(int height = airHeight; height >= 0; height--) {
+                            //short nheight = Shade3DFilter.List(data, cx, cz, height);
+                            var blid = data.GetBlock(cx, cz, height);
+                            if(Shade3DFilter.IsShade3D(blid)) continue;
+                            var block = data.Colormap.Value(blid);
+
+                            //if(height <= 0) break;
+
+                            int hs = maxh - height;
+                            double x1 = xtotal + ShadeConstants.GLB.cosAcotgB * hs, z1 = ztotal + -ShadeConstants.GLB.sinAcotgB * hs;
+                            //bool alreadyshade = CheckLine(rdata.shadeFrame, SHADEX, SHADEZ, x1, z1);
+                            //if(!alreadyshade) {
+                            SetLine(rdata.shadeFrame, (byte)block.group.ABSORBTION, SHADEX, SHADEZ, x1, z1);
+                            //}
+                        }
+
+
                     }
                 }
-#if DEBUG
-                throw e;
-#endif
             }
+
         }
 
 
         static void SetLine(byte[] shadeFrame, byte value, int SHADEX, int SHADEZ, double _x1, double _z1) {
-            int x1 = (int)_x1, z1 = (int)_z1;
+            int x1 = (int)(_x1), z1 = (int)(_z1);
 
-            foreach(var p in ShadeConstants.GLB.blockReach) {
+            foreach(var reach in ShadeConstants.GLB.blockReach) {
+                var p = reach.p;
+                int i = (z1 + p.Z) * SHADEX + (x1 + p.X);
+
                 //if((z1 + p.p.Z) < 0 || (z1 + p.p.Z) >= SHADEZ) 
                 //    continue;
                 //if((x1 + p.p.X) < 0 || (x1 + p.p.X) >= SHADEX) 
                 //    continue;
-                shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)] = value;
+
+                if(reach.dir == ShadeConstants.RegionDir.l || reach.dir == ShadeConstants.RegionDir.c)
+                    ShadeConstants.SetLeft(shadeFrame, i, ShadeConstants.CombineShades(ShadeConstants.GetLeft(shadeFrame, i), value));
+
+                if(reach.dir == ShadeConstants.RegionDir.r || reach.dir == ShadeConstants.RegionDir.c)
+                    ShadeConstants.SetRight(shadeFrame, i, ShadeConstants.CombineShades(ShadeConstants.GetRight(shadeFrame, i), value));
             }
         }
 
-        public static void SetShadeValuesLine(byte[] shadeFrame, byte[] shades, ref byte shadesLen, int regionIndex, int SHADEX, int SHADEZ, double _x1, double _z1) {
+        public static void SetShadeValuesLine(byte[] shadeFrame, byte[] shades, int regionIndex, int SHADEX, int SHADEZ, double _x1, double _z1) {
             int x1 = (int)_x1, z1 = (int)_z1;
 
             var blockReach = ShadeConstants.GLB.blockReach;
 
-            shadesLen = (byte)blockReach.Length;
-            for(int i = 0; i < blockReach.Length; i++) {
-                var p = blockReach[i];
+            for(int i = 0; i < blockReach.Count; i++) {
+                var p = blockReach[i].p;
 
                 if(((z1 + p.Z) < 0 || (z1 + p.Z) >= SHADEZ) || ((x1 + p.X) < 0 || (x1 + p.X) >= SHADEX)) {
-                    shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] = 0;
+                    //ShadeConstants.SetS(shades, regionIndex * ShadeConstants.GLB.blockReachLenMax + i, 0);
                     continue;
                 }
 
-                shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i] = TileShade.CombineShades(shades[regionIndex * ShadeConstants.GLB.blockReachLenMax + i], shadeFrame[(z1 + p.Z) * SHADEX + (x1 + p.X)]);
+                if(blockReach[i].dir == ShadeConstants.RegionDir.l || blockReach[i].dir == ShadeConstants.RegionDir.c)
+                    ShadeConstants.SetLeft(shades, regionIndex * ShadeConstants.GLB.blockReachLenMax + i,
+                        ShadeConstants.CombineShades(ShadeConstants.GetLeft(shades, regionIndex * ShadeConstants.GLB.blockReachLenMax + i), ShadeConstants.GetLeft(shadeFrame, (z1 + p.Z) * SHADEX + (x1 + p.X)))
+                        );
+
+                if(blockReach[i].dir == ShadeConstants.RegionDir.r || blockReach[i].dir == ShadeConstants.RegionDir.c)
+                    ShadeConstants.SetRight(shades, regionIndex * ShadeConstants.GLB.blockReachLenMax + i,
+                        ShadeConstants.CombineShades(ShadeConstants.GetRight(shades, regionIndex * ShadeConstants.GLB.blockReachLenMax + i), ShadeConstants.GetRight(shadeFrame, (z1 + p.Z) * SHADEX + (x1 + p.X)))
+                        );
             }
         }
 

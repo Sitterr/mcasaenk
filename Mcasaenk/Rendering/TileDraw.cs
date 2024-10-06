@@ -10,13 +10,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
 
 namespace Mcasaenk.Rendering {
     public static class TileDraw {
@@ -26,6 +32,259 @@ namespace Mcasaenk.Rendering {
             var st = Stopwatch.StartNew();
             //uint[] tintcolors = very_temp.Rent(512 * 512);
 
+            //int maxdepth = Global.App.Settings.MAXABSHEIGHT;
+            //double transparency = 50 * Global.Settings.WATER_TRANSPARENCY + Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 10) * (maxdepth - 50);
+            double transparency2 = Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 0.1);
+            double qshade = Global.App.Settings.SHADE3D ? 8 * Global.App.Settings.CONTRAST : 16 * Global.App.Settings.CONTRAST;
+
+            double jmapqshade = Global.Settings.Jmap_REVEALED_WATER;
+            double jmapnormal = 1, jmapdark = 180 / 220d, jmapdarker = 135 / 220d, jmaplight = 255 / 220d;
+            jmapdark += (1 - jmapdark) * (0.5 - Global.Settings.CONTRAST) * 2;
+            jmapdarker += (1 - jmapdarker) * (0.5 - Global.Settings.CONTRAST) * 2;
+            jmaplight -= (jmaplight - 1) * (0.5 - Global.Settings.CONTRAST) * 2;
+
+
+
+            byte[][] relvis8 = new byte[genData.columns.Length][];
+            short[] meanheights = ArrayPool<short>.Shared.Rent((512 + 2) * (512 + 2));
+            for(int w = 0; w < genData.columns.Length; w++) {
+                relvis8[w] = ArrayPool<byte>.Shared.Rent((512 + 2) * (512 + 2));
+            }
+            {
+                genData.SetTemporal_WaterRelief();
+
+                var terrblur = new GausBlur<TerrHeightBlur, short, TerrHeightBlurData>((Global.Settings.OCEAN_DEPTH_BLENDING - 1) / 2, 1, TerrHeightBlur.pool, new TerrHeightBlurData() { mindiff = 15 }, neighbours);
+                terrblur.BoxBlur();
+
+                for(int x = -1; x < 513; x++) {
+                    terrblur.OnXStart();
+                    for(int z = -1; z < 513; z++) {
+                        int bi = (z + 1) * 514 + (x + 1);
+                        var res = terrblur.GetAndMoveOn_detail();
+                        short terrdepth = res.value;
+
+                        if(res.sector != null) {
+                            // relvis
+                            {
+                                byte ostatuk = 255;
+                                for(int w = 0; w < genData.columns.Length - 1; w++) {
+
+                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.GetGroups()[res.sector.columns[w].GroupId(res.ri)].ABSORBTION / 15d), genData.columns[w].Depth(res.ri))));
+                                    relvis8[w][bi] = a;
+                                    ostatuk -= a;
+                                }
+                                {
+                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.GetGroups()[res.sector.columns.Last().GroupId(res.ri)].ABSORBTION / 15d), terrdepth)));
+                                    relvis8[res.sector.columns.Length - 1][bi] = a;
+                                    ostatuk -= a;
+                                }
+                                for(int w = 0; w < genData.columns.Length; w++) {
+                                    relvis8[w][bi] += (byte)((relvis8[w][bi] / (double)(255 - ostatuk)) * ostatuk);
+                                }
+                            }
+
+                            // meanheights
+                            {
+                                for(int w = 0; w < genData.columns.Length - 1; w++) {
+                                    meanheights[bi] += (short)((relvis8[w][bi] / 255f) * res.sector.columns[w].TerrHeight(res.ri));
+                                }
+                                {
+                                    var col = res.sector.columns.Last();
+                                    meanheights[bi] += (short)((relvis8[genData.columns.Length - 1][bi] / 255f) * GenDataColumn.TerrHeight(col.IsDepth(res.ri), col.Height(res.ri), terrdepth));
+                                }
+                            }
+                        } else {
+                            meanheights[bi] = -1;
+                        }
+
+                        if(genData.depthColumn.depths != null && x >= 0 && x < 512 && z >= 0 && z < 512) {
+                            genData.depthColumn.depths[z * 512 + x] = terrdepth;
+                        } else {
+                            //meanheights[bi] = -1;
+                        }
+                    }
+                    terrblur.OnXEnd();
+                }
+
+                terrblur.Dispose();
+            }
+
+
+
+            foreach(var tint in colormap.GetTints()) {
+                var blendmode = tint.GetBlendMode();
+
+                Blur tintblur = null;
+                if(blendmode == Tint.Blending.biomeonly || blendmode == Tint.Blending.full) {
+                    tintblur = new GausBlur<ColorBlur, uint, ColorBlurData>((tint.Settings().Blend - 1) / 2, 0, ColorBlur.pool, new ColorBlurData() { tint = tint, colormap = colormap }, neighbours);                   
+                } else if(blendmode == Tint.Blending.full) { 
+                
+                }
+                tintblur?.BoxBlur();
+
+                for(int x = 0; x < 512; x++) {
+                    tintblur?.OnXStart();
+                    for(int z = 0; z < 512; z++) {
+                        int i = z * 512 + x, bi = (z + 1) * 514 + (x + 1);
+
+                        object blurdata = tintblur?.GetAndMoveOn();
+
+                        for(int w = 0; w < genData.columns.Length; w++) {
+                            var colw = genData.columns[w];
+                            if(!colw.ContainsInfo(i)) continue;
+                            var groupw = colormap.GetGroups()[colw.GroupId(i)];
+                            if(tint != groupw.tint) continue;
+                            bool depth = (w == genData.columns.Length - 1) && (colw.depths != null && colw.depths[i] != 0);
+
+                            uint color = 0xFF000000;
+
+                            // base tinted color
+                            {
+                                if(blendmode == Tint.Blending.none) {
+                                    color = tint.GetTintedColor(colw.Color(i), Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
+                                } else if(blendmode == Tint.Blending.heightonly) {
+                                    float lcolor = 0.01f;
+                                    for(int h = colw.Height(i); h > colw.Height(i) - colw.Depth(i); h--) {
+                                        float q = groupw.ABSORBTION / 15f * (1 - lcolor);
+                                        color = Global.Blend(tint.GetTintedColor(colw.Color(i), colw.BiomeId(i), (short)h), color, q / lcolor);
+                                        lcolor += q;
+                                        if(lcolor >= 1) break;
+                                    }
+                                } else if(tintblur is GausBlur<ColorBlur, uint, ColorBlurData> colorblur) {
+                                    color = Global.ColorMult(colw.Color(i), (uint)blurdata);
+                                }
+                            }
+
+
+                            double fd = 1;
+                            // water?
+                            {
+                                if(depth) {
+
+                                    if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
+                                        uint terrainColor = colw.ActColor(i);
+                                        int waterDepth = (int)colw.Depth(i);
+                                        double ratio = Math.Pow(2, -4 * (1 - transparency2) * (waterDepth + 3));
+                                        fd = ratio;
+                                        color = Global.Blend(terrainColor, color, ratio);
+
+                                        double multintensity = Math.Pow(fd, 0.75) * Global.App.Settings.CONTRAST + 1 * (1 - Global.App.Settings.CONTRAST);
+                                        color = Global.MultShade(color, multintensity, multintensity, multintensity);
+                                    } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
+                                        if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla) {
+                                            int hd = colw.Depth(i);
+
+                                            if(hd > 9 * jmapqshade) {
+                                                color = Global.MultShade(color, jmapdark);
+                                            } else if(hd <= 2 * jmapqshade) {
+                                                color = Global.MultShade(color, jmaplight);
+                                            } else if(hd <= 4 * jmapqshade) {
+                                                if(x % 2 == z % 2) color = Global.MultShade(color, jmaplight);
+                                                else color = Global.MultShade(color, jmapnormal);
+                                            } else if(hd <= 6 * jmapqshade) {
+                                                color = Global.MultShade(color, jmapnormal);
+                                            } else if(hd <= 9 * jmapqshade) {
+                                                if(x % 2 == z % 2) color = Global.MultShade(color, jmapnormal);
+                                                else color = Global.MultShade(color, jmapdark);
+                                            }
+
+                                        } else if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.translucient) {
+                                            uint terrainColor = colw.ActColor(i);
+                                            short heightAtComp = meanheights[bi + Global.Settings.Jmap_MAP_DIRECTION switch {
+                                                Direction.North => -514,
+                                                Direction.South => +514,
+                                                Direction.West => -1,
+                                                Direction.East => 1,
+                                            }];
+                                            short terrainheight = (short)(colw.Height(i) - colw.Depth(i));
+
+                                            if(terrainheight < heightAtComp) terrainColor = Global.MultShade(terrainColor, jmapdark);
+                                            else if(terrainheight > heightAtComp) terrainColor = Global.MultShade(terrainColor, jmaplight);
+
+                                            color = Global.Blend(terrainColor, color, Global.Settings.WATER_TRANSPARENCY);
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            // shades
+                            {
+                                if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE) { // traebva da e praedi shade
+                                    int xdiff = 0;
+                                    xdiff += meanheights[bi + 1] != -1 ? meanheights[bi + 1] : meanheights[bi];
+                                    xdiff -= meanheights[bi - 1] != -1 ? meanheights[bi - 1] : meanheights[bi];
+
+                                    int zdiff = 0;
+                                    zdiff += meanheights[bi + 514] != -1 ? meanheights[bi + 514] : meanheights[bi];
+                                    zdiff -= meanheights[bi - 514] != -1 ? meanheights[bi - 514] : meanheights[bi];
+
+                                    double shade = Math.Clamp(-(ShadeConstants.GLB.cosA * xdiff + -ShadeConstants.GLB.sinA * zdiff), -8, 8);
+                                    int fq = (int)(shade * qshade * fd);
+
+                                    color = Global.AddShade(color, fq, fq, fq);
+                                } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
+                                    if(depth == false) {
+                                        short heightAtComp = meanheights[bi + Global.Settings.Jmap_MAP_DIRECTION switch {
+                                            Direction.North => -514,
+                                            Direction.South => +514,
+                                            Direction.West => -1,
+                                            Direction.East => 1,
+                                        }];
+
+                                        if(colw.TerrHeight(i) < heightAtComp) color = Global.MultShade(color, jmapdark);
+                                        else if(colw.TerrHeight(i) > heightAtComp) color = Global.MultShade(color, jmaplight);
+                                    }
+
+                                }
+                            }
+
+                            // shadows & light
+                            {
+                                double sh = 0;
+
+                                sh += Global.App.Settings.SUN_LIGHT;
+                                if(Global.App.Settings.SHADETYPE == ShadeType.OG && colw.Shade(i) > 0) {
+                                    double max = (Global.App.Settings.CONTRAST * 150);
+                                    var c = color.ToColor();
+
+                                    sh = Math.Clamp(
+                                        sh * Math.Max(
+                                                (1 - (Global.App.Settings.CONTRAST * (colw.Shade(i) / 15d) * (Global.App.Settings.WATER_SMART_SHADE ? fd : 1))),
+                                                ((c.R + c.G + c.B) / 3 - max) / 255
+                                            ), 0, 15);
+
+                                    //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
+                                    //int addcontr = (int)(-Settings.CONTRAST * 100);
+
+
+                                    //if(c.a < 255) pixels[i] = 0;
+                                    //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
+                                }
+                                // option 1:
+                                sh = Math.Clamp(sh + Math.Clamp((colw.BlockLight(i) - 15) / fd + Global.Settings.BLOCK_LIGHT, 0, 15), 0, 15);
+                                // option 2:
+                                //sh = Math.Clamp(sh + Math.Clamp(colw.BlockLight(i) * fd, 0, Global.Settings.BLOCK_LIGHT), 0, 15);
+
+                                sh = (sh / 15);
+                                color = Global.MultShade(color, sh, sh, sh);
+                            }
+
+
+
+                            pixels[i] += Global.MultShade(color, relvis8[w][bi] / 255f);
+                        }
+                    }
+                    tintblur?.OnXEnd();
+                }
+
+                tintblur?.Dispose();
+            }
+
+
+
+
+            /*
             foreach(var tint in colormap.GetTints()) {
                 if(tint.Settings() == null) continue;
 
@@ -49,90 +308,7 @@ namespace Mcasaenk.Rendering {
                 }
             }
 
-            if(Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
-                genData.SetTemporal_TerrainHeights();
-                fixed(short* _terrainHeights = genData._terrainHeights) {
-                    GausBlur.BoxBlur<TerrHeightBlur, short, TerrHeightBlurData>((Global.Settings.OCEAN_DEPTH_BLENDING - 1) / 2, _terrainHeights, new TerrHeightBlurData() { mindiff = 15 }, TerrHeightBlur.pool, neighbours);
-                }
-            }
-
-
-            for(int i = 0; i < 512 * 512; i++) {
-                var blockid = genData.block(i);
-                var block = colormap.Value(blockid);
-
-                if(block.tint.GetBlendMode() == Tint.Blending.none) {
-                    pixels[i] = block.GetColor(Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
-                } else if(block.tint.GetBlendMode() == Tint.Blending.heightonly) {
-                    pixels[i] = block.GetColor(genData.biomeIds(i), genData.heights(i));
-                }
-            }
-
-            double[] fd = ArrayPool<double>.Shared.Rent(512 * 512);
-            Array.Fill<double>(fd, 1);
-            if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
-
-                //int maxdepth = Global.App.Settings.MAXABSHEIGHT;
-                //double transparency = 50 * Global.Settings.WATER_TRANSPARENCY + Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 10) * (maxdepth - 50);
-                double transparency2 = Math.Pow(Global.App.Settings.WATER_TRANSPARENCY, 0.1);
-                
-                //double contrast = 0.70 * Math.Pow(Global.App.Settings.CONTRAST, 10) + 0.17 * Math.Pow(Global.App.Settings.CONTRAST, 2) + 0.08 * Global.App.Settings.CONTRAST;
-
-                for(int i = 0; i < 512 * 512; i++) {
-                    var block = genData.block(i);
-
-                    if(Global.App.Settings.WATERDEPTH) {
-                        if(block == colormap.depth) {
-                            uint terrainColor = colormap.Value(genData.terrainBlock(i)).GetColor(genData.biomeIds(i), genData.terrainHeights(i));
-                            int waterDepth = genData.heights(i) - genData.terrainHeights(i);
-
-                            double ratio = Math.Pow(2, -4 * (1 - transparency2) * (waterDepth + 3));
-                            fd[i] = ratio;
-                            pixels[i] = Global.Blend(terrainColor, pixels[i], ratio);
-
-                            double multintensity = Math.Pow(fd[i], 0.75) * Global.App.Settings.CONTRAST + 1 * (1 - Global.App.Settings.CONTRAST);
-                            pixels[i] = Global.MultShade(pixels[i], multintensity, multintensity, multintensity);
-                        }
-                    }
-                }
-            }
-
-            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE) {
-                double q = 12 * Global.App.Settings.CONTRAST;
-                if(Global.App.Settings.SHADE3D) q = q / 2;
-
-                embossshade(new Span<uint>(pixels, 512 * 512), genData, fd, ShadeConstants.GLB.cosA, ShadeConstants.GLB.sinA, q);
-            } else if(Global.App.Settings.SHADETYPE == ShadeType.jmap) {
-                mapshade(new Span<uint>(pixels, 512 * 512), colormap, genData, neighbours);
-            }
-
-
-            for(int i = 0; i < 512 * 512; i++) {
-                double sh = 0;
-
-                sh += Global.App.Settings.SUN_LIGHT;
-                if(genData.isShade(i) > 0) {
-                    double max = (Global.App.Settings.CONTRAST * 150);
-                    var c = pixels[i].ToColor();
-
-                    sh = Math.Clamp(sh * Math.Max((1 - (Global.App.Settings.CONTRAST * (genData.isShade(i) / 200f) * (Global.App.Settings.WATER_SMART_SHADE ? fd[i] : 1))), ((c.R + c.G + c.B) / 3 - max) / 256), 0, 15);
-
-                    //double multcontr = 1 - (Global.App.Settings.CONTRAST * fd[i]);
-                    //int addcontr = (int)(-Settings.CONTRAST * 100);
-
-
-                    //if(c.a < 255) pixels[i] = 0;
-                    //else pixels[i] = Global.ToARGBInt((byte)Math.Max(c.r * multcontr, c.r - max), (byte)Math.Max(c.g * multcontr, c.g - max), (byte)Math.Max(c.b * multcontr, c.b - max));
-                }
-                // option 1:
-                sh = Math.Clamp(sh * fd[i] + Global.Settings.BLOCK_LIGHT / 15d * genData.blockLights(i) * fd[i], 0, 15);
-                //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) - 15 + Global.Settings.BLOCK_LIGHT * fd[i], 0, 15), 0, 15);
-                // option 2:
-                //sh = Math.Clamp(sh + Math.Clamp(genData.blockLights(i) * fd[i], 0, Global.Settings.BLOCK_LIGHT), 0, 15);
-
-                sh = (sh / 15) / fd[i];
-                pixels[i] = Global.MultShade(pixels[i], sh, sh, sh);
-            }
+            */
 
 
             if(Global.Settings.USEMAPPALETTE) {
@@ -142,129 +318,21 @@ namespace Mcasaenk.Rendering {
             }
 
 
-            ArrayPool<double>.Shared.Return(fd);
-            genData.ClearTemporal();
+            ArrayPool<short>.Shared.Return(meanheights, true);
+            for(int w = 0; w < genData.columns.Length; w++) {
+                ArrayPool<byte>.Shared.Return(relvis8[w], true);
+            }
             st.Stop();
             drawTime += st.ElapsedMilliseconds;
             drawCount++;
         }
 
-        private static void embossshade(Span<uint> pixelBuffer, GenData gdata, Span<double> fd, double cosA, double sinA, double q) {
-            int index = 0;
-            for(int z = 0; z < 512; z++) {
-                for(int x = 0; x < 512; x++, index++) {
-                    float xShade, zShade;
-
-                    if(pixelBuffer[index] == 0) {
-                        continue;
-                    }
-
-                    {
-                        if(z == 0) {
-                            zShade = (gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index));
-                        } else if(z == 512 - 1) {
-                            zShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 512));
-                        } else {
-                            zShade = ((gdata.terrainHeights(index + 512)) - (gdata.terrainHeights(index - 512))) * 2;
-                        }
-
-                        if(x == 0) {
-                            xShade = (gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index));
-                        } else if(x == 512 - 1) {
-                            xShade = (gdata.terrainHeights(index)) - (gdata.terrainHeights(index - 1));
-                        } else {
-                            xShade = ((gdata.terrainHeights(index + 1)) - (gdata.terrainHeights(index - 1))) * 2;
-                        }
-
-                        double shade = -(cosA * xShade + -sinA * zShade);
-                        if(shade < -8) {
-                            shade = -8;
-                        }
-                        if(shade > 8) {
-                            shade = 8;
-                        }
-
-                        int fq = (int)(shade * q * fd[index]);
-
-                        pixelBuffer[index] = Global.AddShade(pixelBuffer[index], fq, fq, fq);
-                    }
-                }
-            }
-        }
-        private static void mapshade(Span<uint> pixelBuffer, Colormap colormap, GenData gdata, GenData[,] neighbours) {
-            double normal = 1, dark = 180 / 220d, darker = 135 / 220d, light = 255 / 220d;
-            dark += (1 - dark) * (0.5 - Global.Settings.CONTRAST) * 2;
-            darker += (1 - darker) * (0.5 - Global.Settings.CONTRAST) * 2;
-            light -= (light - 1) * (0.5 - Global.Settings.CONTRAST) * 2;
-
-            Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
-                Direction.North => new Point2i(0, -1),
-                Direction.South => new Point2i(0, 1),
-                Direction.East => new Point2i(1, 0),
-                Direction.West => new Point2i(-1, 0),
-            };
-
-            Func<GenData, int, short> h = Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla ? (gendata, i) => gendata.heights(i)
-            : (gendata, i) => gendata.terrainHeights(i);
-
-            for(int z = 0; z < 512; z++) {
-                for(int x = 0; x < 512; x++) {
-                    int i = z * 512 + x;
-
-                    int heightAtComp = h(gdata, i);
-                    if(z + p.Z < 0 || z + p.Z >= 512 || x + p.X < 0 || x + p.X >= 512) {
-                        if(neighbours[p.X + 1, p.Z + 1] != null) {
-                            heightAtComp = h(neighbours[p.X + 1, p.Z + 1], Global.Settings.Jmap_MAP_DIRECTION switch {
-                                Direction.North => 511 * 512 + x,
-                                Direction.South => 0 * 512 + x,
-                                Direction.East => z * 512 + 0,
-                                Direction.West => z * 512 + 511,
-                            });
-                        }
-                    } else {
-                        heightAtComp = h(gdata, i + p.Z * 512 + p.X);
-                    }
-
-
-                    if(gdata.depth(i)) {
-                        if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.vanilla) {
-                            int hd = gdata.heights(i) - gdata.terrainHeights(i);
-                            double q = Global.Settings.Jmap_REVEALED_WATER;
-
-                            if(hd > 9 * q) {
-                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
-                            } else if(hd <= 2 * q) {
-                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
-                            } else if(hd <= 4 * q) {
-                                if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
-                                else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                            } else if(hd <= 6 * q) {
-                                pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                            } else if(hd <= 9 * q) {
-                                if(x % 2 == z % 2) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], normal);
-                                else pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
-                            }
-                        } else if(Global.Settings.Jmap_WATER_MODE == JsmapWaterMode.translucient) {
-                            uint terrainColor = colormap.Value(gdata.terrainBlock(i)).GetColor(gdata.biomeIds(i), gdata.terrainHeights(i));
-
-                            if(h(gdata, i) < heightAtComp) terrainColor = Global.MultShade(terrainColor, dark);
-                            else if(h(gdata, i) > heightAtComp) terrainColor = Global.MultShade(terrainColor, light);
-
-                            pixelBuffer[i] = Global.Blend(terrainColor, pixelBuffer[i], Global.Settings.WATER_TRANSPARENCY);
-                        }
-                    } else {
-                        if(h(gdata, i) < heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], dark);
-                        else if(h(gdata, i) > heightAtComp) pixelBuffer[i] = Global.MultShade(pixelBuffer[i], light);
-                    }
-
-
-                }
-            }
-        }
 
     }
 
-    interface Blur<T, U, V> where T : Blur<T, U, V> {
+
+
+    interface BlurConstruct<T, U, V> where T : BlurConstruct<T, U, V> {
         void IncreaseNewBlock(GenData gen, V data, int ri);
         void SetNewBlock(GenData gen, V data, int ri);
         void CopyFrom(T blur);
@@ -282,11 +350,16 @@ namespace Mcasaenk.Rendering {
             return (diff - 8) / 10d;
         }
     }
-    struct TerrHeightBlur : Blur<TerrHeightBlur, short, TerrHeightBlurData> {
+    struct TerrHeightBlur : BlurConstruct<TerrHeightBlur, short, TerrHeightBlurData> {
         public static ArrayPool<TerrHeightBlur> pool = ArrayPool<TerrHeightBlur>.Create((512 * 3) * (512 * 3), 8);
 
-        double h;
+        int h;
         int br;
+
+        public TerrHeightBlur() {
+            h = 0;
+            br = 0;
+        }
 
         public void CopyFrom(TerrHeightBlur blur) {
             h = blur.h; br = blur.br;
@@ -301,34 +374,44 @@ namespace Mcasaenk.Rendering {
         }
 
         public void IncreaseNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
-            if(gen.depth(ri)) {
-                h += Math.Pow(gen.terrainHeights(ri), 5);
+            if(gen == null) return;
+            if(gen.depthColumn.IsDepth(ri)) {
+                h += gen.depthColumn.Depth(ri);
                 br++;
             }
         }
         public void SetNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
-            if(gen.depth(ri)) {
-                h = Math.Pow(gen.terrainHeights(ri), 5);
+            if(gen == null) return;
+            if(gen.depthColumn.IsDepth(ri)) {
+                h = gen.depthColumn.Depth(ri);
                 br = 1;
             }
         }
 
         public short Generate(GenData gen, TerrHeightBlurData data, int i) {
-            if(gen.depth(i) == false) return gen.terrainHeights(i);
-            double q = data.q(gen.heights(i) - gen.terrainHeights(i));
-            return (short)(Global.Pow(h / br, 1d / 5) * q + gen.terrainHeights(i) * (1 - q));
+            if(gen == null) return -1;
+            if(gen.depthColumn.IsDepth(i) == false) return gen.depthColumn.Depth(i);
+            double q = data.q(gen.depthColumn.Depth(i));
+            return (short)(h / br * q + gen.depthColumn.Depth(i) * (1 - q));
         }
     }
-
+    
     class ColorBlurData {
-        public GridTint tint;
+        public Tint tint;
         public Colormap colormap;
     }
-    struct ColorBlur : Blur<ColorBlur, uint, ColorBlurData> {
+    struct ColorBlur : BlurConstruct<ColorBlur, uint, ColorBlurData> {
         public static ArrayPool<ColorBlur> pool = ArrayPool<ColorBlur>.Create((512 * 3) * (512 * 3), 8);
 
-        public byte r, g, b;
+        public int r, g, b;
         public int br;
+
+        public ColorBlur() {
+            Reset();
+        }
+        void Reset() {
+            br = 0; r = 0; g = 0; b = 0;
+        }
 
         public void CopyFrom(ColorBlur blur) {
             r = blur.r; g = blur.g; b = blur.b; br = blur.br;
@@ -347,9 +430,9 @@ namespace Mcasaenk.Rendering {
         }
 
         public void IncreaseNewBlock(GenData gen, ColorBlurData data, int ri) {
-            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
-                if(gb.tint == data.tint) {
-                    var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+            for(int w = 0; w < gen.columns.Length; w++) {
+                if(data.colormap.GetGroups()[gen.columns[w].GroupId(ri)].tint == data.tint) {
+                    var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
                     r += f.R;
                     g += f.G;
                     b += f.B;
@@ -358,28 +441,26 @@ namespace Mcasaenk.Rendering {
             }
         }
         public void SetNewBlock(GenData gen, ColorBlurData data, int ri) {
-            if(data.colormap.Value(gen.block(ri)) is BlockValue gb) {
-                if(gb.tint == data.tint) {
-                    var f = gb.tint.TintColorFor(gen.biomeIds(ri), gen.heights(ri)).ToColor();
+            Reset();
+            for(int w = 0; w < gen.columns.Length; w++) {
+                if(data.colormap.GetGroups()[gen.columns[w].GroupId(ri)].tint == data.tint) {
+                    var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
                     r += f.R;
                     g += f.G;
                     b += f.B;
-                    br = 1;
+                    br++;
                 }
             }
         }
 
         public uint Generate(GenData gen, ColorBlurData data, int i) {
-            if(data.colormap.Value(gen.block(i)) is BlockValue gb) {
-                if(gb.tint == data.tint) {
-                    if(br == 0) return 0xFFFF0000;
-                    return Global.ColorMult(gb.color, WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
-                }
+            if(br == 0) {
+                return 0xFFFF0000;
             }
-            return 0;
+            return WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt();
         }
     }
-
+    /*
     class PrecBlurData {
         public DynBiome dynbiomes;
         public GridTint tint;
@@ -443,7 +524,7 @@ namespace Mcasaenk.Rendering {
             return 0;
         }
     }
-
+    
     class DynBiome {
         ConcurrentDictionary<ushort, int> dynamicbiome = new ConcurrentDictionary<ushort, int>();
         ConcurrentDictionary<int, ushort> dynamicbiomeback = new ConcurrentDictionary<int, ushort>();
@@ -470,13 +551,45 @@ namespace Mcasaenk.Rendering {
 
         public ushort back(int i) => dynamicbiomeback[i];
     }
+    
+    */
+    interface Blur : IDisposable {
+        void BoxBlur();
+        void OnXStart();
+        void OnXEnd();
+        object GetAndMoveOn();
+    }
 
-    unsafe static class GausBlur {
-        public static void BoxBlur<T, U, V>(int R, U* output, V data, ArrayPool<T> pool, GenData[,] neighbours) where T : struct, Blur<T, U, V> {
-            if(R <= 0 || R > 512) return;
-            var xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R));
+    class GausBlur<T, U, V> : Blur where T : struct, BlurConstruct<T, U, V> {
+        private readonly int R, resR, STRIDE;
+        private readonly ArrayPool<T> pool;
+        private readonly V data;
+        private readonly GenData[,] neighbours;
+        private T[] xdata2;
+        public GausBlur(int R, int resR, ArrayPool<T> pool, V data, GenData[,] neighbours) {
+            this.R = R; this.resR = resR;
+            this.pool = pool;
+            this.data = data;
+            this.neighbours = neighbours;
+            this.STRIDE = 512 + 2 * R;
 
-            int STRIDE = 512 + 2 * R;
+            if(R > 0) {
+                this.xdata2 = pool.Rent((512 + 2 * R) * (512 + 2 * R));
+                this.cx2 = pool.Rent(512 + R + R);              
+            }
+
+            ax = -resR; az = -resR;
+        }
+        public void Dispose() {
+            if(R > 0) {
+                pool.Return(xdata2, true);
+                pool.Return(cx2);
+            }
+        }
+
+
+        public void BoxBlur() {
+            if(R == 0) return;
 
             var genData = neighbours[1, 1];
 
@@ -484,7 +597,7 @@ namespace Mcasaenk.Rendering {
                 Span<T> cx2 = MemoryMarshal.Cast<byte, T>(stackalloc byte[Unsafe.SizeOf<T>() * (512 + R + R)]);
                 T acc = new T();
 
-                for(int r = -R; r <= R; r++) {
+                for(int r = -R; r < R - resR; r++) {
                     (int q, int rem) rx = Math.DivRem(512 + r, 512), rz = Math.DivRem(512 + z, 512);
                     int ri = rz.rem * 512 + rx.rem;
                     var gen = neighbours[rx.q, rz.q];
@@ -493,57 +606,93 @@ namespace Mcasaenk.Rendering {
                         acc.IncreaseNewBlock(gen, data, ri);
                         cx2[R + r].SetNewBlock(gen, data, ri);
                     }
+
                 }
 
-                xdata2[(R + z) * STRIDE + R].CopyFrom(acc);
-
-                for(int x = 1; x < 512; x++) {
+                for(int x = -resR; x < 512 + resR; x++) {
                     // old
-                    acc.Subtract(cx2[R + x - 1 - R]);
+                    if(R + x - 1 - R >= 0) acc.Subtract(cx2[R + x - 1 - R]);
 
                     // new
-                    (int q, int rem) rx = Math.DivRem(512 + x + R, 512), rz = Math.DivRem(512 + z, 512);
-                    int ri = rz.rem * 512 + rx.rem;
-                    var gen = neighbours[rx.q, rz.q];
+                    if(R + x + R < cx2.Length) {
+                        (int q, int rem) rx = Math.DivRem(512 + x + R, 512), rz = Math.DivRem(512 + z, 512);
+                        int ri = rz.rem * 512 + rx.rem;
+                        var gen = neighbours[rx.q, rz.q];
 
-                    if(gen != null) {
-                        acc.IncreaseNewBlock(gen, data, ri);
-                        cx2[R + x + R].SetNewBlock(gen, data, ri);
+                        if(gen != null) {
+                            acc.IncreaseNewBlock(gen, data, ri);
+                            cx2[R + x + R].SetNewBlock(gen, data, ri);
+                        }
                     }
 
                     xdata2[(R + z) * STRIDE + (R + x)].CopyFrom(acc);
                 }
             });
 
-
-            Parallel.For(0, 512, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, x => {
-                Span<T> cx2 = MemoryMarshal.Cast<byte, T>(stackalloc byte[Unsafe.SizeOf<T>() * (512 + R + R)]);
-                T acc = new T();
-
-                for(int r = -R; r <= R; r++) {
-                    cx2[R + r].CopyFrom(xdata2[(r + R) * STRIDE + (x + R)]);
-                    acc.Plus(cx2[R + r]);
-                }
-
-                output[0 * 512 + x] = acc.Generate(genData, data, 0 * 512 + x);
-
-                for(int z = 1; z < 512; z++) {
-                    // old
-                    acc.Subtract(cx2[z - 1]);
-
-                    // new
-                    cx2[R + z + R].CopyFrom(xdata2[(z + R + R) * STRIDE + (x + R)]);
-                    acc.Plus(cx2[R + z + R]);
-
-
-                    output[z * 512 + x] = acc.Generate(genData, data, z * 512 + x);
-                }
-            });
-
-            pool.Return(xdata2, false);
         }
-    }
 
+
+        private T[] cx2;
+        private T acc;
+        private int ax, az;
+
+        public void OnXStart() {
+            acc = new T();
+
+            for(int r = -R; r < R - resR; r++) {
+                cx2[R + r].CopyFrom(xdata2[(r + R) * STRIDE + (ax + R)]);
+                acc.Plus(cx2[R + r]);
+            }
+            az = -resR;
+        }
+
+        public void OnXEnd() {
+            ax++;
+        }
+
+        public (U value, GenData sector, int ri) GetAndMoveOn_detail() {
+            if(R > 0) {
+                // old
+                if(az - 1 >= 0) acc.Subtract(cx2[az - 1]);
+
+                // new
+                if(R + az + R < cx2.Length) {
+                    cx2[R + az + R].CopyFrom(xdata2[(az + R + R) * STRIDE + (ax + R)]);
+                    acc.Plus(cx2[R + az + R]);
+                }
+            }
+
+            var xx = Math.DivRem(ax + 512, 512);
+            var zz = Math.DivRem(az++ + 512, 512);
+            int ri = zz.Remainder * 512 + xx.Remainder;
+            if(R == 0) acc.SetNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+
+            return (acc.Generate(neighbours[xx.Quotient, zz.Quotient], data, ri), neighbours[xx.Quotient, zz.Quotient], ri);
+        }
+
+        public U GetAndMoveOn() {
+            if(R > 0) {
+                // old
+                if(az - 1 >= 0) acc.Subtract(cx2[az - 1]);
+
+                // new
+                if(R + az + R < cx2.Length) {
+                    cx2[R + az + R].CopyFrom(xdata2[(az + R + R) * STRIDE + (ax + R)]);
+                    acc.Plus(cx2[R + az + R]);
+                }
+            }
+
+            var xx = Math.DivRem(ax + 512, 512);
+            var zz = Math.DivRem(az++ + 512, 512);
+            int ri = zz.Remainder * 512 + xx.Remainder;
+            if(R == 0) acc.SetNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+
+            return acc.Generate(neighbours[xx.Quotient, zz.Quotient], data, ri);
+        }
+
+        object Blur.GetAndMoveOn() => this.GetAndMoveOn();
+    }
+    /*
 
 
 
@@ -817,5 +966,6 @@ namespace Mcasaenk.Rendering {
             pool.Return(xdata2, true);
         }
     }
+    */
 
 }

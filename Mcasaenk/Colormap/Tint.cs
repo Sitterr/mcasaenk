@@ -250,7 +250,7 @@ namespace Mcasaenk.Colormaping {
         string Tint.Name() => name;
         DynamicTintSettings Tint.Settings() => settings;
 
-        uint Tint.TintColorFor(ushort biome, short height) {
+        public uint TintColorFor(ushort biome, short height) {
             int x = settings.On ? biome : Global.Settings.DEFBIOME;
             if(x >= sprite.GetLength(0) || x < 0) x = Global.Settings.DEFBIOME;
             int y = Math.Clamp(height - offset, 0, sprite.GetLength(1) - 1);
@@ -269,7 +269,7 @@ namespace Mcasaenk.Colormaping {
 
     }
     public class NullTint : Tint {
-        public static NullTint Tint = new NullTint();
+        public static NullTint Tint = new NullTint(), Error = new NullTint();
         private NullTint() { }
 
         string Tint.Name() => "";
@@ -279,5 +279,17 @@ namespace Mcasaenk.Colormaping {
         uint Tint.TintColorFor(ushort biome, short height) => 0xFFFFFFFF;
 
         uint Tint.GetTintedColor(uint baseColor, ushort biome, short height) => baseColor;
+    }
+    public class InvTint : Tint {
+        public static InvTint Tint = new InvTint();
+        private InvTint() { }
+
+        string Tint.Name() => "";
+        DynamicTintSettings Tint.Settings() => null;
+        Blending Tint.GetBlendMode() => Blending.none;
+
+        uint Tint.TintColorFor(ushort biome, short height) => 0;
+
+        uint Tint.GetTintedColor(uint baseColor, ushort biome, short height) => 0;
     }
 }

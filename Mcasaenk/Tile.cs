@@ -40,8 +40,8 @@ namespace Mcasaenk
         }
 
         public void SetSettings() {
-            ColorGausBlur.pool = ArrayPool<ColorGausBlur.C>.Create((512 * 3) * (512 * 3), Global.Settings.DRAWMAXCONCURRENCY);
-            PrecGausBlur.pool = ArrayPool<ushort>.Create((512 * 3) * (512 * 3) * PrecGausBlur.MB, Global.Settings.DRAWMAXCONCURRENCY);
+            //ColorGausBlur.pool = ArrayPool<ColorGausBlur.C>.Create((512 * 3) * (512 * 3), Global.Settings.DRAWMAXCONCURRENCY);
+            //PrecGausBlur.pool = ArrayPool<ushort>.Create((512 * 3) * (512 * 3) * PrecGausBlur.MB, Global.Settings.DRAWMAXCONCURRENCY);
 
             generateTilePool = new GenerateTilePool();
             drawTilePool = new TilePool(Global.Settings.DRAWMAXCONCURRENCY);
@@ -193,7 +193,10 @@ namespace Mcasaenk
                     neighbours[p.X + 1, p.Z + 1] = tile.genData;
                 }
             }
-            TileDraw.FillPixels(pixels, Global.App.Colormap, this.genData, neighbours);
+
+            var tempgen = genData.GetTempInstance();
+            TileDraw.FillPixels(pixels, Global.App.Colormap, tempgen, neighbours);
+            tempgen.DisposeTemporal();
 
             img.Unlock();
             img.Freeze();

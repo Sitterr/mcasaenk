@@ -16,12 +16,12 @@ namespace Mcasaenk.Rendering {
         public static short NullFilter(IChunkInterpreter data, int x, int z, short startY) => startY;
 
 
-        public static Filter.filter AIR_FILTER(int renderheight, int maxheight) {
+        public static Filter.filter AIR_FILTER(IChunkInterpreter data, int renderheight, int maxheight) {
             if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterAir;
             else return AirFilter.List;
         }
-        public static Filter.filter DEPTH_FILTER(int renderheight, int maxheight) {
-            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight && Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterWater;
+        public static Filter.filter DEPTH_FILTER(IChunkInterpreter data, int renderheight, int maxheight) {
+            if(Global.Settings.PREFERHEIGHTMAPS && renderheight == maxheight && data.Colormap.depth == data.Colormap.BLOCK_WATER/* && Global.Settings.DIMENSION != Dimension.Type.End*/) return HeightmapFilter.FilterWater;
             else return DepthFilter.List;
         }
     }
@@ -106,7 +106,7 @@ namespace Mcasaenk.Rendering {
             short floor_height = data.GetTerrainHeight(x, z);
             short motion_height = data.GetMotionHeight(x, z);
 
-            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == Global.App.Colormap.depth) {
+            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == data.Colormap.depth) {
                 return AirFilter.List(data, x, z, floor_height);
             }
 

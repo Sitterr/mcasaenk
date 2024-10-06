@@ -222,8 +222,19 @@ namespace Mcasaenk.UI.Canvas {
                         }
                         for(int xx = xxst; xx < xxend; xx++) {
                             for(int zz = zzst; zz < zzend; zz++) {
-                                var block = tile.genData.block(zz * 512 + xx);
-                                if(block == default || block == Colormap.INVBLOCK) {
+
+                                int i = zz * 512 + xx, br = 1;
+                                for(int w = 0; w < tile.genData.columns.Length; w++) {
+                                    if(tile.genData.columns[w].ContainsInfo(i)) {
+                                        br++;
+                                        if(tile.genData.columns[w].GroupId(i) == 0 || tile.genData.columns[w].GroupId(i) == 1) {
+                                            br = 0;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if(br == 0) {
                                     outline = orangePen;
                                     z = int.MaxValue - 1;
                                     x = int.MaxValue - 1;

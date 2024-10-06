@@ -28,8 +28,7 @@ namespace Mcasaenk.Shade3d {
         public readonly int xp, zp;
         public readonly int rX, rZ;
         public enum RegionDir { n, l, r, c };
-        public readonly List<(RegionDir dir, Point2i p)> regionReach;
-        public readonly Point2i[] blockReach;
+        public readonly List<(RegionDir dir, Point2i p)> regionReach, blockReach;
         public readonly byte blockReachLenMax;
 
         public ShadeConstants(double A_deg) {
@@ -62,8 +61,15 @@ namespace Mcasaenk.Shade3d {
 
 
             var size = new SizeF(Math.Abs((float)cosAcotgB), Math.Abs((float)sinAcotgB));
-            blockReach = CreateReach(new PointF(0, 0), size, true).Select(f => f.p).ToArray();
-            blockReachLenMax = (byte)blockReach.Length;
+            blockReach = CreateReach(new PointF(0, 0), size, true);
+            for(int i=0;i<blockReach.Count;i++) {
+                var r = blockReach[i];
+
+                if(r.p == new Point2i(0, 0)) r.dir = RegionDir.l;
+                if(r.p == new Point2i(Math.Ceiling(size.Width), Math.Ceiling(size.Height))) r.dir = RegionDir.r;
+            }
+
+            blockReachLenMax = (byte)blockReach.Count;
 
             regionReach = CreateReach(new PointF(0, 0), new SizeF((float)Math.Abs(cosAcotgB * Height) / 512, (float)Math.Abs(sinAcotgB * Height) / 512), false);//!!!
         }
@@ -173,6 +179,29 @@ namespace Mcasaenk.Shade3d {
             a = (int)Math.Ceiling(Math.Abs(a));
             if(neg) a = -a;
             return (int)a;
+        }
+
+
+
+        public static void SetLeft(byte[] array, int i, byte val) {
+            array[i] = (byte)((val << 4) + (array[i] & 0x0F));
+        }
+        public static void SetRight(byte[] array, int i, byte val) {
+            array[i] = (byte)((array[i] & 0xF0) + val);
+        }
+        public static void SetBoth(byte[] array, int i, byte left, byte right) {
+            array[i] = (byte)((left << 4) + right);
+        }
+
+        public static byte GetLeft(byte[] array, int i) {
+            return (byte)(array[i] >> 4);
+        }
+        public static byte GetRight(byte[] array, int i) {
+            return (byte)(array[i] & 0x0F);
+        }
+
+        public static byte CombineShades(byte old, byte add) {
+            return (byte)(old + (15 - old) * ((float)add / 15));
         }
     }
 }

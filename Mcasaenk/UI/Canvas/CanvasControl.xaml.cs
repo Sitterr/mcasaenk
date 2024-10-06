@@ -203,11 +203,11 @@ namespace Mcasaenk.UI.Canvas {
                     int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
                     if(tile?.genData != null) {
                         //window.footer.Y = tile.genData.heights(i) + Global.Settings.MINY;
-                        window.footer.Y = tile.genData.isShade(i);
-                        window.footer.Y_Terrain = tile.genData.terrainHeights(i) + Global.Settings.MINY;
+                        //window.footer.Y = tile.genData.isShade(i);
+                        //window.footer.Y_Terrain = tile.genData.terrainHeights(i) + Global.Settings.MINY;
 
-                        window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
-                        window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));
+                        //window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
+                        //window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));
                     } else {
                         window.footer.Y = -10;
                         window.footer.Y_Terrain = Global.Settings.MINY - 1;

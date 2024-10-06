@@ -15,8 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace Mcasaenk
-{
+namespace Mcasaenk {
     public enum Direction {
         [Description("north")]
         North,
@@ -76,54 +75,21 @@ namespace Mcasaenk
 
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
+    public class SettingsHub(Action<string> onLightChange, Action<List<string>> onHardChange) : INotifyPropertyChanged {
 
-    public class Settings : INotifyPropertyChanged {
+        private readonly List<StandardizedSettings> settings = new List<StandardizedSettings>();
+        public void RegisterSettings(StandardizedSettings settings) {
+            if(settings == null) return;
+            this.settings.Add(settings);
+            settings.SettingsHub = this;
+        }
+        public void UnlistSettings(StandardizedSettings settings) {
+            this.settings.Remove(settings);
+            settings.SettingsHub = null;
+        }
+
+
         List<string> frozenChanges = new List<string>();
-
-        public void SetFromBack() {
-            Freeze();
-
-            if(Y_OFFICIAL != Y) Y_OFFICIAL = Y;
-            if(ADEG != ADeg) ADEG = ADeg;
-            if(BDEG != BDeg) BDEG = BDeg;
-            if(SHADE3D != Shade3d) SHADE3D = Shade3d;
-            if(MAXCONCURRENCY != RegionConcurrency) MAXCONCURRENCY = RegionConcurrency;
-            if(CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency) CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
-            if(DRAWMAXCONCURRENCY != DrawConcurrency) DRAWMAXCONCURRENCY = DrawConcurrency;
-            if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
-            if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
-            if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
-            if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
-
-            FinishFreeze(true);
-        }
-        public void Reset() {
-            Y = Y_OFFICIAL;
-            ADeg = ADEG;
-            BDeg = BDEG;
-            Shade3d = SHADE3D;
-            RegionConcurrency = MAXCONCURRENCY;
-            ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
-            DrawConcurrency = DRAWMAXCONCURRENCY;
-            ColorMapping = COLOR_MAPPING_MODE;
-            ShadeType = SHADETYPE;
-            PreferHeightmap = PREFERHEIGHTMAPS;
-            SkipUnknown = SKIP_UNKNOWN_BLOCKS;
-        }
-        public bool CHANGED_BACK {
-            get => Y_OFFICIAL != Y ||
-                   ADEG != ADeg ||
-                   BDEG != BDeg ||
-                   SHADE3D != Shade3d ||
-                   MAXCONCURRENCY != RegionConcurrency ||
-                   CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency ||
-                   DRAWMAXCONCURRENCY != DrawConcurrency ||
-                   COLOR_MAPPING_MODE != ColorMapping ||
-                   SHADETYPE != ShadeType ||
-                   PREFERHEIGHTMAPS != PreferHeightmap ||
-                   SKIP_UNKNOWN_BLOCKS != SkipUnknown;
-        }
-
         public bool frozen { get; private set; } = true;
         public void Freeze() {
             frozen = true;
@@ -134,26 +100,125 @@ namespace Mcasaenk
             if(execute) onHardChange(frozenChanges);
         }
 
+        public void SetFromBack() {
+            Freeze();
+
+            foreach(var sett in settings) sett.SetFromBack();
+
+            FinishFreeze(true);
+        }
+        public void Reset() {
+            foreach(var sett in settings) sett.Reset();
+        }
+
 
         public void OnAutoChange(string propertyName) {
-            OnPropertyChanged(propertyName);
             OnPropertyChanged(nameof(CHANGED_BACK));
         }
         public void OnLightChange(string propertyName) {
             if(frozen == false) onLightChange(propertyName);
-            OnPropertyChanged(propertyName);
         }
         public void OnHardChange(string propertyName) {
-            OnPropertyChanged(propertyName);
             OnPropertyChanged(nameof(CHANGED_BACK));
-            if(frozen) frozenChanges.Add(propertyName); 
+            if(frozen) frozenChanges.Add(propertyName);
             else onHardChange([propertyName]);
         }
+
+
+
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        public bool CHANGED_BACK { 
+            get => settings.Any(s => s.ChangedBack());
+        }
+    }
+
+    public abstract class StandardizedSettings : INotifyPropertyChanged {
+        [JsonIgnore]
+        public SettingsHub SettingsHub { get; set; }
+
+
+        public abstract void SetFromBack();
+        public abstract void Reset();
+        public abstract bool ChangedBack();
+
+        public void OnAutoChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnAutoChange(propertyName);
+        }
+        public void OnLightChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnLightChange(propertyName);
+        }
+        public void OnHardChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnHardChange(propertyName);
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class Settings : StandardizedSettings {
+        public override void SetFromBack() {
+            if(Y_OFFICIAL != Y) Y_OFFICIAL = Y;
+            if(ADEG != ADeg) ADEG = ADeg;
+            if(BDEG != BDeg) BDEG = BDeg;
+            if(SHADE3D != Shade3d) SHADE3D = Shade3d;
+            if(MAXCONCURRENCY != RegionConcurrency) MAXCONCURRENCY = RegionConcurrency;
+            if(CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency) CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
+            if(DRAWMAXCONCURRENCY != DrawConcurrency) DRAWMAXCONCURRENCY = DrawConcurrency;
+            if(TRANSPARENTLAYERS != TransparentLayers) TRANSPARENTLAYERS = TransparentLayers;
+            if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
+            if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
+            if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
+            if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
+        }
+        public override void Reset() {
+            Y = Y_OFFICIAL;
+            ADeg = ADEG;
+            BDeg = BDEG;
+            Shade3d = SHADE3D;
+            RegionConcurrency = MAXCONCURRENCY;
+            ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
+            DrawConcurrency = DRAWMAXCONCURRENCY;
+            TransparentLayers = TRANSPARENTLAYERS;
+            ColorMapping = COLOR_MAPPING_MODE;
+            ShadeType = SHADETYPE;
+            PreferHeightmap = PREFERHEIGHTMAPS;
+            SkipUnknown = SKIP_UNKNOWN_BLOCKS;
+        }
+        public override bool ChangedBack() => 
+                   Y_OFFICIAL != Y ||
+                   ADEG != ADeg ||
+                   BDEG != BDeg ||
+                   SHADE3D != Shade3d ||
+                   MAXCONCURRENCY != RegionConcurrency ||
+                   CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency ||
+                   TRANSPARENTLAYERS != TransparentLayers ||
+                   DRAWMAXCONCURRENCY != DrawConcurrency ||
+                   COLOR_MAPPING_MODE != ColorMapping ||
+                   SHADETYPE != ShadeType ||
+                   PREFERHEIGHTMAPS != PreferHeightmap ||
+                   SKIP_UNKNOWN_BLOCKS != SkipUnknown;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 4,
             FOOTER = true, OVERLAYS = false, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
@@ -179,14 +244,6 @@ namespace Mcasaenk
 
             ADEG = 120, BDEG = 15,
         };
-
-        private Action<List<string>> onHardChange;
-        private Action<string> onLightChange;
-        public void SetActions(Action<string> onLightChange, Action<List<string>> onHardChange) {
-            this.onLightChange = onLightChange;
-            this.onHardChange = onHardChange;
-            frozen = false;
-        }
 
         private string dimension;
         [JsonIgnore]
@@ -651,6 +708,24 @@ namespace Mcasaenk
         public int DRAWMAXCONCURRENCY { get => drawConcurrency; set { drawConcurrency = value; DrawConcurrency = value; OnHardChange(nameof(DRAWMAXCONCURRENCY)); } }
 
 
+        private int transparentLayers, transparentLayers_back;
+        [JsonIgnore]
+        public int TransparentLayers {
+            get => transparentLayers_back;
+            set {
+                if(transparentLayers_back == value) return;
+
+                transparentLayers_back = value;
+                OnAutoChange(nameof(TransparentLayers));
+                if(Global.App.OpenedSave == null) {
+                    transparentLayers = value;
+                    OnAutoChange(nameof(TRANSPARENTLAYERS));
+                }
+            }
+        }
+        public int TRANSPARENTLAYERS { get => transparentLayers; set { transparentLayers = value; TransparentLayers = value; OnHardChange(nameof(TRANSPARENTLAYERS)); } }
+
+
         private int minZoom;
         [JsonIgnore]
         public int MinZoom {
@@ -767,13 +842,6 @@ namespace Mcasaenk
         #region depr
         public bool WATERDEPTH { get => true; set { } }
         #endregion
-
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
 

@@ -14,64 +14,50 @@ using static Mcasaenk.Rendering.GenerateTilePool;
 namespace Mcasaenk.Rendering {
 
     public class GenData { // 72bit
-        public ushort[] _blockIds;
-        private ushort[] _blockIds_OG, _blocksIds_temp;
+        public GenDataColumn[] columns; // including depthColumn
 
-        public ushort[] _biomeIds;
-        private ushort[] _biomeIds_OG, _biomeIds_temp;
-
-        public short[] _heights;
-        private short[] _heights_OG, _heights_temp;
-
-        public short[] _terrainHeights;
-        private short[] _terrainHeights_OG, _terrainHeights_temp;
-
-        public byte[] _isShade;
-        private byte[] _isShade_OG, _isShade_temp;
-
-        public byte[] _blocklights;
-        private byte[] _blocklights_OG, _blockslights_temp;
+        public GenDataColumn depthColumn;
+        private bool istemp, temp_waterRelief = false;
 
         private ushort depthblock;
-        public GenData(RawData rawData, ushort depthblock) { 
-            this._blockIds = this._blockIds_OG = rawData.blockIds;
-            this._biomeIds = this._biomeIds_OG = rawData.biomeIds;
-            this._heights = this._heights_OG = rawData.heights;
-            this._terrainHeights = this._terrainHeights_OG = rawData.terrainHeights;
-            this._isShade = this._isShade_OG = new byte[512 * 512];
-            this._blocklights = this._blocklights_OG = rawData.blockLights;
+        public GenData(RawData rawData, ushort depthblock) {
+            this.columns = new GenDataColumn[rawData.columns.Length + 1];
+            for(int i = 0; i < rawData.columns.Length; i++) {
+                this.columns[i] = new GenDataColumn(rawData.columns[i], false);
+            }
+            depthColumn = this.columns[rawData.columns.Length] = new GenDataColumn(rawData.depthColumn, true);
 
             this.depthblock = depthblock;
+            this.istemp = false;
         }
-        public void SetTemporal_TerrainHeights() {
-            _terrainHeights = _terrainHeights_temp = ArrayPool<short>.Shared.Rent(512 * 512);
-            for(int i=0;i<512*512;i++) _terrainHeights_temp[i] = _terrainHeights_OG[i];
-        }
-        public void ClearTemporal() {
-            if(_terrainHeights_temp != null) {
-                _terrainHeights = _terrainHeights_OG;
-                ArrayPool<short>.Shared.Return(_terrainHeights_temp);
-                _terrainHeights_temp = null;
+        private GenData(GenData genData) {
+            this.columns = new GenDataColumn[genData.columns.Length];
+            for(int i = 0; i < columns.Length; i++) {
+                this.columns[i] = new GenDataColumn(genData.columns[i]);
             }
+            this.depthColumn = this.columns.Last();
+            this.depthblock = genData.depthblock;
+            this.istemp = true;
         }
 
-        public bool depth(int i) => heights(i) != terrainHeights(i);
+        public void SetTemporal_WaterRelief() {
+            if(istemp == false) throw new Exception();
+            if(depthColumn.depths == null) return;
 
-        public ushort terrainBlock(int i) => _blockIds[i];
-
-        public ushort block(int i) => depth(i) ? depthblock : terrainBlock(i);
-
-        public ushort biomeIds(int i) => _biomeIds[i];
-
-        public short heights(int i) => _heights[i];
-
-        public short terrainHeights(int i) => _terrainHeights[i];
-
-        public byte blockLights(int i) => _blocklights[i];
+            temp_waterRelief = true;
+            var old = depthColumn.depths;
+            depthColumn.depths = ArrayPool<short>.Shared.Rent(512 * 512);
+            for(int i = 0; i < 512 * 512; i++) depthColumn.depths[i] = old[i];
+        }
+        public void DisposeTemporal() {
+            if(istemp == false) throw new Exception();
+            if(temp_waterRelief) ArrayPool<short>.Shared.Return(depthColumn.depths);
+        }
 
 
-        public byte isShade(int i) => _isShade[i];
-        public void Set_isShade(int i, byte value) { _isShade[i] = value; }
+        public GenData GetTempInstance() {
+            return new GenData(this);
+        }
 
 
 
@@ -80,7 +66,7 @@ namespace Mcasaenk.Rendering {
             if(empty == 0) {
                 empty = 2;
                 for(int i = 0; i < 512 * 512; i++) {
-                    if(block(i) == default || block(i) == Colormap.INVBLOCK) {
+                    if(depthColumn.GroupId(i) == 0/*inv*/ || depthColumn.GroupId(i) == 1/*error*/) {
                         empty = 1; 
                         break;
                     }
@@ -91,27 +77,96 @@ namespace Mcasaenk.Rendering {
         }
     }
 
-    public class RawData {
-        public ushort[] blockIds;
-        public ushort[] biomeIds;
-        public short[] heights;
-        public short[] terrainHeights;
-        public byte[] shadeFrame;
-        public byte[] shadeValues;
-        public byte[] shadeValuesLen;
-        public byte[] blockLights;
+    public class GenDataColumn {
+        public bool ContainsInfo(int i) => heights[i] != default || biomeIds10_groupIds6[i] != default || color24_light4_shade4[i] != default;
 
-        public RawData() { 
-            blockIds = new ushort[512 * 512];
-            biomeIds = new ushort[512 * 512];
-            heights = new short[512 * 512];
-            terrainHeights = new short[512 * 512];
+        public uint[] color24_light4_shade4;
+        public ushort[] biomeIds10_groupIds6;
+        public short[] heights, depths;
+
+        private readonly bool maybedepth;
+
+        public GenDataColumn(RawDataColumn rawcolumn, bool depthcolumn) {
+            this.color24_light4_shade4 = rawcolumn.color24_light4_none4;
+            this.biomeIds10_groupIds6 = rawcolumn.biomeIds10_groupIds6;
+            this.heights = rawcolumn.heights;
+            this.depths = rawcolumn.depths;
+
+            this.maybedepth = depthcolumn && depths != null;
+        }
+
+        public GenDataColumn(GenDataColumn gencolumn) {
+            this.color24_light4_shade4 = gencolumn.color24_light4_shade4;
+            this.biomeIds10_groupIds6 = gencolumn.biomeIds10_groupIds6;
+            this.heights = gencolumn.heights;
+            this.depths = gencolumn.depths;
+
+            this.maybedepth = gencolumn.maybedepth;
+        }
+        
+        public uint ActColor(int i) => 0xFF000000 | (color24_light4_shade4[i] >> 8);
+        public bool IsDepth(int i) => maybedepth && depths[i] != 0;
+        public uint Color(int i) => IsDepth(i) ? Global.App.Colormap.depthVal.color : ActColor(i);
+        public byte BlockLight(int i) => (byte)((color24_light4_shade4[i] & 0x000000FF) >> 4);
+        public byte Shade(int i) => (byte)((color24_light4_shade4[i] & 0x0000000F));
+        public void set_shade(int i, byte shade) => color24_light4_shade4[i] = (color24_light4_shade4[i] & 0xFFFFFFF0) + shade;
+        public ushort BiomeId(int i) => (ushort)(biomeIds10_groupIds6[i] >> 6);
+        public int GroupId(int i) => biomeIds10_groupIds6[i] & 0b0000000000111111;
+        public short Height(int i) => heights[i];
+        public short TerrHeight(int i) => TerrHeight(IsDepth(i), Height(i), Depth(i));
+        public short Depth(int i) => depths != null ? Math.Max(depths[i], (short)1) : (short)1;
+
+        public static short TerrHeight(bool isdepth, short height, short depth) => isdepth ? (short)(height - depth) : height;
+    }
+
+
+
+    public class RawData {
+        public RawDataColumn[] columns;
+        public RawDataColumn depthColumn;
+
+        // disolves in the gendata stage
+        public byte[] shadeFrame; // 4bit
+
+        public RawData() {
+            columns = new RawDataColumn[Math.Max(0, Global.Settings.TRANSPARENTLAYERS - 1)];
+            for(int i = 0; i < columns.Length; i++) {
+                columns[i] = new RawDataColumn(true);
+            }
+            depthColumn = new RawDataColumn(Global.Settings.TRANSPARENTLAYERS > 0);
+
+
             if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
                 shadeFrame = new byte[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
-                shadeValues = new byte[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
-                shadeValuesLen = new byte[512 * 512];
             }
-            blockLights = new byte[512 * 512];
+        }
+    }
+
+    public class RawDataColumn {
+        // for water technically this uses 1 more byte than the old method(2byte blockid, 1byte light), but it abstracts like half-transparent blocks      
+        public bool ContainsInfo(int i) => heights[i] != default || biomeIds10_groupIds6[i] != default || color24_light4_none4[i] != default;
+        
+        public uint[] color24_light4_none4;
+        public ushort[] biomeIds10_groupIds6;
+        public short[] heights, depths;
+        public byte[] shadeValues; // 4bit
+
+        public RawDataColumn(bool candepth = true) {
+            color24_light4_none4 = new uint[512 * 512];
+            biomeIds10_groupIds6 = new ushort[512 * 512];
+            heights = new short[512 * 512];
+            if(candepth) depths = new short[512 * 512];
+            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
+                shadeValues = new byte[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
+            }
+        }
+
+        public static ushort BiomeGroupMaker(ushort biomeid, byte groupid) {
+            return (ushort)((biomeid << 6) + (groupid & 0b00111111));
+        }
+
+        public static uint ColorLightMaker(uint color, byte light) {
+            return (uint)((color << 8) + (light << 4));
         }
     }
 }

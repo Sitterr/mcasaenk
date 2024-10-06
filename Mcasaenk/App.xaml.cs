@@ -34,6 +34,34 @@ namespace Mcasaenk
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
+
+        private void OnLightChange(string changed) {
+            TileMap?.RedrawAll();
+
+            if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
+            if(changed == nameof(Settings.UseMapPalette)) {
+                Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
+            }
+        }
+        private void OnHardChange(List<string> _changed) {
+            if(_changed.Count == 0) return;
+            var changed = new List<string>(_changed);
+            SettingsHub.Freeze();
+
+            _openedSave.Reset();
+            SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
+
+            if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
+                SetColormap();
+            } else if(changed.Contains(nameof(Settings.SKIP_UNKNOWN_BLOCKS))) {
+                Colormap.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
+            }
+
+            SettingsHub.FinishFreeze(false);
+        }
+
+
+
         [STAThread]
         protected override void OnStartup(StartupEventArgs e) {
             Debug.WriteLine("int main()?");
@@ -51,32 +79,8 @@ namespace Mcasaenk
                 if(File.Exists(settFile)) Settings = JsonSerializer.Deserialize<Mcasaenk.Settings>(File.ReadAllText(settFile));
                 else Settings = Settings.DEF();
 
-
-                Settings.SetActions(
-                    (changed) => {
-                        TileMap?.RedrawAll();
-
-                        if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
-                        if(changed == nameof(Settings.UseMapPalette)) {
-                            Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
-                        }
-                    },
-                    (_changed) => {
-                        if(_changed.Count == 0) return;
-                        var changed = new List<string>(_changed);
-                        Settings.Freeze();
-
-                        _openedSave.Reset();
-                        SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
-
-                        if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
-                            SetColormap();
-                        } else if(changed.Contains(nameof(Settings.SKIP_UNKNOWN_BLOCKS))) {
-                            Colormap.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
-                        }
-
-                        Settings.FinishFreeze(false);
-                    });
+                SettingsHub = new SettingsHub(OnLightChange, OnHardChange);
+                SettingsHub.RegisterSettings(Settings);
             }
 
             {
@@ -131,6 +135,7 @@ namespace Mcasaenk
         public double RAND;
         public MainWindow Window { get => (MainWindow)this.MainWindow; }
         public TileMap TileMap { get; set; }
+        public SettingsHub SettingsHub { get; set; }
         public Settings Settings { get; set; }
         public Colormap Colormap { get; set; }
 
@@ -141,7 +146,7 @@ namespace Mcasaenk
             }
 
             set {
-                Settings.Freeze();
+                SettingsHub.Freeze();
 
                 _openedSave = value;
                 if(value != null) {
@@ -156,7 +161,7 @@ namespace Mcasaenk
                     
                 }
 
-                Settings.FinishFreeze(false);
+                SettingsHub.FinishFreeze(false);
             }
         }
 
@@ -167,9 +172,7 @@ namespace Mcasaenk
             Shade3DFilter.ReInit(Colormap);
 
             foreach(var tint in Colormap.GetTints()) {
-                tint.Settings()?.SetActions(() => {
-                    TileMap?.RedrawAll();
-                });
+                SettingsHub.RegisterSettings(tint.Settings());
             }
 
             Window.OnColormapChange();
