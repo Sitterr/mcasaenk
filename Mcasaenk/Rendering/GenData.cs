@@ -117,6 +117,7 @@ namespace Mcasaenk.Rendering {
         public short Depth(int i) => depths != null ? Math.Max(depths[i], (short)1) : (short)1;
 
         public static short TerrHeight(bool isdepth, short height, short depth) => isdepth ? (short)(height - depth) : height;
+        public static short Depth(bool isdepth, short depth) => !isdepth ? Math.Max(depth, (short)1) : (short)1;
     }
 
 

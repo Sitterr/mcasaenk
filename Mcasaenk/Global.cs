@@ -206,9 +206,10 @@ namespace Mcasaenk {
             return (uint)((a2 << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
         public static uint MultShade(uint color, double ar, double ag, double ab) {
-            ar = Math.Max(ar, 0);
-            ag = Math.Max(ar, 0);
-            ab = Math.Max(ar, 0);
+            ar = Math.Clamp(ar, 0, 1);
+            ag = Math.Clamp(ag, 0, 1);
+            ab = Math.Clamp(ab, 0, 1);
+            if(ar == 1 && ag == 1 && ab == 1) return color;
 
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
@@ -226,6 +227,8 @@ namespace Mcasaenk {
         }
         public static uint Blend(uint color, uint other, double ratio, bool alphaBlend = false) {
             ratio = Math.Clamp(ratio, 0, 1);
+            if(ratio == 1) return color;
+            if(ratio == 0) return other;
 
             byte aA = (byte)(color >> 24 & 0xFF);
             if(!alphaBlend) aA = 255;

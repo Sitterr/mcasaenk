@@ -46,26 +46,13 @@ namespace Mcasaenk.Rendering {
                     if(rdata.columns.Length > 0) {
                         short height = airHeight;
 
+                        ushort blockid = data.GetBlock(cx, cz, height);
+                        BlockValue block = data.Colormap.Value(blockid);
                         int coli = 0;
-                        Group lastgroup = null;
-                        uint color = 0;
-                        float lcolor = 1;
-                        {
-                            BlockValue block;
-                            while(height >= 0) {
-                                ushort blockid = data.GetBlock(cx, cz, height);
-                                block = data.Colormap.Value(blockid);
-                                if(block.group.id == 0 || blockid == Colormap.ERRORBLOCK) {
-                                    height--;
-                                    continue;
-                                }
-
-                                lastgroup = block.group;
-                                color = block.color;
-                                lcolor = lastgroup.ABSORBTION / 15f;
-                                break;
-                            }
-                        }
+                        Group lastgroup = block.group;
+                        uint color = block.color;
+                        float lcolor = lastgroup.ABSORBTION / 15f;
+                            
                         if(height < 0) continue;
 
                         short startheight = height; height--;
@@ -73,15 +60,15 @@ namespace Mcasaenk.Rendering {
                         ushort startbiome = data.GetBiome(cx, cz, startheight);
 
                         while(true) {
-                            ushort blockid = data.GetBlock(cx, cz, height);
-                            var block = data.Colormap.Value(blockid);
+                            blockid = data.GetBlock(cx, cz, height);
+                            block = data.Colormap.Value(blockid);
                             ushort biome = data.GetBiome(cx, cz, height);
 
-                            if(block.group != lastgroup || biome != startbiome || (lastgroup.ABSORBTION == 15 && lastgroup.id != 2)) {
+                            if(block.group != lastgroup || biome != startbiome || (lastgroup.ABSORBTION == 15 && !lastgroup.hostdepth)) {
 
                                 if(lastgroup.ABSORBTION > 0) {
 
-                                    if(lastgroup.id == 2) {
+                                    if(lastgroup.hostdepth) {
                                         rdata.depthColumn.heights[regionIndex] = startheight;
                                         rdata.depthColumn.depths[regionIndex] = (short)(startheight - height);
 
@@ -95,7 +82,7 @@ namespace Mcasaenk.Rendering {
                                         else col = rdata.columns[coli];
 
 
-                                        col.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)lastgroup.id);
+                                        col.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)lastgroup.GetId());
                                         col.heights[regionIndex] = startheight;
                                         if(col != rdata.depthColumn) col.depths[regionIndex] = (short)(startheight - height);
                                         col.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(color, startlight);
@@ -123,7 +110,7 @@ namespace Mcasaenk.Rendering {
                     } else {
                         short waterHeight = Filter.DEPTH_FILTER(data, y, maxh - 1)(data, cx, cz, airHeight);
                         if(airHeight != waterHeight && rdata.depthColumn.depths != null) {
-                            rdata.depthColumn.heights[regionIndex] = waterHeight;
+                            rdata.depthColumn.heights[regionIndex] = airHeight;
                             rdata.depthColumn.depths[regionIndex] = (short)(airHeight - waterHeight);
 
                             var block = data.Colormap.Value(data.GetBlock(cx, cz, waterHeight));
@@ -133,7 +120,7 @@ namespace Mcasaenk.Rendering {
                             rdata.depthColumn.heights[regionIndex] = airHeight;
 
                             var block = data.Colormap.Value(data.GetBlock(cx, cz, airHeight));
-                            rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(data.GetBiome(cx, cz, airHeight), (byte)block.group.id);
+                            rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(data.GetBiome(cx, cz, airHeight), (byte)block.group.GetId());
                             rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(block.color, Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1)));
                         }
                     }

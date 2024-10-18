@@ -170,9 +170,9 @@ namespace Mcasaenk
             img.Lock();
 
             uint* pixels = (uint*)img.BackBuffer;
-            GenData[,] neighbours = null;
-            if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full) || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
-                neighbours = new GenData[3, 3];
+            GenData[,] neighbours = new GenData[3, 3];
+            neighbours[1, 1] = genData;
+            if(Global.App.Colormap.GetBlendingTints().Count > 0 || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {
                         var tile = map.GetTile(pos + new Point2i(i, j));
@@ -181,7 +181,6 @@ namespace Mcasaenk
                     }
                 }
             } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
-                neighbours = new GenData[3, 3];
                 Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
                     Direction.North => new Point2i(0, -1),
                     Direction.South => new Point2i(0, 1),
@@ -193,6 +192,8 @@ namespace Mcasaenk
                     neighbours[p.X + 1, p.Z + 1] = tile.genData;
                 }
             }
+            
+
 
             var tempgen = genData.GetTempInstance();
             TileDraw.FillPixels(pixels, Global.App.Colormap, tempgen, neighbours);
@@ -202,6 +203,7 @@ namespace Mcasaenk
             img.Freeze();
 
             this.img = img;
+            
         }
     }
 }
