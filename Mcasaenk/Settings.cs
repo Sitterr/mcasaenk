@@ -1,10 +1,12 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
 using Mcasaenk.UI.Canvas;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -201,7 +203,7 @@ namespace Mcasaenk {
             PreferHeightmap = PREFERHEIGHTMAPS;
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
         }
-        public override bool ChangedBack() => 
+        public override bool ChangedBack() =>
                    Y_OFFICIAL != Y ||
                    ADEG != ADeg ||
                    BDEG != BDeg ||
@@ -213,13 +215,14 @@ namespace Mcasaenk {
                    COLOR_MAPPING_MODE != ColorMapping ||
                    SHADETYPE != ShadeType ||
                    PREFERHEIGHTMAPS != PreferHeightmap ||
-                   SKIP_UNKNOWN_BLOCKS != SkipUnknown;
+                   SKIP_UNKNOWN_BLOCKS != SkipUnknown   
+            ;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2,
-            FOOTER = true, OVERLAYS = false, UNLOADED = true,
+            FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
                 new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 },
@@ -237,7 +240,8 @@ namespace Mcasaenk {
 
             CONTRAST = 0.50,
 
-            SHADE3D = false, STATIC_SHADE = true,
+            SHADE3D = true, STATIC_SHADE = true,
+            NOSHADE_SHADE3D = false, NOSHADE_STATIC_SHADE = true,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true, OCEAN_DEPTH_BLENDING = 1,
             Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
@@ -828,7 +832,7 @@ namespace Mcasaenk {
                 if(defbiome == value) return;
                 defbiome = value;
                 if(Global.App.Colormap != null) {
-                    if(Global.App.Colormap.GetTints().Any(t => t.Settings()?.On == false)) {
+                    if(Global.App.Colormap.TintManager.ELEMENTS.Any(t => t is DynamicTint dtint && dtint.On == false)) {
                         OnLightChange(nameof(DEFBIOME));
                     } else {
                         OnAutoChange(nameof(DEFBIOME));
@@ -836,6 +840,38 @@ namespace Mcasaenk {
                 }
             }
         }
+
+
+        private bool noshade_staticShade;
+        [JsonIgnore]
+        public bool NoShade_StaticShade {
+            get => noshade_staticShade;
+            set {
+                if(noshade_staticShade == value) return;
+
+                noshade_staticShade = value;
+                OnLightChange(nameof(NoShade_StaticShade));
+            }
+        }
+        public bool NOSHADE_STATIC_SHADE { get => NoShade_StaticShade; set => NoShade_StaticShade = value; }
+
+
+        private bool noshade_shade3d, noshade_shade3d_back;
+        [JsonIgnore]
+        public bool NoShade_Shade3d {
+            get => noshade_shade3d_back;
+            set {
+                if(noshade_shade3d_back == value) return;
+
+                noshade_shade3d_back = value;
+                OnAutoChange(nameof(NoShade_Shade3d));
+                if(Global.App.OpenedSave == null) {
+                    noshade_shade3d = value;
+                    OnAutoChange(nameof(NOSHADE_SHADE3D));
+                }
+            }
+        }
+        public bool NOSHADE_SHADE3D { get => noshade_shade3d; set { noshade_shade3d = value; NoShade_Shade3d = value; OnHardChange(nameof(NOSHADE_SHADE3D)); } }
 
 
 

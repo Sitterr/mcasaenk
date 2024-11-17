@@ -226,6 +226,16 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to air;cave_air;void_air
+        ///water;seagrass;tall_seagrass;bubble_column;kelp;kelp_plant.
+        /// </summary>
+        public static string heightmap_blocks {
+            get {
+                return ResourceManager.GetString("heightmap_blocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] icon {

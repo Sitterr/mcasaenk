@@ -148,7 +148,7 @@ namespace Mcasaenk.Colormaping {
                             foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "custom"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
-                                var r = Tint.ReadTint(pack, file);
+                                var r = RawTint.Read(pack, file);
 
                                 colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
@@ -161,7 +161,7 @@ namespace Mcasaenk.Colormaping {
                             foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "blocks"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
-                                var r = Tint.ReadTint(pack, file);
+                                var r = RawTint.Read(pack, file);
 
                                 colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
@@ -199,7 +199,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "pine.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "pine.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "pine.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "pine.png"))) {
                                 tint = new RawTint() { name = "pine", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "pine.png")), color = WPFColor.White };
                             }
@@ -213,7 +213,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "birch.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "birch.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "birch.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "birch.png"))) {
                                 tint = new RawTint() { name = "birch", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "birch.png")), color = WPFColor.White };
                             }
@@ -227,7 +227,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "water.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "water.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "water.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "water.png"))) {
                                 tint = new RawTint() { name = "water", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "water.png")), color = WPFColor.White };
                             }

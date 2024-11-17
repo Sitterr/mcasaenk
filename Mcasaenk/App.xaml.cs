@@ -43,10 +43,14 @@ namespace Mcasaenk
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
             }
         }
-        private void OnHardChange(List<string> _changed) {
-            if(_changed.Count == 0) return;
-            var changed = new List<string>(_changed);
+        private void OnHardChange(List<string> changed) {
+            if(changed.Count == 0) return;
             SettingsHub.Freeze();
+            if(changed.Contains(nameof(Colormap.TintManager.ELEMENTS)) || changed.Contains(nameof(Colormap.FilterManager.ELEMENTS))) {
+                Colormap?.Grouping.Reset();
+            }
+            Colormap?.UpdateHeightmapCompatability();
+
 
             _openedSave.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
@@ -158,7 +162,8 @@ namespace Mcasaenk
                         Settings.COLOR_MAPPING_MODE = "default";
                     }
                     SetColormap();
-                    
+
+                    Colormap?.UpdateHeightmapCompatability();
                 }
 
                 SettingsHub.FinishFreeze(false);
@@ -169,10 +174,12 @@ namespace Mcasaenk
             if(OpenedSave == null) return;
 
             Colormap = new Colormap(RawColormap.Load(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
-            Shade3DFilter.ReInit(Colormap);
 
-            foreach(var tint in Colormap.GetTints()) {
-                SettingsHub.RegisterSettings(tint.Settings());
+            foreach(var tint in Colormap.TintManager.ELEMENTS) {
+                SettingsHub.RegisterSettings(tint);
+            }
+            foreach(var filter in Colormap.FilterManager.ELEMENTS) {
+                SettingsHub.RegisterSettings(filter);
             }
 
             Window.OnColormapChange();

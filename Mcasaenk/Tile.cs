@@ -126,7 +126,7 @@ namespace Mcasaenk
             }
             set {
                 _genData = value;
-                if(Global.App.Colormap.GetTints().Any(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full)) {
+                if(Global.App.Colormap.TintManager.GetBlendingTints().Any()) {
                     for(int i = -1; i <= 1; i++) { // biome blend
                         for(int j = -1; j <= 1; j++) {
                             var tile = map.GetTile(pos + new Point2i(i, j));
@@ -172,7 +172,7 @@ namespace Mcasaenk
             uint* pixels = (uint*)img.BackBuffer;
             GenData[,] neighbours = new GenData[3, 3];
             neighbours[1, 1] = genData;
-            if(Global.App.Colormap.GetBlendingTints().Count > 0 || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
+            if(Global.App.Colormap.TintManager.GetBlendingTints().Any() || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
                 for(int i = -1; i <= 1; i++) { // biome blend
                     for(int j = -1; j <= 1; j++) {
                         var tile = map.GetTile(pos + new Point2i(i, j));

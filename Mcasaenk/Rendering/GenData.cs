@@ -106,7 +106,7 @@ namespace Mcasaenk.Rendering {
         
         public uint ActColor(int i) => 0xFF000000 | (color24_light4_shade4[i] >> 8);
         public bool IsDepth(int i) => maybedepth && depths[i] != 0;
-        public uint Color(int i) => IsDepth(i) ? Global.App.Colormap.depthVal.color : ActColor(i);
+        public uint Color(int i) => IsDepth(i) ? Global.App.Colormap.BaseColor(Global.App.Colormap.depth) : ActColor(i);
         public byte BlockLight(int i) => (byte)((color24_light4_shade4[i] & 0x000000FF) >> 4);
         public byte Shade(int i) => (byte)((color24_light4_shade4[i] & 0x0000000F));
         public void set_shade(int i, byte shade) => color24_light4_shade4[i] = (color24_light4_shade4[i] & 0xFFFFFFF0) + shade;

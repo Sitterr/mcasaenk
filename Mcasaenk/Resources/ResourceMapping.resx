@@ -154,6 +154,9 @@
   <data name="grass8" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\grass8.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="heightmap_blocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>heightmap_blocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\icon.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

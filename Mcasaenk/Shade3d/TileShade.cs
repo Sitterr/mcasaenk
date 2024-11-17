@@ -31,7 +31,7 @@ namespace Mcasaenk.Shade3d {
 
                 _ = Recalc();
 
-                harvested = new bool[ShadeConstants.GLB.regionReach.Count];
+                harvested = new bool[ShadeConstants.GLB.regionReach.Length];
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
                     int _iz = p.p.Z, _ix = p.p.X;
@@ -91,9 +91,9 @@ namespace Mcasaenk.Shade3d {
                             double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 
-                            if(genData.columns[w].Height(regionIndex) != 0) {
-                                ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues[w], regionIndex, SHADEX, SHADEZ, x1, z1);
-                            }
+                            //if(genData.columns[w].Height(regionIndex) != 0) {
+                                ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues[w], regionIndex, SHADEX, SHADEZ, (int)x1, (int)z1);
+                            //}
                         }
                     }
                 }
@@ -147,7 +147,7 @@ namespace Mcasaenk.Shade3d {
         }
 
         public void AddFrame(byte[] frame, Point2i dist) {
-            bool[] harvested = new bool[ShadeConstants.GLB.regionReach.Count];
+            bool[] harvested = new bool[ShadeConstants.GLB.regionReach.Length];
             //bool[] harvested = new bool[ShadeConstants.GLB.rX * ShadeConstants.GLB.rZ];
             Array.Fill(harvested, true);
 
@@ -162,7 +162,7 @@ namespace Mcasaenk.Shade3d {
                     harvested[i] = (tileMap.GetTile(pp) == null);
 
                     var f = (pp - tilepos).abs();
-                    if(!ShadeConstants.GLB.regionReach.ContainsP(f)) {
+                    if(!ShadeConstants.GLB.regionReach.Any(r => r.p == f)) {
                         harvested[i] = true;
                     }
                     

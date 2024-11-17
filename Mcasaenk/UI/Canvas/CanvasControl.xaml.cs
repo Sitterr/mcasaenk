@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Xsl;
-using static Mcasaenk.Rendering.Filter;
 
 
 namespace Mcasaenk.UI.Canvas {
@@ -204,7 +204,7 @@ namespace Mcasaenk.UI.Canvas {
                     if(tile?.genData != null) {
                         window.footer.Y = tile.genData.depthColumn.heights[i]/*+ Global.Settings.MINY*/;
                         //window.footer.Y = tile.genData.isShade(i);
-                        window.footer.Y_Terrain = tile.genData.depthColumn.depths[i];
+                        window.footer.Y_Terrain = tile.genData.depthColumn.depths != null ? tile.genData.depthColumn.depths[i] : -1;
 
                         //window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
                         //window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));

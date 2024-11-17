@@ -174,14 +174,14 @@ namespace Mcasaenk.UI {
             } else {
                 var yvarvanillabind = new MultiBinding() { Converter = new IHateWPF_YVarianceMultivalueConverter() };
                 MultiBinding yvarvanillaisenabled = new MultiBinding() { Converter = new BitOrConverter() }, defbiomeisenabled = new MultiBinding() { Converter = new BitOrConverter() };
-                foreach(var tint in colormap.GetTints()) {
-                    if(tint.Settings() is DynamicVanillaTintSettings sett) {
-                        yvarvanillabind.Bindings.Add(new Binding("TemperatureVariation") { Source = sett, Mode = BindingMode.TwoWay });
-                        yvarvanillaisenabled.Bindings.Add(new Binding("On") { Source = sett, Mode = BindingMode.OneWay });
+                foreach(var tint in colormap.TintManager.ELEMENTS) {
+                    if(tint is VanillaDynTint) {
+                        yvarvanillabind.Bindings.Add(new Binding("TemperatureVariation") { Source = tint, Mode = BindingMode.TwoWay });
+                        yvarvanillaisenabled.Bindings.Add(new Binding("On") { Source = tint, Mode = BindingMode.OneWay });
                     }
 
-                    if(tint.Settings() is DynamicTintSettings sett2) {
-                        defbiomeisenabled.Bindings.Add(new Binding("On") { Source = sett2, Mode = BindingMode.OneWay, Converter = new IHateWPF_ContraBool() });
+                    if(tint is DynamicTint) {
+                        defbiomeisenabled.Bindings.Add(new Binding("On") { Source = tint, Mode = BindingMode.OneWay, Converter = new IHateWPF_ContraBool() });
                     }
                 }
                 text_yvarvanilla.SetBinding(TextBlock.IsEnabledProperty, yvarvanillaisenabled);
@@ -201,13 +201,13 @@ namespace Mcasaenk.UI {
                 //combo_defbiome.SetBinding(ComboBox.IsEnabledProperty, defbiomeisenabled);
                 //label_defbiome.SetBinding(Label.IsEnabledProperty, defbiomeisenabled);
 
-                macroGrid.Visibility = colormap.GetTints().Any(t => t.Settings() != null) ? Visibility.Visible : Visibility.Collapsed;
+                macroGrid.Visibility = colormap.TintManager.ELEMENTS.Any(t => t is DynamicTint) ? Visibility.Visible : Visibility.Collapsed;
             }
 
             {
                 int i = 0;
-                foreach(var tint in colormap.GetTints()) {
-                    if(tint.Settings() == null) continue;
+                foreach(var tint in colormap.TintManager.ELEMENTS) {
+                    if(tint is not DynamicTint) continue;
 
                     if(i % 2 == 0) {
                         tintGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
@@ -216,30 +216,30 @@ namespace Mcasaenk.UI {
                         tintGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
                     }
 
-                    if(tint.Settings() is DynamicTintSettings settings) {
+                    if(tint is DynamicTint dtint) {
                         var dockPanel = new DockPanel();
                         Grid.SetRow(dockPanel, (i / 2) * 4);
                         Grid.SetColumn(dockPanel, (i % 2) * 2);
 
                         var txtname = new TextBlock();
                         var tintmeta = TintMeta.GetFormat(tint.GetType());
-                        txtname.Inlines.Add(new Run() { Text = tint.Name() + "/" });
+                        txtname.Inlines.Add(new Run() { Text = dtint.name + "/" });
                         txtname.Inlines.Add(new Run() { Text = tintmeta.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
                         txtname.Inlines.Add(new Run() { Text = "/" });
                         dockPanel.Children.Add(txtname);
 
                         var tintEnable = new ToggleButton { Margin = new Thickness(10, 0, 0, 0) };
                         var toggleBinding = new Binding("On") {
-                            Source = settings // Assuming 'Global.Settings' is correctly defined
+                            Source = dtint // Assuming 'Global.Settings' is correctly defined
                         };
                         tintEnable.SetBinding(ToggleButton.IsCheckedProperty, toggleBinding);
                         dockPanel.Children.Add(tintEnable);
 
                         var txtRaduis = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
-                        txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = settings });
+                        txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = dtint });
                         MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{0}" };
-                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
-                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = settings });
+                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
+                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
                         txtRaduis.SetBinding(TextBlock.TextProperty, txtMultBinding);
                         dockPanel.Children.Add(txtRaduis);
 
@@ -253,8 +253,8 @@ namespace Mcasaenk.UI {
                         };
                         Grid.SetRow(slider, (i / 2) * 4 + 2);
                         Grid.SetColumn(slider, (i % 2) * 2);
-                        slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = settings });
-                        slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = settings });
+                        slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = dtint });
+                        slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = dtint });
 
                         tintGrid.Children.Add(slider);
                     }

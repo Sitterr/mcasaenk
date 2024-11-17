@@ -28,7 +28,7 @@ namespace Mcasaenk.Shade3d {
         public readonly int xp, zp;
         public readonly int rX, rZ;
         public enum RegionDir { n, l, r, c };
-        public readonly List<(RegionDir dir, Point2i p)> regionReach, blockReach;
+        public readonly (RegionDir dir, Point2i p)[] regionReach, blockReach;
         public readonly byte blockReachLenMax;
 
         public ShadeConstants(double A_deg) {
@@ -62,18 +62,18 @@ namespace Mcasaenk.Shade3d {
 
             var size = new SizeF(Math.Abs((float)cosAcotgB), Math.Abs((float)sinAcotgB));
             blockReach = CreateReach(new PointF(0, 0), size, true);
-            for(int i=0;i<blockReach.Count;i++) {
+            for(int i=0;i<blockReach.Length;i++) {
                 var r = blockReach[i];
 
                 if(r.p == new Point2i(0, 0)) r.dir = RegionDir.l;
                 if(r.p == new Point2i(Math.Ceiling(size.Width), Math.Ceiling(size.Height))) r.dir = RegionDir.r;
             }
 
-            blockReachLenMax = (byte)blockReach.Count;
+            blockReachLenMax = (byte)blockReach.Length;
 
             regionReach = CreateReach(new PointF(0, 0), new SizeF((float)Math.Abs(cosAcotgB * Height) / 512, (float)Math.Abs(sinAcotgB * Height) / 512), false);//!!!
         }
-        private List<(RegionDir dir, Point2i p)> CreateReach(PointF a, SizeF size, bool transf, float precision = 0.85f) {
+        private (RegionDir dir, Point2i p)[] CreateReach(PointF a, SizeF size, bool transf, float precision = 0.85f) {
             var list = new List<(RegionDir dir, Point2i p)>();
 
             Debug.WriteLine(a + " " + size);
@@ -100,7 +100,7 @@ namespace Mcasaenk.Shade3d {
             }
             Debug.WriteLine(""); Debug.WriteLine(""); Debug.WriteLine("");
 
-            return list;
+            return list.ToArray();
         }
 
         TilesResult Tiles(PointF a, SizeF size, float precision) {
@@ -184,24 +184,29 @@ namespace Mcasaenk.Shade3d {
 
 
         public static void SetLeft(byte[] array, int i, byte val) {
+            //array[i] = val;
             array[i] = (byte)((val << 4) + (array[i] & 0x0F));
         }
         public static void SetRight(byte[] array, int i, byte val) {
+            //array[i] = val;
             array[i] = (byte)((array[i] & 0xF0) + val);
         }
         public static void SetBoth(byte[] array, int i, byte left, byte right) {
+            //array[i] = left;
             array[i] = (byte)((left << 4) + right);
         }
 
         public static byte GetLeft(byte[] array, int i) {
+            //return array[i];
             return (byte)(array[i] >> 4);
         }
         public static byte GetRight(byte[] array, int i) {
+            //return array[i];
             return (byte)(array[i] & 0x0F);
         }
-
         public static byte CombineShades(byte old, byte add) {
-            return (byte)(old + (15 - old) * ((float)add / 15));
+            //return Math.Max(old, add);
+            return (byte)(old + ((15 - old) * add) / 15);
         }
     }
 }

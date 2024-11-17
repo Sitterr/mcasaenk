@@ -50,7 +50,7 @@ namespace Mcasaenk.Rendering {
 
             byte[][] relvis8 = null;
             short[] meanheights = null;
-            if(Global.Settings.TRANSPARENTLAYERS > 1 || Global.Settings.OCEAN_DEPTH_BLENDING > 1 || Global.Settings.SHADETYPE == ShadeType.jmap || true) {
+            if(Global.Settings.TRANSPARENTLAYERS > 1 || Global.Settings.OCEAN_DEPTH_BLENDING > 1 || Global.Settings.SHADETYPE == ShadeType.jmap) {
                 relvis8 = new byte[genData.columns.Length][];
                 meanheights = ArrayPool<short>.Shared.Rent((512 + 2) * (512 + 2));
                 for(int w = 0; w < genData.columns.Length; w++) {
@@ -62,6 +62,7 @@ namespace Mcasaenk.Rendering {
                 var terrblur = new GausBlur<TerrHeightBlur, short, TerrHeightBlurData>((Global.Settings.OCEAN_DEPTH_BLENDING - 1) / 2, 1, TerrHeightBlur.pool, new TerrHeightBlurData() { mindiff = 15 }, neighbours);
                 terrblur.BoxBlur();
 
+                Span<byte> relshadevis8 = stackalloc byte[genData.columns.Length];
                 for(int x = -1; x < 513; x++) {
                     terrblur.OnXStart();
                     for(int z = -1; z < 513; z++) {
@@ -75,29 +76,61 @@ namespace Mcasaenk.Rendering {
                             {
                                 byte ostatuk = 255;
                                 for(int w = 0; w < genData.columns.Length - 1; w++) {
+                                    if(res.sector.columns[w].ContainsInfo(res.ri) == false) continue;
 
-                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.groupManager.GetGroup(res.sector.columns[w].GroupId(res.ri)).ABSORBTION / 15d), genData.columns[w].Depth(res.ri))));
+                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.Grouping.GetGroup(res.sector.columns[w].GroupId(res.ri)).filter.ABSORBTION / 15d), genData.columns[w].Depth(res.ri))));
                                     relvis8[w][bi] = a;
                                     ostatuk -= a;
                                 }
                                 {
-                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.groupManager.GetGroup(res.sector.columns[res.sector.columns.Length - 1].GroupId(res.ri)).ABSORBTION / 15d), Math.Max((int)terrdepth, 1))));
-                                    relvis8[res.sector.columns.Length - 1][bi] = a;
-                                    ostatuk -= a;
+                                    if(res.sector.columns[res.sector.columns.Length - 1].ContainsInfo(res.ri)) {
+                                        byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.Grouping.GetGroup(res.sector.columns[res.sector.columns.Length - 1].GroupId(res.ri)).filter.ABSORBTION / 15d), Math.Max((int)terrdepth, 1))));
+                                        relvis8[res.sector.columns.Length - 1][bi] = a;
+                                        ostatuk -= a;
+                                    }
                                 }
                                 for(int w = 0; w < genData.columns.Length; w++) {
                                     relvis8[w][bi] += (byte)((relvis8[w][bi] / (float)(255 - ostatuk)) * ostatuk);
                                 }
                             }
 
+
+                            // relshadevis                  
+                            if(Global.Settings.NOSHADE_STATIC_SHADE == false) {
+                                relshadevis8.Clear();
+                                byte ostatuk = 255;
+                                for(int w = 0; w < genData.columns.Length - 1; w++) {
+                                    if(res.sector.columns[w].ContainsInfo(res.ri) == false) continue;
+                                    if(colormap.Grouping.GetGroup(genData.columns[w].GroupId(res.ri)).shade == false) continue;
+
+                                    byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.Grouping.GetGroup(res.sector.columns[w].GroupId(res.ri)).filter.ABSORBTION / 15d), genData.columns[w].Depth(res.ri))));
+                                    relshadevis8[w] = a;
+                                    ostatuk -= a;
+                                }
+                                {
+                                    if(res.sector.columns[res.sector.columns.Length - 1].ContainsInfo(res.ri)) {
+                                        if(colormap.Grouping.GetGroup(genData.columns[res.sector.columns.Length - 1].GroupId(res.ri)).shade) {
+                                            byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (colormap.Grouping.GetGroup(res.sector.columns[res.sector.columns.Length - 1].GroupId(res.ri)).filter.ABSORBTION / 15d), Math.Max((int)terrdepth, 1))));
+                                            relshadevis8[res.sector.columns.Length - 1] = a;
+                                            ostatuk -= a;
+                                        }
+                                    }
+                                }
+                                for(int w = 0; w < genData.columns.Length; w++) {
+                                    relshadevis8[w] += (byte)((relshadevis8[w] / (float)(255 - ostatuk)) * ostatuk);
+                                }
+                            } else {
+                                for(int w = 0; w < genData.columns.Length; w++) relshadevis8[w] = relvis8[w][bi];
+                            }
+
                             // meanheights
                             {
                                 for(int w = 0; w < genData.columns.Length - 1; w++) {
-                                    meanheights[bi] += (short)((relvis8[w][bi] / 255f) * res.sector.columns[w].TerrHeight(res.ri));
+                                    meanheights[bi] += (short)((relshadevis8[w] / 255f) * res.sector.columns[w].TerrHeight(res.ri));
                                 }
                                 {
                                     var col = res.sector.columns[res.sector.columns.Length - 1];
-                                    meanheights[bi] += (short)((relvis8[res.sector.columns.Length - 1][bi] / 255f) * GenDataColumn.TerrHeight(col.IsDepth(res.ri), col.Height(res.ri), Math.Max(terrdepth, (short)1)));
+                                    meanheights[bi] += (short)((relshadevis8[res.sector.columns.Length - 1] / 255f) * GenDataColumn.TerrHeight(col.IsDepth(res.ri), col.Height(res.ri), Math.Max(terrdepth, (short)1)));
                                 }
                             }
 
@@ -118,17 +151,17 @@ namespace Mcasaenk.Rendering {
                 terrblur.Dispose();
             }
 
-            Debug.WriteLine("g" + neighbours[1, 1].depthColumn.depths[0]);
 
-
-            foreach(var tint in colormap.GetBlendingTints().Concat([NullTint.Tint])) {
+            foreach(var tint in colormap.TintManager.GetBlendingTints().Concat([colormap.TintManager.NullTint])) {
                 var blendmode = tint.GetBlendMode();
 
                 Blur tintblur = null;
-                if(blendmode == Tint.Blending.biomeonly) {
-                    tintblur = new GausBlur<ColorBlur, uint, ColorBlurData>((tint.Settings().Blend - 1) / 2, 0, ColorBlur.pool, new ColorBlurData() { tint = tint, colormap = colormap }, neighbours);                   
-                } else if(blendmode == Tint.Blending.full) {
-                    tintblur = new GausBlur<PrecBlur, PrecBlurData, PrecBlurData>((tint.Settings().Blend - 1) / 2, 0, PrecBlur.pool, new PrecBlurData() { tint = tint, dynbiomes = new DynBiome(PrecBlur.MB), colormap = colormap }, neighbours);
+                if(tint is DynamicTint dtint) {
+                    if(blendmode == Tint.Blending.biomeonly) {
+                        tintblur = new GausBlur<ColorBlur, uint, ColorBlurData>((dtint.Blend - 1) / 2, 0, ColorBlur.pool, new ColorBlurData() { tint = tint, colormap = colormap }, neighbours);
+                    } else if(blendmode == Tint.Blending.full) {
+                        tintblur = new GausBlur<PrecBlur, PrecBlurData, PrecBlurData>((dtint.Blend - 1) / 2, 0, PrecBlur.pool, new PrecBlurData() { tint = tint, dynbiomes = new DynBiome(PrecBlur.MB), colormap = colormap }, neighbours);
+                    }
                 }
                 tintblur?.BoxBlur();
 
@@ -142,8 +175,8 @@ namespace Mcasaenk.Rendering {
                         for(int w = 0; w < genData.columns.Length; w++) {
                             var colw = genData.columns[w];
                             if(!colw.ContainsInfo(i)) continue;
-                            var groupw = colormap.groupManager.GetGroup(colw.GroupId(i));
-                            if(tint != groupw.tint && tint != NullTint.Tint) continue;
+                            var groupw = colormap.Grouping.GetGroup(colw.GroupId(i));
+                            if(tint != groupw.tint && tint != colormap.TintManager.NullTint) continue;
                             bool depth = colw.IsDepth(i);
                             uint color = 0xFF000000;
 
@@ -160,7 +193,7 @@ namespace Mcasaenk.Rendering {
                                     for(int e = 0; e < data.dynbiomes.max(); e++) {
                                         float lcolor = 0;
                                         for(int h = genData.columns[w].Height(i); h > genData.columns[w].Height(i) - genData.columns[w].Depth(i); h--) {
-                                            float q = groupw.ABSORBTION / 15f * (1 - lcolor);
+                                            float q = groupw.filter.ABSORBTION / 15f * (1 - lcolor);
                                             var c = tint.TintColorFor(data.dynbiomes.back(e), (short)h).ToColor();
                                             r += c.R * data.biomeresults[e] * q;
                                             g += c.G * data.biomeresults[e] * q;
@@ -176,7 +209,7 @@ namespace Mcasaenk.Rendering {
                                 } else if(groupw.tint.GetBlendMode() == Tint.Blending.heightonly) {
                                     float lcolor = 0.001f;
                                     for(int h = colw.Height(i); h > colw.Height(i) - colw.Depth(i); h--) {
-                                        float q = groupw.ABSORBTION / 15f * (1 - lcolor);
+                                        float q = groupw.filter.ABSORBTION / 15f * (1 - lcolor);
                                         color = Global.Blend(groupw.tint.GetTintedColor(colw.Color(i), colw.BiomeId(i), (short)h), color, q / lcolor);
                                         lcolor += q;
                                         if(lcolor >= 1) break;
@@ -238,7 +271,7 @@ namespace Mcasaenk.Rendering {
 
                             // shades
                             {
-                                if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE) { // traebva da e praedi shade
+                                if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE && (Global.Settings.NOSHADE_STATIC_SHADE || groupw.shade)) { // traebva da e praedi shade
 
                                     short hi, hx, hnx, hz, hnz;
                                     if(meanheights != null) {
@@ -287,7 +320,7 @@ namespace Mcasaenk.Rendering {
 
                                 sh += Global.App.Settings.SUN_LIGHT;
                                 if(Global.App.Settings.SHADETYPE == ShadeType.OG && colw.Shade(i) > 0) {
-                                    
+
                                     var c = color.ToColor();
 
                                     sh = Math.Clamp(
@@ -313,9 +346,6 @@ namespace Mcasaenk.Rendering {
                             }
 
 
-                            if(pixels[i] != 0) {
-                                int g = 2;
-                            }
                             pixels[i] += Global.MultShade(color, relvis);
                         }
                     }
@@ -345,6 +375,10 @@ namespace Mcasaenk.Rendering {
         }
 
     }
+
+
+
+
 
 
 
@@ -449,7 +483,7 @@ namespace Mcasaenk.Rendering {
         public void IncreaseNewBlock(GenData gen, ColorBlurData data, int ri) {
             for(int w = 0; w < gen.columns.Length; w++) {
                 if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                if(data.colormap.groupManager.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
+                if(data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
                     var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
                     r += f.R;
                     g += f.G;
@@ -462,7 +496,7 @@ namespace Mcasaenk.Rendering {
             Reset();
             for(int w = 0; w < gen.columns.Length; w++) {
                 if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                if(data.colormap.groupManager.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
+                if(data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
                     var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
                     r += f.R;
                     g += f.G;
@@ -539,20 +573,20 @@ namespace Mcasaenk.Rendering {
         public void IncreaseNewBlock(GenData gen, PrecBlurData data, int ri) {
             for(int w = 0; w < gen.columns.Length; w++) {
                 if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                var group = data.colormap.groupManager.GetGroup(gen.columns[w].GroupId(ri));
+                var group = data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri));
                 if(group.tint == data.tint) {
                     int i = data.dynbiomes.get(gen.columns[w].BiomeId(ri));
-                    biome[i] += group.ABSORBTION;
+                    biome[i] += group.filter.ABSORBTION;
                 }
             }
         }
         public void SetNewBlock(GenData gen, PrecBlurData data, int ri) {
             for(int w = 0; w < gen.columns.Length; w++) {
                 if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                var group = data.colormap.groupManager.GetGroup(gen.columns[w].GroupId(ri));
+                var group = data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri));
                 if(group.tint == data.tint) {
                     int i = data.dynbiomes.get(gen.columns[w].BiomeId(ri));
-                    biome[i] = group.ABSORBTION;
+                    biome[i] = group.filter.ABSORBTION;
                 }
             }
         }

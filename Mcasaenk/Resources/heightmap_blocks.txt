@@ -1,0 +1,17 @@
+-- AIR --
+air
+cave_air
+void_air
+-- AIR --
+
+-- WATER --
+water
+-- WATER --
+
+-- WATERINV --
+seagrass
+tall_seagrass
+bubble_column
+kelp
+kelp_plant
+-- WATERINV --

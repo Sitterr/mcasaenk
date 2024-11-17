@@ -13,6 +13,12 @@ using System.Xml.Linq;
 using System.Text.Json.Serialization;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
+using System.Drawing;
+using System.Windows.Documents;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Mcasaenk.Rendering;
 
 namespace Mcasaenk.Colormaping {
 
@@ -20,22 +26,20 @@ namespace Mcasaenk.Colormaping {
         public const int DEFHEIGHT = 64;
 
         public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1, ERRORBLOCK = ushort.MaxValue - 2;
-
         public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
-
         public readonly ushort depth;
-        public readonly BlockValue depthVal;
+        public readonly ISet<ushort> noShades;
 
         public readonly BlockRegistry Block;
         public readonly BiomeRegistry Biome;
-        private IDictionary<ushort, BlockValue> blocks;
-        private List<Tint> tints;
-        public readonly GroupManager groupManager;
 
-
-        public bool Constructing { get; private set; }
+        private IDictionary<ushort, uint> BlocksManager;   
+        public readonly TintManager TintManager;
+        public readonly FilterManager FilterManager;
+        public readonly TintFilterShadeGrouping Grouping;
 
         public Colormap(RawColormap rawmap, int world_version, DatapacksInfo datapacksInfo) {
+
             ushort PLAINSBIOME = 0;
             Biome = new BiomeRegistry((name, id) => {
                 switch(name) {
@@ -57,114 +61,115 @@ namespace Mcasaenk.Colormaping {
                 }
             });
 
-            groupman = new GroupManager(this);
+            Grouping = new TintFilterShadeGrouping();
+            BlocksManager = new Dictionary<ushort, uint>();
+            TintManager = new TintManager(this);
+            FilterManager = new FilterManager(this);
+            FilterManager.AddBlock(INVBLOCK, FilterManager.Invis);
 
-            tints = new List<Tint>() { InvTint.Tint, NullTint.Tint };
-            groupManager = new GroupManager(this);
-            groupManager.Groups.Add(new Group(groupManager, InvTint.Tint, true, false, false) { ABSORBTION = 0 });
-            groupManager.Groups.Add(new Group(groupManager, NullTint.Tint, true, false, false) { ABSORBTION = 15 });
-            groupManager.Groups.Add(new Group(groupManager, NullTint.Error, true, false, false) { ABSORBTION = 15 });
-            groupManager.AddBlockToGroup("minecraft:air", groupManager.Groups[0], true);
-            //groups.Groups = new List<Group>() {
-            //    new Group(groups, InvTint.Tint, false, false, false) { ABSORBTION = 0 }, /*inv*/
-            //    new Group(groups, NullTint.Tint, false, false, false) { ABSORBTION = 15 }, /*err*/
-            //    new Group(groups, NullTint.Tint, false, false, false) { ABSORBTION = 15 }, /*water*/
-            //    new Group(groups, NullTint.Tint, false, false, false) { ABSORBTION = 15 }, /*normal*/
+            
+
+            //groupManager.AddBlockToFilter("minecraft:air", groupManager.filter_invis, true);
+            //BlocksManager = new Dictionary<ushort, uint> {
+            //    { Block.GetId("minecraft:air"), 0 }
             //};
 
-            blocks = new Dictionary<ushort, BlockValue> {
-                { Block.GetId("minecraft:air"), new BlockValue(){ color = 0, tint = InvTint.Tint } }
-            };
-
-            groupManager.Groups.Add(new Group(groupManager, NullTint.Tint, true, false, false) { ABSORBTION = 15 });
             if(rawmap != null) {
-                foreach(var t in rawmap.tints) {
-                    var sprite = t.image?.ToBitmapSource()?.ToUIntMatrix();
-                    Tint tint = NullTint.Tint;
-                    var format = TintMeta.GetFormat(t.format);
-                    if(format != null) {
-                        if(format.tintclass == typeof(OrthodoxVanillaTint)) tint = new OrthodoxVanillaTint(t.name, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(Vanilla_Grass)) tint = new Vanilla_Grass(t.name, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(Vanilla_Foliage)) tint = new Vanilla_Foliage(t.name, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(Vanilla_Water)) tint = new Vanilla_Water(t.name, world_version, sprite, datapacksInfo);
-                        else if(format.tintclass == typeof(GridTint)) tint = new GridTint(t.name, t.yOffset, sprite);
-                        else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(t.name, t.color.ToUInt());
-                    }
-                    var group = new Group(groupManager, tint, true, true, true);
-                    if(format.tintclass == typeof(Vanilla_Foliage) || t.name == "spruce_leaves" || t.name == "birch_leaves") {
-                        group.ABSORBTION = 10;
-                    }
+                foreach(var b in rawmap.blocks) {
+                    uint color = 0xFF000000 | b.Value.color.ToUInt();
 
-                    groupManager.Groups.Add(group);
-                    tints.Add(tint);
+                    ushort id = Block.GetId(b.Key);
+                    BlocksManager[id] = color;
 
-                    foreach(var block in t.blocks) {
-                        string name = block.minecraftname();
-                        groupManager.AddBlockToGroup(name, group, true);
-                        blocks[Block.GetId(name)] = new BlockValue() { color = 0xFFFFFFFF, tint = tint };
+                    if(b.Value.color.A < 255) {
+                        FilterManager.AddBlock(id, FilterManager.Invis, true);
                     }
                 }
-                foreach(var b in rawmap.blocks) {               
-                    uint color = b.Value.color.ToUInt();
-                    if(color == 0) continue; // todo
-                    ushort id = Block.GetId(b.Key);
 
-                    if(blocks.TryGetValue(id, out var block)) {
-                        block.color = color;
-                    } else {
-                        groupManager.AddBlockToGroup(b.Key, groupManager.Groups[1], true);
-                        blocks[id] = new BlockValue() { color = color, tint = tints[1] };
+
+                foreach(var t in rawmap.tints) {
+                    var sprite = t.image?.ToBitmapSource()?.ToUIntMatrix();
+                    Tint tint = TintManager.NullTint;
+                    var format = TintMeta.GetFormat(t.format);
+                    if(format != null) {
+                        if(format.tintclass == typeof(OrthodoxVanillaTint)) tint = new OrthodoxVanillaTint(TintManager, t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Grass)) tint = new Vanilla_Grass(TintManager, t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Foliage)) tint = new Vanilla_Foliage(TintManager, t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Water)) tint = new Vanilla_Water(TintManager, t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(GridTint)) tint = new GridTint(TintManager, t.name, t.yOffset, sprite);
+                        else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(TintManager, t.name, t.color.ToUInt());
+                    }
+
+                    TintManager.ELEMENTS.Add(tint);
+
+                    foreach(var block in t.blocks) {
+                        if(Block.TryGetId(block.minecraftname(), out ushort id)) {
+                            TintManager.AddBlock(id, tint);
+                        }
+                    }
+                }
+
+
+                foreach(var f in rawmap.filters) {
+                    var filter = new Filter(FilterManager, f.name, true, true) { ABSORBTION = (int)(Math.Round(15 - f.transparency * 15)) };
+
+                    FilterManager.ELEMENTS.Add(filter);
+
+                    foreach(var block in f.blocks) {
+                        if(Block.TryGetId(block.minecraftname(), out ushort id)) {
+                            FilterManager.AddBlock(id, filter);
+                        }
                     }
                 }
             }
 
 
-            blocks = blocks.ToFrozenDictionary();
+            BlocksManager = BlocksManager.ToFrozenDictionary();
             Block.Freeze();
             Biome.Freeze();
-
-            def = blocks[0];
-            error = new BlockValue() { color = 0xFFFF0000, tint = NullTint.Error };
-
             Block.LoadOldBlocks();
-            depth = Block.GetId("minecraft:water"); // todo!
-            depthVal = blocks[depth];
 
-            Group depthgroup = new Group(groupManager, depthVal.tint, false, true, true, true);
-            groupManager.Groups.Add(depthgroup);
-            groupManager.AddBlockToGroup("minecraft:water", depthgroup);
+            this.depth = rawmap != null ? Block.GetId(rawmap.depth) : NONEBLOCK;
+            FilterManager.AddBlock(depth, FilterManager.Depth);
 
-            foreach(var gr in groupManager.Groups) gr.SetFromBack();
-            groupManager.UpdateWhole();
-            Global.Settings.DEFBIOME = PLAINSBIOME;
-
-            
+            this.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => blid != INVBLOCK)).ToFrozenSet();
+            //
         }
 
-        public List<Tint> GetTints() => tints;
-        public List<Tint> GetBlendingTints() => tints.Where(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full).ToList();
+        public uint BaseColor(ushort block) => block switch { 
+            ERRORBLOCK => 0xFFFF0000,
+            INVBLOCK =>   0x00000000,
+            NONEBLOCK =>  0xFFFFFFFF,
+            _ => BlocksManager.GetValueOrDefault(block, (uint)0)
+        };
+        public uint FullColor(ushort block, ushort biome, short height) => TintManager.GetBlockVal(block).GetTintedColor(BaseColor(block), biome, height);
 
-        public readonly GroupManager groupman;
 
 
-        private BlockValue def, error;
-        public BlockValue Value(ushort block) {
-            if(block == ERRORBLOCK) return error;
-            else return blocks.GetValueOrDefault(block, def);
+        public bool AirHeightmapCompatible, WaterHeightmapCompatible;
+        public void UpdateHeightmapCompatability() {
+            AirHeightmapCompatible = true; 
+            WaterHeightmapCompatible = true;
+
+            foreach(var airblock in HeightmapFilter.AIRBLOCKS) {
+                ushort id = Block.GetId(airblock);
+                if(FilterManager.GetBlockVal(id).ABSORBTION > 0) {
+                    AirHeightmapCompatible = false;
+                    break;
+                }
+            }
+
+            if(Block.GetId(HeightmapFilter.WATERBLOCK) != depth) WaterHeightmapCompatible = false;
+            /*
+            foreach(var waterinvblock in HeightmapFilter.WATERINVBLOCKS) {
+                ushort id = Block.GetId(waterinvblock);
+                if(FilterManager.GetBlockVal(id).ABSORBTION > 0) {
+                    WaterHeightmapCompatible = false;
+                    break;
+                }
+            }
+            */
         }
-
-        public static bool IsColormap(string path) {
-            //try {
-            //    var data = JsonSerializer.Deserialize<JsonColormap>(File.ReadAllText(Path.Combine(path, "colormap.json")), Global.ColormapJsonOptions());
-            //}
-            //catch {
-            //    return false;
-            //}
-
-            return true;
-        }
-
-
 
 
         public readonly static ISet<string> INHERENT_WATER_LOGGED;
@@ -179,128 +184,214 @@ namespace Mcasaenk.Colormaping {
 
     }
 
-    public class GroupManager {
+
+
+    public class GroupManager<T> : StandardizedSettings where T : GroupElement<T> {
         public readonly Colormap colormap;
+        private IDictionary<ushort, T> map;
         public GroupManager(Colormap colormap) {
             this.colormap = colormap;
-            this.GROUPS = new List<Group>();
-            this.GROUPSINDEX = new Dictionary<Group, int>();
-            this.Groups = new List<Group>();
+
+            Elements = new ObservableCollection<T>();
+            ELEMENTS = new ObservableCollection<T>();
+
+            Elements.CollectionChanged += (o, e) => {
+                OnAutoChange(nameof(Elements));
+            };
+            ELEMENTS.CollectionChanged += (o, e) => {
+                OnAutoChange(nameof(ELEMENTS));
+            };
+
+            map = new Dictionary<ushort, T>();
         }
+        protected void InitDef(T origin) { this.Default = origin; ELEMENTS.Add(this.Default); }
 
-        private readonly List<Group> GROUPS;
-        private readonly Dictionary<Group, int> GROUPSINDEX;
-        public Group GetGroup(int id) => GROUPS[id];
-        public int GetId(Group group) => GROUPSINDEX[group];
+        public T Default { get; private set; }
+        public ObservableCollection<T> Elements, ELEMENTS;
 
-
-        public List<Group> Groups;
-
-
-        public void UpdateWhole() {
-            Groups = Groups.Where(gr => gr.Blocks.Count > 0 || gr.originforthattint).OrderBy(gr => {
-                if(gr.tint == InvTint.Tint) return 0;
-                if(gr.tint == NullTint.Error) return 1;             
-                if(gr.hostdepth) return 2;
-                if(gr.tint == NullTint.Tint) return 3;
-                return 10;
-            }).ToList();
-
-            foreach(var gr in GROUPS) Global.App.SettingsHub.UnlistSettings(gr);
-            GROUPS.Clear();
-            GROUPSINDEX.Clear();
-            for(int i = 0; i < Groups.Count; i++) {
-                GROUPS.Add(Groups[i]);
-                GROUPSINDEX.Add(GROUPS[i], i);
-
-                foreach(var blockname in Groups[i].BLOCKS) {
-                    var block = colormap.Value(colormap.Block.GetId(blockname));
-                    block.group = Groups[i];
-                }
-
-                Global.App.SettingsHub.RegisterSettings(Groups[i]);
-            }
+        public override void SetFromBack() {
+            ELEMENTS.Clear();
+            foreach(var el in Elements) ELEMENTS.Add(el);
         }
+        public override void Reset() {
+            Elements.Clear();
+            foreach(var el in ELEMENTS) Elements.Add(el);
+        }
+        public override bool ChangedBack() =>
+                   (Elements.All(ELEMENTS.Contains) && Elements.Count == ELEMENTS.Count) == false;
 
 
-        public void AddBlockToGroup(string block, Group group, bool neww = false) {
+
+        public void AddBlock(ushort block, T el = null, bool neww = false) {
+            if(el == null) el = Default;
             if(neww == false) {
-                foreach(var gr in Groups) {
-                    if(gr.Blocks.Contains(block)) {                     
-                        gr.Blocks.Remove(block);
-                        if(gr.SettingsHub == null) gr.BLOCKS.Remove(block);
-                        gr.OnAutoChange(nameof(gr.Blocks));
+                foreach(var flt in Elements) {
+                    if(flt.Blocks.Contains(block)) {
+                        flt._RemoveBlock(block);
                         break;
                     }
                 }
             }
-            
-            group.Blocks.Add(block);
-            if(group.SettingsHub == null) group.BLOCKS.Add(block);
-            group.OnAutoChange(nameof(group.Blocks));
+
+            el._AddBlock(block);
         }
 
-        public void RemoveBlockFromGroup(string block, Group group) {
-            foreach(var gr in Groups) {
-                if(group.tint == gr.tint && gr.originforthattint) {
-                    gr.Blocks.Add(block);
-                    if(gr.SettingsHub == null) gr.BLOCKS.Add(block);
-                    gr.OnAutoChange(nameof(gr.Blocks));
-                    break;
-                }
+        public void RemoveBlock(ushort block, T el) {
+            Default._AddBlock(block);
+            el._RemoveBlock(block);
+        }
+
+
+        public void SetBlockVal(ushort id, T val) {
+            if(map is FrozenDictionary<ushort, T>) map = new Dictionary<ushort, T>(map);
+            map[id] = val;
+        }
+        public T GetBlockVal(ushort id) {
+            if(map is Dictionary<ushort, T>) map = map.ToFrozenDictionary();
+
+            if(map.TryGetValue(id, out var val)) return val;
+            else return Default;
+        }
+    }
+    public class TintManager : GroupManager<Tint> {
+        public readonly Tint NullTint;
+        public TintManager(Colormap colormap) : base(colormap) {
+            this.NullTint = new NullTint(this);
+            this.InitDef(NullTint);
+        }
+        public List<Tint> GetBlendingTints() => ELEMENTS.Where(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full).ToList();
+    }
+    public class FilterManager : GroupManager<Filter> {
+        public readonly Filter Solid, Depth, Invis;
+        public FilterManager(Colormap colormap) : base(colormap) {
+            this.Solid = new Filter(this, "solid", false, false) { ABSORBTION = 15 };
+            this.Depth = new Filter(this, "depth", true, false) { ABSORBTION = 15 };
+            this.Invis = new Filter(this, "invis", true, false) { ABSORBTION = 0 };
+            this.InitDef(Solid);
+            base.ELEMENTS.Add(Depth);
+            base.ELEMENTS.Add(Invis);
+        }
+    }
+    public class TintFilterShadeGrouping {
+        private readonly List<(Filter gr, Tint tint, bool shade)> Pairs;
+        private IDictionary<(Filter gr, Tint tint, bool shade), int> PairsIndexes;
+
+        public TintFilterShadeGrouping() {
+            Pairs = new List<(Filter gr, Tint tint, bool shade)>();
+            PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>();
+        }
+
+
+        int i = 0;
+        public (Filter filter, Tint tint, bool shade) GetGroup(int id) => Pairs[id];
+        public int GetId(Filter filter, Tint tint, bool shade) {
+            //i++;
+            //if(i > 1500) PairsIndexes = PairsIndexes.ToFrozenDictionary();
+            if(PairsIndexes.TryGetValue((filter, tint, shade), out int otg)) return otg;
+            lock(this) {
+                if(PairsIndexes.TryGetValue((filter, tint, shade), out int otgnow)) return otgnow;
+
+                /*
+                i = 0;
+                if(PairsIndexes is FrozenDictionary<(Filter gr, Tint tint, bool shade), int>) {
+                    PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>(PairsIndexes);
+                    f++;
+                }*/
+
+                Pairs.Add((filter, tint, shade));
+                PairsIndexes.TryAdd((filter, tint, shade), Pairs.Count - 1);
+                return Pairs.Count - 1;
             }
-            group.Blocks.Remove(block);
-            if(group.SettingsHub == null) group.BLOCKS.Remove(block);
-            group.OnAutoChange(nameof(group.Blocks));
+        }
+        public void Reset() {
+            Pairs.Clear();
+            PairsIndexes.Clear();
+            i = 0;
         }
     }
 
 
-    public class Group : StandardizedSettings {
+    public abstract class GroupElement<T> : StandardizedSettings where T : GroupElement<T> {
+        protected GroupManager<T> groupManager;
+        public readonly string name;
+        public readonly HashSet<ushort> Blocks;
+        public readonly HashSet<ushort> BLOCKS;
 
-        public readonly bool caneditsettings, originforthattint, visible, hostdepth;
-        public readonly Tint tint;
-        private GroupManager groupManager;
-
-        public Group(GroupManager groupManager, Tint tint, bool originforthattint, bool visible = true, bool caneditsettings = true, bool hostdepth = false) {
+        public GroupElement(GroupManager<T> groupManager, string name) {
             this.groupManager = groupManager;
-            this.tint = tint;
-            this.originforthattint = originforthattint;
-            this.visible = visible;
-            this.caneditsettings = caneditsettings;
-            this.hostdepth = hostdepth;
+            this.name = name;
 
-            ABSORBTION = 15;
+            Blocks = new HashSet<ushort>();
+            BLOCKS = new HashSet<ushort>();
+        }
 
-            Blocks = new List<string>();
-            BLOCKS = new List<string>();
+        public void _AddBlock(ushort block) { 
+            Blocks.Add(block);
+            OnAutoChange(nameof(Blocks));
+
+            if(SettingsHub == null) {
+                BLOCKS.Add(block);
+                OnAutoChange(nameof(BLOCKS));
+                groupManager.SetBlockVal(block, (T)this);
+            }
+        }
+        public void _RemoveBlock(ushort block) {
+            Blocks.Remove(block);
+            OnAutoChange(nameof(Blocks));
+
+            if(SettingsHub == null) {
+                BLOCKS.Add(block);
+                OnAutoChange(nameof(BLOCKS));
+            }
         }
 
 
         public override void SetFromBack() {
-            if(ABSORBTION != Absorbtion) ABSORBTION = Absorbtion;
+            InternalSetFromBack();
 
             BLOCKS.Clear();
-            BLOCKS.AddRange(Blocks);
+            foreach(var bl in Blocks) {
+                BLOCKS.Add(bl);
+                groupManager.SetBlockVal(bl, (T)this);
+            }
             OnHardChange(nameof(BLOCKS));
         }
         public override void Reset() {
-            Absorbtion = ABSORBTION;
+            InternalReset();
 
             Blocks.Clear();
-            Blocks.AddRange(BLOCKS);
+            Blocks.UnionWith(BLOCKS);
             OnAutoChange(nameof(Blocks));
         }
         public override bool ChangedBack() =>
+                   InternalChangedBack() ||
+                   !Blocks.ValueCompare(BLOCKS);
+
+
+        public virtual void InternalSetFromBack() { }
+        public virtual void InternalReset() { }
+        public virtual bool InternalChangedBack() => false;
+    }
+    public class Filter : GroupElement<Filter> {
+        public readonly bool caneditsettings, visible;
+
+        public Filter(GroupManager<Filter> groupManager, string name, bool visible = true, bool caneditsettings = true) : base(groupManager, name) {
+            this.groupManager = groupManager;
+            this.visible = visible;
+            this.caneditsettings = caneditsettings;
+
+            ABSORBTION = 15;
+        }
+
+
+        public override void InternalSetFromBack() {
+            if(ABSORBTION != Absorbtion) ABSORBTION = Absorbtion;
+        }
+        public override void InternalReset() {
+            Absorbtion = ABSORBTION;
+        }
+        public override bool InternalChangedBack() =>
                    ABSORBTION != Absorbtion;
-
-
-
-        [JsonIgnore]
-        public readonly List<string> Blocks;
-        public readonly List<string> BLOCKS;
-
-        public int GetId() => groupManager.GetId(this);
 
 
         private int absorbtion, absorbtion_back;
@@ -319,77 +410,6 @@ namespace Mcasaenk.Colormaping {
             }
         }
         public int ABSORBTION { get => absorbtion; set { absorbtion = value; Absorbtion = value; OnHardChange(nameof(ABSORBTION)); } }
-    }
 
-
-    public class DynamicTintSettings : StandardizedSettings {
-        public DynamicTintSettings() {
-            On = true;
-            Blend = 9;
-        }
-
-        public override void SetFromBack() {
-            
-        }
-        public override void Reset() {
-            
-        }
-        public override bool ChangedBack() =>
-                   false;
-
-
-        private bool on;
-        public bool On {
-            get => on;
-            set {
-                if(value == on) return;
-
-                on = value;
-                OnLightChange(nameof(On));
-            }
-        }
-
-        private int blend;
-        public int Blend {
-            get => blend;
-            set {
-                if(value == blend) return;
-
-                blend = value;
-                OnLightChange(nameof(Blend));
-            }
-        }
-    }
-
-    public class DynamicVanillaTintSettings : DynamicTintSettings {
-        public DynamicVanillaTintSettings() : base() {
-            TemperatureVariation = 0;
-        }
-
-        private double tempHeight;
-        public double TemperatureVariation {
-            get => tempHeight;
-            set {
-                if(value == tempHeight) return;
-
-                tempHeight = value;
-                Global.Settings.OnLightChange(nameof(TemperatureVariation));
-            }
-        }
-    }
-
-
-
-
-
-
-    public class BlockValue {
-        public Tint tint;
-        public uint color;
-        public Group group;
-
-        public uint GetColor(ushort biome, short height) {
-            return tint.GetTintedColor(color, biome, height);
-        }
     }
 }

@@ -49,6 +49,16 @@ namespace Mcasaenk.Colormaping {
             else if(frozen == false) return assignNew(name);
             else return def;
         }
+        public bool TryGetId(string name, out ushort id) {
+            if(nameToId.TryGetValue(name, out id)) return true;
+
+            if(synonyms.TryGetValue(name, out string realname)) {
+                id = GetId(realname);
+                return true;
+            }
+
+            return false;
+        }
 
 
         public string GetName(ushort id) {
