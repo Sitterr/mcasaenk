@@ -1,5 +1,4 @@
 ﻿using System.Collections.Frozen;
-using static Mcasaenk.Global;
 using System.IO;
 using System.Windows.Media.Imaging;
 using System.ComponentModel;
@@ -61,13 +60,17 @@ namespace Mcasaenk.Colormaping {
                 }
             });
 
-            Grouping = new TintFilterShadeGrouping();
+            
             BlocksManager = new Dictionary<ushort, uint>();
             TintManager = new TintManager(this);
             FilterManager = new FilterManager(this);
             FilterManager.AddBlock(INVBLOCK, FilterManager.Invis);
+            FilterManager.AddBlock(NONEBLOCK, FilterManager.Error);
+            Grouping = new TintFilterShadeGrouping([
+                (FilterManager.Invis, TintManager.NullTint, true),
+                (FilterManager.Error, TintManager.NullTint, true),
+                ]);
 
-            
 
             //groupManager.AddBlockToFilter("minecraft:air", groupManager.filter_invis, true);
             //BlocksManager = new Dictionary<ushort, uint> {
@@ -132,14 +135,14 @@ namespace Mcasaenk.Colormaping {
             this.depth = rawmap != null ? Block.GetId(rawmap.depth) : NONEBLOCK;
             FilterManager.AddBlock(depth, FilterManager.Depth);
 
-            this.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => blid != INVBLOCK)).ToFrozenSet();
+            this.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => FilterManager.GetBlockVal(blid) != FilterManager.Invis)).ToFrozenSet();
             //
         }
 
         public uint BaseColor(ushort block) => block switch { 
             ERRORBLOCK => 0xFFFF0000,
             INVBLOCK =>   0x00000000,
-            NONEBLOCK =>  0xFFFFFFFF,
+            NONEBLOCK =>  0xFF0000FF,
             _ => BlocksManager.GetValueOrDefault(block, (uint)0)
         };
         public uint FullColor(ushort block, ushort biome, short height) => TintManager.GetBlockVal(block).GetTintedColor(BaseColor(block), biome, height);
@@ -262,23 +265,32 @@ namespace Mcasaenk.Colormaping {
         public List<Tint> GetBlendingTints() => ELEMENTS.Where(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full).ToList();
     }
     public class FilterManager : GroupManager<Filter> {
-        public readonly Filter Solid, Depth, Invis;
+        public readonly Filter Solid, Depth, Invis, Error;
         public FilterManager(Colormap colormap) : base(colormap) {
             this.Solid = new Filter(this, "solid", false, false) { ABSORBTION = 15 };
-            this.Depth = new Filter(this, "depth", true, false) { ABSORBTION = 15 };
+            this.Depth = new Filter(this, "depth", true, true) { ABSORBTION = 15 };
             this.Invis = new Filter(this, "invis", true, false) { ABSORBTION = 0 };
+            this.Error = new Filter(this, "error", false, false) { ABSORBTION = 15 };
             this.InitDef(Solid);
             base.ELEMENTS.Add(Depth);
             base.ELEMENTS.Add(Invis);
+            base.ELEMENTS.Add(Error);
         }
     }
     public class TintFilterShadeGrouping {
         private readonly List<(Filter gr, Tint tint, bool shade)> Pairs;
         private IDictionary<(Filter gr, Tint tint, bool shade), int> PairsIndexes;
 
-        public TintFilterShadeGrouping() {
+        private (Filter gr, Tint tint, bool shade)[] predefined;
+        public TintFilterShadeGrouping((Filter gr, Tint tint, bool shade)[] predefined) {
             Pairs = new List<(Filter gr, Tint tint, bool shade)>();
             PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>();
+
+            this.predefined = predefined;
+            foreach(var predef in predefined) {
+                Pairs.Add(predef);
+                PairsIndexes.TryAdd(predef, Pairs.Count - 1);
+            }
         }
 
 
@@ -307,6 +319,11 @@ namespace Mcasaenk.Colormaping {
             Pairs.Clear();
             PairsIndexes.Clear();
             i = 0;
+
+            foreach(var predef in predefined) {
+                Pairs.Add(predef);
+                PairsIndexes.TryAdd(predef, Pairs.Count - 1);
+            }
         }
     }
 
@@ -372,44 +389,5 @@ namespace Mcasaenk.Colormaping {
         public virtual void InternalReset() { }
         public virtual bool InternalChangedBack() => false;
     }
-    public class Filter : GroupElement<Filter> {
-        public readonly bool caneditsettings, visible;
 
-        public Filter(GroupManager<Filter> groupManager, string name, bool visible = true, bool caneditsettings = true) : base(groupManager, name) {
-            this.groupManager = groupManager;
-            this.visible = visible;
-            this.caneditsettings = caneditsettings;
-
-            ABSORBTION = 15;
-        }
-
-
-        public override void InternalSetFromBack() {
-            if(ABSORBTION != Absorbtion) ABSORBTION = Absorbtion;
-        }
-        public override void InternalReset() {
-            Absorbtion = ABSORBTION;
-        }
-        public override bool InternalChangedBack() =>
-                   ABSORBTION != Absorbtion;
-
-
-        private int absorbtion, absorbtion_back;
-        [JsonIgnore]
-        public int Absorbtion {
-            get => absorbtion_back;
-            set {
-                if(absorbtion_back == value) return;
-
-                absorbtion_back = value;
-                OnAutoChange(nameof(Absorbtion));
-                if(Global.App.OpenedSave == null || SettingsHub == null) {
-                    absorbtion = value;
-                    OnAutoChange(nameof(ABSORBTION));
-                }
-            }
-        }
-        public int ABSORBTION { get => absorbtion; set { absorbtion = value; Absorbtion = value; OnHardChange(nameof(ABSORBTION)); } }
-
-    }
 }

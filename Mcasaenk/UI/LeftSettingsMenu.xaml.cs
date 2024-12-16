@@ -2,6 +2,7 @@
 using Mcasaenk.Shade3d;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Printing;
 using System.Globalization;
 using System.Linq;
@@ -34,10 +35,10 @@ namespace Mcasaenk.UI {
                 // depr
             };
             btn_change.Click += (o, e) => {
-                Global.App.Settings.SetFromBack();
+                Global.App.SettingsHub.SetFromBack();
             };
             btn_undo.Click += (o, e) => {
-                Global.App.Settings.Reset();
+                Global.App.SettingsHub.Reset();
             };
 
             light_blue_b = this.TryFindResource("LIGHT_BLUE_B") as Brush;
@@ -165,6 +166,8 @@ namespace Mcasaenk.UI {
         public void SetUpColormapSettings(Colormap colormap) {
             tintGrid.RowDefinitions.Clear();
             tintGrid.Children.Clear();
+            filterGrid.RowDefinitions.Clear();
+            filterGrid.Children.Clear();
 
             colormapNotLoaded.Visibility = colormap != null ? Visibility.Collapsed : Visibility.Visible;
             colormapSettingsCont.Visibility = colormap != null ? Visibility.Visible : Visibility.Collapsed;
@@ -216,55 +219,151 @@ namespace Mcasaenk.UI {
                         tintGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
                     }
 
-                    if(tint is DynamicTint dtint) {
-                        var dockPanel = new DockPanel();
-                        Grid.SetRow(dockPanel, (i / 2) * 4);
-                        Grid.SetColumn(dockPanel, (i % 2) * 2);
-
-                        var txtname = new TextBlock();
-                        var tintmeta = TintMeta.GetFormat(tint.GetType());
-                        txtname.Inlines.Add(new Run() { Text = dtint.name + "/" });
-                        txtname.Inlines.Add(new Run() { Text = tintmeta.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
-                        txtname.Inlines.Add(new Run() { Text = "/" });
-                        dockPanel.Children.Add(txtname);
-
-                        var tintEnable = new ToggleButton { Margin = new Thickness(10, 0, 0, 0) };
-                        var toggleBinding = new Binding("On") {
-                            Source = dtint // Assuming 'Global.Settings' is correctly defined
-                        };
-                        tintEnable.SetBinding(ToggleButton.IsCheckedProperty, toggleBinding);
-                        dockPanel.Children.Add(tintEnable);
-
-                        var txtRaduis = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
-                        txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = dtint });
-                        MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{0}" };
-                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
-                        txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
-                        txtRaduis.SetBinding(TextBlock.TextProperty, txtMultBinding);
-                        dockPanel.Children.Add(txtRaduis);
-
-                        tintGrid.Children.Add(dockPanel);
-
-                        var slider = new Slider() {
-                            IsSnapToTickEnabled = true,
-                            Minimum = 1,
-                            Maximum = tintmeta.maxblend,
-                            TickFrequency = 4
-                        };
-                        Grid.SetRow(slider, (i / 2) * 4 + 2);
-                        Grid.SetColumn(slider, (i % 2) * 2);
-                        slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = dtint });
-                        slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = dtint });
-
-                        tintGrid.Children.Add(slider);
-                    }
+                    addtint(i, tintGrid, tint);
 
                     i++;
                 }
                 if(tintGrid.RowDefinitions.Count > 0) tintGrid.RowDefinitions.RemoveAt(tintGrid.RowDefinitions.Count - 1);
                 tintSettings.Visibility = tintGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+
+
+                i = 0;
+                foreach(var filter in colormap.FilterManager.ELEMENTS) {
+                    if(filter.visible == false) continue;
+                    if(filter.caneditsettings == false) {
+                        //todo if can edit blocks
+                        continue;
+                    }
+
+                    if(i % 2 == 0) {
+                        filterGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                        filterGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2) });
+                        filterGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto, MinHeight = 10 });
+                        filterGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(25) });
+                    }
+
+                    if(filter == colormap.FilterManager.Depth) adddepthfilter(i);
+                    else addfilter(i, filterGrid, filter);
+
+                    i++;
+                }
+                if(filterGrid.RowDefinitions.Count > 0) filterGrid.RowDefinitions.RemoveAt(filterGrid.RowDefinitions.Count - 1);
+                tintSettings.Visibility = filterGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
 
+        }
+
+        void addtint(int i, Grid tintGrid, Tint tint) {
+            if(tint is DynamicTint dtint) {
+                var dockPanel = new DockPanel();
+                Grid.SetRow(dockPanel, (i / 2) * 4);
+                Grid.SetColumn(dockPanel, (i % 2) * 2);
+
+                var txtname = new TextBlock();
+                var tintmeta = TintMeta.GetFormat(tint.GetType());
+                txtname.Inlines.Add(new Run() { Text = dtint.name + "/" });
+                txtname.Inlines.Add(new Run() { Text = tintmeta.kurzformat, FontStyle = FontStyles.Italic, FontSize = 12, Foreground = light_blue_b });
+                txtname.Inlines.Add(new Run() { Text = "/" });
+                dockPanel.Children.Add(txtname);
+
+                var tintEnable = new ToggleButton { Margin = new Thickness(10, 0, 0, 0) };
+                var toggleBinding = new Binding("On") {
+                    Source = dtint // Assuming 'Global.Settings' is correctly defined
+                };
+                tintEnable.SetBinding(ToggleButton.IsCheckedProperty, toggleBinding);
+                dockPanel.Children.Add(tintEnable);
+
+                var txtRaduis = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
+                txtRaduis.SetBinding(TextBlock.IsEnabledProperty, new Binding("On") { Source = dtint });
+                MultiBinding txtMultBinding = new MultiBinding { StringFormat = "{0}x{0}" };
+                txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
+                txtMultBinding.Bindings.Add(new Binding("Blend") { Source = dtint });
+                txtRaduis.SetBinding(TextBlock.TextProperty, txtMultBinding);
+                dockPanel.Children.Add(txtRaduis);
+
+                tintGrid.Children.Add(dockPanel);
+
+                var slider = new Slider() {
+                    IsSnapToTickEnabled = true,
+                    Minimum = 1,
+                    Maximum = tintmeta.maxblend,
+                    TickFrequency = 4
+                };
+                Grid.SetRow(slider, (i / 2) * 4 + 2);
+                Grid.SetColumn(slider, (i % 2) * 2);
+                slider.SetBinding(Slider.IsEnabledProperty, new Binding("On") { Source = dtint });
+                slider.SetBinding(Slider.ValueProperty, new Binding("Blend") { Source = dtint });
+
+                tintGrid.Children.Add(slider);
+            }
+        }
+
+        void addfilter(int i, Grid filterGrid, Filter filter) {
+            var dockPanel = new DockPanel();
+            Grid.SetRow(dockPanel, (i / 2) * 4);
+            Grid.SetColumn(dockPanel, (i % 2) * 2);
+
+            var txtname = new TextBlock();
+            txtname.Inlines.Add(new Run() { Text = filter.name });
+            txtname.Inlines.Add(GlobalXaml.ChangeStar("ABSORBTION", "Absorbtion", filter));
+            dockPanel.Children.Add(txtname);
+
+            var txtTransp = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
+            Binding transpBind = new Binding("Absorbtion") { Source = filter, Converter = new PercentNumberReverseConverter(), ConverterParameter = 15 };
+            txtTransp.SetBinding(TextBlock.TextProperty, transpBind);
+            dockPanel.Children.Add(txtTransp);
+
+            filterGrid.Children.Add(dockPanel);
+
+            var slider = new Slider() {
+                IsSnapToTickEnabled = true,
+                Minimum = 0,
+                Maximum = 15,
+                TickFrequency = 1
+            };
+            Grid.SetRow(slider, (i / 2) * 4 + 2);
+            Grid.SetColumn(slider, (i % 2) * 2);
+            slider.SetBinding(Slider.ValueProperty, new Binding("Absorbtion") { Source = filter, Converter = new ReverseConverter(), ConverterParameter = 15 });
+            //slider.SetBinding(Slider.IsEnabledProperty, new Binding("caneditsettings") { Source = filter });
+
+            filterGrid.Children.Add(slider);
+
+            var isenabledbinding = new Binding("TransparentLayers") { Source = Global.Settings, Converter = new GreaterThanConverter(), ConverterParameter = 1 };
+            slider.SetBinding(Slider.IsEnabledProperty, isenabledbinding);
+            dockPanel.SetBinding(Slider.IsEnabledProperty, isenabledbinding);
+        }
+
+        void adddepthfilter(int i) {
+            var dockPanel = new DockPanel();
+            Grid.SetRow(dockPanel, (i / 2) * 4);
+            Grid.SetColumn(dockPanel, (i % 2) * 2);
+
+            var txtname = new TextBlock() { Text = "depth", FontStyle = FontStyles.Italic };
+            dockPanel.Children.Add(txtname);
+
+            var txtTransp = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Right };
+            Binding transpBind = new Binding("WaterTransparency") { Source = Global.Settings, Converter = new RoundConverter(), ConverterParameter = 2 };
+            txtTransp.SetBinding(TextBlock.TextProperty, transpBind);
+            dockPanel.Children.Add(txtTransp);
+
+            filterGrid.Children.Add(dockPanel);
+
+            var slider = new Slider() {
+                IsSnapToTickEnabled = false,
+                Minimum = 0,
+                Maximum = 1,
+                TickFrequency = 0.0666
+            };
+            Grid.SetRow(slider, (i / 2) * 4 + 2);
+            Grid.SetColumn(slider, (i % 2) * 2);
+            slider.SetBinding(Slider.ValueProperty, new Binding("WaterTransparency") { Source = Global.Settings });
+
+            filterGrid.Children.Add(slider);
+
+            var isenabledbinding = new Binding("TransparentLayers") { Source = Global.Settings, Converter = new GreaterThanConverter(), ConverterParameter = 0 };
+            slider.SetBinding(Slider.IsEnabledProperty, isenabledbinding);
+            dockPanel.SetBinding(Slider.IsEnabledProperty, isenabledbinding);
         }
     }
 }

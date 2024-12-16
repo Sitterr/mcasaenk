@@ -35,6 +35,7 @@ namespace Mcasaenk {
 
         public static App App { get => (App)Application.Current; }
         public static Settings Settings { get => App.Settings; } // i hate wpf
+        public static SettingsHub SettingsHub { get => App.SettingsHub; } // i hate wpf
 
         public static ViewModel ViewModel;
 
@@ -108,10 +109,10 @@ namespace Mcasaenk {
             }
         }
 
-        public static Brush CreateCheckerBrush(Color c1, Color c2) {
+        public static Brush CreateCheckerBrush(Color c1, Color c2, int size = 10) {
             DrawingBrush checkerBrush = new DrawingBrush();
             checkerBrush.TileMode = TileMode.Tile;
-            checkerBrush.Viewport = new Rect(0, 0, 20, 20); // 20x20 pixel tiles
+            checkerBrush.Viewport = new Rect(0, 0, size * 2, size * 2); // 20x20 pixel tiles
             checkerBrush.ViewportUnits = BrushMappingMode.Absolute;
 
             // Create the DrawingGroup for the checker pattern
@@ -120,17 +121,17 @@ namespace Mcasaenk {
             // Background (white)
             GeometryDrawing backgroundDrawing = new GeometryDrawing();
             backgroundDrawing.Brush = new SolidColorBrush(c1);
-            backgroundDrawing.Geometry = new RectangleGeometry(new Rect(0, 0, 20, 20));
+            backgroundDrawing.Geometry = new RectangleGeometry(new Rect(0, 0, size * 2, size * 2));
 
             // First light gray rectangle (top-left)
             GeometryDrawing grayDrawing1 = new GeometryDrawing();
             grayDrawing1.Brush = new SolidColorBrush(c2);
-            grayDrawing1.Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10));
+            grayDrawing1.Geometry = new RectangleGeometry(new Rect(0, 0, size, size));
 
             // Second light gray rectangle (bottom-right)
             GeometryDrawing grayDrawing2 = new GeometryDrawing();
             grayDrawing2.Brush = new SolidColorBrush(c2);
-            grayDrawing2.Geometry = new RectangleGeometry(new Rect(10, 10, 10, 10));
+            grayDrawing2.Geometry = new RectangleGeometry(new Rect(size, size, size, size));
 
             // Add the drawings to the drawing group
             drawingGroup.Children.Add(backgroundDrawing);
@@ -390,12 +391,16 @@ namespace Mcasaenk {
             if(name.StartsWith("minecraft:")) return name.Substring(10);
             return name;
         }
-        static Regex tominecraftname_regex = new Regex("^((\\w*:)?\\w+)(:(\\w+=\\w+)(,(\\w+=\\w+))*)?$");
+        static Regex complicatedminecraftname_regex = new Regex("^(([a-z]\\w*:)?[a-z]\\w*)(:([a-z]\\w*=[a-z]\\w*)(,([a-z]\\w*=[a-z]\\w*))*)?$");
+        static Regex simpleminecraftname_regex = new Regex("^(([a-z]\\w*:)?[a-z]\\w*)$");
         public static string minecraftnamecomplex(this string name) {
-            var match = tominecraftname_regex.Match(name);
+            var match = complicatedminecraftname_regex.Match(name);
             if(match.Success) {
                 return match.Groups[1].Value.minecraftname();
             } else return name;
+        }
+        public static bool isminecraftname(this string name) {
+            return simpleminecraftname_regex.IsMatch(name);
         }
 
         public static TValue GetValueOrDefault<TKey, TValue>(
@@ -413,6 +418,28 @@ namespace Mcasaenk {
         }
 
 
+        public static Predicate<T> Or<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
+            return delegate (T item)
+            {
+                foreach(var predicate in predicates.Append(predicate0)) {
+                    if(predicate(item)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+        }
+        public static Predicate<T> And<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
+            return delegate (T item)
+            {
+                foreach(var predicate in predicates.Append(predicate0)) {
+                    if(!predicate(item)) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+        }
 
         public static T[,] D2<T>(this T[] input, int width, int height) {
             T[,] output = new T[width, height];
@@ -423,6 +450,13 @@ namespace Mcasaenk {
             }
             return output;
         }
+
+        public static string FirstCharToUpper(this string input) =>
+    input switch {
+        null => throw new ArgumentNullException(nameof(input)),
+        "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+        _ => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
+    };
 
         public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
             foreach(var el in list) {

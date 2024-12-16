@@ -71,6 +71,16 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] add {
+            get {
+                object obj = ResourceManager.GetObject("add", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to the_void
         ///plains
         ///sunflower_plains
@@ -226,8 +236,23 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to air;cave_air;void_air
-        ///water;seagrass;tall_seagrass;bubble_column;kelp;kelp_plant.
+        ///   Looks up a localized string similar to -- AIR --
+        ///air
+        ///cave_air
+        ///void_air
+        ///-- AIR --
+        ///
+        ///-- WATER --
+        ///water
+        ///-- WATER --
+        ///
+        ///-- WATERINV --
+        ///seagrass
+        ///tall_seagrass
+        ///bubble_column
+        ///kelp
+        ///kelp_plant
+        ///-- WATERINV --.
         /// </summary>
         public static string heightmap_blocks {
             get {
@@ -503,6 +528,16 @@ namespace Mcasaenk.Resources {
         public static byte[] undo {
             get {
                 object obj = ResourceManager.GetObject("undo", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] undo_lightred {
+            get {
+                object obj = ResourceManager.GetObject("undo_lightred", resourceCulture);
                 return ((byte[])(obj));
             }
         }

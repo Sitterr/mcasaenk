@@ -191,16 +191,18 @@ namespace Mcasaenk.Rendering {
 
                                     double br = 0, r = 0, g = 0, b = 0;
                                     for(int e = 0; e < data.dynbiomes.max(); e++) {
-                                        float lcolor = 0;
-                                        for(int h = genData.columns[w].Height(i); h > genData.columns[w].Height(i) - genData.columns[w].Depth(i); h--) {
-                                            float q = groupw.filter.ABSORBTION / 15f * (1 - lcolor);
-                                            var c = tint.TintColorFor(data.dynbiomes.back(e), (short)h).ToColor();
-                                            r += c.R * data.biomeresults[e] * q;
-                                            g += c.G * data.biomeresults[e] * q;
-                                            b += c.B * data.biomeresults[e] * q;
-                                            br += data.biomeresults[e] * q;
-                                            lcolor += q;
-                                            if(lcolor >= 1) break;
+                                        if(data.biomeresults[e] > 0) {
+                                            float lcolor = 0;
+                                            for(int h = genData.columns[w].Height(i); h > genData.columns[w].Height(i) - genData.columns[w].Depth(i); h--) {
+                                                float q = groupw.filter.ABSORBTION / 15f * (1 - lcolor);
+                                                var c = tint.TintColorFor(data.dynbiomes.back(e), (short)h).ToColor();
+                                                r += c.R * data.biomeresults[e] * q;
+                                                g += c.G * data.biomeresults[e] * q;
+                                                b += c.B * data.biomeresults[e] * q;
+                                                br += data.biomeresults[e] * q;
+                                                lcolor += q;
+                                                if(lcolor >= 1) break;
+                                            }
                                         }
                                     }
                                     color = Global.ColorMult(genData.columns[w].Color(i), WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)).ToUInt());
@@ -384,10 +386,10 @@ namespace Mcasaenk.Rendering {
 
     interface BlurConstruct<T, U, V> where T : BlurConstruct<T, U, V> {
         void IncreaseNewBlock(GenData gen, V data, int ri);
-        void SetNewBlock(GenData gen, V data, int ri);
         void CopyFrom(T blur);
         void Subtract(T blur);
         void Plus(T blur);
+        void Reset();
         U Generate(GenData gen, V data, int i);
     }
 
@@ -407,8 +409,7 @@ namespace Mcasaenk.Rendering {
         int br;
 
         public TerrHeightBlur() {
-            h = 0;
-            br = 0;
+            Reset();
         }
 
         public void CopyFrom(TerrHeightBlur blur) {
@@ -422,19 +423,15 @@ namespace Mcasaenk.Rendering {
             h -= blur.h;
             br -= blur.br;
         }
+        public void Reset() {
+            h = 0; br = 0;
+        }
 
         public void IncreaseNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
             if(gen == null) return;
             if(gen.depthColumn.IsDepth(ri)) {
                 h += gen.depthColumn.Depth(ri);
                 br++;
-            }
-        }
-        public void SetNewBlock(GenData gen, TerrHeightBlurData data, int ri) {
-            if(gen == null) return;
-            if(gen.depthColumn.IsDepth(ri)) {
-                h = gen.depthColumn.Depth(ri);
-                br = 1;
             }
         }
 
@@ -460,7 +457,7 @@ namespace Mcasaenk.Rendering {
         public ColorBlur() {
             Reset();
         }
-        void Reset() {
+        public void Reset() {
             br = 0; r = 0; g = 0; b = 0;
         }
 
@@ -483,25 +480,14 @@ namespace Mcasaenk.Rendering {
         public void IncreaseNewBlock(GenData gen, ColorBlurData data, int ri) {
             for(int w = 0; w < gen.columns.Length; w++) {
                 if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                if(data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
+                var group = data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri));
+                if(group.tint == data.tint) {
                     var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
-                    r += f.R;
-                    g += f.G;
-                    b += f.B;
-                    br++;
-                }
-            }
-        }
-        public void SetNewBlock(GenData gen, ColorBlurData data, int ri) {
-            Reset();
-            for(int w = 0; w < gen.columns.Length; w++) {
-                if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                if(data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri)).tint == data.tint) {
-                    var f = data.tint.TintColorFor(gen.columns[w].BiomeId(ri), gen.columns[w].Height(ri)).ToColor();
-                    r += f.R;
-                    g += f.G;
-                    b += f.B;
-                    br++;
+                    int mult = group.filter.ABSORBTION;
+                    r += f.R * mult;
+                    g += f.G * mult;
+                    b += f.B * mult;
+                    br += mult;
                 }
             }
         }
@@ -568,6 +554,9 @@ namespace Mcasaenk.Rendering {
             if(blur.biome == null) return;
             for(int i = 0; i < MB; i++) biome[i] -= blur.biome[i];
         }
+        public void Reset() {
+            for(int i = 0; i < MB; i++) biome[i] = 0;
+        }
 
 
         public void IncreaseNewBlock(GenData gen, PrecBlurData data, int ri) {
@@ -580,18 +569,6 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
-        public void SetNewBlock(GenData gen, PrecBlurData data, int ri) {
-            for(int w = 0; w < gen.columns.Length; w++) {
-                if(gen.columns[w].ContainsInfo(ri) == false) continue;
-                var group = data.colormap.Grouping.GetGroup(gen.columns[w].GroupId(ri));
-                if(group.tint == data.tint) {
-                    int i = data.dynbiomes.get(gen.columns[w].BiomeId(ri));
-                    biome[i] = group.filter.ABSORBTION;
-                }
-            }
-        }
-
-
 
         public PrecBlurData Generate(GenData gen, PrecBlurData data, int ri) {
             for(int i = 0; i < MB; i++) {
@@ -655,7 +632,8 @@ namespace Mcasaenk.Rendering {
 
                     if(gen != null) {
                         acc.IncreaseNewBlock(gen, data, ri);
-                        cx2[R + r].SetNewBlock(gen, data, ri);
+                        cx2[R + r].Reset();
+                        cx2[R + r].IncreaseNewBlock(gen, data, ri);
                     }
 
                 }
@@ -672,7 +650,8 @@ namespace Mcasaenk.Rendering {
 
                         if(gen != null) {
                             acc.IncreaseNewBlock(gen, data, ri);
-                            cx2[R + x + R].SetNewBlock(gen, data, ri);
+                            cx2[R + x + R].Reset();
+                            cx2[R + x + R].IncreaseNewBlock(gen, data, ri);
                         }
                     }
 
@@ -716,7 +695,10 @@ namespace Mcasaenk.Rendering {
             var xx = Math.DivRem(ax + 512, 512);
             var zz = Math.DivRem(az++ + 512, 512);
             int ri = zz.Remainder * 512 + xx.Remainder;
-            if(R == 0) acc.SetNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+            if(R == 0) {
+                acc.Reset();
+                acc.IncreaseNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+            }
 
             return (acc.Generate(neighbours[xx.Quotient, zz.Quotient], data, ri), neighbours[xx.Quotient, zz.Quotient], ri);
         }
@@ -736,7 +718,10 @@ namespace Mcasaenk.Rendering {
             var xx = Math.DivRem(ax + 512, 512);
             var zz = Math.DivRem(az++ + 512, 512);
             int ri = zz.Remainder * 512 + xx.Remainder;
-            if(R == 0) acc.SetNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+            if(R == 0) {
+                acc.Reset();
+                acc.IncreaseNewBlock(neighbours[xx.Quotient, zz.Quotient], data, ri);
+            }
 
             return acc.Generate(neighbours[xx.Quotient, zz.Quotient], data, ri);
         }

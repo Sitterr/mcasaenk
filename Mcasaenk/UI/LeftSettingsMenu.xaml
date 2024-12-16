@@ -143,7 +143,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Visible">
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -269,60 +269,61 @@
 
                                         </Grid>
 
+                                        <StackPanel Margin="0 60 0 0"
+                                                     IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
+                                            <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                    <ColumnDefinition Width="20"/>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto"/>
+                                                    <RowDefinition Height="2"/>
+                                                    <RowDefinition Height="auto" MinHeight="10"/>
+                                                    <RowDefinition Height="40"/>
+                                                    <RowDefinition Height="auto"/>
+                                                    <RowDefinition Height="2"/>
+                                                    <RowDefinition Height="auto" MinHeight="10"/>
+                                                </Grid.RowDefinitions>
 
-                                        <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                                <ColumnDefinition Width="20"/>
-                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="auto"/>
-                                                <RowDefinition Height="2"/>
-                                                <RowDefinition Height="auto" MinHeight="10"/>
-                                                <RowDefinition Height="40"/>
-                                                <RowDefinition Height="auto"/>
-                                                <RowDefinition Height="2"/>
-                                                <RowDefinition Height="auto" MinHeight="10"/>
-                                            </Grid.RowDefinitions>
 
-                                            
-                                            <DockPanel Grid.Row="0" Grid.Column="0">
-                                                <TextBlock Text="transparency"/>
-                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
-                                            </DockPanel>
-                                            <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                                <DockPanel Grid.Row="0" Grid.Column="0">
+                                                    <TextBlock Text="transparency"/>
+                                                    <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                                </DockPanel>
+                                                <Slider Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="1" TickFrequency="0.1"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
-                                            <DockPanel Grid.Row="0" Grid.Column="2">
-                                                <Label>
-                                                    <TextBlock Text="ocean smoothness"/>
-                                                    <Label.ToolTip>
-                                                        <TextBlock Text="smooths the underwater releif gradually starting from 8 blocks deep"/>
-                                                    </Label.ToolTip>
-                                                </Label>
-                                                <TextBlock HorizontalAlignment="Right">
-                                                    <TextBlock.Text>
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="OceanDepthBlending" StringFormat="{}{0}x{0}"/>
-                                                    </TextBlock.Text>
-                                                </TextBlock>
-                                            </DockPanel>
-                                            <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="65" TickFrequency="4" IsSnapToTickEnabled="True"
+                                                <DockPanel Grid.Row="0" Grid.Column="2">
+                                                    <Label>
+                                                        <TextBlock Text="ocean smoothness"/>
+                                                        <Label.ToolTip>
+                                                            <TextBlock Text="smooths the underwater releif gradually starting from 8 blocks deep"/>
+                                                        </Label.ToolTip>
+                                                    </Label>
+                                                    <TextBlock HorizontalAlignment="Right">
+                                                        <TextBlock.Text>
+                                                            <Binding Source="{x:Static gl:Global.Settings}" Path="OceanDepthBlending" StringFormat="{}{0}x{0}"/>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </DockPanel>
+                                                <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="65" TickFrequency="4" IsSnapToTickEnabled="True"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=OceanDepthBlending}"/>
 
-                                            <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="4" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
-                                                <Label>
-                                                    <TextBlock Text="softer water shade"/>
-                                                    <Label.ToolTip>
-                                                        <TextBlock Text="shades do not effect water itself, only solid blocks"/>
-                                                    </Label.ToolTip>
-                                                </Label>
-                                                <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
-                                            </StackPanel>
+                                                <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="4" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
+                                                    <Label>
+                                                        <TextBlock Text="softer water shade"/>
+                                                        <Label.ToolTip>
+                                                            <TextBlock Text="shades do not effect water itself, only solid blocks"/>
+                                                        </Label.ToolTip>
+                                                    </Label>
+                                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=WaterSmartShade}"/>
+                                                </StackPanel>
 
-                                        </Grid>
-
+                                            </Grid>
+                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=ShadeType, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:ShadeType.jmap}, Mode=OneWay}">
@@ -350,49 +351,53 @@
                                             </StackPanel>
                                         </Grid>
 
-                                        <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 60 0 15"/>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                                <ColumnDefinition Width="20"/>
-                                                <ColumnDefinition Width="*" SharedSizeGroup="A"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="auto"/>
-                                                <RowDefinition Height="2"/>
-                                                <RowDefinition Height="auto" MinHeight="10"/>
-                                            </Grid.RowDefinitions>
+                                        <StackPanel Margin="0 60 0 0"
+                                                     IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
+                                        
+                                            <TextBlock Text="-- Water settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                    <ColumnDefinition Width="20"/>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto"/>
+                                                    <RowDefinition Height="2"/>
+                                                    <RowDefinition Height="auto" MinHeight="10"/>
+                                                </Grid.RowDefinitions>
 
-                                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Orientation="Horizontal">
-                                                <TextBlock VerticalAlignment="Center">
-                                                    <Run Text="water mode"/>
-                                                </TextBlock>
-                                                <ComboBox Margin="10 0 0 0"
-                                                  ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                                  SelectedValuePath="Value"
-                                                  DisplayMemberPath="Description"
-                                                  SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode}"/>
-                                            </StackPanel>
+                                                <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Orientation="Horizontal">
+                                                    <TextBlock VerticalAlignment="Center">
+                                                        <Run Text="water mode"/>
+                                                    </TextBlock>
+                                                    <ComboBox Margin="10 0 0 0"
+                                                      ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                      SelectedValuePath="Value"
+                                                      DisplayMemberPath="Description"
+                                                      SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode}"/>
+                                                </StackPanel>
 
-                                            <DockPanel Grid.Row="0" Grid.Column="2"
-                                                       Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}">
-                                                <TextBlock Text="revealed depth"/>
-                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
-                                            </DockPanel>
-                                            <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
-                                                    Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}"
-                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater}"/>
+                                                <DockPanel Grid.Row="0" Grid.Column="2"
+                                                           Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}">
+                                                    <TextBlock Text="revealed depth"/>
+                                                    <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater, Converter={StaticResource RoundConverter}, ConverterParameter=1}" HorizontalAlignment="Right"/>
+                                                </DockPanel>
+                                                <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="5" TickFrequency="0.2" IsSnapToTickEnabled="True"
+                                                        Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.vanilla}, Mode=OneWay}"
+                                                 Value="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_RevealedWater}"/>
 
-                                            <DockPanel Grid.Row="0" Grid.Column="2"
-                                                       Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}">
-                                                <TextBlock Text="transparency"/>
-                                                <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
-                                            </DockPanel>
-                                            <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
-                                                    Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}"
-                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
+                                                <DockPanel Grid.Row="0" Grid.Column="2"
+                                                           Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}">
+                                                    <TextBlock Text="transparency"/>
+                                                    <TextBlock Text="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency, Converter={StaticResource RoundConverter}}" HorizontalAlignment="Right"/>
+                                                </DockPanel>
+                                                <Slider Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency="0.1"
+                                                        Visibility="{Binding Source={x:Static gl:Global.Settings}, Path=Jmap_WaterMode, Converter={StaticResource VisibilityConverter}, ConverterParameter={x:Static gl:JsmapWaterMode.translucient}, Mode=OneWay}"
+                                                Value="{Binding Source={x:Static gl:Global.Settings}, Path=WaterTransparency}"/>
 
                                         </Grid>
+                                        </StackPanel>
                                     </StackPanel>
 
                                 </StackPanel>
@@ -453,7 +458,7 @@
                                     <Border Height="30"/>
 
                                     <TextBlock x:Name="colormapNotLoaded" Text="The colormap(and its settings) would only load after a world is selected" TextWrapping="Wrap" FontSize="16" TextAlignment="Center" Margin="50 0 50 0"/>
-                                    <StackPanel x:Name="colormapSettingsCont" Visibility="Hidden">
+                                    <StackPanel x:Name="colormapSettingsCont" Visibility="Collapsed">
                                         <StackPanel x:Name="macroGrid" Margin="0 0 0 60">
                                             <TextBlock Text="-- Meta settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
                                             <Grid>
@@ -495,9 +500,25 @@
                                         </StackPanel>
 
 
-                                        <StackPanel x:Name="tintSettings">
+                                        <StackPanel x:Name="tintSettings"
+                                                    >
                                             <TextBlock Text="-- Tint settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
                                             <Grid x:Name="tintGrid">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                    <ColumnDefinition Width="20"/>
+                                                    <ColumnDefinition Width="*" SharedSizeGroup="A"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                </Grid.RowDefinitions>
+                                            </Grid>
+                                        </StackPanel>
+
+
+                                        <StackPanel x:Name="filterSettings" Margin="0 60 0 0"
+                                                    IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
+                                            <TextBlock Text="-- Filter settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                            <Grid x:Name="filterGrid">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
                                                     <ColumnDefinition Width="20"/>
@@ -540,11 +561,11 @@
                     </DockPanel>
                 </StackPanel>
 
-                <local:EButton x:Name="btn_change" Grid.Column="0" Grid.ColumnSpan="2" Width="140" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=CHANGED_BACK, Mode=OneWay}">
+                <local:EButton x:Name="btn_change" Grid.Column="0" Grid.ColumnSpan="2" Width="140" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.SettingsHub}, Path=CHANGED_BACK, Mode=OneWay}">
                     <TextBlock Text="Update" FontSize="16"/>
                 </local:EButton>
 
-                <local:EButton x:Name="btn_undo" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=CHANGED_BACK, Mode=OneWay}">
+                <local:EButton x:Name="btn_undo" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10 5 10 5" IsEnabled="{Binding Source={x:Static gl:Global.SettingsHub}, Path=CHANGED_BACK, Mode=OneWay}">
                     <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
                 </local:EButton>
 

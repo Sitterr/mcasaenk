@@ -83,7 +83,7 @@ namespace Mcasaenk {
                 if(mapcolor.version > version) continue;
 
                 var rgbColor = color.ToColor();
-                if(rgbColor.A < 255) return nullcolor;
+                if(rgbColor.A == 0) return nullcolor;
 
                 int score = (rgbColor.R - mapcolor.color.R) * (rgbColor.R - mapcolor.color.R) + (rgbColor.G - mapcolor.color.G) * (rgbColor.G - mapcolor.color.G) + (rgbColor.B - mapcolor.color.B) * (rgbColor.B - mapcolor.color.B);
                 if(score < bestscore) { 

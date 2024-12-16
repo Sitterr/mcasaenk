@@ -165,6 +165,8 @@ namespace Mcasaenk.Colormaping {
                 lines.Add($"format=filter");
                 if(!(filter.blocks.Count == 1 && filter.blocks[0].minecraftname() == filter.name.minecraftname())) lines.Add($"blocks={string.Join(" ", filter.blocks.Select(bl => bl.simplifyminecraftname()))}");
                 lines.Add($"transparecy={filter.transparency}");
+
+                output.SaveLines(filter.name + ".filter", lines);
             }
 
             output.SaveLines("__palette__.blocks", colormap.blocks.Select(bl => {
@@ -206,15 +208,54 @@ namespace Mcasaenk.Colormaping {
                 colormap.blocks.Add(name, new RawBlock() { color = color });
             }, '=');
 
-            foreach(var tint in colormap.tints) {
-                foreach(var block in tint.blocks) {
-                    if(colormap.blocks.ContainsKey(block) == false) {
-                        colormap.blocks.Add(block, new RawBlock() { color = WPFColor.Transparent });
-                    }
+            return colormap;
+        }
+
+
+
+
+
+    }
+
+    public class ConstructedColormapNotice {
+        public enum Type { warning = 2, tip = 1 }
+
+        public readonly string message;
+        public readonly string[] clarifications;
+        public readonly Type type;
+        private ConstructedColormapNotice(Type type, string message, string[] clarifications) { 
+            this.message = message;
+            this.clarifications = clarifications;
+            this.type = type;
+        }
+
+        public static ConstructedColormapNotice InvisibleColor = new(Type.warning,
+            "the color of this block is transparent and thus will not be rendered",
+            ["many times it is this for a reason and not just an error"]);
+
+        public static ConstructedColormapNotice ShouldBeTinted = new(Type.warning,
+            "the model of this block suggests that it be somehow tinted",
+            ["if the base color is rich, this warning may be false positive", 
+             "if the base color is greyish though, it most certainly does need to be tinted"]);
+
+        public static ConstructedColormapNotice NoModel = new(Type.tip,
+            "this block lacked a proper model, nevertheless a texture was found", []);
+
+
+
+        public static List<ConstructedColormapNotice> MakeNotices(WPFColor color, CreationDetails details, bool istinted) {
+            List<ConstructedColormapNotice> notices = new List<ConstructedColormapNotice>();
+            if(color.A < 255) notices.Add(InvisibleColor);
+            if(details != null) {
+                if(details.shouldTint && !istinted) {
+                    notices.Add(ShouldBeTinted);
+                }
+
+                if(details.creationMethod == BlockCreationMethod.Texture) {
+                    notices.Add(NoModel);
                 }
             }
-
-            return colormap;
+            return notices;
         }
     }
 }

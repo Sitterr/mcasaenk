@@ -99,7 +99,7 @@ namespace Mcasaenk {
         }
         public void FinishFreeze(bool execute) {
             frozen = false;
-            if(execute) onHardChange(frozenChanges);
+            if(execute) onHardChange(frozenChanges.ToList());
         }
 
         public void SetFromBack() {
@@ -727,7 +727,7 @@ namespace Mcasaenk {
                 }
             }
         }
-        public int TRANSPARENTLAYERS { get => transparentLayers; set { transparentLayers = value; TransparentLayers = value; OnHardChange(nameof(TRANSPARENTLAYERS)); } }
+        public int TRANSPARENTLAYERS { get => transparentLayers; set { transparentLayers = value; TransparentLayers = value; OnHardChange(nameof(TRANSPARENTLAYERS)); if(TransparentLayers == 0) this.WATER_TRANSPARENCY = 0; } }
 
 
         private int minZoom;

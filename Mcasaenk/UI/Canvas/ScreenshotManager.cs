@@ -111,7 +111,7 @@ namespace Mcasaenk.UI.Canvas {
 
 
 
-        public RenderTargetBitmap TakeScreenshot(BitmapScalingMode scalingMode) {
+        public BitmapSource TakeScreenshot(BitmapScalingMode scalingMode) {
             try {
                 var Size = Rect().Size.AsPoint();
                 var NW = Rect().TopLeft;
@@ -154,6 +154,7 @@ namespace Mcasaenk.UI.Canvas {
                     renderBitmap.Render(drawing);
                 }
 
+                if(rotated) return new TransformedBitmap(renderBitmap, new RotateTransform(-90));
                 return renderBitmap;
             }
             catch {
@@ -173,10 +174,12 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         void TakeScreenshotAsImage() {
+            var (bx, by) = (resolution.X, resolution.Y);
+            if(rotated) (by, bx) = (resolution.X, resolution.Y);
             var saveFileDialog = new SaveFileDialog {
                 Filter = "PNG Image|*.png",
                 Title = "Save screenshot",
-                FileName = $"screenshot{resolution.X}x{resolution.Y}"
+                FileName = $"screenshot{bx}x{by}"
             };
 
             if(saveFileDialog.ShowDialog() == true) {

@@ -15,12 +15,14 @@ namespace Mcasaenk.Rendering {
 
     public class GenData { // 72bit
         public GenDataColumn[] columns; // including depthColumn
+        public readonly int[] chunkisscreenshotable;
 
         public GenDataColumn depthColumn;
         private bool istemp, temp_waterRelief = false;
 
         private ushort depthblock;
         public GenData(RawData rawData, ushort depthblock) {
+            this.chunkisscreenshotable = rawData.chunkisscreenshotable;
             this.columns = new GenDataColumn[rawData.columns.Length + 1];
             for(int i = 0; i < rawData.columns.Length; i++) {
                 this.columns[i] = new GenDataColumn(rawData.columns[i], false);
@@ -31,6 +33,7 @@ namespace Mcasaenk.Rendering {
             this.istemp = false;
         }
         private GenData(GenData genData) {
+            this.chunkisscreenshotable = genData.chunkisscreenshotable;
             this.columns = new GenDataColumn[genData.columns.Length];
             for(int i = 0; i < columns.Length; i++) {
                 this.columns[i] = new GenDataColumn(genData.columns[i]);
@@ -60,20 +63,8 @@ namespace Mcasaenk.Rendering {
         }
 
 
-
-        int empty = 0;
-        public bool ContainsEmpty() {
-            if(empty == 0) {
-                empty = 2;
-                for(int i = 0; i < 512 * 512; i++) {
-                    if(depthColumn.GroupId(i) == 0/*inv*/ || depthColumn.GroupId(i) == 1/*error*/) {
-                        empty = 1; 
-                        break;
-                    }
-                }
-            }
-            if(empty == 2) return false;
-            else return true;
+        public bool IsChunkScreenshotable(int x, int z) {
+            return ((chunkisscreenshotable[z] >> x) & 1) == 1;
         }
     }
 
@@ -125,11 +116,13 @@ namespace Mcasaenk.Rendering {
     public class RawData {
         public RawDataColumn[] columns;
         public RawDataColumn depthColumn;
+        public int[] chunkisscreenshotable; // bit
 
         // disolves in the gendata stage
         public byte[] shadeFrame; // 4bit
 
         public RawData() {
+            chunkisscreenshotable = new int[32 * 32 / 32];
             columns = new RawDataColumn[Math.Max(0, Global.Settings.TRANSPARENTLAYERS - 1)];
             for(int i = 0; i < columns.Length; i++) {
                 columns[i] = new RawDataColumn(true);
@@ -140,6 +133,11 @@ namespace Mcasaenk.Rendering {
             if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
                 shadeFrame = new byte[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
             }
+        }
+
+        public void SetChunkScreenshotable(int x, int z, bool val) {
+            if(val) chunkisscreenshotable[z] |= (1 << x);
+            else chunkisscreenshotable[z] &= ~(1 << x);
         }
     }
 

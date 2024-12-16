@@ -23,10 +23,12 @@ using System.Runtime.InteropServices;
 namespace Mcasaenk.Rendering {
     public class ChunkRenderer {
         public static void Extract(IChunkInterpreter data, int x, int z, int y, RawData rdata) {
-
-            int maxh = Global.Settings.MAXABSHEIGHT;
             if(data == null) return;
             if(data.ContainsInformation() == false) return;
+
+            int maxh = Global.Settings.MAXABSHEIGHT;
+
+            rdata.SetChunkScreenshotable(x / 16, z / 16, true);
 
             int x0 = ShadeConstants.GLB.nflowX(0, 0, ShadeConstants.GLB.rX) * 512;
             int z0 = ShadeConstants.GLB.nflowZ(0, 0, ShadeConstants.GLB.rZ) * 512;
@@ -49,7 +51,11 @@ namespace Mcasaenk.Rendering {
                         short ah = HeightmapFilter.FilterAir(data, cx, cz, airHeight);
                         if(ah < y) airHeight = ah;
                     }
-                    while(data.Colormap.FilterManager.GetBlockVal(data.GetBlock(cx, cz, airHeight)).ABSORBTION == 0 && airHeight > 0) airHeight--;
+                    while(data.Colormap.FilterManager.GetBlockVal(data.GetBlock(cx, cz, airHeight)).ABSORBTION == 0 && airHeight >= 0) airHeight--;
+                    if(airHeight == -1) {
+                        rdata.SetChunkScreenshotable(x / 16, z / 16, false);
+                        continue;
+                    }
                     short height = airHeight, waterHeight = airHeight;
 
                     if(rdata.columns.Length > 0) {
@@ -60,10 +66,8 @@ namespace Mcasaenk.Rendering {
 
                         int coli = 0;
                         float lcolor = startfilter.ABSORBTION / 15f;
-                            
-                        if(height < 0) continue;
 
-                        short startheight = height;
+                        short startheight = height, sth2 = height;
                         byte startlight = Math.Max(data.GetBlockLight(cx, cz, startheight), data.GetBlockLight(cx, cz, startheight + 1));
                         ushort startbiome = data.GetBiome(cx, cz, startheight);
                         height--;
@@ -74,11 +78,11 @@ namespace Mcasaenk.Rendering {
                             Tint tint = data.Colormap.TintManager.GetBlockVal(blockid);
                             Filter filter = data.Colormap.FilterManager.GetBlockVal(blockid);
 
-                            if(filter.ABSORBTION == 0 && false) {
+                            if(filter.ABSORBTION == 0) {
                                 height--;
+                                sth2--;
                                 continue;
                             }
-                               
 
                             ushort biome = data.GetBiome(cx, cz, height);
 
@@ -88,21 +92,23 @@ namespace Mcasaenk.Rendering {
 
                                     if(startfilter == data.Colormap.FilterManager.Depth) {
                                         rdata.depthColumn.heights[regionIndex] = startheight;
-                                        rdata.depthColumn.depths[regionIndex] = (short)(startheight - height);
+                                        rdata.depthColumn.depths[regionIndex] = (short)(sth2 - height);
 
+                                        if(startcolor <= 0x00FFFFFF || startfilter == data.Colormap.FilterManager.Error) rdata.SetChunkScreenshotable(x / 16, z / 16, false);
                                         rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)data.Colormap.Grouping.GetId(startfilter, starttint, !data.Colormap.noShades.Contains(startblockid)));
                                         rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(tint.GetTintedColor(color, biome, height), startlight);
 
+                                        coli = 1000;
                                         break;
                                     } else {
                                         RawDataColumn col;
                                         if(coli == rdata.columns.Length) col = rdata.depthColumn;
                                         else col = rdata.columns[coli];
 
-
+                                        if(startcolor <= 0x00FFFFFF || startfilter == data.Colormap.FilterManager.Error) rdata.SetChunkScreenshotable(x / 16, z / 16, false);
                                         col.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(startbiome, (byte)data.Colormap.Grouping.GetId(startfilter, starttint, !data.Colormap.noShades.Contains(startblockid)));
                                         col.heights[regionIndex] = startheight;
-                                        if(col != rdata.depthColumn) col.depths[regionIndex] = (short)(startheight - height);
+                                        if(col != rdata.depthColumn) col.depths[regionIndex] = (short)(sth2 - height);
                                         col.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(startcolor, startlight);
                                         coli++;
                                     }
@@ -110,7 +116,7 @@ namespace Mcasaenk.Rendering {
                                 }
                                 if(startfilter.ABSORBTION == 15) break;
 
-                                startheight = height;
+                                sth2 = startheight = height;
                                 startfilter = filter;
                                 starttint = tint;
                                 startbiome = biome;
@@ -126,6 +132,10 @@ namespace Mcasaenk.Rendering {
 
                             height--;
 
+                        }
+
+                        if(coli == 0) {
+                            rdata.SetChunkScreenshotable(x / 16, z / 16, false);
                         }
                     } else {
 
@@ -157,6 +167,7 @@ namespace Mcasaenk.Rendering {
                             Tint tint = data.Colormap.TintManager.GetBlockVal(id);
                             Filter filter = data.Colormap.FilterManager.GetBlockVal(id);
 
+                            if(filter == data.Colormap.FilterManager.Error) rdata.SetChunkScreenshotable(x / 16, z / 16, false);
                             rdata.depthColumn.biomeIds10_groupIds6[regionIndex] = RawDataColumn.BiomeGroupMaker(data.GetBiome(cx, cz, airHeight), (byte)data.Colormap.Grouping.GetId(filter, tint, !data.Colormap.noShades.Contains(id)));
                             rdata.depthColumn.color24_light4_none4[regionIndex] = RawDataColumn.ColorLightMaker(data.Colormap.BaseColor(id), Math.Max(data.GetBlockLight(cx, cz, airHeight), data.GetBlockLight(cx, cz, airHeight + 1)));
                         }

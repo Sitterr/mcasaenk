@@ -206,8 +206,15 @@ namespace Mcasaenk.UI.Canvas {
                         //window.footer.Y = tile.genData.isShade(i);
                         window.footer.Y_Terrain = tile.genData.depthColumn.depths != null ? tile.genData.depthColumn.depths[i] : -1;
 
+                        var realcolumn = tile.genData.columns[0];
+                        for(int w = 0; w < tile.genData.columns.Length; w++) {
+                            if(tile.genData.columns[w].ContainsInfo(i)) {
+                                realcolumn = tile.genData.columns[w];
+                                break;
+                            }
+                        }
                         //window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
-                        //window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));
+                        window.footer.Biome = Global.App.Colormap.Biome.GetName(realcolumn.BiomeId(i));
                     } else {
                         window.footer.Y = -10;
                         window.footer.Y_Terrain = Global.Settings.MINY - 1;

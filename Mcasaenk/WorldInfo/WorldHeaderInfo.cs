@@ -2,7 +2,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO.Compression;
 using System.IO;
 using System.Linq;
@@ -14,6 +13,7 @@ using Mcasaenk.Resources;
 using System.Text.Json;
 using Mcasaenk.UI;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace Mcasaenk.WorldInfo {
 
@@ -128,13 +128,8 @@ namespace Mcasaenk.WorldInfo {
         public string[] mods { get; private set; }
         public bool resourcepack { get; private set; }
 
-        public string pd { get; private set; }
-        public int px { get; private set; }
-        public int py { get; private set; }
-        public int pz { get; private set; }
-        public int sx { get; private set; }
-        public int sy { get; private set; }
-        public int sz { get; private set; }
+        public readonly PlayerLocData mainPlayer = new();
+        public readonly PlayerLocData[] otherPlayers = [];
 
         private LevelDatInfo(Tag _tag, DirectoryInfo folder, ImageSource image, DateOnly lastopened) {
             if(image == null) image = defaultIcon;
@@ -169,26 +164,30 @@ namespace Mcasaenk.WorldInfo {
                     this.seed = (NumTag<long>)data["RandomSeed"];
                 }
                 hardcore = ((NumTag<sbyte>)data["hardcore"]) > 0;
-                this.sx = (NumTag<int>)data["SpawnX"];
-                this.sy = (NumTag<int>)data["SpawnY"];
-                this.sz = (NumTag<int>)data["SpawnZ"];
+                mainPlayer.sp_x = (NumTag<int>)data["SpawnX"];
+                mainPlayer.sp_y = (NumTag<int>)data["SpawnY"];
+                mainPlayer.sp_z = (NumTag<int>)data["SpawnZ"];
+                if(data["SpawnDimension"] is NumTag<string> st) mainPlayer.sp_d = st;
+                else if(data["SpawnDimension"] is NumTag<int> it) {
+                    if(it == 0) mainPlayer.sp_d = "minecraft:overworld";
+                    if(it == 1) mainPlayer.sp_d = "minecraft:the_nether";
+                    if(it == 2) mainPlayer.sp_d = "minecraft:the_end";
+                } else mainPlayer.sp_d = "minecraft:overworld";
+
                 var player = (CompoundTag_Optimal)data["Player"];
                 {
                     
                     if(player?["Pos"] != null) {
                         var pos = (List<Tag>)(ListTag)player["Pos"];
-                        this.px = (int)(NumTag<double>)pos[0];
-                        this.py = (int)(NumTag<double>)pos[1];
-                        this.pz = (int)(NumTag<double>)pos[2];
-                        if(player["Dimension"] is NumTag<string> st) this.pd = st;
+                        mainPlayer.pl_x = (int)(NumTag<double>)pos[0];
+                        mainPlayer.pl_y = (int)(NumTag<double>)pos[1];
+                        mainPlayer.pl_z = (int)(NumTag<double>)pos[2];
+                        if(player["Dimension"] is NumTag<string> st2) mainPlayer.pl_d = st2;
                         else if(player["Dimension"] is NumTag<int> it) {
-                            if(it == 0) this.pd = "minecraft:overworld";
-                            if(it == 1) this.pd = "minecraft:the_nether";
-                            if(it == 2) this.pd = "minecraft:the_end";
-                        }
-                    } else {
-                        this.px = this.py = this.pz = int.MaxValue;
-                        this.pd = "";
+                            if(it == 0) mainPlayer.pl_d = "minecraft:overworld";
+                            if(it == 1) mainPlayer.pl_d = "minecraft:the_nether";
+                            if(it == 2) mainPlayer.pl_d = "minecraft:the_end";
+                        } else mainPlayer.pl_d = "minecraft:overworld";
                     }
                 }
                 var datapacks = (CompoundTag_Optimal)data["DataPacks"];
@@ -205,6 +204,58 @@ namespace Mcasaenk.WorldInfo {
                     this.datapacks = enabled.Where(e => e.StartsWith("file/")).Select(e => e.Substring(5)).ToArray();
                     
                 }
+            }
+
+
+            // other players
+            {
+                var plf = folder.GetDirectories().FirstOrDefault(sd => sd.Name == "playerdata");
+                List<PlayerLocData> otherPlayers = new();
+                if(plf != null) {
+                    foreach(var datf in plf.GetFiles().Where(f => f.Extension == ".dat")) {
+                        try {
+                            PlayerLocData player = new PlayerLocData();
+
+                            using var pointer = new MemoryStream(File.ReadAllBytes(datf.FullName));
+                            if(pointer == null) continue;
+                            using var zlip = new GZipStream(pointer, CompressionMode.Decompress);
+                            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
+                            var nbtreader = new NbtReader(decompressedStream);
+                            _ = nbtreader.TryRead(out var _g);
+                            var globaltag = (CompoundTag_Optimal)_g;
+                            player.sp_x = (NumTag<int>)globaltag["SpawnX"];
+                            player.sp_y = (NumTag<int>)globaltag["SpawnY"];
+                            player.sp_z = (NumTag<int>)globaltag["SpawnZ"];
+                            if(globaltag["SpawnDimension"] is NumTag<string> st) player.sp_d = st;
+                            else if(globaltag["SpawnDimension"] is NumTag<int> it) {
+                                if(it == 0) player.sp_d = "minecraft:overworld";
+                                if(it == 1) player.sp_d = "minecraft:the_nether";
+                                if(it == 2) player.sp_d = "minecraft:the_end";
+                            } else player.sp_d = "minecraft:overworld";
+
+                            if(globaltag?["Pos"] != null) {
+                                var pos = (List<Tag>)(ListTag)globaltag["Pos"];
+
+                                player.pl_x = (int)(NumTag<double>)pos[0];
+                                player.pl_y = (int)(NumTag<double>)pos[1];
+                                player.pl_z = (int)(NumTag<double>)pos[2];
+                                if(globaltag["Dimension"] is NumTag<string> st3) player.pl_d = st3;
+                                else if(globaltag["Dimension"] is NumTag<int> it) {
+                                    if(it == 0) player.pl_d = "minecraft:overworld";
+                                    if(it == 1) player.pl_d = "minecraft:the_nether";
+                                    if(it == 2) player.pl_d = "minecraft:the_end";
+                                } else player.pl_d = "minecraft:overworld";
+
+                            }
+
+                            otherPlayers.Add(player);
+                        }
+                        catch {
+                            continue;
+                        }
+                    }
+                }
+                this.otherPlayers = otherPlayers.ToArray();
             }
 
 
@@ -242,6 +293,13 @@ namespace Mcasaenk.WorldInfo {
             return new LevelDatInfo() { };
         }
     }
+
+    public struct PlayerLocData {
+        public string sp_d, pl_d;
+        public int pl_x, pl_y, pl_z;
+        public int sp_x, sp_y, sp_z;
+    }
+
     public enum Difficulty : sbyte {
         [Description("peaceful")]
         Peaceful = 0,

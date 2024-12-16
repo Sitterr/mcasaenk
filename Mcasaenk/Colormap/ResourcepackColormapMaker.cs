@@ -72,7 +72,9 @@ namespace Mcasaenk.Colormaping {
                         if(el.textures != null) {
                             foreach(var t in el.textures.OrderBy(t => t.Value.StartsWith("#"))) {
                                 if(t.Value.StartsWith("#")) {
-                                    textures[t.Key] = textures[t.Value.Substring(1)];
+                                    if(textures.TryGetValue(t.Value.Substring(1), out var val)) {
+                                        textures[t.Key] = val;
+                                    }
                                 } else {
                                     if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
                                         textures[t.Key] = (bitmap, t.Value);
@@ -289,7 +291,10 @@ namespace Mcasaenk.Colormaping {
                 colormap.tints = colormap.tints.Where(t => t.blocks.Count > 0).ToList();
             }
 
-
+            // filters
+            {
+                
+            }
 
             return colormap;
 
@@ -634,10 +639,12 @@ namespace Mcasaenk.Colormaping {
         static VanillaTints() {
             tints = new List<RawTint>();
 
-            TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (_, parts) => {
-                if(parts[0] == "grass") grassTint = WPFColor.FromHex(parts[3]);
+            TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                if(group == "TINTS") {
+                    if(parts[0] == "grass") grassTint = WPFColor.FromHex(parts[3]);
 
-                tints.Add(new RawTint() { name = parts[0], format = parts[1], blocks = parts[2].Split(",").Select(w => w.minecraftname()).ToList(), color = WPFColor.FromHex(parts[3]) });
+                    tints.Add(new RawTint() { name = parts[0], format = parts[1], blocks = parts[2].Split(",").Select(w => w.minecraftname()).ToList(), color = WPFColor.FromHex(parts[3]) });
+                }
             });
         }
 

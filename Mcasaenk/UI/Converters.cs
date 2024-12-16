@@ -12,6 +12,24 @@ using System.Windows.Media;
 
 namespace Mcasaenk.UI
 {
+    public class GreaterThanConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return System.Convert.ToDouble(value) > System.Convert.ToInt32(parameter);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+    public class LessThanConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return System.Convert.ToDouble(value) < System.Convert.ToInt32(parameter);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
 
     public class RoundConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -77,6 +95,43 @@ namespace Mcasaenk.UI
             return Math.Round((double)value, System.Convert.ToInt32(parameter));
         }
     }
+
+    public class TransluciencyLevelTextConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value is not int n) return "";
+
+            return n switch {
+                0 => "none",
+                1 => "depth only",
+                2 => "1 level",
+                _ => $"{n-1} levels",
+            };
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return Math.Round((double)value, System.Convert.ToInt32(parameter));
+        }
+    }
+
+    public class PercentNumberReverseConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return Math.Round(1 - (System.Convert.ToDouble(value) / System.Convert.ToInt32(parameter)), 2).ToString("0.00");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return (int)Math.Round((1 - System.Convert.ToDouble(value)) * System.Convert.ToInt32(parameter));
+        }
+    }
+    public class ReverseConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            return System.Convert.ToInt32(parameter) - System.Convert.ToInt32(value);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return System.Convert.ToInt32(parameter) - System.Convert.ToInt32(value);
+        }
+    }
+
 
     public class ResolutionScaleTextToDouble : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
