@@ -115,9 +115,6 @@ namespace Utils {
             output.SaveImage("water.png", newWaterColors);
 
 
-            WPFColor Dev(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R / (double)c2.R * 255), (byte)(c1.G / (double)c2.G * 255), (byte)(c1.B / (double)c2.B * 255));
-            WPFColor Mult(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R * (double)c2.R / 255), (byte)(c1.G * (double)c2.G / 255), (byte)(c1.B * (double)c2.B / 255));
-
             IEnumerable<(string block, string tint, int biome, WPFColor color)> ReadBiomeInGameMap() {
                 int bi = 0;
                 for(int i = 0; i < biomeMaps.Length; i++) {
@@ -153,7 +150,8 @@ namespace Utils {
 
 
 
-
+        static WPFColor Dev(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R / (double)c2.R * 255), (byte)(c1.G / (double)c2.G * 255), (byte)(c1.B / (double)c2.B * 255));
+        static WPFColor Mult(WPFColor c1, WPFColor c2) => WPFColor.FromRgb((byte)(c1.R * (double)c2.R / 255), (byte)(c1.G * (double)c2.G / 255), (byte)(c1.B * (double)c2.B / 255));
 
 
 
