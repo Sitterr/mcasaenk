@@ -39,6 +39,7 @@ minecraft:ocean;0.5;0.5;0;0;4282349284;;
 minecraft:old_growth_birch_forest;0.6;0.6;0;0;4282349284;;
 minecraft:old_growth_pine_taiga;0.3;0.8;0;0;4282349284;;
 minecraft:old_growth_spruce_taiga;0.25;0.8;0;0;4282349284;;
+minecraft:pale_garden;0.7;0.8;4286022258;4287073654;4285958301;;
 minecraft:plains;0.8;0.4;0;0;4282349284;;
 minecraft:river;0.5;0.5;0;0;4282349284;;
 minecraft:savanna;2;0;0;0;4282349284;;
@@ -67,8 +68,8 @@ minecraft:wooded_badlands;2;0;4287660365;4288577869;4282349284;;
 -- BIOMES --
 
 -- DIMENSIONS --
-minecraft:overworld;384;-64;319;0;minecraft:overworld;
-minecraft:overworld_caves;384;-64;319;0;minecraft:overworld;
-minecraft:the_end;256;0;255;0;minecraft:the_end;
-minecraft:the_nether;256;0;100;0.1;minecraft:the_nether;
+minecraft:overworld;384;-64;32767;0;minecraft:overworld;
+minecraft:overworld_caves;384;-64;32767;0;minecraft:overworld;
+minecraft:the_end;256;0;32767;0;minecraft:the_end;
+minecraft:the_nether;256;0;32767;0.1;minecraft:the_nether;
 -- DIMENSIONS --

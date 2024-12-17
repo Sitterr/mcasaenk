@@ -5,27 +5,25 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Utils;
 using System.Windows.Media.Imaging;
+using Mcasaenk.Colormaping;
 class Program {
     // !!!!!!!!!!!! console not showing https://github.com/dotnet/project-system/issues/6613 !!!!!!!!!!!!!!!!!!!!!!!!!!
     public static void Main(String[] args) {       
-        const string vanillapack = "D:\\resource packs\\java unziped 1.21\\1.21\\1.21";
-        //File.WriteAllText("D:\\abc.txt", AssetsUtils.CreateVanillaDataAsset(Path.Combine(vanillapack, "data")));
+        const string vanillapack = "D:\\resource packs\\1.21.4\\1.21.4";
+        //File.WriteAllText("D:\\map2\\vanilladata.txt", AssetsUtils.CreateVanillaDataAsset(Path.Combine(vanillapack, "data")));
 
-        //File.WriteAllLines("D:\\map\\javablocks.txt", AssetsUtils.GetVanillaBlockNames(vanillapack));
+        //File.WriteAllLines("D:\\map2\\javablocks.txt", AssetsUtils.GetVanillaBlockNames(vanillapack));
 
-        //var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(File.ReadAllText("D:\\java unziped 1.21\\1.21\\1.21\\data\\minecraft\\worldgen\\biome\\badlands.json"));
-        // json.TryGetValue("carvers", out var el);
 
-        MapColormapMaker.FromBedrockMap("D:\\bedrockmap.zip", vanillapack, FileRead.ReadFromFile("D:\\map\\bedrock_img1.png"), [FileRead.ReadFromFile("D:\\map\\bedrock_img2.png"), FileRead.ReadFromFile("D:\\map\\bedrock_img3.png"), FileRead.ReadFromFile("D:\\map\\bedrock_img4.png")]);
-        //MapColormapMaker.FromJavaMap("D:\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map\\java_img1.png"));
-        //MapColormapMaker.FromResourcePacks("D:\\greenfield.zip", [vanillapack, "D:\\Greenfield.Texture.Pack.1.17"], 0);
+        MapColormapMaker.FromBedrockMap("D:\\map2\\bedrockmap2.zip", vanillapack, FileRead.ReadFromFile("D:\\map2\\map1.png"), [FileRead.ReadFromFile("D:\\map2\\map2.png"), FileRead.ReadFromFile("D:\\map2\\map3.png"), FileRead.ReadFromFile("D:\\map2\\map4.png")]);
+        //MapColormapMaker.FromJavaMap("D:\\map2\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map2\\map1.png"));
 
-        //ResourcepackColormapMaker.Make("D:\\test", [vanillapack, "C:\\Users\\nikol\\AppData\\Roaming\\.minecraft\\resourcepacks\\Greenfield.Texture.Pack.1.17.zip"],
+        //RawColormap.Save(ResourcepackColormapMaker.Make([new FileRead(vanillapack)],
         //    new Options() {
         //        minQ = 0.00,
-        //        for_Q0_try_with_sides = true,
         //    }
-        //);
+        //), "D:\\map2\\texture.zip");
+        
     }
 }
 

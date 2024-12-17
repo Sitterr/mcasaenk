@@ -8,8 +8,9 @@ swamp
 mangrove_swamp
 forest
 flower_forest
-birch_forest;
+birch_forest
 dark_forest
+pale_garden
 old_growth_birch_forest
 old_growth_pine_taiga
 old_growth_spruce_taiga

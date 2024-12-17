@@ -7,4 +7,4 @@ spruce_leaves;fixed;spruce_leaves;619961;
 lily_pad;fixed;lily_pad;208030;
 stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
 redstone_wire;fixed;redstone_wire;AF1805;
-notint;fixed;cherry_leaves,bamboo_sapling;FFFFFF;
+notint;fixed;cherry_leaves,bamboo_sapling,pale_oak_leaves;FFFFFF;
