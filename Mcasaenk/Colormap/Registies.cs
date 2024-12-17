@@ -44,6 +44,7 @@ namespace Mcasaenk.Colormaping {
         public void SetDef(ushort def) => this.def = def;
 
         public ushort GetId(string name) {
+            if(name == null) return ++counter;
             if(nameToId.TryGetValue(name, out var id)) return id;
             if(synonyms.TryGetValue(name, out var realname)) return GetId(realname);
             else if(frozen == false) return assignNew(name);
@@ -103,8 +104,12 @@ namespace Mcasaenk.Colormaping {
         }
 
         public void SetUp(List<BiomeInfo> biomes) {
+            int lastnum = -1;
             foreach(var biome in biomes.OrderBy(b => b.id)) {
-                GetId(biome.name);
+                for(int i = lastnum + 1; i < biome.id; i++) {
+                    GetId(null);
+                }
+                lastnum = GetId(biome.name);
             }
 
             oldBiomeIdToId = new Dictionary<int, ushort>();
