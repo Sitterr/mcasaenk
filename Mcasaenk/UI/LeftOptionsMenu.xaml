@@ -330,8 +330,11 @@
                                         </TextBlock>
                                         <Border Height="5"/>
                                         <TextBlock FontSize="16">
-                                        <Run Text="Version:"/>
-                                        <Run x:Name="txt_version"/>
+                                            <Run Text="Version:"/>
+                                            <Run x:Name="txt_version"/><!--
+                                            --><Run FontSize="10" Text="/" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
+                                            --><Run x:Name="txt_minecraftversion" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
+                                            --><Run FontSize="10" Text="/" Foreground="{StaticResource LIGHT_GREEN_B}"/>
                                         </TextBlock>
                                     </StackPanel>
 

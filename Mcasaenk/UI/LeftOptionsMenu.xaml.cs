@@ -27,6 +27,7 @@ namespace Mcasaenk.UI {
             InitializeComponent();
 
             txt_version.Text = App.VERSION;
+            txt_minecraftversion.Text = App.MINECRAFTVERSION;
 
             upd_meth_link.Click += (o, e) => {
                 // depr

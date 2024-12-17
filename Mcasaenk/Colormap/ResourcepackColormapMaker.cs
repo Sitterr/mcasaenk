@@ -19,6 +19,7 @@ namespace Mcasaenk.Colormaping {
     public class CreationDetails {
         public bool shouldTint;
         public BlockCreationMethod creationMethod = BlockCreationMethod.Unknown;
+        public double q;
     }
     public static class ResourcepackColormapMaker {
 
@@ -62,10 +63,10 @@ namespace Mcasaenk.Colormaping {
                     if(el == null) continue;
                     if(el.parent == null && el.elements == null) {
                         if(textures.Count == 0) {
-                            colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, creationMethod = BlockCreationMethod.None } });
+                            colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, q = 1, creationMethod = BlockCreationMethod.None } });
                         } else {
                             var answer = ColorOfTexture(textures.First().Value.image);
-                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
+                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), q = answer.A, creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
                         }
 
                     } else {
@@ -87,11 +88,11 @@ namespace Mcasaenk.Colormaping {
 
                         if(answer.q >= options.minQ) {
                             if(answer.q > 0) {
-                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, creationMethod = BlockCreationMethod.AboveQ } });
+                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, q = answer.q, creationMethod = BlockCreationMethod.AboveQ } });
                             } else {
                                 var sideanswer = JsonModel.ReadSide(blockname, el.elements, textures);
                                 if(sideanswer.q > 0) {
-                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, creationMethod = BlockCreationMethod.Sides } });
+                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, q = answer.q, creationMethod = BlockCreationMethod.Sides } });
                                 }
                             }
                         }

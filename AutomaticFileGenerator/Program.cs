@@ -15,15 +15,19 @@ class Program {
         //File.WriteAllLines("D:\\map2\\javablocks.txt", AssetsUtils.GetVanillaBlockNames(vanillapack));
 
 
-        MapColormapMaker.FromBedrockMap("D:\\map2\\bedrockmap2.zip", vanillapack, FileRead.ReadFromFile("D:\\map2\\map1.png"), [FileRead.ReadFromFile("D:\\map2\\map2.png"), FileRead.ReadFromFile("D:\\map2\\map3.png"), FileRead.ReadFromFile("D:\\map2\\map4.png")]);
+        //FromBedrockMap("D:\\map2\\bedrockmap2.zip", vanillapack, FileRead.ReadFromFile("D:\\map2\\map1.png"), [FileRead.ReadFromFile("D:\\map2\\map2.png"), FileRead.ReadFromFile("D:\\map2\\map3.png"), FileRead.ReadFromFile("D:\\map2\\map4.png")]);
         //MapColormapMaker.FromJavaMap("D:\\map2\\javamap.zip", vanillapack, FileRead.ReadFromFile("D:\\map2\\map1.png"));
 
-        //RawColormap.Save(ResourcepackColormapMaker.Make([new FileRead(vanillapack)],
-        //    new Options() {
-        //        minQ = 0.00,
-        //    }
-        //), "D:\\map2\\texture.zip");
-        
+        var cm = ResourcepackColormapMaker.Make([new FileRead(vanillapack)],
+            new Options() {
+                minQ = 0.00,
+            }
+        );
+        File.WriteAllLines("D:\\rr.txt", cm.blocks.Where(bl => bl.Value.details.q <= 0.05).Select(bl => bl.Key.Substring(10)));
+        File.WriteAllText("D:\\rr2.txt", string.Join(", ", cm.blocks.Where(bl => bl.Value.details.q <= 0.05).Select(bl => bl.Key.Substring(10))));
+
+        //RawColormap.Save(cm, "D:\\map2\\texture.zip");
+
     }
 }
 

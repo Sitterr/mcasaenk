@@ -223,8 +223,8 @@ namespace Mcasaenk.UI {
 
                     i++;
                 }
-                if(tintGrid.RowDefinitions.Count > 0) tintGrid.RowDefinitions.RemoveAt(tintGrid.RowDefinitions.Count - 1);
-                tintSettings.Visibility = tintGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                if(i > 0) tintGrid.RowDefinitions.RemoveAt(tintGrid.RowDefinitions.Count - 1);
+                tintSettings.Visibility = i > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 
 
@@ -248,8 +248,9 @@ namespace Mcasaenk.UI {
 
                     i++;
                 }
-                if(filterGrid.RowDefinitions.Count > 0) filterGrid.RowDefinitions.RemoveAt(filterGrid.RowDefinitions.Count - 1);
-                tintSettings.Visibility = filterGrid.RowDefinitions.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                if(i > 0) filterGrid.RowDefinitions.RemoveAt(filterGrid.RowDefinitions.Count - 1);
+                filterGrid.Visibility = i > 1 ? Visibility.Visible : Visibility.Collapsed;
+                filterSettings.Visibility = i > 1 ? Visibility.Visible : Visibility.Collapsed;
             }
 
         }
