@@ -23,10 +23,8 @@ class Program {
                 minQ = 0.00,
             }
         );
-        File.WriteAllLines("D:\\rr.txt", cm.blocks.Where(bl => bl.Value.details.q <= 0.05).Select(bl => bl.Key.Substring(10)));
-        File.WriteAllText("D:\\rr2.txt", string.Join(", ", cm.blocks.Where(bl => bl.Value.details.q <= 0.05).Select(bl => bl.Key.Substring(10))));
 
-        //RawColormap.Save(cm, "D:\\map2\\texture.zip");
+        RawColormap.Save(cm, "D:\\texture.zip");
 
     }
 }

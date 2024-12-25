@@ -64,6 +64,7 @@ namespace Mcasaenk.Colormaping {
 
         public string GetName(ushort id) {
             if(id == Colormap.ERRORBLOCK) return "_error block_";
+            if(id == Colormap.INVBLOCK) return "_void_";
             if(idToName.TryGetValue(id, out string name)) return name;
             return "_unknown block_";
         }
@@ -97,6 +98,7 @@ namespace Mcasaenk.Colormaping {
         }
 
         public List<string> GetAllNames() => nameToId.Keys.ToList();
+        public List<KeyValuePair<ushort, string>> All() => idToName.ToList();
     }
 
     public class BiomeRegistry : DynamicNameToIdBiMap {

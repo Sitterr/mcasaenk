@@ -175,6 +175,8 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         private void OnSlowTick(object a, object b) {
+            window.footer?.Refresh();
+
             if(tileMap == null) return;
             foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
                 var tile = tileMap.GetTile(pos);
@@ -187,7 +189,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            if(window.footer != null) {
+            if(window.footer.Visibility == Visibility.Visible) {
                 { // footer update
                     window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
                     window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
@@ -195,33 +197,7 @@ namespace Mcasaenk.UI.Canvas {
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
 
-                    var globalPos = new Point2i(screen.GetGlobalPos(mousePos).Floor());
-                    window.footer.X = globalPos.X;
-                    window.footer.Z = globalPos.Z;
-
-                    var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
-                    int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
-                    if(tile?.genData != null) {
-                        window.footer.Y = tile.genData.depthColumn.heights[i]/*+ Global.Settings.MINY*/;
-                        //window.footer.Y = tile.genData.isShade(i);
-                        window.footer.Y_Terrain = tile.genData.depthColumn.depths != null ? tile.genData.depthColumn.depths[i] : -1;
-
-                        var realcolumn = tile.genData.columns[0];
-                        for(int w = 0; w < tile.genData.columns.Length; w++) {
-                            if(tile.genData.columns[w].ContainsInfo(i)) {
-                                realcolumn = tile.genData.columns[w];
-                                break;
-                            }
-                        }
-                        //window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
-                        window.footer.Biome = Global.App.Colormap.Biome.GetName(realcolumn.BiomeId(i));
-                    } else {
-                        window.footer.Y = -10;
-                        window.footer.Y_Terrain = Global.Settings.MINY - 1;
-
-                        window.footer.Block = "_void_";
-                        window.footer.Biome = "_void_";
-                    }
+                    window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), tileMap);
                 }
             }
         }

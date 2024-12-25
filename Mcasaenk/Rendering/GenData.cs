@@ -16,6 +16,7 @@ namespace Mcasaenk.Rendering {
     public class GenData { // 72bit
         public GenDataColumn[] columns; // including depthColumn
         public readonly int[] chunkisscreenshotable;
+        public ushort[] topblocks;
 
         public GenDataColumn depthColumn;
         private bool istemp, temp_waterRelief = false;
@@ -28,6 +29,7 @@ namespace Mcasaenk.Rendering {
                 this.columns[i] = new GenDataColumn(rawData.columns[i], false);
             }
             depthColumn = this.columns[rawData.columns.Length] = new GenDataColumn(rawData.depthColumn, true);
+            this.topblocks = rawData.topblocks;
 
             this.depthblock = depthblock;
             this.istemp = false;
@@ -57,12 +59,9 @@ namespace Mcasaenk.Rendering {
             if(temp_waterRelief) ArrayPool<short>.Shared.Return(depthColumn.depths);
         }
 
-
         public GenData GetTempInstance() {
             return new GenData(this);
         }
-
-
         public bool IsChunkScreenshotable(int x, int z) {
             return ((chunkisscreenshotable[z] >> x) & 1) == 1;
         }
@@ -117,6 +116,7 @@ namespace Mcasaenk.Rendering {
         public RawDataColumn[] columns;
         public RawDataColumn depthColumn;
         public int[] chunkisscreenshotable; // bit
+        public ushort[] topblocks;
 
         // disolves in the gendata stage
         public byte[] shadeFrame; // 4bit
@@ -129,6 +129,10 @@ namespace Mcasaenk.Rendering {
             }
             depthColumn = new RawDataColumn(Global.Settings.TRANSPARENTLAYERS > 0);
 
+            if(Global.Settings.BLOCKINFO) {
+                topblocks = new ushort[512 * 512];
+                Array.Fill(topblocks, Colormap.INVBLOCK);
+            }
 
             if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
                 shadeFrame = new byte[(ShadeConstants.GLB.rX * 512) * (ShadeConstants.GLB.rZ * 512)];
@@ -140,7 +144,6 @@ namespace Mcasaenk.Rendering {
             else chunkisscreenshotable[z] &= ~(1 << x);
         }
     }
-
     public class RawDataColumn {
         // for water technically this uses 1 more byte than the old method(2byte blockid, 1byte light), but it abstracts like half-transparent blocks      
         public bool ContainsInfo(int i) => heights[i] != default || biomeIds10_groupIds6[i] != default || color24_light4_none4[i] != default;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mcasaenk.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,41 +19,17 @@ namespace Mcasaenk.UI {
     /// Interaction logic for Footer.xaml
     /// </summary>
     public partial class Footer : UserControl {
-        public FooterInterface @interface;
+        private Brush lblue, lred;
         public Footer() {
             InitializeComponent();
 
-            @interface = new FooterInterface(this.FindResource("LIGHT_BLUE_B") as Brush, this.FindResource("LIGHT_RED_B") as Brush) { 
-                txt_fps = txt_fps, 
-
-                txt_redraw = txt_redraw,
-                txt_gendraw = txt_gendraw,
-
-                txt_shadetiles = txt_shadetiles, 
-                txt_shadeframes = txt_shadeframes,
-
-                txt_x = txt_x,
-                txt_y = txt_y,
-                txt_ty = txt_ty,
-                txt_z = txt_z,
-
-                txt_block = txt_block,
-                txt_biome = txt_biome,
-            };
+            this.lblue = this.FindResource("LIGHT_BLUE_B") as Brush;
+            this.lred = this.FindResource("LIGHT_RED_B") as Brush;
 
         }
 
-        public void Init() { }
-    }
-
-    public class FooterInterface {
-
-        public Run txt_fps, txt_redraw, txt_gendraw, txt_shadetiles, txt_shadeframes, txt_x, txt_z, txt_y, txt_ty, txt_block, txt_biome;
-
-        private Brush lblue, lred;
-        public FooterInterface(Brush lblue, Brush lred) { 
-            this.lblue = lblue;
-            this.lred = lred;
+        public void Refresh() {
+            gr_blockinfo.Visibility = Global.Settings.BLOCKINFO ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public int Fps {
@@ -81,42 +58,62 @@ namespace Mcasaenk.UI {
         }
 
 
-        public int X {
-            get => Convert.ToInt32(txt_x.Text);
-            set => txt_x.Text = value.ToString();
-        }
-        public int Y {
-            get => Convert.ToInt32(txt_y.Text);
-            set => txt_y.Text = value.ToString();
-        }
-        public int Y_Terrain {
-            get => Convert.ToInt32(txt_ty.Text);
-            set => txt_ty.Text = value.ToString();
-        }
-        public int Z {
-            get => Convert.ToInt32(txt_z.Text);
-            set => txt_z.Text = value.ToString();
+
+        public void SetCursorInfo(Point2i globalPos, TileMap tileMap) {
+            txt_x.Text = globalPos.X.ToString();
+            txt_z.Text = globalPos.Z.ToString();
+
+            var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
+            int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
+            if(tile?.genData != null) {
+                foreach(var col in tile.genData.columns) {
+                    if(col.ContainsInfo(i) == false) continue;
+
+                    txt_y.Text = (col.heights[i] + Global.Settings.MINY).ToString();
+
+                    bool depth = col == tile.genData.depthColumn && (tile.genData.depthColumn.depths != null ? tile.genData.depthColumn.depths[i] : -1) > 0;
+                    //window.footer.Y = tile.genData.isShade(i);
+                    if(depth) {
+                        sep_y.Text = "/";
+                        txt_ty.Text = (col.heights[i] + Global.Settings.MINY - tile.genData.depthColumn.depths[i]).ToString();
+                    } else {
+                        sep_y.Text = "";
+                        txt_ty.Text = "";
+                    }
+
+                    if(tile.genData.topblocks != null) {
+                        SetStringText(Global.App.Colormap.Block.GetName(tile.genData.topblocks[i]), txt_block);
+                        if(depth) {
+                            sep_block.Text = "/";
+                            SetStringText(Global.App.Colormap.Block.GetName(Global.App.Colormap.depth), txt_block2);
+                        } else {
+                            sep_block.Text = "";
+                            SetStringText("", txt_block2);
+                        }
+
+                        SetStringText(Global.App.Colormap.Biome.GetName(col.BiomeId(i)), txt_biome);
+                    }
+
+                    break;
+                }
+            } else {
+                txt_y.Text = "";
+                sep_y.Text = "";
+                txt_ty.Text = "";
+
+                SetStringText("_void_", txt_block);
+                sep_block.Text = "/";
+                SetStringText("_void_", txt_block2);
+                SetStringText("_void_", txt_biome);
+            }
         }
 
-        public string Block {
-            get => txt_block.Text;
-            set {
-                bool italic = value.StartsWith('_') && value.EndsWith('_');
-                if(italic) value = value.Substring(1, value.Length - 2);
-                txt_block.Text = value; 
-                txt_block.FontStyle = italic ? FontStyles.Italic : FontStyles.Normal;
-                txt_block.Foreground = italic ? lred : lblue;
-            }
-        }
-        public string Biome {
-            get => txt_biome.Text;
-            set {
-                bool italic = value.StartsWith('_') && value.EndsWith('_');
-                if(italic) value = value.Substring(1, value.Length - 2);
-                txt_biome.Text = value;
-                txt_biome.FontStyle = italic ? FontStyles.Italic : FontStyles.Normal;
-                txt_biome.Foreground = italic ? lred : lblue;
-            }
+        private void SetStringText(string value, Run run) {
+            bool italic = value.StartsWith('_') && value.EndsWith('_');
+            if(italic) value = value.Substring(1, value.Length - 2);
+            run.Text = value;
+            run.FontStyle = italic ? FontStyles.Italic : FontStyles.Normal;
+            run.Foreground = italic ? lred : lblue;
         }
     }
 }

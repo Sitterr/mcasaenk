@@ -18,6 +18,7 @@ using System.Windows.Documents;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Mcasaenk.Rendering;
+using System.Linq;
 
 namespace Mcasaenk.Colormaping {
 
@@ -85,7 +86,7 @@ namespace Mcasaenk.Colormaping {
                     BlocksManager[id] = color;
 
                     if(b.Value.color.A < 255) {
-                        FilterManager.AddBlock(id, FilterManager.Invis, true);
+                        FilterManager.Invis._AddBlock(id);
                     }
                 }
 
@@ -203,6 +204,7 @@ namespace Mcasaenk.Colormaping {
             };
             ELEMENTS.CollectionChanged += (o, e) => {
                 OnAutoChange(nameof(ELEMENTS));
+                Elements.ValueCopyFrom(ELEMENTS);
             };
 
             map = new Dictionary<ushort, T>();
@@ -213,26 +215,29 @@ namespace Mcasaenk.Colormaping {
         public ObservableCollection<T> Elements, ELEMENTS;
 
         public override void SetFromBack() {
-            ELEMENTS.Clear();
-            foreach(var el in Elements) ELEMENTS.Add(el);
+            if(ChangedBack()) {
+                var els = new List<T>(Elements);
+                ELEMENTS.ValueCopyFrom(els);
+            }
         }
         public override void Reset() {
-            Elements.Clear();
-            foreach(var el in ELEMENTS) Elements.Add(el);
+            if(ChangedBack()) {
+                var els = new List<T>(ELEMENTS);
+                Elements.ValueCopyFrom(els);
+            }
         }
         public override bool ChangedBack() =>
                    (Elements.All(ELEMENTS.Contains) && Elements.Count == ELEMENTS.Count) == false;
 
 
 
-        public void AddBlock(ushort block, T el = null, bool neww = false) {
+        public virtual void AddBlock(ushort block, T el = null) {
             if(el == null) el = Default;
-            if(neww == false) {
-                foreach(var flt in Elements) {
-                    if(flt.Blocks.Contains(block)) {
-                        flt._RemoveBlock(block);
-                        break;
-                    }
+            if(el.Blocks.Contains(block)) return;
+            foreach(var flt in Elements) {
+                if(flt.Blocks.Contains(block)) {
+                    flt._RemoveBlock(block);
+                    break;
                 }
             }
 
@@ -245,7 +250,12 @@ namespace Mcasaenk.Colormaping {
         }
 
 
-        public void SetBlockVal(ushort id, T val) {
+        public void _SetBlockVal(ushort id, T val) {
+            if(map.TryGetValue(id, out var t)) {
+                if(t == val) return;
+            } else {
+                if(val == Default) return;
+            }
             if(map is FrozenDictionary<ushort, T>) map = new Dictionary<ushort, T>(map);
             map[id] = val;
         }
@@ -269,12 +279,35 @@ namespace Mcasaenk.Colormaping {
         public FilterManager(Colormap colormap) : base(colormap) {
             this.Solid = new Filter(this, "solid", false, false) { ABSORBTION = 15 };
             this.Depth = new Filter(this, "depth", true, true) { ABSORBTION = 15 };
-            this.Invis = new Filter(this, "invis", true, false) { ABSORBTION = 0 };
+            this.Invis = new Filter(this, "invisible", true, false) { ABSORBTION = 0 };
             this.Error = new Filter(this, "error", false, false) { ABSORBTION = 15 };
             this.InitDef(Solid);
             base.ELEMENTS.Add(Depth);
             base.ELEMENTS.Add(Invis);
             base.ELEMENTS.Add(Error);
+
+            HearthValue = new();
+            HEARTHVALUE = new();
+        }
+
+        public Dictionary<ushort, Filter> HearthValue, HEARTHVALUE;
+
+        public override void AddBlock(ushort block, Filter el = null) {
+            base.AddBlock(block, el);
+            if(HearthValue.ContainsKey(block) || el != null) HearthValue[block] = el;
+        }
+        public void AddBlockWithoutHearth(ushort block, Filter el = null) {
+            base.AddBlock(block, el);
+        }
+
+        public override void SetFromBack() {
+            if(ChangedBack()) base.SetFromBack();
+
+            HEARTHVALUE = new Dictionary<ushort, Filter>(HearthValue);
+        }
+        public override void Reset() {
+            if(ChangedBack()) base.Reset();
+            HearthValue = new Dictionary<ushort, Filter>(HEARTHVALUE);
         }
     }
     public class TintFilterShadeGrouping {
@@ -286,6 +319,9 @@ namespace Mcasaenk.Colormaping {
             Pairs = new List<(Filter gr, Tint tint, bool shade)>();
             PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>();
 
+            betroffenTints = new();
+            betroffenFilters = new();
+
             this.predefined = predefined;
             foreach(var predef in predefined) {
                 Pairs.Add(predef);
@@ -296,6 +332,11 @@ namespace Mcasaenk.Colormaping {
 
         int i = 0;
         public (Filter filter, Tint tint, bool shade) GetGroup(int id) => Pairs[id];
+        private HashSet<Tint> betroffenTints;
+        private HashSet<Filter> betroffenFilters;
+        public bool HaveInRecord(Tint tint) => betroffenTints.Contains(tint);
+        public bool HaveInRecord(Filter filter) => betroffenFilters.Contains(filter);
+
         public int GetId(Filter filter, Tint tint, bool shade) {
             //i++;
             //if(i > 1500) PairsIndexes = PairsIndexes.ToFrozenDictionary();
@@ -311,11 +352,15 @@ namespace Mcasaenk.Colormaping {
                 }*/
 
                 Pairs.Add((filter, tint, shade));
+                betroffenTints.Add(tint);
+                betroffenFilters.Add(filter);
                 PairsIndexes.TryAdd((filter, tint, shade), Pairs.Count - 1);
                 return Pairs.Count - 1;
             }
         }
         public void Reset() {
+            betroffenTints.Clear();
+            betroffenFilters.Clear();
             Pairs.Clear();
             PairsIndexes.Clear();
             i = 0;
@@ -331,8 +376,8 @@ namespace Mcasaenk.Colormaping {
     public abstract class GroupElement<T> : StandardizedSettings where T : GroupElement<T> {
         protected GroupManager<T> groupManager;
         public readonly string name;
-        public readonly HashSet<ushort> Blocks;
-        public readonly HashSet<ushort> BLOCKS;
+        public HashSet<ushort> Blocks { get; private set; }
+        public HashSet<ushort> BLOCKS { get; private set; }
 
         public GroupElement(GroupManager<T> groupManager, string name) {
             this.groupManager = groupManager;
@@ -349,7 +394,7 @@ namespace Mcasaenk.Colormaping {
             if(SettingsHub == null) {
                 BLOCKS.Add(block);
                 OnAutoChange(nameof(BLOCKS));
-                groupManager.SetBlockVal(block, (T)this);
+                groupManager._SetBlockVal(block, (T)this);
             }
         }
         public void _RemoveBlock(ushort block) {
@@ -357,23 +402,27 @@ namespace Mcasaenk.Colormaping {
             OnAutoChange(nameof(Blocks));
 
             if(SettingsHub == null) {
-                BLOCKS.Add(block);
+                BLOCKS.Remove(block);
                 OnAutoChange(nameof(BLOCKS));
             }
         }
 
 
         public override void SetFromBack() {
+            if(ChangedBack() == false) return;
+
             InternalSetFromBack();
 
             BLOCKS.Clear();
             foreach(var bl in Blocks) {
                 BLOCKS.Add(bl);
-                groupManager.SetBlockVal(bl, (T)this);
+                groupManager._SetBlockVal(bl, (T)this);
             }
             OnHardChange(nameof(BLOCKS));
         }
         public override void Reset() {
+            if(ChangedBack() == false) return;
+
             InternalReset();
 
             Blocks.Clear();

@@ -11,8 +11,10 @@ redstone_wire;fixed;redstone_wire;AF1805;
 notint;fixed;cherry_leaves,bamboo_sapling,pale_oak_leaves;FFFFFF;
 -- TINTS --
 -- FILTERS --
-flowers;acacia_sapling, allium, amethyst_cluster, attached_melon_stem, attached_pumpkin_stem, azure_bluet, bamboo, bamboo_sapling, beetroots, bell, big_dripleaf_stem, birch_sapling, black_candle, black_stained_glass_pane, blue_candle, blue_orchid, blue_stained_glass_pane, brain_coral, brown_candle, brown_mushroom, brown_mushroom_block, brown_stained_glass_pane, bubble_coral, candle, carrots, cave_vines, cave_vines_plant, chain, cherry_sapling, closed_eyeblossom, cobweb, cornflower, crimson_fungus, crimson_roots, cyan_candle, cyan_stained_glass_pane, dandelion, dark_oak_sapling, dead_brain_coral, dead_bubble_coral, dead_bush, dead_fire_coral, dead_horn_coral, dead_tube_coral, fern, fire, fire_coral, glass_pane, glow_item_frame, glow_lichen, gray_candle, gray_stained_glass_pane, green_candle, green_stained_glass_pane, hanging_roots, horn_coral, iron_bars, item_frame, jungle_sapling, kelp, kelp_plant, ladder, large_amethyst_bud, large_fern, light_blue_candle, light_blue_stained_glass_pane, light_gray_candle, light_gray_stained_glass_pane, lilac, lily_of_the_valley, lime_candle, lime_stained_glass_pane, magenta_candle, magenta_stained_glass_pane, mangrove_propagule, medium_amethyst_bud, melon_stem, mushroom_stem, nether_portal, nether_sprouts, nether_wart, oak_sapling, open_eyeblossom, orange_candle, orange_stained_glass_pane, orange_tulip, oxeye_daisy, pale_hanging_moss, pale_oak_sapling, peony, pink_candle, pink_stained_glass_pane, pink_tulip, pitcher_plant, pointed_dripstone, poppy, potatoes, pumpkin_stem, purple_candle, purple_stained_glass_pane, redstone_torch, redstone_wall_torch, red_candle, red_mushroom, red_mushroom_block, red_stained_glass_pane, red_tulip, resin_clump, rose_bush, sculk_vein, seagrass, short_grass, small_amethyst_bud, soul_fire, soul_torch, soul_wall_torch, spruce_sapling, sugar_cane, sunflower, sweet_berry_bush, tall_grass, tall_seagrass, torch, torchflower, torchflower_crop, tube_coral, twisting_vines, twisting_vines_plant, vine, wall_torch, warped_fungus, warped_roots, weeping_vines, weeping_vines_plant, wheat, white_candle, white_stained_glass_pane, white_tulip, wither_rose, yellow_candle, yellow_stained_glass_pane;0.5;
-leaves;birch_leaves, spruce_leaves, acacia_leaves, dark_oak_leaves, jungle_leaves, mangrove_leaves, oak_leaves, vine, cherry_leaves, azalea_leaves, flowering_azalea_leaves, pale_oak_leaves;0.45;
-depth;water;0;
+the thin;/q-_0.05/;0.5;
+leaves;/tint_foliage,birch_leaves,spruce_leaves,cherry_leaves,pale_oak_leaves/;0.35;
 lava;lava;0.1;
 -- FILTERS --
+-- DEPTH --
+water
+-- DEPTH --

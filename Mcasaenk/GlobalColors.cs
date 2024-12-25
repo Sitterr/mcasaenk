@@ -23,6 +23,7 @@ namespace Mcasaenk {
         public static WPFColor FromRgb(byte r, byte g, byte b, byte a = 255) => new WPFColor(r, g, b, a);
         public static WPFColor FromRgb(byte d, byte a = 255) => new WPFColor(d, d, d, a);
         public static WPFColor FromArgb(byte a, byte r, byte g, byte b) => new WPFColor(r, g, b, a);
+        public static WPFColor FromColor(WPFColor c, byte a = 255) => new WPFColor(c.R, c.G, c.B, a);
 
         public static WPFColor FromHex(string hex) {
             try {
@@ -41,14 +42,14 @@ namespace Mcasaenk {
                 } else throw new Exception();
             }
             catch {
-                return WPFColor.Transparent;
+                return WPFColor.WhiteTransparent;
             }
         }
 
         public static bool operator ==(WPFColor left, WPFColor right) => left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A;
         public static bool operator !=(WPFColor left, WPFColor right) => !(left == right);
 
-        public static readonly WPFColor Transparent = new WPFColor(0, 0, 0, 0);
+        public static readonly WPFColor Transparent = new WPFColor(0, 0, 0, 0), WhiteTransparent = new WPFColor(255, 255, 255, 0);
         public static readonly WPFColor White = new WPFColor(255, 255, 255);
     }
 

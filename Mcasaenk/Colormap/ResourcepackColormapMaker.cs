@@ -1,6 +1,7 @@
 ﻿using Mcasaenk.Resources;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -294,7 +296,33 @@ namespace Mcasaenk.Colormaping {
 
             // filters
             {
-                
+                TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                    if(group == "FILTERS") {
+                        List<string> blocks = [];
+                        if(parts[1].StartsWith('/') && parts[1].EndsWith('/')) {
+                            string part1 = parts[1].Substring(1, parts[1].Length - 2);
+
+                            if(part1.StartsWith("q-_")) {
+                                blocks = colormap.blocks.Where(b => b.Value.details.q < Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
+                            } else if(part1.StartsWith("q+_")) {
+                                blocks = colormap.blocks.Where(b => b.Value.details.q > Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
+                            } else if(part1.StartsWith("tint_")) {
+                                foreach(var tint in part1.Substring("tint_".Length).Split(',')) 
+                                    blocks.AddRange(colormap.tints.Find(t => t.name == tint)?.blocks ?? []);
+                            }
+                        } else blocks = parts[1].Split(",").Select(w => w.minecraftname()).Where(b => colormap.blocks.ContainsKey(b)).ToList();
+
+                        colormap.filters.Add(new RawFilter() { name = parts[0], blocks = blocks, transparency = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture) });
+                    }
+                });
+            }
+            // depth
+            {
+                TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                    if(group == "DEPTH") {
+                        colormap.depth = parts[0].minecraftname();
+                    }
+                });
             }
 
             return colormap;
@@ -632,7 +660,6 @@ namespace Mcasaenk.Colormaping {
             return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)), Math.Round(br / 256d, 2), tintedindex);
         }
     }
-
 
     static class VanillaTints {
         static WPFColor grassTint;

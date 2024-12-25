@@ -154,6 +154,9 @@ namespace Mcasaenk.Rendering {
 
             foreach(var tint in colormap.TintManager.GetBlendingTints().Concat([colormap.TintManager.NullTint])) {
                 var blendmode = tint.GetBlendMode();
+                if(colormap.Grouping.HaveInRecord(tint) == false) {
+                    blendmode = Tint.Blending.none;
+                }
 
                 Blur tintblur = null;
                 if(tint is DynamicTint dtint) {
@@ -228,8 +231,11 @@ namespace Mcasaenk.Rendering {
                                     if(Global.App.Settings.SHADETYPE == ShadeType.OG) {
                                         uint terrainColor = colw.ActColor(i);
                                         int waterDepth = (int)colw.Depth(i);
+                                        if(waterDepth > colw.Height(i)) {
+                                            terrainColor = WPFColor.FromColor(color.ToColor(), 0).ToUInt();
+                                        }
                                         fd = Math.Pow(2, -4 * (1 - transparency2) * (waterDepth + 3));
-                                        color = Global.Blend(terrainColor, color, fd);
+                                        color = Global.Blend(terrainColor, color, fd, true);
 
                                         double multintensity = Math.Pow(fd, 0.75) * Global.App.Settings.CONTRAST + 1 * (1 - Global.App.Settings.CONTRAST);
                                         color = Global.MultShade(color, multintensity);

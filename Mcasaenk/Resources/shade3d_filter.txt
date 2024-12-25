@@ -18,7 +18,6 @@ blue_stained_glass_pane
 brain_coral
 brown_candle
 brown_mushroom
-brown_mushroom_block
 brown_stained_glass_pane
 bubble_coral
 candle
@@ -102,7 +101,6 @@ redstone_torch
 redstone_wall_torch
 red_candle
 red_mushroom
-red_mushroom_block
 red_stained_glass_pane
 red_tulip
 resin_clump

@@ -35,6 +35,11 @@ namespace Mcasaenk
         public readonly string ID = "__" + Global.rand.NextString(5);
 
 
+        private void OnAutoChange(string changed) {
+            if(changed.Contains(nameof(Settings.ENABLE_COLORMAP_EDITING))) {
+                Global.App.Window?.leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
+            }
+        }
         private void OnLightChange(string changed) {
             TileMap?.RedrawAll();
 
@@ -46,11 +51,9 @@ namespace Mcasaenk
         private void OnHardChange(List<string> changed) {
             if(changed.Count == 0) return;
             SettingsHub.Freeze();
-            if(changed.Contains(nameof(Colormap.TintManager.ELEMENTS)) || changed.Contains(nameof(Colormap.FilterManager.ELEMENTS))) {
-                Colormap?.Grouping.Reset();
-            }
-            Colormap?.UpdateHeightmapCompatability();
 
+            Colormap?.Grouping.Reset();
+            Colormap?.UpdateHeightmapCompatability();
 
             _openedSave.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
@@ -58,7 +61,7 @@ namespace Mcasaenk
             if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
                 SetColormap();
             } else if(changed.Contains(nameof(Settings.SKIP_UNKNOWN_BLOCKS))) {
-                Colormap.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
+                Colormap?.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
             }
 
             SettingsHub.FinishFreeze(false);
@@ -83,7 +86,7 @@ namespace Mcasaenk
                 if(File.Exists(settFile)) Settings = JsonSerializer.Deserialize<Mcasaenk.Settings>(File.ReadAllText(settFile));
                 else Settings = Settings.DEF();
 
-                SettingsHub = new SettingsHub(OnLightChange, OnHardChange);
+                SettingsHub = new SettingsHub(OnAutoChange, OnLightChange, OnHardChange);
                 SettingsHub.RegisterSettings(Settings);
             }
 
@@ -175,9 +178,12 @@ namespace Mcasaenk
 
             Colormap = new Colormap(RawColormap.Load(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
 
+            SettingsHub.RegisterSettings(Colormap.TintManager);
             foreach(var tint in Colormap.TintManager.ELEMENTS) {
                 SettingsHub.RegisterSettings(tint);
             }
+
+            SettingsHub.RegisterSettings(Colormap.FilterManager);
             foreach(var filter in Colormap.FilterManager.ELEMENTS) {
                 SettingsHub.RegisterSettings(filter);
             }

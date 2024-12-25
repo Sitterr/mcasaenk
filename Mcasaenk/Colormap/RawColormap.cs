@@ -148,6 +148,7 @@ namespace Mcasaenk.Colormaping {
             if(output == null) return;
 
             foreach(var tint in colormap.tints) {
+                if(tint.blocks.Count == 0) continue;
                 List<string> lines = new List<string>();
 
                 lines.Add($"format={tint.format}");
@@ -160,19 +161,23 @@ namespace Mcasaenk.Colormaping {
                 output.SaveLines(tint.name + ".tint", lines);
             }
             foreach(var filter in colormap.filters) {
+                if(filter.blocks.Count == 0) continue;
                 List<string> lines = new List<string>();
 
                 lines.Add($"format=filter");
                 if(!(filter.blocks.Count == 1 && filter.blocks[0].minecraftname() == filter.name.minecraftname())) lines.Add($"blocks={string.Join(" ", filter.blocks.Select(bl => bl.simplifyminecraftname()))}");
-                lines.Add($"transparecy={filter.transparency}");
+                lines.Add($"transparency={filter.transparency}");
 
                 output.SaveLines(filter.name + ".filter", lines);
             }
 
+            if(colormap.depth.minecraftname() != "minecraft:water") output.SaveLines("depth.block", [colormap.depth]);
+            
             output.SaveLines("__palette__.blocks", colormap.blocks.Select(bl => {
                 if(bl.Value.color.A > 0) return $"{bl.Key}={bl.Value.color.ToHex(false, false)}";
                 else return $"{bl.Key}=-";
             }));
+            
 
         }
 
@@ -204,7 +209,6 @@ namespace Mcasaenk.Colormaping {
             TxtFormatReader.ReadStandartFormat(blockstext, (group, parts) => {
                 string name = parts[0].minecraftname();
                 WPFColor color = WPFColor.FromHex(parts[1]);
-
                 colormap.blocks.Add(name, new RawBlock() { color = color });
             }, '=');
 

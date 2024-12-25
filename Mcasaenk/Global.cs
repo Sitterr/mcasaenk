@@ -202,11 +202,10 @@ namespace Mcasaenk {
             byte g = (byte)((color >> 8) & 0xFF);
             byte b = (byte)(color & 0xFF);
 
-            byte a2 = (byte)Math.Clamp(a + aa, 0, 255);
             byte r2 = (byte)Math.Clamp(r + ar, 0, 255);
             byte g2 = (byte)Math.Clamp(g + ag, 0, 255);
             byte b2 = (byte)Math.Clamp(b + ab, 0, 255);
-            return (uint)((a2 << 24) | (r2 << 16) | (g2 << 8) | b2);
+            return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
         public static uint MultShade(uint color, double ar, double ag, double ab) {
             ar = Math.Clamp(ar, 0, 1);

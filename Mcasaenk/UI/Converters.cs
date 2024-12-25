@@ -14,7 +14,7 @@ namespace Mcasaenk.UI
 {
     public class GreaterThanConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            return System.Convert.ToDouble(value) > System.Convert.ToInt32(parameter);
+            return System.Convert.ToDouble(value) > System.Convert.ToDouble(parameter);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -23,7 +23,7 @@ namespace Mcasaenk.UI
     }
     public class LessThanConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            return System.Convert.ToDouble(value) < System.Convert.ToInt32(parameter);
+            return System.Convert.ToDouble(value) < System.Convert.ToDouble(parameter);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -222,11 +222,20 @@ namespace Mcasaenk.UI
     }
 
     public class DifferenceBoolConverter : IMultiValueConverter {
-        public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
+        public delegate bool Compare(object a, object b);
+        private Compare cmp;
+        public DifferenceBoolConverter(Compare cmp) { this.cmp = cmp; }
+        public DifferenceBoolConverter() { }
+
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
+            if(parameter is not bool) parameter = true;
             bool res = true;
             object v0 = value[0];
-            for(int i = 1; i < value.Length; i++) res = res && v0.Equals(value[i]);
-            return res;
+            for(int i = 1; i < value.Length; i++) {
+                if(cmp != null) res = res && cmp(v0, value[i]);
+                else res = res && v0.Equals(value[i]);
+            }
+            return res == (bool)parameter;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
@@ -235,9 +244,22 @@ namespace Mcasaenk.UI
     }
 
     public class DifferenceConverter : IMultiValueConverter {
+        public delegate bool Compare(object a, object b);
+        private Compare cmp;
+        public DifferenceConverter(Compare cmp) { this.cmp = cmp; }
+        public DifferenceConverter() { }
+
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
             if(parameter == null) parameter = (SolidColorBrush)Application.Current.FindResource("YELLOW_B");
-            return value[0].Equals(value[1]) ? (SolidColorBrush)Application.Current.FindResource("FORE") : parameter;
+            var fore = (SolidColorBrush)Application.Current.FindResource("FORE");
+
+            bool res;
+            if(value.Length == 1 && value[0] is bool b) {
+                res = b;
+            } else if(cmp != null) res = cmp(value[0], value[1]);
+            else res = value[0].Equals(value[1]);
+
+            return res ? fore : parameter;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {

@@ -55,7 +55,7 @@
 
 
 
-                            <Border x:Name="cont_general" Visibility="Collapsed">
+                            <Border x:Name="cont_general" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -101,6 +101,36 @@
                                     <Slider Grid.Row="2" Grid.Column="0" Minimum="{Binding Source={x:Static gl:Global.Settings}, Path=MINY}" Maximum="{Binding Source={x:Static gl:Global.Settings}, Path=MAXY}" TickFrequency="16"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=Y}"/>
 
+
+                                    <DataGrid x:Name="generalfilter" Grid.Row="0" Grid.RowSpan="7" Grid.Column="2">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Width="*" Binding="{Binding BlockName}">
+                                                <DataGridTextColumn.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="✶ " Visibility="Hidden" x:Name="generalfilter_header_star"/>
+                                                        <local:LinkTextBlock x:Name="generalfilter_header"/>
+                                                    </StackPanel>
+                                                </DataGridTextColumn.Header>
+
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                        <Style.Setters>
+                                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                                            <Setter Property="Margin" Value="6 4 0 4"/>
+                                                            
+                                                            <Setter Property="FontSize" Value="12"/>
+                                                            <Setter Property="FontWeight" Value="UltraLight"/>
+                                                        </Style.Setters>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                                <DataGridTextColumn.CellStyle>
+                                                    <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource DataGridCell_unselectable}"/>
+                                                </DataGridTextColumn.CellStyle>
+
+                                            </DataGridTextColumn>
+                                            
+                                        </DataGrid.Columns>
+                                    </DataGrid>
 
 
                                     <DockPanel Grid.Row="4" Grid.Column="0">
@@ -402,7 +432,7 @@
 
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="cont_color" Visibility="Visible">
+                            <Border x:Name="cont_color" Visibility="Collapsed">
                                 <StackPanel>
 
                                     <Grid Margin="10 0 10 0">
@@ -431,9 +461,9 @@
                                                       ItemsSource="{Binding Source={x:Static gl:Global.ViewModel}, Path=AllColormaps}"
                                                       SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=ColorMapping}"/>
 
-                                            <!--<local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="ViewColormap">
-                                                <Image Source="{Binding Source={x:Static resx:ResourceMapping.settings}}"/>
-                                            </local:EButton>-->
+                                            <local:EButton x:Name="btn_colormapfolder" Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}">
+                                                <Image Source="{Binding Source={x:Static resx:ResourceMapping.folder}}"/>
+                                            </local:EButton>
 
                                             <!--<local:EButton Margin="10 0 0 0" Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Click="OnResetBasis">
                                                 <Image Source="{Binding Source={x:Static resx:ResourceMapping.undo}}"/>
@@ -454,10 +484,10 @@
 
                                     
 
-                                    <Border Height="0.5" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
+                                    <Border Height="1" Background="{StaticResource BORDER}" BorderBrush="{StaticResource BORDER}"/>
                                     <Border Height="30"/>
 
-                                    <TextBlock x:Name="colormapNotLoaded" Text="The colormap(and its settings) would only load after a world is selected" TextWrapping="Wrap" FontSize="16" TextAlignment="Center" Margin="50 0 50 0"/>
+                                    <TextBlock x:Name="colormapNotLoaded" Text="The colormap(and its settings) would load after a world is selected" TextWrapping="Wrap" FontSize="16" TextAlignment="Center" Margin="50 0 50 0"/>
                                     <StackPanel x:Name="colormapSettingsCont" Visibility="Collapsed">
                                         <StackPanel x:Name="macroGrid" Margin="0 0 0 60">
                                             <TextBlock Text="-- Meta settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
@@ -515,9 +545,8 @@
                                         </StackPanel>
 
 
-                                        <StackPanel x:Name="filterSettings" Margin="0 60 0 0"
-                                                    IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}">
-                                            <TextBlock Text="-- Filter settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                                        <StackPanel x:Name="filterSettings" Margin="0 60 0 0">
+                                            <TextBlock Text="-- Filter settings --" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 15" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}"/>
                                             <Grid x:Name="filterGrid">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>

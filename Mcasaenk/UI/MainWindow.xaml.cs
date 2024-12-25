@@ -27,11 +27,9 @@ namespace Mcasaenk.UI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        public FooterInterface footer;
-
-        LeftSettingsMenu leftSettingsMenu;
-        LeftFileMenu leftFileMenu;
-        LeftOptionsMenu leftOptionsMenu;
+        public LeftSettingsMenu leftSettingsMenu;
+        public LeftFileMenu leftFileMenu;
+        public LeftOptionsMenu leftOptionsMenu;
 
         ResolutionScale resScale = new ResolutionScale();
 
@@ -39,9 +37,6 @@ namespace Mcasaenk.UI {
             InitializeComponent();
 
             this.Title = "MCA Saenk v" + App.VERSION;
-
-            footer = footerControl.@interface;
-            footerControl.Init();
 
             this.scr_capture.Click += (o, e) => {
                 var screenshottaker = canvasControl?.ScreenshotManager;
@@ -217,19 +212,10 @@ namespace Mcasaenk.UI {
 
                 Brush transp = new SolidColorBrush(Colors.Transparent), fore = (Brush)this.TryFindResource("FORE"), fore_hover = (Brush)this.TryFindResource("FORE_HOVER"), fore_press = (Brush)this.TryFindResource("FORE_PRESS");
 
-                loc_txt.MouseEnter += (o, e) => {
-                    loc_border.BorderBrush = fore;
-                    loc_txt.Foreground = fore_hover;
-                };
-                loc_txt.MouseLeave += (o, e) => {
-                    loc_border.BorderBrush = transp;
-                    loc_txt.Foreground = fore;
-                };
-                loc_txt.MouseLeftButtonDown += (o, e) => {
-                    loc_txt.Foreground = fore_press;
-                };
-                loc_txt.PreviewMouseLeftButtonUp += (o, e) => {
-                    loc_txt.Foreground = fore_hover;
+                loc_txt.TextBlock.Text = "Location";
+                loc_txt.TextBlock.FontSize = 18;
+                
+                loc_txt.Click += (o, e) => {
                     List<(TextBlock txtblocks, object data)> options = new();
 
                     if(Global.App.OpenedSave != null) {
@@ -444,6 +430,19 @@ namespace Mcasaenk.UI {
 
     public static class GlobalXaml {
 
+        public static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject {
+            for(int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if(child is T result)
+                    return result;
+
+                var childOfChild = FindVisualChild<T>(child);
+                if(childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
+        }
+
         public static void SortByColumn(this DataGrid grid, string columnName, ListSortDirection direction) {
             // Ensure the DataGrid has an ItemsSource
             if(grid.ItemsSource == null)
@@ -458,10 +457,10 @@ namespace Mcasaenk.UI {
             }
         }
 
-        public static Run ChangeStar(string path1, string path2, object settings, string ch = " ✶") {
+        public static Run ChangeStar(string path1, string path2, object settings, DifferenceConverter.Compare cmp = null, string ch = " ✶") {
             Run r = new Run();
             r.Text = ch;
-            MultiBinding foregr = new MultiBinding() { Converter = new DifferenceConverter() };
+            MultiBinding foregr = new MultiBinding() { Converter = new DifferenceConverter(cmp) };
             foregr.Bindings.Add(new Binding(path1) { Source = settings });
             foregr.Bindings.Add(new Binding(path2) { Source = settings });
             r.SetBinding(Run.ForegroundProperty, foregr);

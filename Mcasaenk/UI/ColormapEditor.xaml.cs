@@ -20,6 +20,7 @@ using static Mcasaenk.UI.ColormapEditor;
 using System.Globalization;
 using System.Data;
 using System.Windows.Media.Animation;
+using System.Windows.Input;
 
 // complete mess, pls dont look
 namespace Mcasaenk.UI {
@@ -172,7 +173,7 @@ namespace Mcasaenk.UI {
                         var fore_press = (Brush)this.TryFindResource("FORE_PRESS");
                         var transp = new SolidColorBrush(Colors.Transparent);
 
-                        var bltext = new LinkTextBlock() { };
+                        var bltext = new LinkTextBlock(true) { };
                         bltext.TextBlock.Text = $"blocks: {tint.blocks.Count}";
                         tintblockcounts.Add(bltext.TextBlock);
                         bltext.PreviewMouseLeftButtonUp += (_, _) => {
@@ -244,7 +245,7 @@ namespace Mcasaenk.UI {
                     b1.Child = t1;
 
                     var b2 = new Border() { BorderBrush = borderb, BorderThickness = new Thickness(0, 1, 1, 1), Margin = new Thickness(0, 5, 0, 5) };
-                    var t2 = new LinkTextBlock() { Margin = new Thickness(0, 10, 0, 10), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                    var t2 = new LinkTextBlock(true) { Margin = new Thickness(0, 10, 0, 10), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                     filterblockcounts.Add(t2.TextBlock);
                     t2.TextBlock.Text = $"blocks: {filter.blocks.Count}";
                     b2.Child = t2;
@@ -363,32 +364,90 @@ namespace Mcasaenk.UI {
         }
     }
 
-    public class LinkTextBlock : Border {
+
+    public class BorderLikeButton : Button {
+        static BorderLikeButton() {
+            // Override the default style to use a custom control template
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(BorderLikeButton),
+                new FrameworkPropertyMetadata(typeof(BorderLikeButton)));
+
+            // Disable focus and other button-like interactions
+            FocusableProperty.OverrideMetadata(typeof(BorderLikeButton),
+                new FrameworkPropertyMetadata(false));
+        }
+
+        public BorderLikeButton() {
+            // Apply a simple control template directly in C#
+            this.Template = CreateBorderTemplate();
+            this.Background = System.Windows.Media.Brushes.Transparent;
+            this.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            this.BorderThickness = new Thickness(0);
+            this.Padding = new Thickness(0);
+        }
+
+        private ControlTemplate CreateBorderTemplate() {
+            // Define a simple Border-based control template
+            var template = new ControlTemplate(typeof(BorderLikeButton));
+
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background") { RelativeSource = RelativeSource.TemplatedParent });
+            borderFactory.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush") { RelativeSource = RelativeSource.TemplatedParent });
+            borderFactory.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness") { RelativeSource = RelativeSource.TemplatedParent });
+
+            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+
+            borderFactory.AppendChild(contentPresenterFactory);
+
+            template.VisualTree = borderFactory;
+            return template;
+        }
+
+        protected override void OnClick() {
+            // Prevent the default click sound or animation
+            base.OnClick();
+        }
+    }
+    class LinkTextBlock : BorderLikeButton {
         private Brush fore, fore_hover, fore_press, transp;
-        public LinkTextBlock() {
+        public LinkTextBlock() : this(false) { 
+        }
+        public LinkTextBlock(bool unterstrichimmeran) {
             fore = (Brush)this.TryFindResource("FORE");
             fore_hover = (Brush)this.TryFindResource("FORE_HOVER");
             fore_press = (Brush)this.TryFindResource("FORE_PRESS");
             transp = new SolidColorBrush(Colors.Transparent);
-
-            this.Child = TextBlock = new TextBlock();
-            this.BorderThickness = new Thickness(0, 0, 0, 1);
+            this.Content = TextBlock = new TextBlock();
+            if(unterstrichimmeran) this.BorderThickness = new Thickness(0, 0, 0, 1);
+            else {
+                this.BorderThickness = new Thickness(0, 0, 0, 0);
+                this.Margin = new Thickness(0, 0, 0, 1);
+            }
             this.BorderBrush = fore;
             this.HorizontalAlignment = HorizontalAlignment.Left;
 
             this.MouseEnter += (o, e) => {
                 this.BorderBrush = fore_hover;
                 TextBlock.Foreground = fore_hover;
+                if(!unterstrichimmeran) {
+                    this.BorderThickness = new Thickness(0, 0, 0, 1);
+                    this.Margin = new Thickness(0, 0, 0, 0);
+                }
             };
             this.MouseLeave += (o, e) => {
                 this.BorderBrush = fore;
                 TextBlock.Foreground = fore;
+                if(!unterstrichimmeran) {
+                    this.BorderThickness = new Thickness(0, 0, 0, 0);
+                    this.Margin = new Thickness(0, 0, 0, 1);
+                }
             };
-            this.MouseLeftButtonDown += (o, e) => {
+            this.PreviewMouseDown += (o, e) => {
                 this.BorderBrush = fore_press;
                 TextBlock.Foreground = fore_press;
             };
-            this.PreviewMouseLeftButtonUp += (o, e) => {
+            this.PreviewMouseUp += (o, e) => {
                 this.BorderBrush = fore_hover;
                 TextBlock.Foreground = fore_hover;
             };

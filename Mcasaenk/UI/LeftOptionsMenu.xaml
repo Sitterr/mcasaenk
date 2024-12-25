@@ -46,7 +46,7 @@
                         </StackPanel.Resources>
 
 
-                        <Border x:Name="cont_config" Visibility="Collapsed">
+                        <Border x:Name="cont_config" Visibility="Visible">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -128,8 +128,8 @@
                                             </TextBlock>
                                             <Label.ToolTip>
                                                 <StackPanel Orientation="Vertical">
-                                                    <TextBlock Text="adjusts the level of detail for half transparent blocks"/>
-                                                    <TextBlock Text="the better the quality, the worse the memory and performance"/>
+                                                    <TextBlock Text="• adjusts the level of detail for semi-transparent blocks"/>
+                                                    <TextBlock Text="• higher quality results in increased memory usage and reduced performance"/>
                                                 </StackPanel>
                                             </Label.ToolTip>
                                         </Label>
@@ -278,7 +278,7 @@
                                         </Label.ToolTip>
                                     </Label>
 
-                                    <Border Width="6"/>
+                                    <Border Width="10"/>
                                     <ToggleButton>
                                         <ToggleButton.IsChecked>
                                             <MultiBinding Mode="TwoWay" Converter="{StaticResource BitAndConverter}">
@@ -310,11 +310,43 @@
                                     <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=SkipUnknown}"/>
                                 </StackPanel>
 
+                                <StackPanel Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
+                                    <Label>
+                                        <TextBlock Margin="0">
+                                            <Run Text="footer block info"/>
+                                            <Run Text="✶">
+                                                <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="BlockInfo" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="BLOCKINFO" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>
+                                            </Run>
+                                        </TextBlock>
+                                        <Label.ToolTip>
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="• determines whether to show the name and biome of the block currently beneath the cursor"/>
+                                                <TextBlock Text="• disabled by default to conserve memory"/>
+                                            </StackPanel>
+                                        </Label.ToolTip>
+                                    </Label>
+                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=BlockInfo}"/>
+
+                                </StackPanel>
+                                <StackPanel Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="1" Orientation="Horizontal">
+                                    <Label>
+                                        <TextBlock Margin="0">
+                                            <Run Text="live colormap editing"/>
+                                        </TextBlock>
+                                    </Label>
+                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=ENABLE_COLORMAP_EDITING}"/>
+
+                                </StackPanel>
                                 
 
                             </Grid>
                         </Border>
-                        <Border x:Name="cont_about" Visibility="Visible">
+                        <Border x:Name="cont_about" Visibility="Collapsed">
                             <Border BorderBrush="{StaticResource BORDER}" BorderThickness="1">
                                 <Border.Background>
                                     <ImageBrush ImageSource="{Binding Source={x:Static resx:ResourceMapping.img31_}}" Stretch="UniformToFill"/>

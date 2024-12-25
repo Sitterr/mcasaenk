@@ -77,4 +77,4 @@ powered_comparator;unpowered_comparator;comparator
 smooth_andesite;polished_andesite
 smooth_diorite;polished_diorite
 smooth_granite;polished_granite
-cave_air;void_air;air
+//cave_air;void_air;air

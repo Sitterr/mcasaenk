@@ -17,6 +17,7 @@ using Microsoft.VisualBasic.FileIO;
 using System.Reflection;
 using Mcasaenk.Nbt;
 using System.IO.Compression;
+using System.Xml.Serialization;
 
 namespace Mcasaenk.UI.Canvas {
     public class ScreenshotManager {
@@ -57,13 +58,15 @@ namespace Mcasaenk.UI.Canvas {
             Loc1 = mid.Sub(new Point(r.Y, r.X));
             Loc2 = mid.Add(new Point(r.Y, r.X));
 
-            ResizeCorner(Loc1);
         }
         public void Rescale() {
             var mid = Rect().Mid();
 
-            Loc1 = mid.Sub(new Point(resolution.X / scale.Scale, resolution.Y / scale.Scale).Dev(2)).Floor();
-            Loc2 = mid.Add(new Point(resolution.X / scale.Scale, resolution.Y / scale.Scale).Dev(2)).Floor();
+            int x = (int)(resolution.X / scale.Scale), y = (int)(resolution.Y / scale.Scale);
+            if(rotated) (x, y) = (y, x);
+
+            Loc1 = mid.Sub(new Point(x, y).Dev(2)).Floor();
+            Loc2 = mid.Add(new Point(x, y).Dev(2)).Floor();
         }
         public void ResizeCorner(Point p) {
             Loc1 = p;
@@ -104,8 +107,8 @@ namespace Mcasaenk.UI.Canvas {
 
             Loc1 = new1;
             Loc2 = new2;
-            resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
-            resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
+            //resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
+            //resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
         }
 
 
@@ -116,7 +119,9 @@ namespace Mcasaenk.UI.Canvas {
                 var Size = Rect().Size.AsPoint();
                 var NW = Rect().TopLeft;
 
-                var renderBitmap = new RenderTargetBitmap(resolution.X, resolution.Y, 96, 96, PixelFormats.Pbgra32);
+                var (rx, ry) = (resolution.X, resolution.Y);
+                if(rotated) (ry, rx) = (resolution.X, resolution.Y);
+                var renderBitmap = new RenderTargetBitmap(rx, ry, 96, 96, PixelFormats.Pbgra32);
                 if(tileMap != null) {
                     var drawing = new DrawingVisual();
 
@@ -174,12 +179,10 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         void TakeScreenshotAsImage() {
-            var (bx, by) = (resolution.X, resolution.Y);
-            if(rotated) (by, bx) = (resolution.X, resolution.Y);
             var saveFileDialog = new SaveFileDialog {
                 Filter = "PNG Image|*.png",
                 Title = "Save screenshot",
-                FileName = $"screenshot{bx}x{by}"
+                FileName = $"{Global.App.OpenedSave?.levelDatInfo?.name ?? "screenshot"}{resolution.X}x{resolution.Y}"
             };
 
             if(saveFileDialog.ShowDialog() == true) {

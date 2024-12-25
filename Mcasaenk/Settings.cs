@@ -77,7 +77,7 @@ namespace Mcasaenk {
 
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
-    public class SettingsHub(Action<string> onLightChange, Action<List<string>> onHardChange) : INotifyPropertyChanged {
+    public class SettingsHub(Action<string> onAutoChange, Action<string> onLightChange, Action<List<string>> onHardChange) : INotifyPropertyChanged {
 
         private readonly List<StandardizedSettings> settings = new List<StandardizedSettings>();
         public void RegisterSettings(StandardizedSettings settings) {
@@ -116,6 +116,7 @@ namespace Mcasaenk {
 
         public void OnAutoChange(string propertyName) {
             OnPropertyChanged(nameof(CHANGED_BACK));
+            onAutoChange(propertyName);
         }
         public void OnLightChange(string propertyName) {
             if(frozen == false) onLightChange(propertyName);
@@ -188,6 +189,7 @@ namespace Mcasaenk {
             if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
             if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
             if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
+            if(BLOCKINFO != BlockInfo) BLOCKINFO = BlockInfo;
         }
         public override void Reset() {
             Y = Y_OFFICIAL;
@@ -202,6 +204,7 @@ namespace Mcasaenk {
             ShadeType = SHADETYPE;
             PreferHeightmap = PREFERHEIGHTMAPS;
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
+            BlockInfo = BLOCKINFO;
         }
         public override bool ChangedBack() =>
                    Y_OFFICIAL != Y ||
@@ -215,11 +218,13 @@ namespace Mcasaenk {
                    COLOR_MAPPING_MODE != ColorMapping ||
                    SHADETYPE != ShadeType ||
                    PREFERHEIGHTMAPS != PreferHeightmap ||
-                   SKIP_UNKNOWN_BLOCKS != SkipUnknown   
+                   SKIP_UNKNOWN_BLOCKS != SkipUnknown ||
+                   BLOCKINFO != BlockInfo
             ;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
+            ENABLE_COLORMAP_EDITING = false,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
@@ -230,6 +235,7 @@ namespace Mcasaenk {
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
             PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true,
+            BLOCKINFO = false,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
@@ -806,6 +812,38 @@ namespace Mcasaenk {
             }
         }
         public bool SKIP_UNKNOWN_BLOCKS { get => skipunknown; set { skipunknown = value; SkipUnknown = value; OnHardChange(nameof(SKIP_UNKNOWN_BLOCKS)); } }
+
+
+
+        private bool blockinfo, blockinfo_back;
+        [JsonIgnore]
+        public bool BlockInfo {
+            get => blockinfo_back;
+            set {
+                if(blockinfo_back == value) return;
+
+                blockinfo_back = value;
+                OnAutoChange(nameof(BlockInfo));
+                if(Global.App.OpenedSave == null) {
+                    blockinfo = value;
+                    OnAutoChange(nameof(BLOCKINFO));
+                }
+            }
+        }
+        public bool BLOCKINFO { get => blockinfo; set { blockinfo = value; BlockInfo = value; OnHardChange(nameof(BLOCKINFO)); } }
+
+
+        private bool enablecmediting;
+        [JsonIgnore]
+        public bool ENABLE_COLORMAP_EDITING {
+            get => enablecmediting;
+            set {
+                if(enablecmediting == value) return;
+
+                enablecmediting = value;
+                OnAutoChange(nameof(ENABLE_COLORMAP_EDITING));
+            }
+        }
 
 
         private Resolution[] predefined_reses;

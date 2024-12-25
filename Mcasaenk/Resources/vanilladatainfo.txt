@@ -68,8 +68,8 @@ minecraft:wooded_badlands;2;0;4287660365;4288577869;4282349284;;
 -- BIOMES --
 
 -- DIMENSIONS --
-minecraft:overworld;384;-64;32767;0;minecraft:overworld;
-minecraft:overworld_caves;384;-64;32767;0;minecraft:overworld;
-minecraft:the_end;256;0;32767;0;minecraft:the_end;
-minecraft:the_nether;256;0;32767;0.1;minecraft:the_nether;
+minecraft:overworld;384;-64;319;0;minecraft:overworld;
+minecraft:overworld_caves;384;-64;319;0;minecraft:overworld;
+minecraft:the_end;256;0;255;0;minecraft:the_end;
+minecraft:the_nether;256;0;100;0.1;minecraft:the_nether;
 -- DIMENSIONS --

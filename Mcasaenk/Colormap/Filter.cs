@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Colormaping {
     public class Filter : GroupElement<Filter> {
-        public readonly bool caneditsettings, visible;
+        public bool caneditsettings { get; private set; }
+        public bool visible { get; private set; }
 
         public Filter(GroupManager<Filter> groupManager, string name, bool visible = true, bool caneditsettings = true) : base(groupManager, name) {
             this.groupManager = groupManager;

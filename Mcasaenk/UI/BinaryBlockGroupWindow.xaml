@@ -44,7 +44,22 @@
                 </DataGrid.Columns>
             </DataGrid>
             <Border Grid.Row="1" Grid.Column="0" BorderBrush="{StaticResource BORDER}" BorderThickness="1" Height="auto" Margin="0 -1 0 0" Padding="15 4">
-                <local:EButton x:Name="btn_moveright">Move selected blocks →→→</local:EButton>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Search:" VerticalAlignment="Center" Margin="0 0 7 0"/>
+                    <TextBox Grid.Column="1" x:Name="txt_searchleft"/>
+
+                    <local:EButton Grid.Column="3" x:Name="btn_moveright">
+                        <TextBlock Foreground="{StaticResource LIGHT_YELLOW_B}">→→</TextBlock>
+                    </local:EButton>
+                </Grid>
+
             </Border>
 
             <DataGrid x:Name="grid_selected" Grid.Row="0" Grid.Column="2">
@@ -65,7 +80,24 @@
                 </DataGrid.Columns>
             </DataGrid>
             <Border Grid.Row="1" Grid.Column="2" BorderBrush="{StaticResource BORDER}" BorderThickness="1" Height="auto" Margin="0 -1 0 0" Padding="15 4">
-                <local:EButton x:Name="btn_moveleft">←←← Move selected blocks</local:EButton>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <local:EButton Grid.Column="0" x:Name="btn_moveleft">
+                        <TextBlock Foreground="{StaticResource LIGHT_YELLOW_B}">
+                            ←←
+                        </TextBlock>
+                    </local:EButton>
+
+                    <TextBlock Grid.Column="2" Text="Search:" VerticalAlignment="Center" Margin="0 0 7 0"/>
+                    <TextBox Grid.Column="3" x:Name="txt_searchright"/>
+
+                </Grid>
             </Border>
         </Grid>
 

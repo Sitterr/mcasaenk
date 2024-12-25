@@ -49,12 +49,6 @@ namespace Mcasaenk.Colormaping {
         public abstract Blending GetBlendMode();
         public enum Blending { none, heightonly, biomeonly, full }
 
-
-
-
-
-
-
     }
 
     public abstract class DynamicTint : Tint {
@@ -122,7 +116,7 @@ namespace Mcasaenk.Colormaping {
         }
 
         public override Blending GetBlendMode() {
-            if(On == false) return Blending.none;
+            if(!On) return Blending.none;
             if(Blend == 1) return Blending.heightonly;
             if(TemperatureVariation > 0) return Blending.full;
             else return Blending.biomeonly;
@@ -150,7 +144,7 @@ namespace Mcasaenk.Colormaping {
         }
 
         public override Blending GetBlendMode() {
-            if(On == false) return Blending.none;
+            if(!On) return Blending.none;
             if(Blend == 1) return Blending.heightonly;
             if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage")) return Blending.full;
             else return Blending.biomeonly;
@@ -220,7 +214,7 @@ namespace Mcasaenk.Colormaping {
 
 
         public override Blending GetBlendMode() {
-            if(On == false) return Blending.none;
+            if(!On) return Blending.none;
             else if(sprite.GetLength(0) == 1 || Blend == 1) return Blending.heightonly;
             else if(sprite.GetLength(1) == 1 || heightparity) return Blending.biomeonly;
             else return Blending.full;

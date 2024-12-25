@@ -20,7 +20,7 @@ namespace Mcasaenk.UI {
     /// </summary>
     public partial class BinaryBlockGroupWindow : Window {
 
-        public enum Group { Def, This, Other }
+        public enum Group { Def, This, ThisNotHearth, Other }
 
         private bool saved = false;
         private readonly IEnumerable<(string name, bool important, Group group)> startingstate;
@@ -36,8 +36,8 @@ namespace Mcasaenk.UI {
                 toggle_showall.Visibility = Visibility.Collapsed;
                 lbl_showall.Visibility = Visibility.Collapsed;
             }
-            toggle_showall.Checked += (_, _) => grid_availabe.Items.Filter = (item => true);
-            toggle_showall.Unchecked += (_, _) => grid_availabe.Items.Filter = (item => ((BinaryBlockRow)item).important);
+            toggle_showall.Checked += (_, _) => FilterLeft();
+            toggle_showall.Unchecked += (_, _) => FilterLeft();
 
             btn_finish.Click += (_, _) => {
                 saved = true;
@@ -81,15 +81,29 @@ namespace Mcasaenk.UI {
                 grid_availabe.SortByColumn("BlockName", ListSortDirection.Ascending);
             };
 
+            txt_searchleft.TextChanged += (_, _) => FilterLeft();
+
+            txt_searchright.TextChanged += (_, _) => FilterRight();
 
             this.startingstate = blocks;
             SetUp();
         }
 
+        private void FilterLeft() {
+            grid_availabe.Items.Filter = ((Predicate<object>)(item => ((BinaryBlockRow)item).BlockName.Contains(txt_searchleft.Text)))
+                .And(item => ((BinaryBlockRow)item).important || toggle_showall.IsChecked.Value);
+        }
+
+        private void FilterRight() {
+            grid_selected.Items.Filter = ((Predicate<object>)(item => ((BinaryBlockRow)item).BlockName.Contains(txt_searchright.Text)));
+        }
+
         public void SetUp() {
             grid_availabe.ItemsSource = startingstate.Where(x => x.group != Group.This).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.Def)).ToArray();
-            grid_selected.ItemsSource = startingstate.Where(x => x.group == Group.This).Select(x => new BinaryBlockRow(x.name, x.important, true)).ToArray();
+            grid_selected.ItemsSource = startingstate.Where(x => x.group == Group.This || x.group == Group.ThisNotHearth).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.This)).ToArray();
             toggle_showall.IsChecked = false;
+            txt_searchleft.Text = "";
+            txt_searchright.Text = "";
         }
 
         public bool Result(out List<(string name, Group group)> blocks) {
