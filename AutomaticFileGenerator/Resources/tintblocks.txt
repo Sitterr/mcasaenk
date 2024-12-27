@@ -12,7 +12,7 @@ notint;fixed;cherry_leaves,bamboo_sapling,pale_oak_leaves;FFFFFF;
 -- TINTS --
 -- FILTERS --
 the thin;/q-_0.05/;0.5;
-leaves;/tint_foliage,birch_leaves,spruce_leaves,cherry_leaves,pale_oak_leaves/;0.35;
+leaves;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine,birch_leaves,spruce_leaves,cherry_leaves,pale_oak_leaves;0.35;
 lava;lava;0.1;
 -- FILTERS --
 -- DEPTH --

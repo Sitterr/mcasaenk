@@ -72,7 +72,7 @@ namespace Mcasaenk.UI {
             };
 
             btn_moveleft.Click += (_, _) => {
-                var tobemoved = grid_selected.SelectedItems.Cast<BinaryBlockRow>().ToArray();
+                var tobemoved = grid_selected.SelectedItems.Cast<BinaryBlockRow>().Where(x => x.CanMove).ToArray();
 
                 grid_selected.ItemsSource = grid_selected.ItemsSource.Cast<BinaryBlockRow>().Where(b => !tobemoved.Any(m => m.BlockName == b.BlockName));
                 grid_availabe.ItemsSource = grid_availabe.ItemsSource.Cast<BinaryBlockRow>().Concat(tobemoved);

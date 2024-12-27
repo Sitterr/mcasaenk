@@ -306,9 +306,6 @@ namespace Mcasaenk.Colormaping {
                                 blocks = colormap.blocks.Where(b => b.Value.details.q < Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
                             } else if(part1.StartsWith("q+_")) {
                                 blocks = colormap.blocks.Where(b => b.Value.details.q > Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
-                            } else if(part1.StartsWith("tint_")) {
-                                foreach(var tint in part1.Substring("tint_".Length).Split(',')) 
-                                    blocks.AddRange(colormap.tints.Find(t => t.name == tint)?.blocks ?? []);
                             }
                         } else blocks = parts[1].Split(",").Select(w => w.minecraftname()).Where(b => colormap.blocks.ContainsKey(b)).ToList();
 
