@@ -1,0 +1,53 @@
+﻿<Window x:Class="Mcasaenk.UI.BlockFilterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mcasaenk.UI"
+        mc:Ignorable="d"
+        Background="{StaticResource BACK}"
+        Title="BlockFilterWindow" Height="450" Width="800">
+    <Grid>
+        <Border BorderBrush="#FF404040" BorderThickness="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2">
+            <DataGrid x:Name="SolidBlockView" RowBackground="#FF191919" VerticalAlignment="Stretch" VerticalGridLinesBrush="#FF1C1C1C" HorizontalGridLinesBrush="#FF1C1C1C" BorderThickness="0" HeadersVisibility="Column" HorizontalAlignment="Stretch" Background="#FF191919" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Block name" Width="*" Binding="{Binding BlockName}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#FFEEEEEE" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Margin" Value="8, 0, 0, 0 " />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="{x:Type DataGridCell}">
+                                <Setter Property="Background" Value="#FF1C1C1C" />
+                                <Setter Property="Foreground" Value="#FFEEEEEE" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="BorderBrush" Value="#FF1C1C1C" />
+                                <Setter Property="Height" Value="25" />
+
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FF303030" />
+                                    </Trigger>
+                                    <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#FF353535" />
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                            <Condition Property="DataGridCell.IsSelected" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="Background" Value="#FF424242"/>
+                                    </MultiTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Window>

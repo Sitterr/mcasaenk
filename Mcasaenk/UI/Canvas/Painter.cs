@@ -2,6 +2,7 @@
 using Mcasaenk.Rendering;
 using Microsoft.Win32.SafeHandles;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -189,46 +190,45 @@ namespace Mcasaenk.UI.Canvas {
             } else if(tilemap == null) {
                 outline = orangePen;
             } else {
-                for(int x = Global.Coord.fairDev((int)glrect.X, 512); x <= Global.Coord.fairDev((int)glrect.X + (int)glrect.Width, 512); x++) {
-                    for(int z = Global.Coord.fairDev((int)glrect.Y, 512); z <= Global.Coord.fairDev((int)glrect.Y + (int)glrect.Height, 512); z++) {
+                for(int x = Global.Coord.fairDev((int)glrect.X, 512); x <= Global.Coord.fairDev((int)glrect.X + (int)glrect.Width - 1, 512); x++) {
+                    for(int z = Global.Coord.fairDev((int)glrect.Y, 512); z <= Global.Coord.fairDev((int)glrect.Y + (int)glrect.Height - 1, 512); z++) {
                         var tile = tilemap.GetTile(new Point2i(x, z));
                         if(tile == null || tile?.genData == null || tilemap.drawTilePool.IsQueued(tile) || tilemap.drawTilePool.IsLoading(tile) || tilemap.drawTilePool.ShouldDo(tile)) {
                             outline = orangePen;
-                            x = int.MaxValue - 1;
-                            break;
+                            goto Final;
                         }
                         if(tile.shade.IsActive) {
                             outline = yellowPen;
                         }
-                        if(tile.genData.ContainsEmpty() == false) {
-                            continue;
-                        }
 
 
-                        var interSect = new Rect(new Point(x, z).Mult(512), new Point(x + 1, z + 1).Mult(512).Sub(1));
+                        var interSect = new Rect(new Point(x, z).Mult(512), new Size(512, 512));
                         interSect.Intersect(glrect);
 
-                        int xxst = Global.Coord.absMod((int)interSect.X, 512), zzst = Global.Coord.absMod((int)interSect.Y, 512);
-                        int xxend = (int)Global.Coord.absMod((int)interSect.X + interSect.Width, 512), zzend = (int)Global.Coord.absMod((int)interSect.Y + interSect.Height, 512);
-                        if(Global.Settings.StaticShade) {
-                            if(Global.Settings.ADEG != 0 && Global.Settings.ADEG != 180 && Global.Settings.ADEG != 360) {
-                                if(zzst > 0) zzst--;
-                                if(zzend < 512) zzend++;
-                            }
-                            if(Global.Settings.ADEG != 90 && Global.Settings.ADEG != 270) {
-                                if(xxst > 0) xxst--;
-                                if(xxend < 512) xxend++;
-                            }
-                        }
-                        for(int xx = xxst; xx < xxend; xx++) {
-                            for(int zz = zzst; zz < zzend; zz++) {
-                                var block = tile.genData.block(zz * 512 + xx);
-                                if(block == default || block == Colormap.INVBLOCK) {
-                                    outline = orangePen;
-                                    z = int.MaxValue - 1;
-                                    x = int.MaxValue - 1;
-                                    xx = int.MaxValue - 1;
-                                    break;
+                        for(int xch = Global.Coord.absMod((int)interSect.X, 512) / 16; xch <= (int)Global.Coord.absMod((int)interSect.X + interSect.Width - 1, 512) / 16; xch++) {
+                            for(int zch = Global.Coord.absMod((int)interSect.Y, 512) / 16; zch <= (int)Global.Coord.absMod((int)interSect.Y + interSect.Height - 1, 512) / 16; zch++) {
+                                if(tile.genData.IsChunkScreenshotable(xch, zch) == false) {
+                                    for(int xx = 0; xx < 16; xx++) {
+                                        for(int zz = 0; zz < 16; zz++) {
+                                            int zi = (zch * 16 + zz), xi = (xch * 16 + xx);
+                                            if(interSect.Contains(x * 512 + xi, z * 512 + zi) == false) continue;
+                                            int i = zi * 512 + xi, br = 0;
+                                            for(int w = 0; w < tile.genData.columns.Length; w++) {
+                                                if(tile.genData.columns[w].ContainsInfo(i)) {
+                                                    br++;
+                                                    var filter = tile.genData.columns[w].Filter(i);
+                                                    if(filter == Global.App.Colormap.FilterManager.Error || filter.ABSORBTION == 0) {
+                                                        outline = orangePen;
+                                                        goto Final;
+                                                    }
+                                                }
+                                            }
+                                            if(br == 0) {
+                                                outline = orangePen;
+                                                goto Final;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -237,6 +237,8 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
+
+            Final:
             var locrect = manager.LocalRect(screen);
             graphics.DrawRectangle(backBrush, outline, locrect);
 

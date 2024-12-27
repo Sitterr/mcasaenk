@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Xsl;
-using static Mcasaenk.Rendering.Filter;
 
 
 namespace Mcasaenk.UI.Canvas {
@@ -175,6 +175,8 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         private void OnSlowTick(object a, object b) {
+            window.footer?.Refresh();
+
             if(tileMap == null) return;
             foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
                 var tile = tileMap.GetTile(pos);
@@ -187,7 +189,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            if(window.footer != null) {
+            if(window.footer.Visibility == Visibility.Visible) {
                 { // footer update
                     window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
                     window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
@@ -195,25 +197,7 @@ namespace Mcasaenk.UI.Canvas {
                     window.footer.ShadeTiles = tileMap.ShadeTiles();
                     window.footer.ShadeFrames = tileMap.ShadeFrames();
 
-                    var globalPos = new Point2i(screen.GetGlobalPos(mousePos).Floor());
-                    window.footer.X = globalPos.X;
-                    window.footer.Z = globalPos.Z;
-
-                    var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
-                    int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
-                    if(tile?.genData != null) {
-                        window.footer.Y = tile.genData.heights(i) + Global.Settings.MINY;
-                        window.footer.Y_Terrain = tile.genData.terrainHeights(i) + Global.Settings.MINY;
-
-                        window.footer.Block = Global.App.Colormap.Block.GetName(tile.genData.terrainBlock(i));
-                        window.footer.Biome = Global.App.Colormap.Biome.GetName(tile.genData.biomeIds(i));
-                    } else {
-                        window.footer.Y = Global.Settings.MINY - 1;
-                        window.footer.Y_Terrain = Global.Settings.MINY - 1;
-
-                        window.footer.Block = "_void_";
-                        window.footer.Biome = "_void_";
-                    }
+                    window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), tileMap);
                 }
             }
         }

@@ -27,15 +27,16 @@ namespace Mcasaenk.UI {
             InitializeComponent();
 
             txt_version.Text = App.VERSION;
+            txt_minecraftversion.Text = App.MINECRAFTVERSION;
 
             upd_meth_link.Click += (o, e) => {
                 // depr
             };
             btn_change.Click += (o, e) => {
-                Global.App.Settings.SetFromBack();
+                Global.App.SettingsHub.SetFromBack();
             };
             btn_undo.Click += (o, e) => {
-                Global.App.Settings.Reset();
+                Global.App.SettingsHub.Reset();
             };
 
             tabs = new[] { tab_config, tab_about };
@@ -96,6 +97,16 @@ namespace Mcasaenk.UI {
 
                 btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_change.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
             };
+
+            if(Global.Settings.PREDEFINEDRES.Length < 3) {
+                var newarr = new Resolution[3];
+                for(int i = 0; i < Global.Settings.PREDEFINEDRES.Length; i++) newarr[i] = Global.Settings.PREDEFINEDRES[i];
+                for(int j = Global.Settings.PREDEFINEDRES.Length; j < 3; j++) newarr[j] = new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 };
+                Global.Settings.PREDEFINEDRES = newarr;
+            }
+            res0.Content = Global.Settings.PREDEFINEDRES[0];
+            res1.Content = Global.Settings.PREDEFINEDRES[1];
+            res2.Content = Global.Settings.PREDEFINEDRES[2];
         }
 
         public void OnActive() { 

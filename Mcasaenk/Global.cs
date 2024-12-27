@@ -24,9 +24,10 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Media3D;
-using static Mcasaenk.Rendering.ColorGausBlur;
 using System.Threading.Channels;
 using static Mcasaenk.Global;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Mcasaenk {
     public class Global {
@@ -34,6 +35,7 @@ namespace Mcasaenk {
 
         public static App App { get => (App)Application.Current; }
         public static Settings Settings { get => App.Settings; } // i hate wpf
+        public static SettingsHub SettingsHub { get => App.SettingsHub; } // i hate wpf
 
         public static ViewModel ViewModel;
 
@@ -107,10 +109,10 @@ namespace Mcasaenk {
             }
         }
 
-        public static Brush CreateCheckerBrush(Color c1, Color c2) {
+        public static Brush CreateCheckerBrush(Color c1, Color c2, int size = 10) {
             DrawingBrush checkerBrush = new DrawingBrush();
             checkerBrush.TileMode = TileMode.Tile;
-            checkerBrush.Viewport = new Rect(0, 0, 20, 20); // 20x20 pixel tiles
+            checkerBrush.Viewport = new Rect(0, 0, size * 2, size * 2); // 20x20 pixel tiles
             checkerBrush.ViewportUnits = BrushMappingMode.Absolute;
 
             // Create the DrawingGroup for the checker pattern
@@ -119,17 +121,17 @@ namespace Mcasaenk {
             // Background (white)
             GeometryDrawing backgroundDrawing = new GeometryDrawing();
             backgroundDrawing.Brush = new SolidColorBrush(c1);
-            backgroundDrawing.Geometry = new RectangleGeometry(new Rect(0, 0, 20, 20));
+            backgroundDrawing.Geometry = new RectangleGeometry(new Rect(0, 0, size * 2, size * 2));
 
             // First light gray rectangle (top-left)
             GeometryDrawing grayDrawing1 = new GeometryDrawing();
             grayDrawing1.Brush = new SolidColorBrush(c2);
-            grayDrawing1.Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10));
+            grayDrawing1.Geometry = new RectangleGeometry(new Rect(0, 0, size, size));
 
             // Second light gray rectangle (bottom-right)
             GeometryDrawing grayDrawing2 = new GeometryDrawing();
             grayDrawing2.Brush = new SolidColorBrush(c2);
-            grayDrawing2.Geometry = new RectangleGeometry(new Rect(10, 10, 10, 10));
+            grayDrawing2.Geometry = new RectangleGeometry(new Rect(size, size, size, size));
 
             // Add the drawings to the drawing group
             drawingGroup.Children.Add(backgroundDrawing);
@@ -200,16 +202,16 @@ namespace Mcasaenk {
             byte g = (byte)((color >> 8) & 0xFF);
             byte b = (byte)(color & 0xFF);
 
-            byte a2 = (byte)Math.Clamp(a + aa, 0, 255);
             byte r2 = (byte)Math.Clamp(r + ar, 0, 255);
             byte g2 = (byte)Math.Clamp(g + ag, 0, 255);
             byte b2 = (byte)Math.Clamp(b + ab, 0, 255);
-            return (uint)((a2 << 24) | (r2 << 16) | (g2 << 8) | b2);
+            return (uint)((a << 24) | (r2 << 16) | (g2 << 8) | b2);
         }
         public static uint MultShade(uint color, double ar, double ag, double ab) {
-            ar = Math.Max(ar, 0);
-            ag = Math.Max(ar, 0);
-            ab = Math.Max(ar, 0);
+            ar = Math.Clamp(ar, 0, 1);
+            ag = Math.Clamp(ag, 0, 1);
+            ab = Math.Clamp(ab, 0, 1);
+            if(ar == 1 && ag == 1 && ab == 1) return color;
 
             byte a = (byte)((color >> 24) & 0xFF);
             byte r = (byte)((color >> 16) & 0xFF);
@@ -227,6 +229,8 @@ namespace Mcasaenk {
         }
         public static uint Blend(uint color, uint other, double ratio, bool alphaBlend = false) {
             ratio = Math.Clamp(ratio, 0, 1);
+            if(ratio == 1) return color;
+            if(ratio == 0) return other;
 
             byte aA = (byte)(color >> 24 & 0xFF);
             if(!alphaBlend) aA = 255;
@@ -271,21 +275,9 @@ namespace Mcasaenk {
 
         public static class Coord {
             public static int fairDev(int a, int b) {
-                int res = (int)a / b;
-                if(a < 0) {
-                    res--;
-                }
-                return res;
+                return (int)Math.Floor((double)a / b);
             }
 
-            public static double absDev(double a, int b) {
-                a = Math.Floor(a);
-                int res = (int)a / b;
-                if(a < 0) {
-                    res = ((int)(a + 1) / b) - 1;
-                }
-                return res;
-            }
             public static double absMod(double a, int m) {
                 double res = a % m;
                 if(res < 0) {
@@ -386,12 +378,16 @@ namespace Mcasaenk {
             if(name.StartsWith("minecraft:")) return name.Substring(10);
             return name;
         }
-        static Regex tominecraftname_regex = new Regex("^((\\w*:)?\\w+)(:(\\w+=\\w+)(,(\\w+=\\w+))*)?$");
+        static Regex complicatedminecraftname_regex = new Regex("^(([a-z]\\w*:)?[a-z]\\w*)(:([a-z]\\w*=[a-z]\\w*)(,([a-z]\\w*=[a-z]\\w*))*)?$");
+        static Regex simpleminecraftname_regex = new Regex("^(([a-z]\\w*:)?[a-z]\\w*)$");
         public static string minecraftnamecomplex(this string name) {
-            var match = tominecraftname_regex.Match(name);
+            var match = complicatedminecraftname_regex.Match(name);
             if(match.Success) {
                 return match.Groups[1].Value.minecraftname();
             } else return name;
+        }
+        public static bool isminecraftname(this string name) {
+            return simpleminecraftname_regex.IsMatch(name);
         }
 
         public static TValue GetValueOrDefault<TKey, TValue>(
@@ -409,6 +405,28 @@ namespace Mcasaenk {
         }
 
 
+        public static Predicate<T> Or<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
+            return delegate (T item)
+            {
+                foreach(var predicate in predicates.Append(predicate0)) {
+                    if(predicate(item)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+        }
+        public static Predicate<T> And<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
+            return delegate (T item)
+            {
+                foreach(var predicate in predicates.Append(predicate0)) {
+                    if(!predicate(item)) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+        }
 
         public static T[,] D2<T>(this T[] input, int width, int height) {
             T[,] output = new T[width, height];
@@ -419,6 +437,13 @@ namespace Mcasaenk {
             }
             return output;
         }
+
+        public static string FirstCharToUpper(this string input) =>
+    input switch {
+        null => throw new ArgumentNullException(nameof(input)),
+        "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+        _ => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
+    };
 
         public static bool ContainsP(this List<(RegionDir dir, Point2i p)> list, Point2i p) {
             foreach(var el in list) {
@@ -453,6 +478,13 @@ namespace Mcasaenk {
             }
 
             return values;
+        }
+
+        public static bool ValueCompare<T>(this ICollection<T> yes, ICollection<T> otherlist) => yes.All(otherlist.Contains) && yes.Count == otherlist.Count;
+
+        public static void ValueCopyFrom<T>(this ICollection<T> yes, ICollection<T> other) {
+            yes.Clear();
+            foreach(var item in other) yes.Add(item);
         }
 
         public static T[] DeepCopy<T>(this T[] arr) where T : struct {
@@ -539,4 +571,454 @@ namespace Mcasaenk {
             return new Dpi(VisualTreeHelper.GetDpi(Application.Current.MainWindow));
         }
     }
+
+
+    public class ObservableHashSet<T>
+    : ISet<T>, IReadOnlyCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged, INotifyPropertyChanging {
+        private HashSet<T> _set;
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ObservableHashSet{T}" /> class
+        ///     that is empty and uses the default equality comparer for the set type.
+        /// </summary>
+        public ObservableHashSet()
+            : this(EqualityComparer<T>.Default) {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ObservableHashSet{T}" /> class
+        ///     that is empty and uses the specified equality comparer for the set type.
+        /// </summary>
+        /// <param name="comparer">
+        ///     The <see cref="IEqualityComparer{T}" /> implementation to use when
+        ///     comparing values in the set, or null to use the default <see cref="IEqualityComparer{T}" />
+        ///     implementation for the set type.
+        /// </param>
+        public ObservableHashSet(IEqualityComparer<T> comparer)
+            => _set = new HashSet<T>(comparer);
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ObservableHashSet{T}" /> class
+        ///     that uses the default equality comparer for the set type, contains elements copied
+        ///     from the specified collection, and has sufficient capacity to accommodate the
+        ///     number of elements copied.
+        /// </summary>
+        /// <param name="collection">The collection whose elements are copied to the new set.</param>
+        public ObservableHashSet(IEnumerable<T> collection)
+            : this(collection, EqualityComparer<T>.Default) {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ObservableHashSet{T}" /> class
+        ///     that uses the specified equality comparer for the set type, contains elements
+        ///     copied from the specified collection, and has sufficient capacity to accommodate
+        ///     the number of elements copied.
+        /// </summary>
+        /// <param name="collection">The collection whose elements are copied to the new set.</param>
+        /// <param name="comparer">
+        ///     The <see cref="IEqualityComparer{T}" /> implementation to use when
+        ///     comparing values in the set, or null to use the default <see cref="IEqualityComparer{T}" />
+        ///     implementation for the set type.
+        /// </param>
+        public ObservableHashSet(IEnumerable<T> collection, IEqualityComparer<T> comparer)
+            => _set = new HashSet<T>(collection, comparer);
+
+        /// <summary>
+        ///     Occurs when a property of this hash set (such as <see cref="Count" />) changes.
+        /// </summary>
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>
+        ///     Occurs when a property of this hash set (such as <see cref="Count" />) is changing.
+        /// </summary>
+        public event PropertyChangingEventHandler? PropertyChanging;
+
+        /// <summary>
+        ///     Occurs when the contents of the hash set changes.
+        /// </summary>
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+        void ICollection<T>.Add(T item)
+            => Add(item);
+
+        /// <summary>
+        ///     Removes all elements from the hash set.
+        /// </summary>
+        public virtual void Clear() {
+            if(_set.Count == 0) {
+                return;
+            }
+
+            OnCountPropertyChanging();
+
+            var removed = this.ToList();
+
+            _set.Clear();
+
+            OnCollectionChanged(ObservableHashSetSingletons.NoItems, removed);
+
+            OnCountPropertyChanged();
+        }
+
+        /// <summary>
+        ///     Determines whether the hash set object contains the specified element.
+        /// </summary>
+        /// <param name="item">The element to locate in the hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set contains the specified element; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool Contains(T item)
+            => _set.Contains(item);
+
+        /// <summary>
+        ///     Copies the elements of the hash set to an array, starting at the specified array index.
+        /// </summary>
+        /// <param name="array">
+        ///     The one-dimensional array that is the destination of the elements copied from
+        ///     the hash set. The array must have zero-based indexing.
+        /// </param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+        public virtual void CopyTo(T[] array, int arrayIndex)
+            => _set.CopyTo(array, arrayIndex);
+
+        /// <summary>
+        ///     Removes the specified element from the hash set.
+        /// </summary>
+        /// <param name="item">The element to remove.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the element is successfully found and removed; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool Remove(T item) {
+            if(!_set.Contains(item)) {
+                return false;
+            }
+
+            OnCountPropertyChanging();
+
+            _set.Remove(item);
+
+            OnCollectionChanged(NotifyCollectionChangedAction.Remove, item);
+
+            OnCountPropertyChanged();
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Gets the number of elements that are contained in the hash set.
+        /// </summary>
+        public virtual int Count
+            => _set.Count;
+
+        /// <summary>
+        ///     Gets a value indicating whether the hash set is read-only.
+        /// </summary>
+        public virtual bool IsReadOnly
+            => ((ICollection<T>)_set).IsReadOnly;
+
+        /// <summary>
+        ///     Returns an enumerator that iterates through the hash set.
+        /// </summary>
+        /// <returns>
+        ///     An enumerator for the hash set.
+        /// </returns>
+        public virtual HashSet<T>.Enumerator GetEnumerator()
+            => _set.GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            => GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+
+        /// <summary>
+        ///     Adds the specified element to the hash set.
+        /// </summary>
+        /// <param name="item">The element to add to the set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the element is added to the hash set; <see langword="false" /> if the element is already present.
+        /// </returns>
+        public virtual bool Add(T item) {
+            if(_set.Contains(item)) {
+                return false;
+            }
+
+            OnCountPropertyChanging();
+
+            _set.Add(item);
+
+            OnCollectionChanged(NotifyCollectionChangedAction.Add, item);
+
+            OnCountPropertyChanged();
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Modifies the hash set to contain all elements that are present in itself, the specified collection, or both.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        public virtual void UnionWith(IEnumerable<T> other) {
+            var copy = new HashSet<T>(_set, _set.Comparer);
+
+            copy.UnionWith(other);
+
+            if(copy.Count == _set.Count) {
+                return;
+            }
+
+            var added = copy.Where(i => !_set.Contains(i)).ToList();
+
+            OnCountPropertyChanging();
+
+            _set = copy;
+
+            OnCollectionChanged(added, ObservableHashSetSingletons.NoItems);
+
+            OnCountPropertyChanged();
+        }
+
+        /// <summary>
+        ///     Modifies the current hash set to contain only
+        ///     elements that are present in that object and in the specified collection.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        public virtual void IntersectWith(IEnumerable<T> other) {
+            var copy = new HashSet<T>(_set, _set.Comparer);
+
+            copy.IntersectWith(other);
+
+            if(copy.Count == _set.Count) {
+                return;
+            }
+
+            var removed = _set.Where(i => !copy.Contains(i)).ToList();
+
+            OnCountPropertyChanging();
+
+            _set = copy;
+
+            OnCollectionChanged(ObservableHashSetSingletons.NoItems, removed);
+
+            OnCountPropertyChanged();
+        }
+
+        /// <summary>
+        ///     Removes all elements in the specified collection from the hash set.
+        /// </summary>
+        /// <param name="other">The collection of items to remove from the current hash set.</param>
+        public virtual void ExceptWith(IEnumerable<T> other) {
+            var copy = new HashSet<T>(_set, _set.Comparer);
+
+            copy.ExceptWith(other);
+
+            if(copy.Count == _set.Count) {
+                return;
+            }
+
+            var removed = _set.Where(i => !copy.Contains(i)).ToList();
+
+            OnCountPropertyChanging();
+
+            _set = copy;
+
+            OnCollectionChanged(ObservableHashSetSingletons.NoItems, removed);
+
+            OnCountPropertyChanged();
+        }
+
+        /// <summary>
+        ///     Modifies the current hash set to contain only elements that are present either in that
+        ///     object or in the specified collection, but not both.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        public virtual void SymmetricExceptWith(IEnumerable<T> other) {
+            var copy = new HashSet<T>(_set, _set.Comparer);
+
+            copy.SymmetricExceptWith(other);
+
+            var removed = _set.Where(i => !copy.Contains(i)).ToList();
+            var added = copy.Where(i => !_set.Contains(i)).ToList();
+
+            if(removed.Count == 0
+                && added.Count == 0) {
+                return;
+            }
+
+            OnCountPropertyChanging();
+
+            _set = copy;
+
+            OnCollectionChanged(added, removed);
+
+            OnCountPropertyChanged();
+        }
+
+        /// <summary>
+        ///     Determines whether the hash set is a subset of the specified collection.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set is a subset of other; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool IsSubsetOf(IEnumerable<T> other)
+            => _set.IsSubsetOf(other);
+
+        /// <summary>
+        ///     Determines whether the hash set is a proper subset of the specified collection.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set is a proper subset of other; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool IsProperSubsetOf(IEnumerable<T> other)
+            => _set.IsProperSubsetOf(other);
+
+        /// <summary>
+        ///     Determines whether the hash set is a superset of the specified collection.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set is a superset of other; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool IsSupersetOf(IEnumerable<T> other)
+            => _set.IsSupersetOf(other);
+
+        /// <summary>
+        ///     Determines whether the hash set is a proper superset of the specified collection.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set is a proper superset of other; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool IsProperSupersetOf(IEnumerable<T> other)
+            => _set.IsProperSupersetOf(other);
+
+        /// <summary>
+        ///     Determines whether the current hash set object and a specified collection share common elements.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set and other share at least one common element; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool Overlaps(IEnumerable<T> other)
+            => _set.Overlaps(other);
+
+        /// <summary>
+        ///     Determines whether the hash set and the specified collection contain the same elements.
+        /// </summary>
+        /// <param name="other">The collection to compare to the current hash set.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the hash set is equal to other; otherwise, <see langword="false" />.
+        /// </returns>
+        public virtual bool SetEquals(IEnumerable<T> other)
+            => _set.SetEquals(other);
+
+        /// <summary>
+        ///     Copies the elements of the hash set to an array.
+        /// </summary>
+        /// <param name="array">
+        ///     The one-dimensional array that is the destination of the elements copied from
+        ///     the hash set. The array must have zero-based indexing.
+        /// </param>
+        public virtual void CopyTo(T[] array)
+            => _set.CopyTo(array);
+
+        /// <summary>
+        ///     Copies the specified number of elements of the hash set to an array, starting at the specified array index.
+        /// </summary>
+        /// <param name="array">
+        ///     The one-dimensional array that is the destination of the elements copied from
+        ///     the hash set. The array must have zero-based indexing.
+        /// </param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+        /// <param name="count">The number of elements to copy to array.</param>
+        public virtual void CopyTo(T[] array, int arrayIndex, int count)
+            => _set.CopyTo(array, arrayIndex, count);
+
+        /// <summary>
+        ///     Removes all elements that match the conditions defined by the specified predicate
+        ///     from the hash set.
+        /// </summary>
+        /// <param name="match">
+        ///     The <see cref="Predicate{T}" /> delegate that defines the conditions of the elements to remove.
+        /// </param>
+        /// <returns>The number of elements that were removed from the hash set.</returns>
+        public virtual int RemoveWhere(Predicate<T> match) {
+            var copy = new HashSet<T>(_set, _set.Comparer);
+
+            var removedCount = copy.RemoveWhere(match);
+
+            if(removedCount == 0) {
+                return 0;
+            }
+
+            var removed = _set.Where(i => !copy.Contains(i)).ToList();
+
+            OnCountPropertyChanging();
+
+            _set = copy;
+
+            OnCollectionChanged(ObservableHashSetSingletons.NoItems, removed);
+
+            OnCountPropertyChanged();
+
+            return removedCount;
+        }
+
+        /// <summary>
+        ///     Gets the <see cref="IEqualityComparer{T}" /> object that is used to determine equality for the values in the set.
+        /// </summary>
+        public virtual IEqualityComparer<T> Comparer
+            => _set.Comparer;
+
+        /// <summary>
+        ///     Sets the capacity of the hash set to the actual number of elements it contains, rounded up to a nearby,
+        ///     implementation-specific value.
+        /// </summary>
+        public virtual void TrimExcess()
+            => _set.TrimExcess();
+
+        /// <summary>
+        ///     Raises the <see cref="PropertyChanged" /> event.
+        /// </summary>
+        /// <param name="e">Details of the property that changed.</param>
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+            => PropertyChanged?.Invoke(this, e);
+
+        /// <summary>
+        ///     Raises the <see cref="PropertyChanging" /> event.
+        /// </summary>
+        /// <param name="e">Details of the property that is changing.</param>
+        protected virtual void OnPropertyChanging(PropertyChangingEventArgs e)
+            => PropertyChanging?.Invoke(this, e);
+
+        private void OnCountPropertyChanged()
+            => OnPropertyChanged(ObservableHashSetSingletons.CountPropertyChanged);
+
+        private void OnCountPropertyChanging()
+            => OnPropertyChanging(ObservableHashSetSingletons.CountPropertyChanging);
+
+        private void OnCollectionChanged(NotifyCollectionChangedAction action, object? item)
+            => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, item));
+
+        private void OnCollectionChanged(IList newItems, IList oldItems)
+            => OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItems, oldItems));
+
+        /// <summary>
+        ///     Raises the <see cref="CollectionChanged" /> event.
+        /// </summary>
+        /// <param name="e">Details of the change.</param>
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+            => CollectionChanged?.Invoke(this, e);
+    }
+    internal static class ObservableHashSetSingletons {
+        public static readonly PropertyChangedEventArgs CountPropertyChanged = new("Count");
+        public static readonly PropertyChangingEventArgs CountPropertyChanging = new("Count");
+
+        public static readonly object[] NoItems = [];
+    }
+
 }

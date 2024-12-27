@@ -18,7 +18,10 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         private ArrTag<byte>[] blocks, data, blocklights;
 
         int height, negy, negys;
-        public ChunkDataInterpreter112(Tag _tag, int miny, int height, bool error) {
+
+        public Colormap Colormap { get; }
+        public ChunkDataInterpreter112(Colormap colormap, Tag _tag, int miny, int height, bool error) {
+            this.Colormap = colormap;
             int SECTIONS = (int)Math.Ceiling(height / (double)16);
             this.negy = -miny;
             this.negys = negy / 16;

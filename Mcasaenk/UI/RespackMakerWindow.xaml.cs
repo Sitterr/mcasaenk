@@ -71,7 +71,7 @@ namespace Mcasaenk.UI {
             txt_loading.Visibility = Visibility.Collapsed;
 
             colormap_editor.Visibility = Visibility.Visible;
-            colormap_editor.SetUp(colormap, options, "Generation successful!", new SolidColorBrush(Colors.Green), false);
+            colormap_editor.SetUp(colormap, options, "Generation successful!", new SolidColorBrush(Colors.Green), true);
         }
     }
 

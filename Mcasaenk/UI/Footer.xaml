@@ -51,19 +51,22 @@
                 --><Run x:Name="txt_x" Text="" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
                 
                 --><Run Text=", y:" FontSize="10" Foreground="{StaticResource FORE}"/><!--
-                --><Run x:Name="txt_ty" Text="" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
-                --><Run Text="/" FontSize="10" Foreground="{StaticResource FORE}"/><!--
                 --><Run x:Name="txt_y" Text="" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
+                --><Run x:Name="sep_y" Text="" FontSize="10" Foreground="{StaticResource FORE}"/><!--
+                --><Run x:Name="txt_ty" Text="" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
                 
                 --><Run Text=", z:" FontSize="10" Foreground="{StaticResource FORE}"/><!--
                 --><Run x:Name="txt_z" Text="" FontSize="10" Foreground="{StaticResource LIGHT_GREEN_B}"/><!--
                 --><Run Text="}" Foreground="{StaticResource FORE}"/>
-                
-                <Run Text="over" Foreground="{StaticResource FORE}"/>           
-                <Run x:Name="txt_block" Text="void" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>               
+            </TextBlock>
+
+            <TextBlock x:Name="gr_blockinfo">
+                <Run Text=" over" Foreground="{StaticResource FORE}"/>           
+                <Run x:Name="txt_block2" Text="void" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/><!--
+                --><Run x:Name="sep_block" Text="" Foreground="{StaticResource FORE}"/><!--
+                --><Run x:Name="txt_block" Text="" Foreground="{StaticResource LIGHT_RED_B}"/>
                 <Run Text="in" Foreground="{StaticResource FORE}"/>              
                 <Run x:Name="txt_biome" Text="void" FontStyle="Italic" Foreground="{StaticResource LIGHT_RED_B}"/>
-                
             </TextBlock>
 
         </StackPanel>

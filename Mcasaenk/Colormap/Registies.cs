@@ -50,10 +50,21 @@ namespace Mcasaenk.Colormaping {
             else if(frozen == false) return assignNew(name);
             else return def;
         }
+        public bool TryGetId(string name, out ushort id) {
+            if(nameToId.TryGetValue(name, out id)) return true;
+
+            if(synonyms.TryGetValue(name, out string realname)) {
+                id = GetId(realname);
+                return true;
+            }
+
+            return false;
+        }
 
 
         public string GetName(ushort id) {
             if(id == Colormap.ERRORBLOCK) return "_error block_";
+            if(id == Colormap.INVBLOCK) return "_void_";
             if(idToName.TryGetValue(id, out string name)) return name;
             return "_unknown block_";
         }
@@ -87,6 +98,7 @@ namespace Mcasaenk.Colormaping {
         }
 
         public List<string> GetAllNames() => nameToId.Keys.ToList();
+        public List<KeyValuePair<ushort, string>> All() => idToName.ToList();
     }
 
     public class BiomeRegistry : DynamicNameToIdBiMap {

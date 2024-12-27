@@ -7,12 +7,12 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Background="{StaticResource BACK}"
-        Title="Colormap tooling" Height="600" Width="800">
+        Title="Colormap tooling" Height="620" Width="800">
 
     <Border Margin="20">
         <Grid>
             <TextBlock x:Name="txt_loading" Text="Loading..." FontSize="32" HorizontalAlignment="Center" Visibility="Collapsed" VerticalAlignment="Center"/>
-            <local:ColormapEditor x:Name="colormap_editor" Visibility="Collapsed"/>
+            <local:ColormapEditor x:Name="colormap_editor" Visibility="Visible"/>
             <local:ColormapMaker x:Name="colormap_maker" Visibility="Collapsed"/>
         </Grid>
     </Border>

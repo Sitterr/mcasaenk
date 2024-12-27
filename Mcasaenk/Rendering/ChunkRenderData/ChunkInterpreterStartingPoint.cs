@@ -27,11 +27,13 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
 
             var minmaxh = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).GetHeight();
 
+            var colormap = Global.App.Colormap;
+
             IChunkInterpreter chunkreader = null;
-            if(version >= 2825) chunkreader = new ChunkDataInterpreter118(globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
-            else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17
-            else if(version >= 1344) chunkreader = new ChunkDataInterpreter115(globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
-            else chunkreader = new ChunkDataInterpreter112(globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
+            if(version >= 2825) chunkreader = new ChunkDataInterpreter118(colormap, globaltag, minmaxh.miny, minmaxh.height, error); // 1.18 - 1.21
+            else if(version >= 2556) chunkreader = new ChunkDataInterpreter117(colormap, globaltag, minmaxh.miny, minmaxh.height, error); // 1.16 - 1.17
+            else if(version >= 1344) chunkreader = new ChunkDataInterpreter115(colormap, globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
+            else chunkreader = new ChunkDataInterpreter112(colormap, globaltag, minmaxh.miny, minmaxh.height, error); // 1.15
 
             if(chunkreader == null) throw new Exception();
             else return chunkreader;

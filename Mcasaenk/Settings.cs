@@ -1,10 +1,12 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
 using Mcasaenk.UI.Canvas;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -15,8 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace Mcasaenk
-{
+namespace Mcasaenk {
     public enum Direction {
         [Description("north")]
         North,
@@ -74,56 +75,31 @@ namespace Mcasaenk
         translucient,
     }
 
+    public enum GenDataModel {
+        [Description("by color")]
+        COLOR,
+        [Description("by block")]
+        ID,
+    }
+
+
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
+    public class SettingsHub(Action<string> onAutoChange, Action<string> onLightChange, Action<List<string>> onHardChange) : INotifyPropertyChanged {
 
-    public class Settings : INotifyPropertyChanged {
+        private readonly List<StandardizedSettings> settings = new List<StandardizedSettings>();
+        public void RegisterSettings(StandardizedSettings settings) {
+            if(settings == null) return;
+            this.settings.Add(settings);
+            settings.SettingsHub = this;
+        }
+        public void UnlistSettings(StandardizedSettings settings) {
+            this.settings.Remove(settings);
+            settings.SettingsHub = null;
+        }
+
+
         List<string> frozenChanges = new List<string>();
-
-        public void SetFromBack() {
-            Freeze();
-
-            if(Y_OFFICIAL != Y) Y_OFFICIAL = Y;
-            if(ADEG != ADeg) ADEG = ADeg;
-            if(BDEG != BDeg) BDEG = BDeg;
-            if(SHADE3D != Shade3d) SHADE3D = Shade3d;
-            if(MAXCONCURRENCY != RegionConcurrency) MAXCONCURRENCY = RegionConcurrency;
-            if(CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency) CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
-            if(DRAWMAXCONCURRENCY != DrawConcurrency) DRAWMAXCONCURRENCY = DrawConcurrency;
-            if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
-            if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
-            if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
-            if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
-
-            FinishFreeze(true);
-        }
-        public void Reset() {
-            Y = Y_OFFICIAL;
-            ADeg = ADEG;
-            BDeg = BDEG;
-            Shade3d = SHADE3D;
-            RegionConcurrency = MAXCONCURRENCY;
-            ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
-            DrawConcurrency = DRAWMAXCONCURRENCY;
-            ColorMapping = COLOR_MAPPING_MODE;
-            ShadeType = SHADETYPE;
-            PreferHeightmap = PREFERHEIGHTMAPS;
-            SkipUnknown = SKIP_UNKNOWN_BLOCKS;
-        }
-        public bool CHANGED_BACK {
-            get => Y_OFFICIAL != Y ||
-                   ADEG != ADeg ||
-                   BDEG != BDeg ||
-                   SHADE3D != Shade3d ||
-                   MAXCONCURRENCY != RegionConcurrency ||
-                   CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency ||
-                   DRAWMAXCONCURRENCY != DrawConcurrency ||
-                   COLOR_MAPPING_MODE != ColorMapping ||
-                   SHADETYPE != ShadeType ||
-                   PREFERHEIGHTMAPS != PreferHeightmap ||
-                   SKIP_UNKNOWN_BLOCKS != SkipUnknown;
-        }
-
         public bool frozen { get; private set; } = true;
         public void Freeze() {
             frozen = true;
@@ -131,30 +107,141 @@ namespace Mcasaenk
         }
         public void FinishFreeze(bool execute) {
             frozen = false;
-            if(execute) onHardChange(frozenChanges);
+            if(execute) onHardChange(frozenChanges.ToList());
+        }
+
+        public void SetFromBack() {
+            Freeze();
+
+            foreach(var sett in settings) sett.SetFromBack();
+
+            FinishFreeze(true);
+        }
+        public void Reset() {
+            foreach(var sett in settings) sett.Reset();
         }
 
 
         public void OnAutoChange(string propertyName) {
-            OnPropertyChanged(propertyName);
             OnPropertyChanged(nameof(CHANGED_BACK));
+            onAutoChange(propertyName);
         }
         public void OnLightChange(string propertyName) {
             if(frozen == false) onLightChange(propertyName);
-            OnPropertyChanged(propertyName);
         }
         public void OnHardChange(string propertyName) {
-            OnPropertyChanged(propertyName);
             OnPropertyChanged(nameof(CHANGED_BACK));
-            if(frozen) frozenChanges.Add(propertyName); 
+            if(frozen) frozenChanges.Add(propertyName);
             else onHardChange([propertyName]);
         }
 
+
+
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        public bool CHANGED_BACK { 
+            get => settings.Any(s => s.ChangedBack());
+        }
+    }
+
+    public abstract class StandardizedSettings : INotifyPropertyChanged {
+        [JsonIgnore]
+        public SettingsHub SettingsHub { get; set; }
+
+
+        public abstract void SetFromBack();
+        public abstract void Reset();
+        public abstract bool ChangedBack();
+
+        public void OnAutoChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnAutoChange(propertyName);
+        }
+        public void OnLightChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnLightChange(propertyName);
+        }
+        public void OnHardChange(string propertyName) {
+            if(SettingsHub == null) return;
+
+            OnPropertyChanged(propertyName);
+            SettingsHub.OnHardChange(propertyName);
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class Settings : StandardizedSettings {
+        public override void SetFromBack() {
+            if(Y_OFFICIAL != Y) Y_OFFICIAL = Y;
+            if(ADEG != ADeg) ADEG = ADeg;
+            if(BDEG != BDeg) BDEG = BDeg;
+            if(SHADE3D != Shade3d) SHADE3D = Shade3d;
+            if(MAXCONCURRENCY != RegionConcurrency) MAXCONCURRENCY = RegionConcurrency;
+            if(CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency) CHUNKRENDERMAXCONCURRENCY = ChunkConcurrency;
+            if(DRAWMAXCONCURRENCY != DrawConcurrency) DRAWMAXCONCURRENCY = DrawConcurrency;
+            if(TRANSPARENTLAYERS != TransparentLayers) TRANSPARENTLAYERS = TransparentLayers;
+            if(COLOR_MAPPING_MODE != ColorMapping) COLOR_MAPPING_MODE = ColorMapping;
+            if(SHADETYPE != ShadeType) SHADETYPE = ShadeType;
+            if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
+            if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
+            if(BLOCKINFO != BlockInfo) BLOCKINFO = BlockInfo;
+            if(DATASTORAGEMODEL != DataStorageModel) DATASTORAGEMODEL = DataStorageModel;
+            if(PRECOMPUTE_RELVIS != PrecomputeRelvis) PRECOMPUTE_RELVIS = PrecomputeRelvis;
+        }
+        public override void Reset() {
+            Y = Y_OFFICIAL;
+            ADeg = ADEG;
+            BDeg = BDEG;
+            Shade3d = SHADE3D;
+            RegionConcurrency = MAXCONCURRENCY;
+            ChunkConcurrency = CHUNKRENDERMAXCONCURRENCY;
+            DrawConcurrency = DRAWMAXCONCURRENCY;
+            TransparentLayers = TRANSPARENTLAYERS;
+            ColorMapping = COLOR_MAPPING_MODE;
+            ShadeType = SHADETYPE;
+            PreferHeightmap = PREFERHEIGHTMAPS;
+            SkipUnknown = SKIP_UNKNOWN_BLOCKS;
+            BlockInfo = BLOCKINFO;
+            DataStorageModel = DATASTORAGEMODEL;
+            PrecomputeRelvis = PRECOMPUTE_RELVIS;
+        }
+        public override bool ChangedBack() =>
+                   Y_OFFICIAL != Y ||
+                   ADEG != ADeg ||
+                   BDEG != BDeg ||
+                   SHADE3D != Shade3d ||
+                   MAXCONCURRENCY != RegionConcurrency ||
+                   CHUNKRENDERMAXCONCURRENCY != ChunkConcurrency ||
+                   TRANSPARENTLAYERS != TransparentLayers ||
+                   DRAWMAXCONCURRENCY != DrawConcurrency ||
+                   COLOR_MAPPING_MODE != ColorMapping ||
+                   SHADETYPE != ShadeType ||
+                   PREFERHEIGHTMAPS != PreferHeightmap ||
+                   SKIP_UNKNOWN_BLOCKS != SkipUnknown ||
+                   BLOCKINFO != BlockInfo ||
+                   DATASTORAGEMODEL != DataStorageModel ||
+                   PRECOMPUTE_RELVIS != PrecomputeRelvis
+            ;
+
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
+            ENABLE_COLORMAP_EDITING = false,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8,
-            FOOTER = true, OVERLAYS = false, UNLOADED = true,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, DATASTORAGEMODEL = GenDataModel.COLOR, PRECOMPUTE_RELVIS = false,
+            FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
                 new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 },
@@ -162,6 +249,7 @@ namespace Mcasaenk
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
             PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true,
+            BLOCKINFO = false,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
@@ -173,20 +261,13 @@ namespace Mcasaenk
             CONTRAST = 0.50,
 
             SHADE3D = true, STATIC_SHADE = true,
+            NOSHADE_SHADE3D = false, NOSHADE_STATIC_SHADE = true,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true, OCEAN_DEPTH_BLENDING = 1,
             Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
 
             ADEG = 120, BDEG = 15,
         };
-
-        private Action<List<string>> onHardChange;
-        private Action<string> onLightChange;
-        public void SetActions(Action<string> onLightChange, Action<List<string>> onHardChange) {
-            this.onLightChange = onLightChange;
-            this.onHardChange = onHardChange;
-            frozen = false;
-        }
 
         private string dimension;
         [JsonIgnore]
@@ -651,6 +732,24 @@ namespace Mcasaenk
         public int DRAWMAXCONCURRENCY { get => drawConcurrency; set { drawConcurrency = value; DrawConcurrency = value; OnHardChange(nameof(DRAWMAXCONCURRENCY)); } }
 
 
+        private int transparentLayers, transparentLayers_back;
+        [JsonIgnore]
+        public int TransparentLayers {
+            get => transparentLayers_back;
+            set {
+                if(transparentLayers_back == value) return;
+
+                transparentLayers_back = value;
+                OnAutoChange(nameof(TransparentLayers));
+                if(Global.App.OpenedSave == null) {
+                    transparentLayers = value;
+                    OnAutoChange(nameof(TRANSPARENTLAYERS));
+                }
+            }
+        }
+        public int TRANSPARENTLAYERS { get => transparentLayers; set { transparentLayers = value; TransparentLayers = value; OnHardChange(nameof(TRANSPARENTLAYERS)); if(TransparentLayers == 0) this.WATER_TRANSPARENCY = 0; } }
+
+
         private int minZoom;
         [JsonIgnore]
         public int MinZoom {
@@ -729,6 +828,40 @@ namespace Mcasaenk
         public bool SKIP_UNKNOWN_BLOCKS { get => skipunknown; set { skipunknown = value; SkipUnknown = value; OnHardChange(nameof(SKIP_UNKNOWN_BLOCKS)); } }
 
 
+
+        private bool blockinfo, blockinfo_back;
+        [JsonIgnore]
+        public bool BlockInfo {
+            get => blockinfo_back;
+            set {
+                if(blockinfo_back == value) return;
+
+                blockinfo_back = value;
+
+                if(Global.App.OpenedSave == null || DATASTORAGEMODEL == GenDataModel.ID) {
+                    blockinfo = value;
+                    OnAutoChange(nameof(BlockInfo));
+                    OnAutoChange(nameof(BLOCKINFO));
+                } else {
+                    OnAutoChange(nameof(BlockInfo));
+                }
+            }
+        }
+        public bool BLOCKINFO { get => blockinfo; set { blockinfo = value; BlockInfo = value; OnHardChange(nameof(BLOCKINFO)); } }
+
+
+        private bool enablecmediting;
+        public bool ENABLE_COLORMAP_EDITING {
+            get => enablecmediting;
+            set {
+                if(enablecmediting == value) return;
+
+                enablecmediting = value;
+                OnAutoChange(nameof(ENABLE_COLORMAP_EDITING));
+            }
+        }
+
+
         private Resolution[] predefined_reses;
         [JsonIgnore]
         public Resolution[] PredifinedReses {
@@ -753,7 +886,7 @@ namespace Mcasaenk
                 if(defbiome == value) return;
                 defbiome = value;
                 if(Global.App.Colormap != null) {
-                    if(Global.App.Colormap.GetTints().Any(t => t.Settings()?.On == false)) {
+                    if(Global.App.Colormap.TintManager.ELEMENTS.Any(t => t is DynamicTint dtint && dtint.On == false)) {
                         OnLightChange(nameof(DEFBIOME));
                     } else {
                         OnAutoChange(nameof(DEFBIOME));
@@ -763,17 +896,82 @@ namespace Mcasaenk
         }
 
 
+        private bool noshade_staticShade;
+        [JsonIgnore]
+        public bool NoShade_StaticShade {
+            get => noshade_staticShade;
+            set {
+                if(noshade_staticShade == value) return;
+
+                noshade_staticShade = value;
+                OnLightChange(nameof(NoShade_StaticShade));
+            }
+        }
+        public bool NOSHADE_STATIC_SHADE { get => NoShade_StaticShade; set => NoShade_StaticShade = value; }
+
+
+        private bool noshade_shade3d, noshade_shade3d_back;
+        [JsonIgnore]
+        public bool NoShade_Shade3d {
+            get => noshade_shade3d_back;
+            set {
+                if(noshade_shade3d_back == value) return;
+
+                noshade_shade3d_back = value;
+                OnAutoChange(nameof(NoShade_Shade3d));
+                if(Global.App.OpenedSave == null) {
+                    noshade_shade3d = value;
+                    OnAutoChange(nameof(NOSHADE_SHADE3D));
+                }
+            }
+        }
+        public bool NOSHADE_SHADE3D { get => noshade_shade3d; set { noshade_shade3d = value; NoShade_Shade3d = value; OnHardChange(nameof(NOSHADE_SHADE3D)); } }
+
+
+
+
+        private GenDataModel dataStorage, dataStorage_back;
+        [JsonIgnore]
+        public GenDataModel DataStorageModel {
+            get => dataStorage_back;
+            set {
+                if(dataStorage_back == value) return;
+
+                dataStorage_back = value;
+                OnAutoChange(nameof(DataStorageModel));
+                if(Global.App.OpenedSave == null) {
+                    dataStorage = value;
+                    OnAutoChange(nameof(DATASTORAGEMODEL));
+                }
+            }
+        }
+        public GenDataModel DATASTORAGEMODEL { get => dataStorage; set { dataStorage = value; DataStorageModel = value; BLOCKINFO = true; OnHardChange(nameof(DATASTORAGEMODEL)); } }
+
+
+
+
+
 
         #region depr
-        public bool WATERDEPTH { get => true; set { } }
-        #endregion
+        private bool precomputerelvis, precomputerelvis_back;
+        [JsonIgnore]
+        public bool PrecomputeRelvis {
+            get => precomputerelvis_back;
+            set {
+                if(precomputerelvis_back == value) return;
 
+                precomputerelvis_back = value;
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                OnAutoChange(nameof(PrecomputeRelvis));
+                if(Global.App.OpenedSave == null) {
+                    precomputerelvis = value;
+                    OnAutoChange(nameof(PRECOMPUTE_RELVIS));
+                }
+            }
         }
+        public bool PRECOMPUTE_RELVIS { get => precomputerelvis; set { precomputerelvis = value; PrecomputeRelvis = value; OnHardChange(nameof(PRECOMPUTE_RELVIS)); } }
+        public bool DarfRelVisPrecompute() => !(Global.Settings.SHADETYPE == ShadeType.jmap) && PRECOMPUTE_RELVIS && Global.Settings.TRANSPARENTLAYERS > 1 && false;
+        #endregion
     }
 
 

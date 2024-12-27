@@ -1,6 +1,7 @@
 ﻿using Mcasaenk.Resources;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -19,6 +21,7 @@ namespace Mcasaenk.Colormaping {
     public class CreationDetails {
         public bool shouldTint;
         public BlockCreationMethod creationMethod = BlockCreationMethod.Unknown;
+        public double q;
     }
     public static class ResourcepackColormapMaker {
 
@@ -62,10 +65,10 @@ namespace Mcasaenk.Colormaping {
                     if(el == null) continue;
                     if(el.parent == null && el.elements == null) {
                         if(textures.Count == 0) {
-                            colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, creationMethod = BlockCreationMethod.None } });
+                            colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, q = 1, creationMethod = BlockCreationMethod.None } });
                         } else {
                             var answer = ColorOfTexture(textures.First().Value.image);
-                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
+                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), q = answer.A, creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
                         }
 
                     } else {
@@ -87,11 +90,11 @@ namespace Mcasaenk.Colormaping {
 
                         if(answer.q >= options.minQ) {
                             if(answer.q > 0) {
-                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, creationMethod = BlockCreationMethod.AboveQ } });
+                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, q = answer.q, creationMethod = BlockCreationMethod.AboveQ } });
                             } else {
                                 var sideanswer = JsonModel.ReadSide(blockname, el.elements, textures);
                                 if(sideanswer.q > 0) {
-                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, creationMethod = BlockCreationMethod.Sides } });
+                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, q = answer.q, creationMethod = BlockCreationMethod.Sides } });
                                 }
                             }
                         }
@@ -150,7 +153,7 @@ namespace Mcasaenk.Colormaping {
                             foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "custom"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
-                                var r = Tint.ReadTint(pack, file);
+                                var r = RawTint.Read(pack, file);
 
                                 colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
@@ -163,7 +166,7 @@ namespace Mcasaenk.Colormaping {
                             foreach(var file in pack.GetFiles(Path.Combine(colormapdir, "blocks"), false)) {
                                 if(!file.EndsWith(".properties")) continue;
 
-                                var r = Tint.ReadTint(pack, file);
+                                var r = RawTint.Read(pack, file);
 
                                 colormap.tints.Add(r);
                                 foreach(var bl in r.blocks) {
@@ -201,7 +204,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "pine.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "pine.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "pine.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "pine.png"))) {
                                 tint = new RawTint() { name = "pine", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "pine.png")), color = WPFColor.White };
                             }
@@ -215,7 +218,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "birch.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "birch.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "birch.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "birch.png"))) {
                                 tint = new RawTint() { name = "birch", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "birch.png")), color = WPFColor.White };
                             }
@@ -229,7 +232,7 @@ namespace Mcasaenk.Colormaping {
                         {
                             RawTint tint = null;
                             if(pack.ExistsFile(Path.Combine(colormapdir, "water.properties"))) {
-                                tint = Tint.ReadTint(pack, Path.Combine(colormapdir, "water.properties"));
+                                tint = RawTint.Read(pack, Path.Combine(colormapdir, "water.properties"));
                             } else if(pack.ExistsFile(Path.Combine(colormapdir, "water.png"))) {
                                 tint = new RawTint() { name = "water", format = "vanilla", blocks = null, image = pack.ReadBitmap(Path.Combine(colormapdir, "water.png")), color = WPFColor.White };
                             }
@@ -291,7 +294,36 @@ namespace Mcasaenk.Colormaping {
                 colormap.tints = colormap.tints.Where(t => t.blocks.Count > 0).ToList();
             }
 
+            // filters
+            {
+                TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                    if(group == "FILTERS") {
+                        List<string> blocks = [];
+                        if(parts[1].StartsWith('/') && parts[1].EndsWith('/')) {
+                            string part1 = parts[1].Substring(1, parts[1].Length - 2);
 
+                            if(part1.StartsWith("q-_")) {
+                                blocks = colormap.blocks.Where(b => b.Value.details.q < Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
+                            } else if(part1.StartsWith("q+_")) {
+                                blocks = colormap.blocks.Where(b => b.Value.details.q > Convert.ToDouble(part1.Substring("q-_".Length), CultureInfo.InvariantCulture)).Select(b => b.Key).ToList();
+                            } else if(part1.StartsWith("tint_")) {
+                                foreach(var tint in part1.Substring("tint_".Length).Split(',')) 
+                                    blocks.AddRange(colormap.tints.Find(t => t.name == tint)?.blocks ?? []);
+                            }
+                        } else blocks = parts[1].Split(",").Select(w => w.minecraftname()).Where(b => colormap.blocks.ContainsKey(b)).ToList();
+
+                        colormap.filters.Add(new RawFilter() { name = parts[0], blocks = blocks, transparency = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture) });
+                    }
+                });
+            }
+            // depth
+            {
+                TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                    if(group == "DEPTH") {
+                        colormap.depth = parts[0].minecraftname();
+                    }
+                });
+            }
 
             return colormap;
 
@@ -629,17 +661,18 @@ namespace Mcasaenk.Colormaping {
         }
     }
 
-
     static class VanillaTints {
         static WPFColor grassTint;
         public readonly static List<RawTint> tints;
         static VanillaTints() {
             tints = new List<RawTint>();
 
-            TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (_, parts) => {
-                if(parts[0] == "grass") grassTint = WPFColor.FromHex(parts[3]);
+            TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
+                if(group == "TINTS") {
+                    if(parts[0] == "grass") grassTint = WPFColor.FromHex(parts[3]);
 
-                tints.Add(new RawTint() { name = parts[0], format = parts[1], blocks = parts[2].Split(",").Select(w => w.minecraftname()).ToList(), color = WPFColor.FromHex(parts[3]) });
+                    tints.Add(new RawTint() { name = parts[0], format = parts[1], blocks = parts[2].Split(",").Select(w => w.minecraftname()).ToList(), color = WPFColor.FromHex(parts[3]) });
+                }
             });
         }
 

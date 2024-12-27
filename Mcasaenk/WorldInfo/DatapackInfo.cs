@@ -17,6 +17,7 @@ using System.Transactions;
 using System.Configuration;
 using static Mcasaenk.Global;
 using System.Globalization;
+using CommunityToolkit.HighPerformance;
 
 namespace Mcasaenk.WorldInfo {
 
@@ -130,7 +131,19 @@ namespace Mcasaenk.WorldInfo {
 
 
 
-
+        public bool SameAs(DatapacksInfo dp) {
+            foreach(var b1 in biomes.Values) {
+                bool found = false;
+                foreach(var b2 in dp.biomes.Values) {
+                    if(b1 == b2) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(found == false) return false;
+            }
+            return true;
+        }
 
 
 

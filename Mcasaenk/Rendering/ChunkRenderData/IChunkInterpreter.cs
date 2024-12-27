@@ -11,9 +11,13 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
+using Mcasaenk.Colormaping;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public interface IChunkInterpreter : IDisposable {
+
+        Colormap Colormap { get; }
+
         ushort GetBiome(int cx, int cz, int cy);
         ushort GetBlock(int cx, int cz, int cy);
 

@@ -27,7 +27,7 @@ namespace Utils {
             watercolor = Global.MultShade(watercolor, 220 / 255d);
             map["minecraft:water"] = watercolor.ToString("x8").Substring(2);
 
-            output.SaveLines("__palette__.txt", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
+            output.SaveLines("__palette__.blocks", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
         }
 
 
@@ -39,10 +39,12 @@ namespace Utils {
             List<(string tint, string[] blocks)> tints = new();
             List<string> tintedBlocks = new();
             TxtFormatReader.ReadStandartFormat(Resources.tintblocks, (string group, string[] parts) => {
-                string[] blocks = parts[2].Split(',').Select(v => v.Trim().minecraftname()).ToArray();
-                tintedBlocks.AddRange(blocks);
-                if(parts[1] == "vanilla_grass" || parts[1] == "vanilla_foliage" || parts[1] == "vanilla_water") {
-                    tints.Add((parts[1].Split("_")[1], blocks));
+                if(group == "TINTS") {
+                    string[] blocks = parts[2].Split(',').Select(v => v.Trim().minecraftname()).ToArray();
+                    tintedBlocks.AddRange(blocks);
+                    if(parts[1] == "vanilla_grass" || parts[1] == "vanilla_foliage" || parts[1] == "vanilla_water") {
+                        tints.Add((parts[0], blocks));
+                    }
                 }
             });
             var biomes = Resources.javabiomes.Split("\r\n").ToArray();
@@ -103,15 +105,15 @@ namespace Utils {
                 }
             }
 
-            output.SaveLines("__palette__.txt", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
+            output.SaveLines("__palette__.blocks", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
 
-            output.SaveLines("grass.properties", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "grass").blocks.Select(b => b.simplifyminecraftname()))}", "source=grass.png"]);
+            output.SaveLines("grass.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "grass").blocks.Select(b => b.simplifyminecraftname()))}", "source=grass.png"]);
             output.SaveImage("grass.png", newGrassColors);
 
-            output.SaveLines("foliage.properties", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "foliage").blocks.Select(b => b.simplifyminecraftname()))}", "source=foliage.png"]);
+            output.SaveLines("foliage.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "foliage").blocks.Select(b => b.simplifyminecraftname()))}", "source=foliage.png"]);
             output.SaveImage("foliage.png", newFoliageColors);
 
-            output.SaveLines("water.properties", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "water").blocks.Select(b => b.simplifyminecraftname()))}", "source=water.png"]);
+            output.SaveLines("water.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "water").blocks.Select(b => b.simplifyminecraftname()))}", "source=water.png"]);
             output.SaveImage("water.png", newWaterColors);
 
 
@@ -178,7 +180,10 @@ namespace Utils {
                     }
                 }
             }
-            map = map.Where((a) => a.Value != airColor).ToDictionary();
+            map = map.Select(b => {
+                if(b.Value == airColor) return new KeyValuePair<string, string>(b.Key, "-");
+                else return b;
+            }).ToDictionary();
 
             return map;
         }

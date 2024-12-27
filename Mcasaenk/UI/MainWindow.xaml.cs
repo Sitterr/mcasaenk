@@ -27,11 +27,9 @@ namespace Mcasaenk.UI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        public FooterInterface footer;
-
-        LeftSettingsMenu leftSettingsMenu;
-        LeftFileMenu leftFileMenu;
-        LeftOptionsMenu leftOptionsMenu;
+        public LeftSettingsMenu leftSettingsMenu;
+        public LeftFileMenu leftFileMenu;
+        public LeftOptionsMenu leftOptionsMenu;
 
         ResolutionScale resScale = new ResolutionScale();
 
@@ -39,9 +37,6 @@ namespace Mcasaenk.UI {
             InitializeComponent();
 
             this.Title = "MCA Saenk v" + App.VERSION;
-
-            footer = footerControl.@interface;
-            footerControl.Init();
 
             this.scr_capture.Click += (o, e) => {
                 var screenshottaker = canvasControl?.ScreenshotManager;
@@ -112,8 +107,8 @@ namespace Mcasaenk.UI {
             };
 
             {
-                Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => { 
-                    if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange(); 
+                Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
+                    if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange();
                 };
                 btn_dim_overworld.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:overworld";
@@ -125,14 +120,25 @@ namespace Mcasaenk.UI {
                     Global.Settings.DIMENSION = "minecraft:the_end";
                 };
                 btn_dim_others.Click += (o, e) => {
-                    var w = new CustomDimensionSelectorWindow(
-                        Global.App.OpenedSave.dimensions
-                        .Select(d => d.name).Where(n => !n.StartsWith("minecraft:")).ToArray(), 
-                        Global.Settings.DIMENSION);
+                    string current = Global.Settings.DIMENSION;
+                    var currColor = (Color)ColorConverter.ConvertFromString("#70a0b2");
+                    (TextBlock text, object data) createdim(string dim) {
+                        TextBlock text = new TextBlock();
+                        text.Inlines.Add(new Run() { Text = dim.Split(':')[0] + ':', FontSize = 12 });
+                        text.Inlines.Add(new Run() { Text = dim.Split(':')[1], FontSize = 14 });
+                        if(dim == current) {
+                            text.Foreground = new SolidColorBrush(currColor);
+                            text.FontWeight = FontWeights.DemiBold;
+                        }
+                        return (text, dim);
+                    }
+
+                    var w = new ListOptionDialog("Other dimensions",
+                        Global.App.OpenedSave.dimensions.Select(d => d.name).Where(n => !n.StartsWith("minecraft:")).Select(d => createdim(d)).ToArray());
 
                     w.ShowDialog();
-                    string res = w.Result();
-                    if(res != "") {
+                    if(w.Result(out object _res)) {
+                        string res = (string)_res;
                         Global.Settings.DIMENSION = res;
                         (btn_dim_others.Content as Image).Source = Global.App.OpenedSave.GetDimension(Global.Settings.DIMENSION).image;
                     }
@@ -156,12 +162,12 @@ namespace Mcasaenk.UI {
                             settings_cont.Child = leftSettingsMenu;
                             leftSettingsMenu.OnActive();
                         }
-                        ), 
+                        ),
                         (opener_post, () => {
                             settings_cont.Child = leftOptionsMenu;
                             leftOptionsMenu.OnActive();
                         }
-                        ), 
+                        ),
                         (opener_worlds, () => {
                             settings_cont.Child = leftFileMenu;
                             mainGrid.UpdateLayout();
@@ -197,11 +203,57 @@ namespace Mcasaenk.UI {
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
 
-            loc_go.Click += (o, e) => {
-                if(!int.TryParse(loc_x.Text, out int x)) return;
-                if(!int.TryParse(loc_z.Text, out int z)) return;
-                canvasControl.GoTo(new Point(x, z));
-            };
+            {
+                loc_go.Click += (o, e) => {
+                    if(!int.TryParse(loc_x.Text, out int x)) return;
+                    if(!int.TryParse(loc_z.Text, out int z)) return;
+                    canvasControl.GoTo(new Point(x, z));
+                };
+
+                Brush transp = new SolidColorBrush(Colors.Transparent), fore = (Brush)this.TryFindResource("FORE"), fore_hover = (Brush)this.TryFindResource("FORE_HOVER"), fore_press = (Brush)this.TryFindResource("FORE_PRESS");
+
+                loc_txt.TextBlock.Text = "Location";
+                loc_txt.TextBlock.FontSize = 18;
+                
+                loc_txt.Click += (o, e) => {
+                    List<(TextBlock txtblocks, object data)> options = new();
+
+                    if(Global.App.OpenedSave != null) {
+                        LevelDatInfo lvlinfo = Global.App.OpenedSave.levelDatInfo;
+                        (TextBlock txtblock, object data) loc(string text, bool enabled, int x, int z) {
+                            TextBlock txtblock = new TextBlock();
+                            txtblock.IsEnabled = enabled;
+                            txtblock.Inlines.AddRange(new Run[] {
+                            new Run() { Text = $"{text} (" },
+                            new Run() { Text = x.ToString(), Foreground = (Brush)this.TryFindResource("LIGHT_BLUE_B") },
+                            new Run() { Text = $", " },
+                            new Run() { Text = z.ToString(), Foreground = (Brush)this.TryFindResource("LIGHT_BLUE_B") },
+                            new Run() { Text = $")" }
+                        });
+                            return (txtblock, (x, z));
+                        }
+                        options.Add(loc("World spawn", lvlinfo.mainPlayer.sp_d == Global.Settings.DIMENSION, lvlinfo.mainPlayer.sp_x, lvlinfo.mainPlayer.sp_z));
+                        options.Add(loc("Player1 position", lvlinfo.mainPlayer.pl_d == Global.Settings.DIMENSION, lvlinfo.mainPlayer.pl_x, lvlinfo.mainPlayer.pl_z));
+
+                        int i = 1;
+                        foreach(var player in lvlinfo.otherPlayers) {
+                            if(i > 1) options.Add(loc($"Player{i} position", player.pl_d == Global.Settings.DIMENSION, player.pl_x, player.pl_z));
+                            options.Add(loc($"Player{i} spawn", player.sp_d == Global.Settings.DIMENSION, player.sp_x, player.sp_z));
+
+                            i++;
+                        }
+                    }
+
+                    var od = new ListOptionDialog("Locations of interest", options.ToArray());
+                    od.ShowDialog();
+                    if(od.Result(out object _coords)) {
+                        var coords = ((int x, int z))_coords;
+
+                        loc_x.Text = coords.x.ToString();
+                        loc_z.Text = coords.z.ToString();
+                    }
+                };
+            }
         }
 
         Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
@@ -244,7 +296,7 @@ namespace Mcasaenk.UI {
         public void OnColormapChange() {
             leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
         }
-        
+
 
         public void OnHardReset() {
             if(Global.App.OpenedSave != null) {
@@ -278,7 +330,6 @@ namespace Mcasaenk.UI {
         }
 
     }
-
 
     // noting here
     class PageSlider {
@@ -371,6 +422,49 @@ namespace Mcasaenk.UI {
 
         public EButton GetActive() {
             return opener_active;
+        }
+
+    }
+
+
+
+    public static class GlobalXaml {
+
+        public static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject {
+            for(int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if(child is T result)
+                    return result;
+
+                var childOfChild = FindVisualChild<T>(child);
+                if(childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
+        }
+
+        public static void SortByColumn(this DataGrid grid, string columnName, ListSortDirection direction) {
+            // Ensure the DataGrid has an ItemsSource
+            if(grid.ItemsSource == null)
+                return;
+
+            ICollectionView collectionView = CollectionViewSource.GetDefaultView(grid.ItemsSource);
+
+            if(collectionView != null) {
+                collectionView.SortDescriptions.Clear();
+                collectionView.SortDescriptions.Add(new SortDescription(columnName, direction));
+                collectionView.Refresh();
+            }
+        }
+
+        public static Run ChangeStar(string path1, string path2, object settings, DifferenceConverter.Compare cmp = null, string ch = " ✶") {
+            Run r = new Run();
+            r.Text = ch;
+            MultiBinding foregr = new MultiBinding() { Converter = new DifferenceConverter(cmp) };
+            foregr.Bindings.Add(new Binding(path1) { Source = settings });
+            foregr.Bindings.Add(new Binding(path2) { Source = settings });
+            r.SetBinding(Run.ForegroundProperty, foregr);
+            return r;
         }
 
     }

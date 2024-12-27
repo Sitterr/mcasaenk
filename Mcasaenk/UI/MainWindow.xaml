@@ -134,12 +134,19 @@
             <Border Padding="10 5 10 5" Margin="0 10 0 0" CornerRadius="3" Background="{StaticResource BACK}">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="18" Text="Location" Margin="0 0 10 0"/>
-                            <local:EButton x:Name="loc_go" Width="50">
-                                <TextBlock FontSize="14" Text="Go"/>
+                        <DockPanel>
+                            <Border x:Name="loc_border" BorderThickness="0 0 0 1" BorderBrush="Transparent" Margin="0 0 10 0">
+                                <TextBlock>
+                                    <local:LinkTextBlock x:Name="loc_txt" VerticalAlignment="Bottom" HorizontalAlignment="Left" DockPanel.Dock="Left"/>
+                                </TextBlock>
+                            </Border>
+
+
+
+                            <local:EButton x:Name="loc_go" HorizontalAlignment="Right" DockPanel.Dock="Right" Width="50">
+                                <TextBlock FontSize="14" Text="Go" VerticalAlignment="Center"/>
                             </local:EButton>
-                        </StackPanel>
+                        </DockPanel>
                         <Grid Margin="0 3 0 0" IsSharedSizeScope="True">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto"/>
@@ -197,7 +204,7 @@
         </DockPanel>
 
         <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Background="{StaticResource BACKFULL}" BorderThickness="0">
-            <local:Footer x:Name="footerControl">
+            <local:Footer x:Name="footer" x:FieldModifier="public">
             </local:Footer>
         </Border>
 

@@ -22,7 +22,10 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
         private ArrTag<byte>[] blocklights;
 
         int height, negy, negys;
-        public ChunkDataInterpreter118(Tag _tag, int miny, int height, bool error) {
+
+        public Colormap Colormap { get; }
+        public ChunkDataInterpreter118(Colormap colormap, Tag _tag, int miny, int height, bool error) {
+            Colormap = colormap;
             int SECTIONS = (int)Math.Ceiling(height / (double)16);
             this.negy = -miny;
             this.negys = negy / 16;
@@ -75,8 +78,8 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                                 }
                                 waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);                             
 
-                                ushort id = Global.App.Colormap.Block.GetId(name);
-                                if(waterlogged && (id == Colormap.INVBLOCK || Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER)) id = Global.App.Colormap.BLOCK_WATER;
+                                ushort id = Colormap.Block.GetId(name);
+                                if(waterlogged && Colormap.depth == Colormap.BLOCK_WATER) id = Colormap.BLOCK_WATER;
                                 blockStates_palette[y][i] = id;
 
                                 i++;
@@ -95,7 +98,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                         foreach(var _p in (List<Tag>)palette) {
                             var p = (NumTag<string>)_p;
 
-                            biomes_palette[y][i] = Global.App.Colormap.Biome.GetId(p);
+                            biomes_palette[y][i] = Colormap.Biome.GetId(p);
                             i++;
                         }
                     }
@@ -112,7 +115,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
             return world_surface != null && ocean_floor != null;
         }
         public ushort SingleBlockSection(int i) {
-            if(blockStates_palette[i] == null) return Global.App.Colormap.BLOCK_AIR;
+            if(blockStates_palette[i] == null) return Colormap.BLOCK_AIR;
             if(blockStates[i] != null) return Colormap.NONEBLOCK;
             return blockStates_palette[i][0];
         }
