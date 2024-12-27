@@ -5,7 +5,7 @@
 
 
 
-## Download
+## Download&nbsp;&nbsp;[![total downloads](https://img.shields.io/github/downloads/Sitterr/mcasaenk/total.svg)](https://github.com/Sitterr/mcasaenk/releases)
 ### Windows universal: [**Download Version 1.2.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2/mcasaenk-1.2.0.zip)
 ### Windows framework-dependent: [**Download Version 1.2.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2/mcasaenk-1.2.0-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
