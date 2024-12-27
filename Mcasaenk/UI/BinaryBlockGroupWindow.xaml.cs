@@ -20,7 +20,7 @@ namespace Mcasaenk.UI {
     /// </summary>
     public partial class BinaryBlockGroupWindow : Window {
 
-        public enum Group { Def, This, ThisNotHearth, Other }
+        public enum Group { Def, This, AlwaysThis, Other }
 
         private bool saved = false;
         private readonly IEnumerable<(string name, bool important, Group group)> startingstate;
@@ -100,7 +100,7 @@ namespace Mcasaenk.UI {
 
         public void SetUp() {
             grid_availabe.ItemsSource = startingstate.Where(x => x.group != Group.This).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.Def)).ToArray();
-            grid_selected.ItemsSource = startingstate.Where(x => x.group == Group.This || x.group == Group.ThisNotHearth).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.This)).ToArray();
+            grid_selected.ItemsSource = startingstate.Where(x => x.group == Group.This || x.group == Group.AlwaysThis).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.This)).ToArray();
             toggle_showall.IsChecked = false;
             txt_searchleft.Text = "";
             txt_searchright.Text = "";
@@ -144,7 +144,6 @@ namespace Mcasaenk.UI {
         }
 
         public bool CanMove { get; private set; }
-     
 
 
 

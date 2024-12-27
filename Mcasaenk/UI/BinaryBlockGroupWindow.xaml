@@ -74,7 +74,9 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                         <DataGridTextColumn.CellStyle>
-                            <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}"/>
+                            <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="IsEnabled" Value="{Binding CanMove}"/>
+                            </Style>
                         </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
                 </DataGrid.Columns>

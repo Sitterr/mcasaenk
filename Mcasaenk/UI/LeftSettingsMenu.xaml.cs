@@ -41,7 +41,7 @@ namespace Mcasaenk.UI {
                 var blocks = colormap.Block.All().Select(n => {
                     Filter blockfilter = colormap.FilterManager.Elements.FirstOrDefault(t => t.Blocks.Contains(n.Key));/* = colormap.TintManager.GetBlockVal(n.Key);*/
                     BinaryBlockGroupWindow.Group group = BinaryBlockGroupWindow.Group.Def;
-                    if(blockfilter == colormap.FilterManager.Invis) group = BinaryBlockGroupWindow.Group.This;
+                    if(blockfilter == colormap.FilterManager.Invis) group = BinaryBlockGroupWindow.Group.AlwaysThis;
                     //else if(blockfilter != null && blockfilter != colormap.FilterManager.Default) group = BinaryBlockGroupWindow.Group.Other;
                     
                     return (n.Value, true, group);

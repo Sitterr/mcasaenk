@@ -114,7 +114,7 @@ namespace Mcasaenk.UI.Canvas {
 
 
 
-        public BitmapSource TakeScreenshot(BitmapScalingMode scalingMode) {
+        private BitmapSource TakeScreenshot(BitmapScalingMode scalingMode) {
             try {
                 var Size = Rect().Size.AsPoint();
                 var NW = Rect().TopLeft;

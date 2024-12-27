@@ -269,7 +269,8 @@ namespace Mcasaenk.UI
 
     public class StarConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            return (bool)value ? "✶" : "";
+            if(value is bool b && parameter == default) return b ? "✶" : "";
+            else return value.Equals(parameter) ? "✶" : "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

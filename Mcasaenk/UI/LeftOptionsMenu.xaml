@@ -67,6 +67,8 @@
                                     <RowDefinition Height="auto"/>
                                     <RowDefinition Height="40"/>
                                     <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="auto"/>
                                 </Grid.RowDefinitions>
 
 
@@ -112,7 +114,43 @@
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=DrawConcurrency}"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">
+                                <DockPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center" DockPanel.Dock="Left">
+                                            <Run Text="storing method"/>
+                                            <Run Text="✶">
+                                                <Run.Foreground>
+                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DataStorageModel" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DATASTORAGEMODEL" />
+                                                    </MultiBinding>
+                                                </Run.Foreground>
+                                            </Run>
+                                    </TextBlock>
+                                    <ComboBox Margin="10 0 0 0" 
+                                              DockPanel.Dock="Left"
+                                              Width="auto"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=DataStorageModel, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=DataStorageModel}"/>
+                                </DockPanel>
+                                <!--<StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal">
+                                    <TextBlock>
+                                        <Run Text="precalculate visibility"/>
+                                        <Run Text="✶">
+                                            <Run.Foreground>
+                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PrecomputeRelvis" />
+                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PRECOMPUTE_RELVIS" />
+                                                </MultiBinding>
+                                            </Run.Foreground>
+                                        </Run>
+                                    </TextBlock>
+                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=PrecomputeRelvis}"/>
+                                </StackPanel>-->
+
+                                <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">
                                     <DockPanel>
                                         <Label>
                                             <TextBlock>
@@ -140,7 +178,7 @@
                                     <Slider IsSnapToTickEnabled="True" Minimum="0" Maximum="6" TickFrequency="1"
                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers}"/>
                                 </StackPanel>
-                                <StackPanel Grid.Row="2" Grid.Column="3" HorizontalAlignment="Center">
+                                <StackPanel Grid.Row="4" Grid.Column="3" HorizontalAlignment="Center">
                                     <TextBlock Text="predefined screenshot resolutions:" FontSize="14" HorizontalAlignment="Left" Margin="0 0 0 7"/>
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
                                         <Grid VerticalAlignment="Center">
@@ -193,7 +231,7 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                                <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="region grid" VerticalAlignment="Center"/>
                                         <ComboBox Margin="10 0 0 0"
@@ -203,7 +241,7 @@
                                                   SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=RegionGrid}"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <StackPanel Grid.Row="4" Grid.Column="2">
+                                <StackPanel Grid.Row="6" Grid.Column="2">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="chunk grid" VerticalAlignment="Center"/>
                                         <ComboBox Margin="10 0 0 0" 
@@ -214,7 +252,7 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="6" Grid.Column="0" Orientation="Horizontal">
+                                <StackPanel Grid.Row="8" Grid.Column="0" Orientation="Horizontal">
                                     <TextBlock Text="map grid" VerticalAlignment="Center"/>
                                     <ComboBox Margin="10 0 0 0"
                                               ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=MapGrid, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
@@ -222,7 +260,7 @@
                                               DisplayMemberPath="Description"
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=MapGrid}"/>
                                 </StackPanel>
-                                <StackPanel Grid.Row="6" Grid.Column="2" Orientation="Horizontal">
+                                <StackPanel Grid.Row="8" Grid.Column="2" Orientation="Horizontal">
                                     <TextBlock Text="background" VerticalAlignment="Center"/>
                                     <ComboBox Margin="10 0 0 0"
                                               ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=Background, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
@@ -231,7 +269,7 @@
                                               SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=Background}"/>
                                 </StackPanel>
                                 
-                                <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3">
+                                <Grid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -257,7 +295,7 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <StackPanel Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
+                                <StackPanel Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
                                     <Label>
                                         <TextBlock Margin="0">
                                             <Run Text="use heightmap filters"/>
@@ -295,7 +333,7 @@
                                     </ToggleButton>
 
                                 </StackPanel>
-                                <StackPanel Grid.Row="10" Grid.Column="2" Orientation="Horizontal">
+                                <StackPanel Grid.Row="12" Grid.Column="2" Orientation="Horizontal">
                                     <TextBlock>
                                         <Run Text="skip unknown blocks"/>
                                         <Run Text="✶">
@@ -310,30 +348,35 @@
                                     <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=SkipUnknown}"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
+                                <StackPanel Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="1" Orientation="Horizontal">
                                     <Label>
                                         <TextBlock Margin="0">
                                             <Run Text="footer block info"/>
-                                            <Run Text="✶">
-                                                <Run.Foreground>
+                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=DATASTORAGEMODEL, Converter={StaticResource StarConverter}, ConverterParameter={x:Static gl:GenDataModel.COLOR}}">
+                                                <Run.Foreground> 
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
                                                         <Binding Source="{x:Static gl:Global.Settings}" Path="BlockInfo" />
                                                         <Binding Source="{x:Static gl:Global.Settings}" Path="BLOCKINFO" />
                                                     </MultiBinding>
-                                                </Run.Foreground>
+                                                </Run.Foreground>  
                                             </Run>
                                         </TextBlock>
                                         <Label.ToolTip>
                                             <StackPanel Orientation="Vertical">
                                                 <TextBlock Text="• determines whether to show the name and biome of the block currently beneath the cursor"/>
-                                                <TextBlock Text="• disabled by default to conserve memory"/>
+                                                <TextBlock>
+                                                    <Run Text="• requires memory only if"/>
+                                                    <Run Text="store method" FontStyle="Italic"/>
+                                                    <Run Text="is"/>
+                                                    <Run Text="by color" FontStyle="Italic"/>
+                                                </TextBlock>
                                             </StackPanel>
                                         </Label.ToolTip>
                                     </Label>
                                     <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=BlockInfo}"/>
 
                                 </StackPanel>
-                                <StackPanel Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="1" Orientation="Horizontal">
+                                <!--<StackPanel Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="1" Orientation="Horizontal">
                                     <Label>
                                         <TextBlock Margin="0">
                                             <Run Text="live colormap editing"/>
@@ -341,7 +384,7 @@
                                     </Label>
                                     <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=ENABLE_COLORMAP_EDITING}"/>
 
-                                </StackPanel>
+                                </StackPanel>-->
                                 
 
                             </Grid>

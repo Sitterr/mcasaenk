@@ -163,7 +163,7 @@ namespace Mcasaenk.Colormaping {
                 }
             }
 
-            if(Block.GetId(HeightmapFilter.WATERBLOCK) != depth) WaterHeightmapCompatible = false;
+            if(Block.GetId(HeightmapFilter.WATERBLOCK) != depth || FilterManager.GetBlockVal(depth).ABSORBTION == 0) WaterHeightmapCompatible = false;
             /*
             foreach(var waterinvblock in HeightmapFilter.WATERINVBLOCKS) {
                 ushort id = Block.GetId(waterinvblock);
@@ -259,9 +259,10 @@ namespace Mcasaenk.Colormaping {
             if(map is FrozenDictionary<ushort, T>) map = new Dictionary<ushort, T>(map);
             map[id] = val;
         }
+        public void Freeze() {
+            map = map.ToFrozenDictionary();
+        }
         public T GetBlockVal(ushort id) {
-            if(map is Dictionary<ushort, T>) map = map.ToFrozenDictionary();
-
             if(map.TryGetValue(id, out var val)) return val;
             else return Default;
         }
@@ -288,9 +289,20 @@ namespace Mcasaenk.Colormaping {
 
             HearthValue = new();
             HEARTHVALUE = new();
+            halftransp = false;
+
+            ELEMENTS.CollectionChanged += (o, e) => {
+                CalcAreThereHalfTransp();
+            };
         }
 
         public Dictionary<ushort, Filter> HearthValue, HEARTHVALUE;
+        private bool halftransp;
+        private void CalcAreThereHalfTransp() {
+            halftransp = ELEMENTS.Any(e => e.ABSORBTION != 0 && e.ABSORBTION != 15 && e.BLOCKS.Count > 0);
+        }
+        public bool AreThereHalfTransp() => halftransp;
+
 
         public override void AddBlock(ushort block, Filter el = null) {
             base.AddBlock(block, el);
@@ -304,10 +316,12 @@ namespace Mcasaenk.Colormaping {
             if(ChangedBack()) base.SetFromBack();
 
             HEARTHVALUE = new Dictionary<ushort, Filter>(HearthValue);
+            CalcAreThereHalfTransp();
         }
         public override void Reset() {
             if(ChangedBack()) base.Reset();
             HearthValue = new Dictionary<ushort, Filter>(HEARTHVALUE);
+            CalcAreThereHalfTransp();
         }
     }
     public class TintFilterShadeGrouping {
@@ -334,8 +348,8 @@ namespace Mcasaenk.Colormaping {
         public (Filter filter, Tint tint, bool shade) GetGroup(int id) => Pairs[id];
         private HashSet<Tint> betroffenTints;
         private HashSet<Filter> betroffenFilters;
-        public bool HaveInRecord(Tint tint) => betroffenTints.Contains(tint);
-        public bool HaveInRecord(Filter filter) => betroffenFilters.Contains(filter);
+        public bool HaveInRecord(Tint tint) => betroffenTints.Contains(tint) || Global.Settings.DATASTORAGEMODEL != GenDataModel.COLOR;
+        public bool HaveInRecord(Filter filter) => betroffenFilters.Contains(filter) || Global.Settings.DATASTORAGEMODEL != GenDataModel.COLOR;
 
         public int GetId(Filter filter, Tint tint, bool shade) {
             //i++;
@@ -390,21 +404,10 @@ namespace Mcasaenk.Colormaping {
         public void _AddBlock(ushort block) { 
             Blocks.Add(block);
             OnAutoChange(nameof(Blocks));
-
-            if(SettingsHub == null) {
-                BLOCKS.Add(block);
-                OnAutoChange(nameof(BLOCKS));
-                groupManager._SetBlockVal(block, (T)this);
-            }
         }
         public void _RemoveBlock(ushort block) {
             Blocks.Remove(block);
             OnAutoChange(nameof(Blocks));
-
-            if(SettingsHub == null) {
-                BLOCKS.Remove(block);
-                OnAutoChange(nameof(BLOCKS));
-            }
         }
 
 

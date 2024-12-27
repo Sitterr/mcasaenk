@@ -216,7 +216,8 @@ namespace Mcasaenk.UI.Canvas {
                                             for(int w = 0; w < tile.genData.columns.Length; w++) {
                                                 if(tile.genData.columns[w].ContainsInfo(i)) {
                                                     br++;
-                                                    if(tile.genData.columns[w].GroupId(i) == 0 || tile.genData.columns[w].GroupId(i) == 1) {
+                                                    var filter = tile.genData.columns[w].Filter(i);
+                                                    if(filter == Global.App.Colormap.FilterManager.Error || filter.ABSORBTION == 0) {
                                                         outline = orangePen;
                                                         goto Final;
                                                     }

@@ -237,16 +237,16 @@
 
                                             <DockPanel Grid.Row="4" Grid.Column="0">
                                                 <TextBlock>
-                                            <Run Text="α"/><!--
-                                         --><Run Text="(horizontal angle)" FontSize="12" FontStyle="Italic"/>
-                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D, Converter={StaticResource StarConverter}}">
-                                                <Run.Foreground> 
-                                                    <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="ADeg" />
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="ADEG" />
-                                                    </MultiBinding>
-                                                </Run.Foreground>  
-                                            </Run>
+                                                    <Run Text="α"/><!--
+                                                 --><Run Text="(horizontal angle)" FontSize="12" FontStyle="Italic"/>
+                                                    <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D, Converter={StaticResource StarConverter}}">
+                                                        <Run.Foreground> 
+                                                            <MultiBinding Converter="{StaticResource DifferenceConverter}">
+                                                                <Binding Source="{x:Static gl:Global.Settings}" Path="ADeg" />
+                                                                <Binding Source="{x:Static gl:Global.Settings}" Path="ADEG" />
+                                                            </MultiBinding>
+                                                        </Run.Foreground>  
+                                                    </Run>
                                                 </TextBlock>
                                                 <TextBlock HorizontalAlignment="Right">
                                                     <TextBlock.IsEnabled>
@@ -255,8 +255,8 @@
                                                             <Binding Source="{x:Static gl:Global.Settings}" Path="Shade3d" />
                                                         </MultiBinding>
                                                     </TextBlock.IsEnabled>
-                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=ADeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}"/><!--
-                                         --><Run Text="°"/>
+                                                        <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=ADeg, Converter={StaticResource RoundConverter}, ConverterParameter=0}"/><!--
+                                                     --><Run Text="°"/>
                                                 </TextBlock>
                                             </DockPanel>
                                             <Slider Grid.Row="6" Grid.Column="0" Minimum="0" Maximum="360" TickFrequency="15"

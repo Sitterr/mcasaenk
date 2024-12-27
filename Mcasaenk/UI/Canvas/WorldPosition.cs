@@ -88,7 +88,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         public IEnumerable<Point2i> GetVisibleTilePositions() {
-            double sx = Global.Coord.absDev(coord.X, 512), sz = Global.Coord.absDev(coord.Y, 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
+            double sx = Global.Coord.fairDev((int)coord.X, 512), sz = Global.Coord.fairDev((int)coord.Y, 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
 
             for(int x = 0; x * 512 - tx < coord.Width; x++) {
                 for(int z = 0; z * 512 - tz < coord.Height; z++) {

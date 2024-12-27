@@ -52,9 +52,6 @@ namespace Mcasaenk
             if(changed.Count == 0) return;
             SettingsHub.Freeze();
 
-            Colormap?.Grouping.Reset();
-            Colormap?.UpdateHeightmapCompatability();
-
             _openedSave.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
 
@@ -63,6 +60,11 @@ namespace Mcasaenk
             } else if(changed.Contains(nameof(Settings.SKIP_UNKNOWN_BLOCKS))) {
                 Colormap?.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
             }
+
+            Colormap?.Grouping.Reset();
+            Colormap?.UpdateHeightmapCompatability();
+            Colormap?.TintManager.Freeze();
+            Colormap?.FilterManager.Freeze();
 
             SettingsHub.FinishFreeze(false);
         }
@@ -155,16 +157,22 @@ namespace Mcasaenk
             set {
                 SettingsHub.Freeze();
 
+                var oldworld = _openedSave;
                 _openedSave = value;
                 if(value != null) {
                     SetWorld(true);
+
+
                     if(_openedSave.levelDatInfo.mods.Length > 0) {
-                        Settings.COLOR_MAPPING_MODE = "default";
+                        Settings.ColorMapping = "default";
                     }
                     if(Path.Exists(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)) == false) {
-                        Settings.COLOR_MAPPING_MODE = "default";
+                        Settings.ColorMapping = "default";
                     }
-                    SetColormap();
+                    if(Colormap == null || Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE) != Settings.ColormapToPath(Settings.ColorMapping) || !oldworld.datapackInfo.SameAs(value.datapackInfo)) {
+                        Settings.COLOR_MAPPING_MODE = Settings.ColorMapping;
+                        SetColormap();
+                    }
 
                     Colormap?.UpdateHeightmapCompatability();
                 }
@@ -172,9 +180,25 @@ namespace Mcasaenk
                 SettingsHub.FinishFreeze(false);
             }
         }
+        
+
+
 
         void SetColormap() {
             if(OpenedSave == null) return;
+
+
+            if(Colormap != null) {
+                SettingsHub.UnlistSettings(Colormap.TintManager);
+                foreach(var tint in Colormap.TintManager.ELEMENTS) {
+                    SettingsHub.UnlistSettings(tint);
+                }
+
+                SettingsHub.UnlistSettings(Colormap.FilterManager);
+                foreach(var filter in Colormap.FilterManager.ELEMENTS) {
+                    SettingsHub.UnlistSettings(filter);
+                }
+            }
 
             Colormap = new Colormap(RawColormap.Load(Settings.ColormapToPath(Settings.COLOR_MAPPING_MODE)), OpenedSave.levelDatInfo.version_id, OpenedSave.datapackInfo);
 
@@ -187,6 +211,12 @@ namespace Mcasaenk
             foreach(var filter in Colormap.FilterManager.ELEMENTS) {
                 SettingsHub.RegisterSettings(filter);
             }
+
+
+            foreach(var tint in Colormap.TintManager.ELEMENTS) tint.SetFromBack();
+            foreach(var filter in Colormap.FilterManager.ELEMENTS) filter.SetFromBack();
+            Colormap.FilterManager.SetFromBack();
+            Colormap.TintManager.SetFromBack();
 
             Window.OnColormapChange();
         }

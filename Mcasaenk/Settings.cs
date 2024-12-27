@@ -75,6 +75,14 @@ namespace Mcasaenk {
         translucient,
     }
 
+    public enum GenDataModel {
+        [Description("by color")]
+        COLOR,
+        [Description("by block")]
+        ID,
+    }
+
+
     public enum FilterMode { None, Air, Depth, LightAir, LightWater, Shade3d, HeightmapAir, HeightmapWater, REGEX }
 
     public class SettingsHub(Action<string> onAutoChange, Action<string> onLightChange, Action<List<string>> onHardChange) : INotifyPropertyChanged {
@@ -190,6 +198,8 @@ namespace Mcasaenk {
             if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
             if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
             if(BLOCKINFO != BlockInfo) BLOCKINFO = BlockInfo;
+            if(DATASTORAGEMODEL != DataStorageModel) DATASTORAGEMODEL = DataStorageModel;
+            if(PRECOMPUTE_RELVIS != PrecomputeRelvis) PRECOMPUTE_RELVIS = PrecomputeRelvis;
         }
         public override void Reset() {
             Y = Y_OFFICIAL;
@@ -205,6 +215,8 @@ namespace Mcasaenk {
             PreferHeightmap = PREFERHEIGHTMAPS;
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
             BlockInfo = BLOCKINFO;
+            DataStorageModel = DATASTORAGEMODEL;
+            PrecomputeRelvis = PRECOMPUTE_RELVIS;
         }
         public override bool ChangedBack() =>
                    Y_OFFICIAL != Y ||
@@ -219,14 +231,16 @@ namespace Mcasaenk {
                    SHADETYPE != ShadeType ||
                    PREFERHEIGHTMAPS != PreferHeightmap ||
                    SKIP_UNKNOWN_BLOCKS != SkipUnknown ||
-                   BLOCKINFO != BlockInfo
+                   BLOCKINFO != BlockInfo ||
+                   DATASTORAGEMODEL != DataStorageModel ||
+                   PRECOMPUTE_RELVIS != PrecomputeRelvis
             ;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
             ENABLE_COLORMAP_EDITING = false,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, DATASTORAGEMODEL = GenDataModel.COLOR, PRECOMPUTE_RELVIS = false,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
@@ -823,10 +837,13 @@ namespace Mcasaenk {
                 if(blockinfo_back == value) return;
 
                 blockinfo_back = value;
-                OnAutoChange(nameof(BlockInfo));
-                if(Global.App.OpenedSave == null) {
+
+                if(Global.App.OpenedSave == null || DATASTORAGEMODEL == GenDataModel.ID) {
                     blockinfo = value;
+                    OnAutoChange(nameof(BlockInfo));
                     OnAutoChange(nameof(BLOCKINFO));
+                } else {
+                    OnAutoChange(nameof(BlockInfo));
                 }
             }
         }
@@ -834,7 +851,6 @@ namespace Mcasaenk {
 
 
         private bool enablecmediting;
-        [JsonIgnore]
         public bool ENABLE_COLORMAP_EDITING {
             get => enablecmediting;
             set {
@@ -913,8 +929,48 @@ namespace Mcasaenk {
 
 
 
+
+        private GenDataModel dataStorage, dataStorage_back;
+        [JsonIgnore]
+        public GenDataModel DataStorageModel {
+            get => dataStorage_back;
+            set {
+                if(dataStorage_back == value) return;
+
+                dataStorage_back = value;
+                OnAutoChange(nameof(DataStorageModel));
+                if(Global.App.OpenedSave == null) {
+                    dataStorage = value;
+                    OnAutoChange(nameof(DATASTORAGEMODEL));
+                }
+            }
+        }
+        public GenDataModel DATASTORAGEMODEL { get => dataStorage; set { dataStorage = value; DataStorageModel = value; BLOCKINFO = true; OnHardChange(nameof(DATASTORAGEMODEL)); } }
+
+
+
+
+
+
         #region depr
-        public bool WATERDEPTH { get => true; set { } }
+        private bool precomputerelvis, precomputerelvis_back;
+        [JsonIgnore]
+        public bool PrecomputeRelvis {
+            get => precomputerelvis_back;
+            set {
+                if(precomputerelvis_back == value) return;
+
+                precomputerelvis_back = value;
+
+                OnAutoChange(nameof(PrecomputeRelvis));
+                if(Global.App.OpenedSave == null) {
+                    precomputerelvis = value;
+                    OnAutoChange(nameof(PRECOMPUTE_RELVIS));
+                }
+            }
+        }
+        public bool PRECOMPUTE_RELVIS { get => precomputerelvis; set { precomputerelvis = value; PrecomputeRelvis = value; OnHardChange(nameof(PRECOMPUTE_RELVIS)); } }
+        public bool DarfRelVisPrecompute() => !(Global.Settings.SHADETYPE == ShadeType.jmap) && PRECOMPUTE_RELVIS && Global.Settings.TRANSPARENTLAYERS > 1 && false;
         #endregion
     }
 
