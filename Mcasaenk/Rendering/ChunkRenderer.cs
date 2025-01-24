@@ -178,7 +178,8 @@ namespace Mcasaenk.Rendering {
                         startbiome = biome;
                         lcolor = startfilter.ABSORBTION / 15f;
                         startcolor = color;
-                        startblockid = blockid;                 
+                        startblockid = blockid;
+                        startlight = Math.Max(data.GetBlockLight(cx, cz, height), data.GetBlockLight(cx, cz, height + 1));
                     } else {
                         float q = startfilter.ABSORBTION / 15f * (1 - lcolor);
                         startcolor = Global.Blend(color, startcolor, q / lcolor);
