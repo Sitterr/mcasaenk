@@ -32,7 +32,7 @@ namespace Mcasaenk.WorldInfo {
             this.id = id;
         }
 
-        public static bool ReadModMeta(ReadInterface read, out PackMetadata metadata) {
+        public static unsafe bool ReadModMeta(ReadInterface read, out PackMetadata metadata) {
             metadata = null;
             try {           
                 ImageSource icon = null;
@@ -42,25 +42,50 @@ namespace Mcasaenk.WorldInfo {
                     var lines = read.ReadAllLines(Path.Combine("META-INF", "mods.toml"));
                     if(lines.Count() == 1) lines = lines.First().Split(['\n']);
 
+                    string* multylineval = null;
+                    string multyline = "";
                     string chapter = "";
                     foreach(var _line in lines) {
                         var line = _line.Trim();
+                        if(line.Contains('#')) line = line.Substring(0, line.IndexOf('#')).Trim();
                         if(line.StartsWith("[[") && line.EndsWith("]]")) {
                             chapter = line.Substring(2, line.Length - 4);
                             continue;
                         }
 
+                        if(multylineval != null) {
+                            if(!multyline.EndsWith(" ") && multyline != "") multyline += " ";
+                            multyline += line;
+                            if(line.EndsWith("'''")) {
+                                multyline = multyline.Substring(0, multyline.Length - 3);
+                                *multylineval = multyline;
+                                multylineval = null;
+                            }
+                        }
+
                         if(line.Contains("=")) {
                             var parts = line.Split('=').Select(s => s.Trim()).ToArray();
 
-                            if(parts[0] == "modId" && chapter == "mods") {
-                                name = parts[1].Substring(1, parts[1].Length - 2);
-                            } else if(parts[0] == "logoFile" && chapter == "mods") {
-                                string iconname = parts[1].Substring(1, parts[1].Length - 2);
-                                icon = read.ReadBitmap(iconname).ToBitmapSource();
+                            if(chapter == "mods" || chapter == ""){
+                                if(parts[0] == "modId") {
+                                    name = parts[1].Substring(1, parts[1].Length - 2);
+                                } else if(parts[0] == "logoFile") {
+                                    string iconname = parts[1].Substring(1, parts[1].Length - 2);
+                                    icon = read.ReadBitmap(iconname)?.ToBitmapSource();
+                                } else if(parts[0] == "description") {                 
+                                    if(parts[1].StartsWith("'''")) {
+                                        if(parts[1].Substring(3).EndsWith("'''")) description = parts[1].Substring(3, parts[1].Length - 6);
+                                        else {
+                                            multyline = parts[1].Substring(3);
+                                            multylineval = &description;
+                                        }
+                                    } 
+                                    else if(parts[1].StartsWith('"') || parts[1].StartsWith("'")) description = parts[1].Substring(1, parts[1].Length - 2);
+                                }
                             }
                         }
                     }
+                    if(icon == null) icon = read.ReadBitmap("logo.png")?.ToBitmapSource();
 
 
                 } else if(read.ExistsFile("fabric.mod.json")) { // fabric
@@ -71,7 +96,7 @@ namespace Mcasaenk.WorldInfo {
                     if(json.TryGetValue("description", out var _descr)) description = _descr.GetString();
                     if(json.TryGetValue("icon", out var _icon)) icon = read.ReadBitmap(_icon.GetString())?.ToBitmapSource();
                 } else return false;
-                if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_server).ToBitmapSource();
+                if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_server)?.ToBitmapSource();
                 metadata = new PackMetadata(read.GetBasePath(), name, icon, description, id);
                 return true;
             }

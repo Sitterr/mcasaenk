@@ -262,11 +262,11 @@ namespace Mcasaenk.WorldInfo {
             string grass_color_modifier = "";
             foreach(var el in o["effects"].EnumerateObject()) {
                 if(el.Name == "foliage_color") {
-                    folCol = 0xFF000000 | el.Value.GetUInt32();
+                    folCol = 0xFF000000 | (uint)el.Value.GetInt32();
                 } else if(el.Name == "grass_color") {
-                    grassCol = 0xFF000000 | el.Value.GetUInt32();
+                    grassCol = 0xFF000000 | (uint)el.Value.GetInt32();
                 } else if(el.Name == "water_color") {
-                    waterCol = 0xFF000000 | el.Value.GetUInt32();
+                    waterCol = 0xFF000000 | (uint)el.Value.GetInt32();
                 } else if(el.Name == "grass_color_modifier") {
                     grass_color_modifier = el.Value.GetString();
                 }

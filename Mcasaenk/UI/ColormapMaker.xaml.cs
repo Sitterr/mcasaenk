@@ -76,26 +76,33 @@ namespace Mcasaenk.UI {
                 FileName = "",
                 DefaultExt = ".jar",
                 Filter = "Jar mods (.jar)|*.jar",
-                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods")
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods"),
+                Multiselect = true,
             };
 
             if(dialog.ShowDialog() == true) {
-                using var read = new ZipRead(dialog.FileName);
-                if(PackMetadata.ReadModMeta(read, out var meta)){
-                    list_selected.OItems.Insert(0, meta);
+                foreach(var file in dialog.FileNames) {
+                    using var read = new ZipRead(file);
+                    if(PackMetadata.ReadModMeta(read, out var meta)) {
+                        if(!list_selected.OItems.Any(m => m.id == meta.id)) list_selected.OItems.Insert(0, meta);
+                    }
                 }
             }
         }
         public void OnAddManuallyPack(object sender, RoutedEventArgs e) {
-            var dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.FileName = ""; // Default file name
-            dialog.DefaultExt = ".zip"; // Default file extension
-            dialog.Filter = "Zip file (.zip)|*.zip"; // Filter files by extension
+            var dialog = new Microsoft.Win32.OpenFileDialog() {
+                FileName = "",
+                DefaultExt = ".zip",
+                Filter = "Zip file (.zip)|*.zip",
+                Multiselect = true,
+            };
 
             if(dialog.ShowDialog() == true) {
-                using var read = new ZipRead(dialog.FileName);
-                if(PackMetadata.ReadPackMeta(read, Path.GetFileName(dialog.FileName), out var meta)) {
-                    list_selected.OItems.Insert(0, meta);
+                foreach(var file in dialog.FileNames) {
+                    using var read = new ZipRead(file);
+                    if(PackMetadata.ReadPackMeta(read, Path.GetFileName(file), out var meta)) {
+                        list_selected.OItems.Insert(0, meta);
+                    }
                 }
             }
         }

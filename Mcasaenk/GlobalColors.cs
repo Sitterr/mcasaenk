@@ -79,7 +79,7 @@ namespace Mcasaenk {
         public int Width { get => pixels.GetLength(0); }
         public int Height { get => pixels.GetLength(1); }
 
-        public WPFColor GetPixel(int x, int y) => pixels[x, y];
+        public WPFColor GetPixel(int x, int y) => (x >= 0 && x < Width && y >= 0 && y < Height) ? pixels[x, y] : WPFColor.Transparent;
         public void SetPixel(int x, int y, WPFColor color) {
             changed = true;
             pixels[x, y] = color;

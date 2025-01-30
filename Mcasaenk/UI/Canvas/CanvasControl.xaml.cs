@@ -351,6 +351,9 @@ namespace Mcasaenk.UI.Canvas {
             if(e.Key == Key.F5) {
                 Global.App.Reset();
             }
+            if(e.Key == Key.F9) {
+                Global.Settings.ENABLE_COLORMAP_EDITING = !Global.Settings.ENABLE_COLORMAP_EDITING;
+            }
         }
         #endregion
     }

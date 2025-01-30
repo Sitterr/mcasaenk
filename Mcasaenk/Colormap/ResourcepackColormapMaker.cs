@@ -85,20 +85,26 @@ namespace Mcasaenk.Colormaping {
                                 }
                             }
                         }
-                        var answer = JsonModel.ReadTopDown(blockname, el.elements, textures);
+
+                        try {
+                            var answer = JsonModel.ReadTopDown(blockname, el.elements, textures);
 
 
-                        if(answer.q >= options.minQ) {
-                            if(answer.q > 0) {
-                                colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, q = answer.q, creationMethod = BlockCreationMethod.AboveQ } });
-                            } else {
-                                var sideanswer = JsonModel.ReadSide(blockname, el.elements, textures);
-                                if(sideanswer.q > 0) {
-                                    colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, q = answer.q, creationMethod = BlockCreationMethod.Sides } });
+                            if(answer.q >= options.minQ) {
+                                if(answer.q > 0) {
+                                    colormap.blocks.Add(blockname, new RawBlock() { color = answer.topdowncolor, details = new CreationDetails() { shouldTint = answer.tintedindex != -1, q = answer.q, creationMethod = BlockCreationMethod.AboveQ } });
+                                } else {
+                                    var sideanswer = JsonModel.ReadSide(blockname, el.elements, textures);
+                                    if(sideanswer.q > 0) {
+                                        colormap.blocks.Add(blockname, new RawBlock() { color = sideanswer.sidecolor, details = new CreationDetails() { shouldTint = sideanswer.tintindex != -1, q = answer.q, creationMethod = BlockCreationMethod.Sides } });
+                                    }
                                 }
                             }
                         }
-
+                        catch {
+                            var answer = ColorOfTexture(textures.First().Value.image);
+                            colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), q = answer.A, creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
+                        }
 
                     }
 

@@ -3,7 +3,6 @@ using Mcasaenk.Shade3d;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
@@ -30,6 +29,8 @@ namespace Mcasaenk.UI {
         FrameworkElement[] contents;
 
         Brush light_blue_b;
+
+        bool loaded = false;
         public LeftSettingsMenu() {
             InitializeComponent();
 
@@ -86,7 +87,6 @@ namespace Mcasaenk.UI {
             tabs = new[] { tab_general, tab_shades, tab_color };
             contents = new[] { cont_general, cont_shades, cont_color };
 
-            bool loaded = false;
             this.Loaded += (o, e) => {
                 if(loaded) return;
                 loaded = true;
@@ -140,12 +140,13 @@ namespace Mcasaenk.UI {
 
 
                 generalfilter.MaxHeight = generalfilter.ActualHeight;
+                generalfilter.ItemsSource = Global.App.Colormap?.FilterManager.Invis.Blocks.Where(bl => bl != Colormap.NONEBLOCK && bl != Colormap.INVBLOCK).Select(bl => new BinaryBlockRow(Global.App.Colormap.Block.GetName(bl), true, false));
 
                 btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_change.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
             };
         }
         public void RefreshGeneralFilter() {
-            generalfilter.ItemsSource = Global.App.Colormap?.FilterManager.Invis.Blocks.Where(bl => bl != Colormap.NONEBLOCK && bl != Colormap.INVBLOCK).Select(bl => new BinaryBlockRow(Global.App.Colormap.Block.GetName(bl), true, false));
+            if(loaded) generalfilter.ItemsSource = Global.App.Colormap?.FilterManager.Invis.Blocks.Where(bl => bl != Colormap.NONEBLOCK && bl != Colormap.INVBLOCK).Select(bl => new BinaryBlockRow(Global.App.Colormap.Block.GetName(bl), true, false));
         }
 
         public void OnActive() {
