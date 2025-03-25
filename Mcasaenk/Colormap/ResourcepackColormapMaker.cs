@@ -304,6 +304,7 @@ namespace Mcasaenk.Colormaping {
             {
                 TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
                     if(group == "FILTERS") {
+          
                         List<string> blocks = [];
                         if(parts[1].StartsWith('/') && parts[1].EndsWith('/')) {
                             string part1 = parts[1].Substring(1, parts[1].Length - 2);
@@ -315,7 +316,8 @@ namespace Mcasaenk.Colormaping {
                             }
                         } else blocks = parts[1].Split(",").Select(w => w.minecraftname()).Where(b => colormap.blocks.ContainsKey(b)).ToList();
 
-                        colormap.filters.Add(new RawFilter() { name = parts[0], blocks = blocks, transparency = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture) });
+                        var exemptionblocks = parts.Length >= 4 ? parts[3].Split(",").Select(w => w.minecraftname()).Where(b => colormap.blocks.ContainsKey(b)).ToList() : [];
+                        colormap.filters.Add(new RawFilter() { name = parts[0], blocks = blocks.Except(exemptionblocks).ToList(), transparency = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture) });
                     }
                 });
             }

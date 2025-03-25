@@ -18,10 +18,10 @@ using static Utils.AssetsUtils;
 namespace Utils {
     public static class MapColormapMaker {
 
-        public static void FromJavaMap(string path, string resourcepack, WPFBitmap blockMap) {
+        public static void FromJavaMap(string path, string[] blocks, WPFBitmap blockMap) {
             using ZipSave output = new ZipSave(path);
 
-            var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
+            var map = ReadIngameMap(blockMap, blocks);
 
             uint watercolor = 0xFF000000 | Convert.ToUInt32(map["minecraft:water"], 16);
             watercolor = Global.MultShade(watercolor, 220 / 255d);
@@ -31,14 +31,14 @@ namespace Utils {
         }
 
 
-        public static void FromBedrockMap(string path, string resourcepack, WPFBitmap blockMap, WPFBitmap[] biomeMaps) {
+        public static void FromBedrockMap(string path, string[] blocks, string tintblocks, WPFBitmap blockMap, WPFBitmap[] biomeMaps) {
             using ZipSave output = new ZipSave(path);
 
-            var map = ReadIngameMap(blockMap, GetVanillaBlockNames(resourcepack));
+            var map = ReadIngameMap(blockMap, blocks);
 
             List<(string tint, string[] blocks)> tints = new();
             List<string> tintedBlocks = new();
-            TxtFormatReader.ReadStandartFormat(Resources.tintblocks, (string group, string[] parts) => {
+            TxtFormatReader.ReadStandartFormat(tintblocks, (string group, string[] parts) => {
                 if(group == "TINTS") {
                     string[] blocks = parts[2].Split(',').Select(v => v.Trim().minecraftname()).ToArray();
                     tintedBlocks.AddRange(blocks);

@@ -1,5 +1,5 @@
 -- TINTS --
-grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane;91BD59;
+grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane,bush;91BD59;
 foliage;vanilla_foliage;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine;77AB2F;
 water;vanilla_water;water;3F76E4;
 
@@ -11,9 +11,10 @@ redstone_wire;fixed;redstone_wire;AF1805;
 notint;fixed;cherry_leaves,bamboo_sapling,pale_oak_leaves;FFFFFF;
 -- TINTS --
 -- FILTERS --
-the thin;/q-_0.05/;0.5;
+the thin;/q-_0.05/;0.5;red_mushroom_block,brown_mushroom_block
 leaves;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine,birch_leaves,spruce_leaves,cherry_leaves,pale_oak_leaves;0.35;
 lava;lava;0.1;
+invis;barrier;1;
 -- FILTERS --
 -- DEPTH --
 water
