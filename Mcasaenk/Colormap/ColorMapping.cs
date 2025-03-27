@@ -99,6 +99,7 @@ namespace Mcasaenk.Colormaping {
                         if(format.tintclass == typeof(OrthodoxVanillaTint)) tint = new OrthodoxVanillaTint(TintManager, t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(Vanilla_Grass)) tint = new Vanilla_Grass(TintManager, t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(Vanilla_Foliage)) tint = new Vanilla_Foliage(TintManager, t.name, world_version, sprite, datapacksInfo);
+                        else if(format.tintclass == typeof(Vanilla_Dry_Foliage)) tint = new Vanilla_Dry_Foliage(TintManager, t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(Vanilla_Water)) tint = new Vanilla_Water(TintManager, t.name, world_version, sprite, datapacksInfo);
                         else if(format.tintclass == typeof(GridTint)) tint = new GridTint(TintManager, t.name, t.yOffset, sprite);
                         else if(format.tintclass == typeof(FixedTint)) tint = new FixedTint(TintManager, t.name, t.color.ToUInt());
@@ -115,10 +116,12 @@ namespace Mcasaenk.Colormaping {
 
 
                 foreach(var f in rawmap.filters) {
-                    var filter = new Filter(FilterManager, f.name, true, true) { ABSORBTION = (int)(Math.Round(15 - f.transparency * 15)) };
-
-                    FilterManager.ELEMENTS.Add(filter);
-
+                    Filter filter = null;
+                    if(f.transparency < 1) {
+                        filter = new Filter(FilterManager, f.name, true, true) { ABSORBTION = (int)(Math.Round(15 - f.transparency * 15)) };
+                        FilterManager.ELEMENTS.Add(filter);
+                    } else filter = FilterManager.Invis;
+               
                     foreach(var block in f.blocks) {
                         if(Block.TryGetId(block.minecraftname(), out ushort id)) {
                             FilterManager.AddBlock(id, filter);

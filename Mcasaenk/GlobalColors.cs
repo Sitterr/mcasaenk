@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows;
 using System.IO;
 using System.Runtime.InteropServices;
+using Mcasaenk.Rendering;
 
 namespace Mcasaenk {
     [StructLayout(LayoutKind.Sequential)]
@@ -24,6 +25,8 @@ namespace Mcasaenk {
         public static WPFColor FromRgb(byte d, byte a = 255) => new WPFColor(d, d, d, a);
         public static WPFColor FromArgb(byte a, byte r, byte g, byte b) => new WPFColor(r, g, b, a);
         public static WPFColor FromColor(WPFColor c, byte a = 255) => new WPFColor(c.R, c.G, c.B, a);
+
+        public static WPFColor FromUInt(uint c) => new WPFColor((byte)((c >> 16) & 0xFF), (byte)((c >> 8) & 0xFF), (byte)(c & 0xFF), (byte)((c >> 24) & 0xFF));
 
         public static WPFColor FromHex(string hex) {
             try {
@@ -42,8 +45,16 @@ namespace Mcasaenk {
                 } else throw new Exception();
             }
             catch {
-                return WPFColor.WhiteTransparent;
+                return WPFColor.Transparent;
             }
+        }
+
+
+        public string ToHex(bool containAlpha = true, bool hashtag = true) {
+            if(containAlpha)
+                return (hashtag ? "#" : "") + $"{A:X2}{R:X2}{G:X2}{B:X2}";
+            else
+                return (hashtag ? "#" : "") + $"{R:X2}{G:X2}{B:X2}";
         }
 
         public static bool operator ==(WPFColor left, WPFColor right) => left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A;
@@ -179,6 +190,17 @@ namespace Mcasaenk {
 
         public static WPFColor Add(this WPFColor c, byte f) {
             return WPFColor.FromArgb(c.A, (byte)Math.Clamp(c.R + f, 0, 255), (byte)Math.Clamp(c.G + f, 0, 255), (byte)Math.Clamp(c.B + f, 0, 255));
+        }
+        public static bool CloseTo(this WPFColor c, WPFColor other, double threshold) {
+            const double MAX_DISTANCE = 441.67;
+
+            double distance = Math.Sqrt(
+                Math.Pow(c.R - other.R, 2) +
+                Math.Pow(c.G - other.G, 2) +
+                Math.Pow(c.B - other.B, 2)
+            );
+
+            return distance < MAX_DISTANCE * threshold;
         }
     }
 }

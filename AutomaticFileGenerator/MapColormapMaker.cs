@@ -19,7 +19,7 @@ namespace Utils {
     public static class MapColormapMaker {
 
         public static void FromJavaMap(string path, string[] blocks, WPFBitmap blockMap) {
-            using ZipSave output = new ZipSave(path);
+            using SaveInterface output = SaveInterface.GetSuitable(path);
 
             var map = ReadIngameMap(blockMap, blocks);
 
@@ -27,37 +27,30 @@ namespace Utils {
             watercolor = Global.MultShade(watercolor, 220 / 255d);
             map["minecraft:water"] = watercolor.ToString("x8").Substring(2);
 
+            map = map.Select(b => {
+                if(b.Value == "-") return b;
+                else return new KeyValuePair<string, string>(b.Key, JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).color.ToHex(false, false));
+                //else return new KeyValuePair<string, string>(b.Key, JavaMapColors.GetById(JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).id).V255.color.ToHex(false, false)); 
+            }).ToDictionary();
+
             output.SaveLines("__palette__.blocks", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
         }
 
 
-        public static void FromBedrockMap(string path, string[] blocks, string tintblocks, WPFBitmap blockMap, WPFBitmap[] biomeMaps) {
-            using ZipSave output = new ZipSave(path);
+        public static void FromBedrockMap(string path, string[] blocks, string tintblockstxt, WPFBitmap blockMap, WPFBitmap[] biomeMaps) {
+            using SaveInterface output = SaveInterface.GetSuitable(path);
 
             var map = ReadIngameMap(blockMap, blocks);
 
-            List<(string tint, string[] blocks)> tints = new();
+            List<(string tint, string[] blocks, int c)> tints = new();
             List<string> tintedBlocks = new();
-            TxtFormatReader.ReadStandartFormat(tintblocks, (string group, string[] parts) => {
+            TxtFormatReader.ReadStandartFormat(tintblockstxt, (string group, string[] parts) => {
                 if(group == "TINTS") {
                     string[] blocks = parts[2].Split(',').Select(v => v.Trim().minecraftname()).ToArray();
-                    tintedBlocks.AddRange(blocks);
-                    if(parts[1] == "vanilla_grass" || parts[1] == "vanilla_foliage" || parts[1] == "vanilla_water") {
-                        tints.Add((parts[0], blocks));
-                    }
+                        tints.Add((parts[0], blocks, 0));
                 }
             });
             var biomes = Resources.javabiomes.Split("\r\n").ToArray();
-
-            int plainsIndex = Array.IndexOf(biomes, "plains");
-
-            if(biomeMaps.Length != Math.Ceiling((double)biomes.Length / 25)) throw new Exception("biomi");
-
-
-            // https://minecraft.wiki/w/Plains
-            WPFColor BEDROCK_PLAINS_GRASS_TINT = WPFColor.FromHex("#91BD59");
-            WPFColor BEDROCK_PLAINS_FOLIAGE_TINT = WPFColor.FromHex("#77AB2F");
-
 
             Dictionary<string, (string tint, List<WPFColor> colors)> colors = new();
             {
@@ -70,51 +63,70 @@ namespace Utils {
                 }
             }
 
-            WPFBitmap newWaterColors = new WPFBitmap(biomes.Length, 1);
-            WPFBitmap newFoliageColors = new WPFBitmap(biomes.Length, 1), newGrassColors = new WPFBitmap(biomes.Length, 1);
-
-            // asume java and bedrock use the same tint for plains
-            {
-                var baseColor = Dev(colors["minecraft:grass_block"].colors[plainsIndex], BEDROCK_PLAINS_GRASS_TINT);
-                for(int i = 0; i < biomes.Length; i++) {
-                    newGrassColors.SetPixel(i, 0, Dev(colors["minecraft:grass_block"].colors[i], baseColor));
-                }
-
-                baseColor = Dev(colors["minecraft:oak_leaves"].colors[plainsIndex], BEDROCK_PLAINS_FOLIAGE_TINT);
-                for(int i = 0; i < biomes.Length; i++) {
-                    newFoliageColors.SetPixel(i, 0, Dev(colors["minecraft:oak_leaves"].colors[i], baseColor));
+            tintedBlocks = tintedBlocks.Where(b => colors[b].colors.AllAreSame() == false).ToList();
+            WPFColor[,] colormaps = new WPFColor[tintedBlocks.Count, biomes.Length];
+            for(int i = 0; i < tintedBlocks.Count; i++) {
+                for(int bi = 0; bi < biomes.Length; bi++) {
+                    colormaps[i, bi] = Dev(colors[tintedBlocks[i]].colors[bi], WPFColor.White);
                 }
             }
 
-            foreach(var f in colors) {
-                if(f.Value.colors.Distinct().Count() > 1) {
-                    WPFColor fColor = default;
-                    if(f.Value.tint == "foliage") {
-                        fColor = newFoliageColors.GetPixel(0, 0);
-                    } else if(f.Value.tint == "grass") {
-                        fColor = newGrassColors.GetPixel(0, 0);
-                    } else if(f.Value.tint == "water") {
-                        for(int i = 0; i < biomes.Length; i++) {
-                            newWaterColors.SetPixel(i, 0, f.Value.colors[i]);
+            int[] cols = new int[tintedBlocks.Count]; cols[0] = -1;
+            for(int i = 1; i < tintedBlocks.Count; i++) {           
+                bool set = false;
+                for(int ui = 0; ui < i; ui++) {
+                    if(cols[ui] != -1) continue;
+
+                    int j;
+                    for(j = 0; j < biomes.Length; j++) {
+                        if(colormaps[i, j].CloseTo(colormaps[ui, j], 0.05) == false) {
+                            break;
                         }
-                        continue;
                     }
-
-                    var c = Dev(f.Value.colors[0], fColor);
-                    map[f.Key] = $"{c.R:X2}{c.G:X2}{c.B:X2}";
+                    if(j == biomes.Length) {
+                        cols[i] = ui;
+                        set = true;
+                        break;
+                    }
                 }
+                if(!set) cols[i] = -1;
             }
 
+
+            for(int i = 0; i < tintedBlocks.Count; i++) {
+                if(cols[i] != -1) continue;
+
+                string block = tintedBlocks[i];
+                var grid = new WPFBitmap(biomes.Length, 1);
+                for(int bi = 0; bi < biomes.Length; bi++) {
+                    grid.SetPixel(bi, 0, colormaps[i, bi]);
+                }
+                (string tint, string[] blocks, int c) tint = default;
+                for(int f = 0; f < tints.Count; f++) {
+                    if(tints[f].blocks.Contains(block)) { 
+                        tints[f] = (tints[f].tint, tints[f].blocks, tints[f].c + 1);
+                        tint = tints[f];
+                        break;
+                    }
+                }
+
+                string name = tint.c > 1 ? $"{tint.tint}{tint.c}" : tint.tint;
+                var finalblocks = Enumerable.Range(0, tintedBlocks.Count).Where(c => cols[c] == i).Select(c => tintedBlocks[c]).Append(block);
+                foreach(var fb in finalblocks) {
+                    map[fb] = "FFFFFF";
+                }
+
+                output.SaveLines(name + ".tint", ["format=grid", $"blocks={string.Join(" ", finalblocks.Select(b => b.simplifyminecraftname()))}"]);
+                output.SaveImage(name + ".png", grid);
+            }
+
+            map = map.Select(b => {
+                if(b.Value == "-") return b;
+                else return b;
+                //else return new KeyValuePair<string, string>(b.Key, JavaMapColors.GetById(JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).id).V255.color.ToHex(false, false));
+                //else return new KeyValuePair<string, string>(b.Key, JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).color.ToHex(false, false));
+            }).ToDictionary();
             output.SaveLines("__palette__.blocks", map.Select(v => $"{v.Key.simplifyminecraftname()}={v.Value}").ToArray());
-
-            output.SaveLines("grass.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "grass").blocks.Select(b => b.simplifyminecraftname()))}", "source=grass.png"]);
-            output.SaveImage("grass.png", newGrassColors);
-
-            output.SaveLines("foliage.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "foliage").blocks.Select(b => b.simplifyminecraftname()))}", "source=foliage.png"]);
-            output.SaveImage("foliage.png", newFoliageColors);
-
-            output.SaveLines("water.tint", ["format=grid", $"blocks={string.Join(" ", tints.First(t => t.tint == "water").blocks.Select(b => b.simplifyminecraftname()))}", "source=water.png"]);
-            output.SaveImage("water.png", newWaterColors);
 
 
             IEnumerable<(string block, string tint, int biome, WPFColor color)> ReadBiomeInGameMap() {
@@ -188,6 +200,13 @@ namespace Utils {
             return map;
         }
 
+    }
+
+    static class Global_ {
+        public static bool AllAreSame(this List<WPFColor> list)  { 
+            foreach(var el in list) if(list.First() != el) return false;
+            return true;
+        }
     }
 
 }

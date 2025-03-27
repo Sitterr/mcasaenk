@@ -23,7 +23,7 @@ namespace Mcasaenk {
             new MapColor(11, 0xFF707070),
             new MapColor(12, 0xFF4040ff),
             new MapColor(13, 0xFF8f7748),
-            new MapColor(14, 0xFFfffdf5),
+            new MapColor(14, 0xFFfffcf5),
             new MapColor(15, 0xFFd87f33),
             new MapColor(16, 0xFFb24cd8),
             new MapColor(17, 0xFF6699d8),
@@ -73,52 +73,50 @@ namespace Mcasaenk {
             new MapColor(61, 0xFF7fa796, 3105),
         ];
 
-        public static readonly MapColor[] derivatives = originals.SelectMany(o => 
-        new MapColor[] { new MapColor(o, 0), new MapColor(o, 1), new MapColor(o, 2), new MapColor(o, 3) }).ToArray();
+        public static (byte id, WPFColor color) Nearest(WPFColor color, int version = int.MaxValue) {
+            (byte, WPFColor) nearest = (0, WPFColor.Transparent);
 
-        public static MapColor Nearest(MapColor[] set, uint color, int version) {
-            MapColor nearest = nullcolor;
+            if(color.A == 0) return nearest;
+
             int bestscore = int.MaxValue;
-            foreach(var mapcolor in set) {
+            foreach(var mapcolor in originals) {
                 if(mapcolor.version > version) continue;
 
-                var rgbColor = color.ToColor();
-                if(rgbColor.A == 0) return nullcolor;
+                (byte id, WPFColor color)[] variants = [mapcolor.V180, mapcolor.V220, mapcolor.V255, mapcolor.V135];
 
-                int score = (rgbColor.R - mapcolor.color.R) * (rgbColor.R - mapcolor.color.R) + (rgbColor.G - mapcolor.color.G) * (rgbColor.G - mapcolor.color.G) + (rgbColor.B - mapcolor.color.B) * (rgbColor.B - mapcolor.color.B);
-                if(score < bestscore) { 
-                    bestscore = score;
-                    nearest = mapcolor;
+                foreach(var variant in variants) {
+                    int score = (color.R - variant.color.R) * (color.R - variant.color.R) + (color.G - variant.color.G) * (color.G - variant.color.G) + (color.B - variant.color.B) * (color.B - variant.color.B);
+                    if(score < bestscore) {
+                        bestscore = score;
+                        nearest = variant;
+                    }
                 }
+
+
             }
             return nearest;
         }
+
+        public static MapColor GetById(byte id) {
+            return originals.FirstOrDefault(d => d.mapid == id / 4);
+        }
     }
+    
 
     public struct MapColor {
-        public readonly byte id;
+        public readonly byte mapid;
         public readonly int version;
-        public uint uintcolor;
-        public WPFColor color;
+        private WPFColor color;
 
         public MapColor(byte id, uint uintcolor, int version = 0) {
-            this.id = id;
-            this.uintcolor = uintcolor;
+            this.mapid = id;
             this.color = uintcolor.ToColor();
             this.version = version;
         }
 
-        public MapColor(MapColor mapColor, int type) {
-            id = (byte)(mapColor.id * 4 + type);
-            double a = type switch { 
-                0 => 180 / 255d,
-                1 => 220 / 255d,
-                2 => 1,
-                3 => 135 / 255d,
-            };
-            uintcolor = Global.MultShade(mapColor.uintcolor, a);
-            color = uintcolor.ToColor();
-            version = mapColor.version;
-        }
+        public (byte id, WPFColor color) V180 => ((byte)(mapid * 4 + 0), new WPFColor((byte)(color.R * 180 / 255d), (byte)(color.G * 180 / 255d), (byte)(color.B * 180 / 255d)));
+        public (byte id, WPFColor color) V220 => ((byte)(mapid * 4 + 1), new WPFColor((byte)(color.R * 220 / 255d), (byte)(color.G * 220 / 255d), (byte)(color.B * 220 / 255d)));
+        public (byte id, WPFColor color) V255 => ((byte)(mapid * 4 + 2), color);
+        public (byte id, WPFColor color) V135 => ((byte)(mapid * 4 + 3), new WPFColor((byte)(color.R * 135 / 255d), (byte)(color.G * 135 / 255d), (byte)(color.B * 135 / 255d)));
     }
 }

@@ -181,26 +181,29 @@ namespace Mcasaenk.WorldInfo {
 
         public string name;
         public ushort id = ushort.MaxValue;
-        public uint grass_hardcode_color, foliage_hardcode_color, water_color;
+        public uint grass_hardcode_color, foliage_hardcode_color, dry_foliage_hardcoded_color, water_color;
         public string grass_color_modifier;
         public double temp, downfall;
 
         public ImageSource image;
 
-        public uint GetVanilla(string tint, uint[,] grassMap, uint[,] foliageMap, short y, int version, double heightQ) {
+        public uint GetVanilla(string tint, uint[,] map, short y, int version, double heightQ) {
             if(tint == "water") {
                 return water_color;
             } else if(tint == "grass") {
                 if(grass_color_modifier == "dark_forest") {
-                    return Global.Blend((GetOrthodox(foliageMap, y, version, heightQ) & 0xFFFEFEFE), 0xFF28340A, 0.5);
+                    return Global.Blend((GetOrthodox(map, y, version, heightQ) & 0xFFFEFEFE), 0xFF28340A, 0.5);
                 } else if(grass_color_modifier == "swamp") {
                     if(Global.App.RAND < 0.5) return 0xFF4C763C;
                     else return 0xFF6a7039; // todo maybe idk
                 } else if(grass_hardcode_color > 0) return grass_hardcode_color;
-                else return GetOrthodox(grassMap, y, version, heightQ);
+                else return GetOrthodox(map, y, version, heightQ);
             } else if(tint == "foliage") {
                 if(foliage_hardcode_color > 0) return foliage_hardcode_color;
-                else return GetOrthodox(foliageMap, y, version, heightQ);
+                else return GetOrthodox(map, y, version, heightQ);
+            } else if(tint == "dry_foliage") {
+                if(dry_foliage_hardcoded_color > 0) return dry_foliage_hardcoded_color;
+                else return GetOrthodox(map, y, version, heightQ);
             }
             return 0;
         }
@@ -234,7 +237,7 @@ namespace Mcasaenk.WorldInfo {
 
 
         public string[] ToParts() {
-            return [name, Math.Round(temp, 2).ToString(), Math.Round(downfall, 2).ToString(), grass_hardcode_color.ToString(), foliage_hardcode_color.ToString(), water_color.ToString(), grass_color_modifier];
+            return [name, Math.Round(temp, 2).ToString(), Math.Round(downfall, 2).ToString(), grass_hardcode_color.ToString(), foliage_hardcode_color.ToString(), dry_foliage_hardcoded_color.ToString(), water_color.ToString(), grass_color_modifier];
         }
 
         public static BiomeInfo FromParts(string[] parts) {
@@ -246,8 +249,9 @@ namespace Mcasaenk.WorldInfo {
                 downfall = Convert.ToDouble(parts[2], CultureInfo.InvariantCulture),
                 grass_hardcode_color = Convert.ToUInt32(parts[3], CultureInfo.InvariantCulture),
                 foliage_hardcode_color = Convert.ToUInt32(parts[4], CultureInfo.InvariantCulture),
-                water_color = Convert.ToUInt32(parts[5], CultureInfo.InvariantCulture),
-                grass_color_modifier = parts[6],
+                dry_foliage_hardcoded_color = Convert.ToUInt32(parts[5], CultureInfo.InvariantCulture),
+                water_color = Convert.ToUInt32(parts[6], CultureInfo.InvariantCulture),
+                grass_color_modifier = parts[7],
             };
         }
 
@@ -258,11 +262,13 @@ namespace Mcasaenk.WorldInfo {
             o["temperature"].TryGetDouble(out double temp);
             o["downfall"].TryGetDouble(out double downfall);
 
-            uint grassCol = 0, folCol = 0, waterCol = 0;
+            uint grassCol = 0, folCol = 0, dryfolCol = 0, waterCol = 0;
             string grass_color_modifier = "";
             foreach(var el in o["effects"].EnumerateObject()) {
                 if(el.Name == "foliage_color") {
                     folCol = 0xFF000000 | (uint)el.Value.GetInt32();
+                } else if(el.Name == "dry_foliage_color") {
+                    dryfolCol = 0xFF000000 | (uint)el.Value.GetInt32();
                 } else if(el.Name == "grass_color") {
                     grassCol = 0xFF000000 | (uint)el.Value.GetInt32();
                 } else if(el.Name == "water_color") {
@@ -279,6 +285,7 @@ namespace Mcasaenk.WorldInfo {
                 name = name.minecraftname(),
                 grass_hardcode_color = grassCol,
                 foliage_hardcode_color = folCol,
+                dry_foliage_hardcoded_color = dryfolCol,
                 water_color = waterCol,
                 grass_color_modifier = grass_color_modifier,
                 temp = temp,

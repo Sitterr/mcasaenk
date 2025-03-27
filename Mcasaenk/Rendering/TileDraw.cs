@@ -165,7 +165,7 @@ namespace Mcasaenk.Rendering {
 
             if(Global.Settings.USEMAPPALETTE) {
                 for(int i = 0; i < 512 * 512; i++) {
-                    pixels[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], Global.App.OpenedSave.levelDatInfo.version_id).uintcolor;
+                    pixels[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), Global.App.OpenedSave.levelDatInfo.version_id).color.ToUInt();
                 }
             }
 

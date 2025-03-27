@@ -24,6 +24,7 @@ namespace Mcasaenk.Colormaping {
             new TintMeta("vanilla", "vn", 32 + 1, typeof(OrthodoxVanillaTint)),
             new TintMeta("vanilla_grass", "vn_g", 32 + 1, typeof(Vanilla_Grass)),
             new TintMeta("vanilla_foliage", "vn_f", 32 + 1, typeof(Vanilla_Foliage)),
+            new TintMeta("vanilla_dry_foliage", "vn_df", 32 + 1, typeof(Vanilla_Dry_Foliage)),
             new TintMeta("vanilla_water", "vn_w", 128 + 1, typeof(Vanilla_Water)),
             new TintMeta("fixed", "fx", 32 + 1, typeof(FixedTint)),
             new TintMeta("grid", "gr", 32 + 1, typeof(GridTint)),
@@ -140,13 +141,13 @@ namespace Mcasaenk.Colormaping {
         }
 
         public override uint TintColorFor(ushort biome, short height) {
-            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, sprite, height, version, TemperatureVariation);
+            return datapacksInfo.biomes[biome].GetVanilla(tint, sprite, height, version, TemperatureVariation);
         }
 
         public override Blending GetBlendMode() {
             if(!On) return Blending.none;
             if(Blend == 1) return Blending.heightonly;
-            if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage")) return Blending.full;
+            if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage" || tint == "dry_foliage")) return Blending.full;
             else return Blending.biomeonly;
         }
     }
@@ -155,6 +156,9 @@ namespace Mcasaenk.Colormaping {
     }
     public class Vanilla_Foliage : HardcodedVanillaTint {
         public Vanilla_Foliage(GroupManager<Tint> groupManager, string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(groupManager, name, TintMeta.GetFormat(typeof(Vanilla_Foliage)).format, version, sprite, datapackInfo) { }
+    }
+    public class Vanilla_Dry_Foliage : HardcodedVanillaTint {
+        public Vanilla_Dry_Foliage(GroupManager<Tint> groupManager, string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(groupManager, name, TintMeta.GetFormat(typeof(Vanilla_Dry_Foliage)).format, version, sprite, datapackInfo) { }
     }
     public class Vanilla_Water : HardcodedVanillaTint {
         public Vanilla_Water(GroupManager<Tint> groupManager, string name, int version, uint[,] sprite, DatapacksInfo datapackInfo) : base(groupManager, name, TintMeta.GetFormat(typeof(Vanilla_Water)).format, version, sprite, datapackInfo) { }

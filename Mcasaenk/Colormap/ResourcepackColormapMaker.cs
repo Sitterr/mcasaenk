@@ -125,6 +125,7 @@ namespace Mcasaenk.Colormaping {
                         string pngname = vtint.name switch {
                             "grass" => "grass.png",
                             "foliage" => "foliage.png",
+                            "dry_foliage" => "dry_foliage.png",
                             _ => "",
                         };
                         string ppp = Path.Combine(defcolormappath, pngname);

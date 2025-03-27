@@ -20,6 +20,8 @@ brown_candle
 brown_mushroom
 brown_stained_glass_pane
 bubble_coral
+bush
+cactus_flower
 candle
 carrots
 cave_vines
@@ -43,9 +45,9 @@ dead_horn_coral
 dead_tube_coral
 fern
 fire
+firefly_bush
 fire_coral
 glass_pane
-glow_item_frame
 glow_lichen
 gray_candle
 gray_stained_glass_pane
@@ -54,7 +56,6 @@ green_stained_glass_pane
 hanging_roots
 horn_coral
 iron_bars
-item_frame
 jungle_sapling
 kelp
 kelp_plant
@@ -107,6 +108,7 @@ resin_clump
 rose_bush
 sculk_vein
 seagrass
+short_dry_grass
 short_grass
 small_amethyst_bud
 soul_fire
@@ -116,6 +118,7 @@ spruce_sapling
 sugar_cane
 sunflower
 sweet_berry_bush
+tall_dry_grass
 tall_grass
 tall_seagrass
 torch

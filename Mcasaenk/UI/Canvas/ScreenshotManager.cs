@@ -229,7 +229,7 @@ namespace Mcasaenk.UI.Canvas {
 
                     var bytetag = ArrTag<byte>.Get(16384);
                     for(int i = 0; i < 16384; i++) {
-                        bytetag[i] = JavaMapColors.Nearest(JavaMapColors.derivatives, pixels[i], version).id;
+                        bytetag[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), version).id;
                     }             
                     data.Add("colors", bytetag);
                 }
