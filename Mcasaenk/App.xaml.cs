@@ -30,7 +30,7 @@ namespace Mcasaenk
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "1.2.1", MINECRAFTVERSION = "1.21.4";
+        public const string VERSION = "1.2.2", MINECRAFTVERSION = "1.21.5";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
