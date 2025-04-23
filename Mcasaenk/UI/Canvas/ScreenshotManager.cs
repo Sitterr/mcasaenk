@@ -243,7 +243,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         public Cursor MouseOverWhat(WorldPosition screen, Point mousePos) {
-            int e = ScreenshotPainer.EdgeSize(screen.zoom);
+            int e = (int)Math.Round(10 + screen.zoom);
             var p = new Point(e, e).Dev(2);
             var s = new Size(e, e);
 

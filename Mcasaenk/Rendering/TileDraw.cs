@@ -1,4 +1,5 @@
-﻿using Accessibility;
+﻿/*
+using Accessibility;
 using CommunityToolkit.HighPerformance;
 using Mcasaenk.Colormaping;
 using Mcasaenk.Shade3d;
@@ -771,3 +772,4 @@ namespace Mcasaenk.Rendering {
         public void Dispose() { }
     }
 }
+*/

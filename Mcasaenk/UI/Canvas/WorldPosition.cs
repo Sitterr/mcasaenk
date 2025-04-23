@@ -12,7 +12,7 @@ namespace Mcasaenk.UI.Canvas {
         private double _zoom;
         private Rect coord;
 
-        public WorldPosition(Point start, int screenWidth, int screenHeight, double zoom) {
+        public WorldPosition(Point start, double screenWidth, double screenHeight, double zoom) {
             this.coord = new Rect(start.X, start.Y, screenWidth * zoom, screenHeight * zoom);
             _zoom = zoom;
         }
@@ -22,7 +22,7 @@ namespace Mcasaenk.UI.Canvas {
                 return coord.Location;
             }
             set { 
-                coord.Location = value;
+                coord.Location = new Point(Double.Round(value.X, 5), Double.Round(value.Y, 5));
             }
         }
 
@@ -38,7 +38,7 @@ namespace Mcasaenk.UI.Canvas {
 
         public int ScreenWidth {
             get {
-                return (int)(coord.Width * zoom);
+                return (int)Math.Ceiling(coord.Width * zoom);
             }
             set {
                 coord.Width = value / zoom;
@@ -46,7 +46,7 @@ namespace Mcasaenk.UI.Canvas {
         }
         public int ScreenHeight {
             get {
-                return (int)(coord.Height * zoom);
+                return (int)Math.Ceiling(coord.Height * zoom);
             }
             set {
                 coord.Height = value / zoom;
@@ -88,10 +88,10 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         public IEnumerable<Point2i> GetVisibleTilePositions() {
-            double sx = Global.Coord.fairDev((int)coord.X, 512), sz = Global.Coord.fairDev((int)coord.Y, 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
+            double sx = Global.Coord.fairDev((int)Math.Floor(coord.X), 512), sz = Global.Coord.fairDev((int)Math.Floor(coord.Y), 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
 
-            for(int x = 0; x * 512 - tx < coord.Width; x++) {
-                for(int z = 0; z * 512 - tz < coord.Height; z++) {
+            for(int x = 0; x * 512 - tx <= coord.Width + 1; x++) {
+                for(int z = 0; z * 512 - tz <= coord.Height + 1; z++) {
                     yield return new Point2i(x + sx, z + sz);
                 }
             }

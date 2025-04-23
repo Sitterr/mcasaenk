@@ -83,7 +83,17 @@ namespace Mcasaenk.Rendering {
     public class GenerateTilePool : TilePool {
         private ConcurrentDictionary<Tile, List<WorldPosition>> observers = new();
 
-        public GenerateTilePool() : base(Global.App.Settings.MAXCONCURRENCY) {  }
+        public ArrayPool<short> heightPool;
+        public ArrayPool<short> depthsPool;
+        public ArrayPool<ushort> blockIdsPool;
+        public ArrayPool<ushort> biomeIds8_light4_shade4Pool;
+
+        public GenerateTilePool() : base(Global.App.Settings.MAXCONCURRENCY) {
+            heightPool = ArrayPool<short>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
+            depthsPool = ArrayPool<short>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
+            blockIdsPool = ArrayPool<ushort>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
+            biomeIds8_light4_shade4Pool = ArrayPool<ushort>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
+        }
 
         public static long redrawAcc = 0, redrawCount = 1;
         public void Queue(Tile tile, WorldPosition observer) {
@@ -93,7 +103,7 @@ namespace Mcasaenk.Rendering {
 
             base.Queue(tile, (() => {
                 Global.Time((() => {
-                    tile.genData = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(tile) : TileGenerate.StandartGenerate(tile);
+                    tile.genData = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(this, tile) : TileGenerate.StandartGenerate(this, tile);
                 }), out var time);
                 redrawAcc += time;
                 redrawCount++;

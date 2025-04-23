@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Colormaping;
+﻿/*
+using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Microsoft.Win32.SafeHandles;
 using System;
@@ -35,7 +36,6 @@ namespace Mcasaenk.UI.Canvas {
 
         protected abstract void Render(DrawingContext graphics, WorldPosition screen);
     }
-
 
     public class ScenePainter : Painter {
         private TileMap tileMap = null;
@@ -438,3 +438,4 @@ namespace Mcasaenk.UI.Canvas {
         }
     }
 }
+*/

@@ -55,7 +55,7 @@ namespace Mcasaenk.Rendering {
             short floor_height = data.GetTerrainHeight(x, z);
             short motion_height = data.GetMotionHeight(x, z);
 
-            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == data.Colormap.depth) {
+            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == BlockManager.depth) {
                 return floor_height;
             }
 

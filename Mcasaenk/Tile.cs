@@ -23,7 +23,7 @@ using static Mcasaenk.Colormaping.Tint;
 
 namespace Mcasaenk
 {
-    public class TileMap {
+    public class TileMap : IDisposable {
         public readonly Dimension dimension;
         private readonly ConcurrentDictionary<long, Tile> tiles;
         private readonly ConcurrentDictionary<long, TileShadeFrames> shadeFrames;
@@ -37,6 +37,17 @@ namespace Mcasaenk
             this.possibleTiles = existingRegions.Select(a => a.AsLong()).ToFrozenSet();
             tiles = new ConcurrentDictionary<long, Tile>();
             shadeFrames = new ConcurrentDictionary<long, TileShadeFrames>();
+        }
+
+        private bool disposed;
+        public void Dispose() {
+            if(disposed) return;
+
+            foreach(var tile in tiles) {
+                tile.Value.genData?.Dispose();
+            }
+
+            disposed = true;
         }
 
         public void SetSettings() {
@@ -55,6 +66,7 @@ namespace Mcasaenk
             }
         }
 
+
         public Tile GetTile(Point2i point) {
             long pointL = point.AsLong();
             if(!possibleTiles.Contains(pointL)) return null;
@@ -65,6 +77,7 @@ namespace Mcasaenk
             }
             return tile;
         }
+        public int TileCount() => tiles.Count;
 
         public TileShadeFrames GetTileShadeFrame(Point2i point) {
             long pointL = point.AsLong();
@@ -107,9 +120,9 @@ namespace Mcasaenk
             map.generateTilePool.Queue(this, observer);
         }
         public void QueueDraw() {
-            map.drawTilePool.Queue(this, () => {
-                this.Redraw();
-            }, () => true);
+            //map.drawTilePool.Queue(this, () => {
+            //    this.Redraw();
+            //}, () => true);
         }
 
         public TileMap GetOrigin() { 
@@ -164,46 +177,46 @@ namespace Mcasaenk
 
 
 
-        public unsafe void Redraw() {
-            if(this.genData == null) return;
-            var img = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
-            img.Lock();
+        //public unsafe void Redraw() {
+        //    if(this.genData == null) return;
+        //    var img = new WriteableBitmap(512, 512, 96, 96, PixelFormats.Bgra32, null);
+        //    img.Lock();
 
-            uint* pixels = (uint*)img.BackBuffer;
-            GenData[,] neighbours = new GenData[3, 3];
-            neighbours[1, 1] = genData;
-            if(Global.App.Colormap.TintManager.GetBlendingTints().Where(Global.App.Colormap.Grouping.HaveInRecord).Any() || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
-                for(int i = -1; i <= 1; i++) { // biome blend
-                    for(int j = -1; j <= 1; j++) {
-                        var tile = map.GetTile(pos + new Point2i(i, j));
-                        if(tile == null) continue;
-                        neighbours[i + 1, j + 1] = tile.genData;
-                    }
-                }
-            } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
-                Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
-                    Direction.North => new Point2i(0, -1),
-                    Direction.South => new Point2i(0, 1),
-                    Direction.East => new Point2i(1, 0),
-                    Direction.West => new Point2i(-1, 0),
-                };
-                var tile = map.GetTile(pos + p);
-                if(tile != null) {
-                    neighbours[p.X + 1, p.Z + 1] = tile.genData;
-                }
-            }
+        //    uint* pixels = (uint*)img.BackBuffer;
+        //    GenData[,] neighbours = new GenData[3, 3];
+        //    neighbours[1, 1] = genData;
+        //    if(Global.App.Colormap.TintManager.GetBlendingTints().Where(Global.App.Colormap.Grouping.HaveInRecord).Any() || Global.Settings.OCEAN_DEPTH_BLENDING > 1) {
+        //        for(int i = -1; i <= 1; i++) { // biome blend
+        //            for(int j = -1; j <= 1; j++) {
+        //                var tile = map.GetTile(pos + new Point2i(i, j));
+        //                if(tile == null) continue;
+        //                neighbours[i + 1, j + 1] = tile.genData;
+        //            }
+        //        }
+        //    } else if(Global.Settings.SHADETYPE == ShadeType.jmap) {
+        //        Point2i p = Global.Settings.Jmap_MAP_DIRECTION switch {
+        //            Direction.North => new Point2i(0, -1),
+        //            Direction.South => new Point2i(0, 1),
+        //            Direction.East => new Point2i(1, 0),
+        //            Direction.West => new Point2i(-1, 0),
+        //        };
+        //        var tile = map.GetTile(pos + p);
+        //        if(tile != null) {
+        //            neighbours[p.X + 1, p.Z + 1] = tile.genData;
+        //        }
+        //    }
             
 
 
-            var tempgen = genData.GetTempInstance();
-            TileDraw.FillPixels(pixels, Global.App.Colormap, tempgen, neighbours);
-            tempgen.DisposeTemporal();
+        //    var tempgen = genData.GetTempInstance();
+        //    TileDraw.FillPixels(pixels, Global.App.Colormap, tempgen, neighbours);
+        //    tempgen.DisposeTemporal();
 
-            img.Unlock();
-            img.Freeze();
+        //    img.Unlock();
+        //    img.Freeze();
 
-            this.img = img;
+        //    this.img = img;
             
-        }
+        //}
     }
 }

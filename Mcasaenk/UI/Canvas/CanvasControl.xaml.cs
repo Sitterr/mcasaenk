@@ -1,11 +1,20 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
+using Mcasaenk.Shaders;
+using Mcasaenk.Shaders.Blur;
+using Mcasaenk.Shaders.Kawase;
+using Mcasaenk.Shaders.Scale;
+using Mcasaenk.Shaders.Scene;
+using OpenTK.Graphics.OpenGL4;
+using OpenTK.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Security;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,40 +33,37 @@ namespace Mcasaenk.UI.Canvas {
     /// <summary>
     /// Interaction logic for CanvasControl.xaml
     /// </summary>
-    public partial class CanvasControl : UserControl {
+    public partial class CanvasControl : GLWpfControl {
 
-        WorldPosition screen;
+        readonly WorldPosition screen;
         ScreenshotManager screenshotManager;
 
-        List<Painter> painters;
-        ScenePainter scenePainter;
-        ScreenshotPainer screenshotPainer;
-        GridPainter2 gridPainter;
-        BackgroundPainter backgroundPainter;
-
-        DispatcherTimer secondaryTimer;
+        BlurShader blurShader;
+        KawaseShader kawaseShader;
+        SceneShader sceneShader;
+        ScaleShader scaleShader;
 
         public CanvasControl() {
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
+            var settings = new GLWpfControlSettings {
+                MajorVersion = 4,
+                MinorVersion = 3
+            };
+            this.Start(settings);
+            GL.Enable(EnableCap.DebugOutput);
+            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
+                string str = Marshal.PtrToStringAnsi(msg);
+                if(type == DebugType.DebugTypeError) {
+                    Console.WriteLine(str);
+                }
+            }, IntPtr.Zero);
 
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
-            scenePainter = new ScenePainter();
-            screenshotPainer = new ScreenshotPainer();
-            gridPainter = new GridPainter2();
-            backgroundPainter = new BackgroundPainter();
-            painters = [
-                backgroundPainter,
-                scenePainter,
-                screenshotPainer,
-                gridPainter,
-            ];
-        
             this.SizeChanged += OnSizeChange;
             this.MouseWheel += OnMouseWheel;
             this.MouseDown += (o, e) => OnMouseDown(e.ChangedButton);
@@ -66,23 +72,66 @@ namespace Mcasaenk.UI.Canvas {
             this.MouseLeave += OnMouseLeave;
 
             this.KeyDown += OnKeyDown;
-            this.KeyUp += OnKeyUp; ;
+            this.KeyUp += OnKeyUp;
 
-            secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
-            CompositionTarget.Rendering += OnFastTick;
+            var secondaryTimer = new DispatcherTimer(new TimeSpan(0_50 * TimeSpan.TicksPerMicrosecond), DispatcherPriority.Background, OnSlowTick, this.Dispatcher);
 
-            msg.Visibility = Visibility.Collapsed;
+            //msg.Visibility = Visibility.Collapsed;
 
-
-            this.Loaded += CanvasControl_Loaded;
+            this.Loaded += Canvas_Loaded;
+            this.Unloaded += Canvas_Unloaded;
+            this.Render += Canvas_Render;
         }
-#if DEBUG
-        bool mousehook = false;
-#else
-        bool mousehook = true;
-#endif
 
-        private void CanvasControl_Loaded(object sender, RoutedEventArgs e) {
+
+        bool loaded = false;
+        int VBuffer, IBuffer, VAO;
+        private void Canvas_Loaded(object sender, RoutedEventArgs e) {
+            VAO = GL.GenVertexArray();
+            GL.BindVertexArray(VAO);
+
+            dpix = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
+            dpiy = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M22;
+
+            float[] vertices = {
+                1.0f, -1.0f, 0.0f,
+                1.0f,  1.0f, 0.0f,
+               -1.0f,  1.0f, 0.0f,
+               -1.0f, -1.0f, 0.0f,
+            };
+            uint[] indices = { 3, 0, 1, 3, 2, 1 };
+
+            VBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBuffer);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+
+            IBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBuffer);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
+
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(0);
+
+            //blurShader = new BlurShader(screen);
+            sceneShader = new SceneShader(screen);
+            scaleShader = new ScaleShader(screen);
+            kawaseShader = new KawaseShader(screen);
+
+            GL.BindVertexArray(0);
+
+            int maxTextureBufferSize;
+            GL.GetInteger(GetPName.MaxTextureBufferSize, out maxTextureBufferSize);
+
+            int maxssbo;
+            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxssbo);
+
+            int maxtextures;
+            GL.GetInteger(GetPName.MaxTextureImageUnits, out maxtextures);
+
+            int maxrazshirenia;
+            GL.GetInteger(GetPName.MaxDrawBuffers, out maxrazshirenia);
+
+
             if(mousehook) {
                 MouseHook.Start();
 
@@ -122,12 +171,43 @@ namespace Mcasaenk.UI.Canvas {
                     }
                 };
             }
+
+            UpdateUILocation();
+            loaded = true;
+        }
+        private void Canvas_Unloaded(object sender, RoutedEventArgs e) {
+            if(mousehook) MouseHook.Stop();
+            sceneShader.Dispose();
+            scaleShader.Dispose();
+            kawaseShader.Dispose();
+        }
+
+        int tf = 0, f = 0;
+        private void Canvas_Render(TimeSpan timer) {
+            if(!loaded) return;
+
+            tf += timer.Milliseconds;
+            f++;
+            if(tf > 1000) {
+                window.footer.Fps = f;
+                tf = 0; f = 0;
+            }
+
+            //int[] kawase = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            int[] kawase = Enumerable.Repeat(0, Global.Settings.OCEAN_DEPTH_BLENDING).ToArray();
+            //int[] kawase = new int[(int)Math.Sqrt(Global.Settings.OCEAN_DEPTH_BLENDING)];
+            //for(int i = 0; i < kawase.Length; i++) kawase[i] = i;
+
+            //blurShader.Use(VAO, tileMap);
+            var kawase_texures = kawaseShader.Use(VAO, [kawase], tileMap);
+            sceneShader.Use(VAO, kawase_texures, tileMap);
+            scaleShader.Use(VAO, sceneShader.texture);
         }
 
         TileMap tileMap { get => Global.App.TileMap; }
         MainWindow window { get => Global.App.Window; }
         public void OnTilemapChanged(bool dimchange) { 
-            scenePainter.SetTileMap(tileMap);
+            //scenePainter.SetTileMap(tileMap);
             screenshotManager = null;
 
             if(dimchange) {
@@ -135,44 +215,15 @@ namespace Mcasaenk.UI.Canvas {
                 UpdateUILocation();
             }
 
-            msg.Visibility = Visibility.Collapsed;
-            if(tileMap != null) {
-                if(tileMap.Empty()) {
-                    msg.Text = "This dimension is empty";
-                    msg.Visibility = Visibility.Visible;
-                }
-            }
+            //msg.Visibility = Visibility.Collapsed;
+            //if(tileMap != null) {
+            //    if(tileMap.Empty()) {
+            //        msg.Text = "This dimension is empty";
+            //        msg.Visibility = Visibility.Visible;
+            //    }
+            //}
         }
 
-        protected override void OnRender(DrawingContext drawingContext) {
-            base.OnRender(drawingContext);
-
-            foreach(var painter in painters) {
-                drawingContext.DrawDrawing(painter.GetDrawing());
-            }
-        }
-
-
-        double tick_lastElapsed = 0, tick_accumulation = 0;
-        int tick_count = 0;
-        private void OnFastTick(object sender, EventArgs e) {
-            foreach(var painter in painters) {
-                painter.Update(screen);
-            }
-
-            { // footer update
-                double elapsed = ((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
-                double t = elapsed - tick_lastElapsed;
-                tick_accumulation += t;
-                tick_lastElapsed = elapsed;
-                tick_count++;
-                if(tick_accumulation > 1000) {
-                    window.footer.Fps = tick_count;
-                    tick_accumulation = 0;
-                    tick_count = 0;
-                }
-            }
-        }
 
         private void OnSlowTick(object a, object b) {
             window.footer?.Refresh();
@@ -191,11 +242,13 @@ namespace Mcasaenk.UI.Canvas {
 
             if(window.footer.Visibility == Visibility.Visible) {
                 { // footer update
-                    window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
+                    //window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
                     window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
 
-                    window.footer.ShadeTiles = tileMap.ShadeTiles();
-                    window.footer.ShadeFrames = tileMap.ShadeFrames();
+                    //window.footer.ShadeTiles = tileMap.ShadeTiles();
+                    //window.footer.ShadeFrames = tileMap.ShadeFrames();
+                    window.footer.ShadeTiles = 0;
+                    window.footer.ShadeFrames = 0;
 
                     window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), tileMap);
                 }
@@ -209,10 +262,14 @@ namespace Mcasaenk.UI.Canvas {
 
             Resolution.frame.X = (int)Math.Ceiling(screen.Width) + 1;
             Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
+
+            //blurShader?.OnResize();
+            sceneShader?.OnResize();
+            kawaseShader?.OnResize();
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
             screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
-            screenshotPainer.SetManager(screenshotManager);
+            //screenshotPainer.SetManager(screenshotManager);
         }
         public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }
         public void GoTo(Point p) {
@@ -223,7 +280,22 @@ namespace Mcasaenk.UI.Canvas {
         }
 
 
+
+
+
+
+
+
+
         #region INPUT
+#if DEBUG
+        bool mousehook = false;
+#else
+        bool mousehook = false;
+#endif
+
+        private double dpix, dpiy;
+
         private Point mousePos = default, mouseStart = default;
         public bool mousein = false, mousedown = false, mousemiddle, mousescreenshot = false;
         public Cursor mousedownCursor;
@@ -273,7 +345,7 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
         public void OnMouseMove(Point point) {
-            mousePos = point;
+            mousePos = point.Mult(dpix, dpiy);
             if(mousedown) {
                 if(mousemiddle || !mousescreenshot) {
                     screen.Start = mouseStart.Sub(mousePos.Dev(screen.zoom));
@@ -322,8 +394,8 @@ namespace Mcasaenk.UI.Canvas {
             UpdateUILocation();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
-            screen.ScreenWidth = (int)this.ActualWidth + 1;
-            screen.ScreenHeight = (int)this.ActualHeight + 1;
+            screen.ScreenWidth = (int)(this.ActualWidth * dpix);
+            screen.ScreenHeight = (int)(this.ActualHeight * dpiy);
             UpdateUILocation();
         }
         private void OnMouseLeave(object sender, MouseEventArgs e) {

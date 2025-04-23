@@ -55,7 +55,7 @@
 
 
 
-                            <Border x:Name="cont_general" Visibility="Visible">
+                            <Border x:Name="cont_general" Visibility="Collapsed">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -173,7 +173,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Collapsed">
+                            <Border x:Name="cont_shades" Visibility="Visible">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">

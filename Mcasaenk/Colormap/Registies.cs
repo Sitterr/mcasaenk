@@ -43,6 +43,8 @@ namespace Mcasaenk.Colormaping {
         }
         public void SetDef(ushort def) => this.def = def;
 
+        public int Count => nameToId.Count;
+
         public ushort GetId(string name) {
             if(name == null) return ++counter;
             if(nameToId.TryGetValue(name, out var id)) return id;

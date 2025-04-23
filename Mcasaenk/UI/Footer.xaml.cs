@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -49,12 +50,12 @@ namespace Mcasaenk.UI {
         }
 
 
-        public int ShadeTiles {
-            get => Convert.ToInt16(txt_shadetiles.Text);
+        public double ShadeTiles {
+            get => Convert.ToDouble(txt_shadetiles.Text);
             set => txt_shadetiles.Text = value.ToString();
         }
-        public int ShadeFrames {
-            get => Convert.ToInt16(txt_shadeframes.Text);
+        public double ShadeFrames {
+            get => Convert.ToDouble(txt_shadeframes.Text);
             set => txt_shadeframes.Text = value.ToString();
         }
 
@@ -74,39 +75,28 @@ namespace Mcasaenk.UI {
 
                     txt_y.Text = (col.heights[i] + Global.Settings.MINY).ToString();
 
-                    bool depth = col == tile.genData.depthColumn && (tile.genData.depthColumn.depths != null ? tile.genData.depthColumn.depths[i] : -1) > 0;
+                    bool depth = col == tile.genData.depthColumn && (tile.genData.depthColumn.depths15_lightfrombottom1 != null ? tile.genData.depthColumn.depths15_lightfrombottom1[i] : -1) > 0;
                     //window.footer.Y = tile.genData.isShade(i);
                     if(depth) {
                         sep_y.Text = "/";
-                        txt_ty.Text = (col.heights[i] + Global.Settings.MINY - tile.genData.depthColumn.depths[i]).ToString();
+                        txt_ty.Text = (col.heights[i] + Global.Settings.MINY - tile.genData.depthColumn.depths15_lightfrombottom1[i]).ToString();
                     } else {
                         sep_y.Text = "";
                         txt_ty.Text = "";
                     }
 
                     if(Global.Settings.BLOCKINFO) {
-                        if(Global.Settings.DATASTORAGEMODEL == GenDataModel.COLOR && tile.genData.topblocks != null) {
-                            SetStringText(Global.App.Colormap.Block.GetName(tile.genData.topblocks[i]), txt_block);
+                        {
+                            SetStringText(Global.App.Colormap.Block.GetName(col.blockIds[i]), txt_block);
                             if(depth) {
                                 sep_block.Text = "/";
-                                SetStringText(Global.App.Colormap.Block.GetName(Global.App.Colormap.depth), txt_block2);
+                                SetStringText(Global.App.Colormap.Block.GetName(BlockManager.depth), txt_block2);
                             } else {
                                 sep_block.Text = "";
                                 SetStringText("", txt_block2);
                             }
 
-                            SetStringText(Global.App.Colormap.Biome.GetName(col.BiomeId(i)), txt_biome);
-                        } else if(col is GenDataColumnId colid) {
-                            SetStringText(Global.App.Colormap.Block.GetName(colid.BlockId(i)), txt_block);
-                            if(depth) {
-                                sep_block.Text = "/";
-                                SetStringText(Global.App.Colormap.Block.GetName(Global.App.Colormap.depth), txt_block2);
-                            } else {
-                                sep_block.Text = "";
-                                SetStringText("", txt_block2);
-                            }
-
-                            SetStringText(Global.App.Colormap.Biome.GetName(col.BiomeId(i)), txt_biome);
+                            //SetStringText(Global.App.Colormap.Biome.GetName(col.bio(i)), txt_biome);
                         }
                     }
 

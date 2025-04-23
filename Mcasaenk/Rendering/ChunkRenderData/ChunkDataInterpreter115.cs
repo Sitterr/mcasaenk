@@ -81,7 +81,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                                 waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);
 
                                 ushort id = Global.App.Colormap.Block.GetId(name);
-                                if(waterlogged && (id == Colormap.INVBLOCK || Global.App.Colormap.depth == Global.App.Colormap.BLOCK_WATER)) id = Global.App.Colormap.BLOCK_WATER;
+                                if(waterlogged && (id == Colormap.INVBLOCK || BlockManager.depth == Global.App.Colormap.BLOCK_WATER)) id = Global.App.Colormap.BLOCK_WATER;
                                 palettes[y][i] = id;
 
                                 i++;

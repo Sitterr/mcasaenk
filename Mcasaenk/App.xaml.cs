@@ -16,6 +16,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -47,6 +48,10 @@ namespace Mcasaenk
             if(changed == nameof(Settings.UseMapPalette)) {
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
             }
+
+            if(changed == "On" || changed == nameof(Settings.DEFBIOME) || changed == "TemperatureVariation") {
+                Colormap.TintManager.UpdateTexture();
+            }
         }
         private void OnHardChange(List<string> changed) {
             if(changed.Count == 0) return;
@@ -61,10 +66,13 @@ namespace Mcasaenk
                 Colormap?.Block.SetDef(Settings.SKIP_UNKNOWN_BLOCKS ? Colormap.INVBLOCK : Colormap.NONEBLOCK);
             }
 
-            Colormap?.Grouping.Reset();
             Colormap?.UpdateHeightmapCompatability();
             Colormap?.TintManager.Freeze();
             Colormap?.FilterManager.Freeze();
+
+            if(changed.Contains("ABSORBTION")) {
+                Colormap?.BlocksManager.UpdateTexture();
+            }
 
             SettingsHub.FinishFreeze(false);
         }
@@ -143,10 +151,26 @@ namespace Mcasaenk
 
         public double RAND;
         public MainWindow Window { get => (MainWindow)this.MainWindow; }
-        public TileMap TileMap { get; set; }
+
+        private TileMap tileMap;
+        public TileMap TileMap {
+            get => tileMap; 
+            set{
+                tileMap?.Dispose();
+                tileMap = value;
+            }
+        }
         public SettingsHub SettingsHub { get; set; }
         public Settings Settings { get; set; }
-        public Colormap Colormap { get; set; }
+
+        private Colormap colormap;
+        public Colormap Colormap {
+            get => colormap;
+            set {
+                colormap?.Dispose();
+                colormap = value;
+            }
+        }
 
         private Save _openedSave;
         public Save OpenedSave { // hard reset
@@ -217,6 +241,7 @@ namespace Mcasaenk
             foreach(var filter in Colormap.FilterManager.ELEMENTS) filter.SetFromBack();
             Colormap.FilterManager.SetFromBack();
             Colormap.TintManager.SetFromBack();
+            Colormap.BlocksManager.UpdateTexture();
 
             Window.OnColormapChange();
         }

@@ -22,14 +22,15 @@ using Mcasaenk.Nbt;
 using CommunityToolkit.HighPerformance.Buffers;
 using Mcasaenk.Rendering.ChunkRenderData;
 using System.Buffers;
+using Mcasaenk.Colormaping;
 
 namespace Mcasaenk.Rendering
 {
     public class TileGenerate {
-        public static unsafe GenData StandartGenerate(Tile tile) {
+        public static unsafe GenData StandartGenerate(GenerateTilePool pool, Tile tile) {
             if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
 
-            var rawData = new RawData();
+            var rawData = new RawData(pool);
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
 
@@ -40,16 +41,26 @@ namespace Mcasaenk.Rendering
 
                     ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Global.Settings.ABSY, rawData);
                 }
+
+                //Parallel.For(0, 1024, i => {
+                //    int cz = i / 32, cx = i % 32;
+                //    using var chunkdata = ChunkInterpreterStartingPoint.Read(streams[i]);
+                //    if(chunkdata == null) return;
+
+                //    ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Global.Settings.ABSY, rawData);
+                //});
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depth);
+            var genData = new GenData(rawData);
+            genData.FreeData();
+
             return genData;
         }
 
-        public static unsafe GenData ShadeGenerate(Tile tile) {
+        public static unsafe GenData ShadeGenerate(GenerateTilePool pool, Tile tile) {
             if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
 
-            var rawData = new RawData();
+            var rawData = new RawData(pool);
             using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
                 var streams = regionReader.ReadChunkOffsets();
 
@@ -77,8 +88,8 @@ namespace Mcasaenk.Rendering
                 }
             }
 
-            var genData = new GenData(rawData, Global.App.Colormap.depth);
-            
+            var genData = new GenData(rawData);
+
             { // save shades 
                 tile.shade.Construct(rawData, genData);
 

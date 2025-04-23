@@ -1,5 +1,6 @@
 ﻿using Accessibility;
 using Mcasaenk.Rendering;
+using OpenTK.Graphics.ES20;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -18,7 +19,7 @@ namespace Mcasaenk.Shade3d {
 
         private byte[][] shadeValues; // colx512x512x20
 
-        private bool[] harvested;
+        private bool[] harvested_to;
 
         private GenData genData;
         public void Construct(RawData freeRaw, GenData genData) {
@@ -31,15 +32,15 @@ namespace Mcasaenk.Shade3d {
 
                 _ = Recalc();
 
-                harvested = new bool[ShadeConstants.GLB.regionReach.Length];
+                harvested_to = new bool[ShadeConstants.GLB.regionReach.Length];
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
                     int _iz = p.p.Z, _ix = p.p.X;
 
-                    if(_ix == 0 && _iz == 0) harvested[i] = true;
+                    if(_ix == 0 && _iz == 0) harvested_to[i] = true;
 
 
-                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[i] = true;
+                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested_to[i] = true;
 
                     i++;
                 }
@@ -50,12 +51,13 @@ namespace Mcasaenk.Shade3d {
         }
 
         protected override bool ShouldDestruct() {
-            return harvested.Contains(false) == false;
+            return harvested_to.Contains(false) == false;
         }
         protected override void Destruct() {
             this.shadeValues = null;
-            this.genData = null;
-            harvested = null;
+            genData.FreeData();
+            genData = null;
+            harvested_to = null;
         }
 
 
@@ -71,7 +73,7 @@ namespace Mcasaenk.Shade3d {
                     int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
 
                     if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
-                        .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[i] = true;
+                        .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested_to[i] = true;
 
                     i++;
                 }
@@ -91,9 +93,9 @@ namespace Mcasaenk.Shade3d {
                             double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 
-                            //if(genData.columns[w].Height(regionIndex) != 0) {
+                            if(genData.columns[w].Height(regionIndex) != 0) {
                                 ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues[w], regionIndex, SHADEX, SHADEZ, (int)x1, (int)z1);
-                            //}
+                            }
                         }
                     }
                 }
@@ -128,7 +130,10 @@ namespace Mcasaenk.Shade3d {
                     }
 
                 }
+
             }
+
+            genData.UpdateTextureData();
 
             return changes;
         }

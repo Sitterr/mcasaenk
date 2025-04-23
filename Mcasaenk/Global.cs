@@ -348,6 +348,10 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+
+        public static double DecPart(this double a) => a - Math.Floor(a);
+        public static float DecPart(this float a) => a - (float)Math.Floor(a);
+
         public static JsonElement getObjectOrFirstElement(this JsonElement element, string objectName) {
             if(element.ValueKind == JsonValueKind.Array) {
                 return element.EnumerateArray().First().GetProperty(objectName);
@@ -513,6 +517,9 @@ namespace Mcasaenk {
         }
         public static Point Mult(this Point p, double mult) {
             return new Point(p.X * mult, p.Y * mult);
+        }
+        public static Point Mult(this Point p, double multx, double multy) {
+            return new Point(p.X * multx, p.Y * multy);
         }
         public static Point Floor(this Point p) {
             return new Point(Math.Floor(p.X), Math.Floor(p.Y));

@@ -2,9 +2,11 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -78,10 +80,59 @@ namespace Mcasaenk {
         }
 
         protected override void Dispose(bool disposing) {
-            //if(disposing) {
+            if(_buffer != null) {
                 pool.Return(_buffer);
-            //}
+                _buffer = null;
+            }
             base.Dispose(disposing);
         }
+    }
+
+
+
+
+
+
+
+
+    public class ReadOnlyMemoryStream : Stream {
+        private ReadOnlyMemory<byte> _memory;
+        private int _position;
+
+        public ReadOnlyMemoryStream(ReadOnlyMemory<byte> memory) {
+            _memory = memory;
+            _position = 0;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => _memory.Length;
+        public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public override int Read(byte[] buffer, int offset, int count) => this.Read(buffer.AsSpan().Slice(offset, count));
+
+        public override int Read(Span<byte> buffer) {
+            int remaining = _memory.Length - _position;
+            int toRead = Math.Min(buffer.Length, remaining);
+
+            if(toRead == 0)
+                return 0;
+
+            _memory.Slice(_position, toRead).Span.CopyTo(buffer);
+            _position += toRead;
+            return toRead;
+        }
+
+        public override void Flush() {
+            throw new NotImplementedException();
+        }
+        public override long Seek(long offset, SeekOrigin origin) {
+            throw new NotImplementedException();
+        }
+        public override void SetLength(long value) {
+            throw new NotImplementedException();
+        }
+        public override void Write(byte[] buffer, int offset, int count) { throw new NotImplementedException(); }
     }
 }
