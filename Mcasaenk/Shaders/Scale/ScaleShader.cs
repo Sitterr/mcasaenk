@@ -11,19 +11,17 @@ using System.Threading.Tasks;
 
 namespace Mcasaenk.Shaders.Scale {
     public class ScaleShader : Shader {
-        private readonly WorldPosition screen;
-        public ScaleShader(WorldPosition screen) : base(ResourceMapping.def_vert, ResourceMapping.scale_frag) {
-            this.screen = screen;
+        private readonly int VAO;
+        public ScaleShader(int VAO) : base(ResourceMapping.def_vert, ResourceMapping.scale_frag) {
+            this.VAO = VAO;
         }
 
 
-        public void Use(int VAO, int scene_texture) {
-            float insimzoom = screen.zoom > 1 ? 1f : (float)screen.zoom;
-            float outsimzoom = screen.zoom < 1 ? 1f : (float)screen.zoom;
-            int w = (int)Math.Ceiling(1 + screen.Width * insimzoom), h = (int)Math.Ceiling(1 + screen.Height * insimzoom);
+        public void Use(WorldPosition screen, int scene_texture) {
+            int w = (int)Math.Ceiling(1 + screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(1 + screen.Height * screen.InSimZoom);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 1);
-            GL.Viewport(-(int)Math.Floor(screen.Start.X.DecPart() * outsimzoom), -(int)Math.Floor((1 - screen.Start.Y.DecPart()) * outsimzoom), (int)(w * outsimzoom), (int)(h * outsimzoom));
+            GL.Viewport(-(int)Math.Floor(screen.Start.X.DecPart() * screen.OutSimzoom), -(int)Math.Floor((1 - screen.Start.Y.DecPart()) * screen.OutSimzoom), (int)(w * screen.OutSimzoom), (int)(h * screen.OutSimzoom));
 
             GL.ClearColor(new Color4(15, 15, 15, 255)); GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.UseProgram(Handle);

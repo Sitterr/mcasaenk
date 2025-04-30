@@ -1,6 +1,5 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Resources;
-using Mcasaenk.Shaders.Blur;
 using Mcasaenk.Shaders.Kawase;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
@@ -15,9 +14,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Mcasaenk.Shaders.Scene {
     public class SceneShader : Shader {
         public int fbo, texture;
-        private readonly WorldPosition screen;
-        public SceneShader(WorldPosition screen) : base(ResourceMapping.tile_vert, ResourceMapping.scene_frag) {
-            this.screen = screen;
+        private readonly int VAO = 0;
+        public SceneShader(int VAO) : base(ResourceMapping.tile_vert, ResourceMapping.scene_frag) {
+            this.VAO = VAO;
 
             texture = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, texture);
@@ -34,25 +33,28 @@ namespace Mcasaenk.Shaders.Scene {
             GL.DeleteTexture(texture);
         }
 
-        public void OnResize() {
-            float insimzoom = screen.zoom > 1 ? 1f : (float)screen.zoom;
-
-            GL.BindTexture(TextureTarget.Texture2D, texture);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, (int)Math.Ceiling(1 + screen.Width * insimzoom), (int)Math.Ceiling(1 + screen.Height * insimzoom), 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
+        private int fw = -1, fh = -1;
+        private void ResizeFramebuffer(int w, int h) {
+            if(fw != w || fh != h) {
+                GL.BindTexture(TextureTarget.Texture2D, texture);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, w, h, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
+                fw = w; fh = h;
+            }
         }
 
-        public void Use(int VAO, KawaseTexture kawase, TileMap tilemap) {
-            float insimzoom = screen.zoom > 1 ? 1f : (float)screen.zoom;
-
-            int w = (int)Math.Ceiling(1 + screen.Width * insimzoom), h = (int)Math.Ceiling(1 + screen.Height * insimzoom);
+        public void Use(WorldPosition screen, TileMap tilemap, KawaseTexture tex, int[] blendtints, int kawaseR) {
+            int w = (int)Math.Ceiling(1 + screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(1 + screen.Height * screen.InSimZoom);
+            
+            ResizeFramebuffer(w, h);
             GL.Viewport(0, 0, w, h);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
             GL.ClearColor(Color4.Transparent); GL.Clear(ClearBufferMask.ColorBufferBit);
+
             GL.UseProgram(Handle);
 
             // vertex uniforms
             {
-                GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), insimzoom);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.InSimZoom);
                 GL.Uniform2(GL.GetUniformLocation(Handle, "resolution"), w, h);
                 GL.Uniform2(GL.GetUniformLocation(Handle, "cam"), (int)Math.Floor(screen.Start.X), (int)Math.Floor(screen.Start.Y));
             }
@@ -62,17 +64,20 @@ namespace Mcasaenk.Shaders.Scene {
             if(Global.App.Colormap != null && tilemap != null) {
                 // fragment uniforms
                 {
-                    //GL.ActiveTexture(TextureUnit.Texture9);
-                    //GL.BindTexture(TextureTarget.Texture2D, blurShader.texture);
-                    //GL.Uniform1(GL.GetUniformLocation(Handle, "blurdata"), 9);
-                    //GL.Uniform1(GL.GetUniformLocation(Handle, "coeff"), blurShader.coeff.Length, blurShader.coeff);
+                    // blured data
+                    {
+                        GL.ActiveTexture(TextureUnit.Texture8);
+                        GL.BindTexture(TextureTarget.Texture2D, tex.oceandepth);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_oceandepth"), 8);
 
-                    //GL.Uniform1(GL.GetUniformLocation(Handle, "R"), (Global.App.Settings.OCEAN_DEPTH_BLENDING - 1) / 2);
+                        GL.ActiveTexture(TextureUnit.Texture9);
+                        GL.BindTexture(TextureTarget.Texture2DArray, tex.tints);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_tintcolors"), 9);
 
-
-                    GL.ActiveTexture(TextureUnit.Texture9);
-                    GL.BindTexture(TextureTarget.Texture2D, kawase.oceandepth);
-                    GL.Uniform1(GL.GetUniformLocation(Handle, "oceandepth"), 9);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_tintcount"), blendtints.Length);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_blendtints"), blendtints.Length, blendtints);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_R"), kawaseR);
+                    }
 
                     Global.App.Colormap.TintManager.GetTexture().Use((int)TextureUnit.Texture11);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintpalette"), 11);

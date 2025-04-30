@@ -80,6 +80,9 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
+        public double InSimZoom  { get => zoom > 1 ? 1 : zoom; }
+        public double OutSimzoom { get => zoom < 1 ? 1 : zoom; }
+
         public Point GetGlobalPos(Point rel) {
             return new Point(coord.X + rel.X / zoom, coord.Y + rel.Y / zoom);
         }

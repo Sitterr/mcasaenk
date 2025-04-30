@@ -124,9 +124,6 @@
   <data name="biomes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>biomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="blur_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Blur\blur.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="kawase_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Shaders\Kawase\kawase.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -252,5 +249,8 @@
   </data>
   <data name="prep_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Shaders\Kawase\prep.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+    <data name="kawase_approximations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>kawase_approximations.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
 </root>

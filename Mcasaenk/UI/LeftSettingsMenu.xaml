@@ -55,7 +55,7 @@
 
 
 
-                            <Border x:Name="cont_general" Visibility="Collapsed">
+                            <Border x:Name="cont_general" Visibility="Visible">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" SharedSizeGroup="A"/>
@@ -173,7 +173,7 @@
 
                                 </Grid>
                             </Border>
-                            <Border x:Name="cont_shades" Visibility="Visible">
+                            <Border x:Name="cont_shades" Visibility="Collapsed">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock VerticalAlignment="Center">
@@ -339,7 +339,7 @@
                                                         </TextBlock.Text>
                                                     </TextBlock>
                                                 </DockPanel>
-                                                <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="65" TickFrequency="4" IsSnapToTickEnabled="True"
+                                                <Slider Grid.Row="2" Grid.Column="4" Minimum="1" Maximum="513" TickFrequency="4" IsSnapToTickEnabled="True"
                                              Value="{Binding Source={x:Static gl:Global.Settings}, Path=OceanDepthBlending}"/>
 
                                                 <StackPanel IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=SHADE3D}" Grid.Row="4" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" Orientation="Horizontal">

@@ -128,16 +128,6 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] blur_frag {
-            get {
-                object obj = ResourceManager.GetObject("blur_frag", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         public static byte[] capture {
             get {
                 object obj = ResourceManager.GetObject("capture", resourceCulture);
@@ -330,6 +320,26 @@ namespace Mcasaenk.Resources {
         public static string inherent_water_logged {
             get {
                 return ResourceManager.GetString("inherent_water_logged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to k = 001, n = 0, sim = 99.99%: [ ]
+        ///k = 003, n = 0, sim = 80.10%: [ ]
+        ///k = 005, n = 1, sim = 86.58%: [ 0 ]
+        ///k = 007, n = 2, sim = 95.24%: [ 0, 0 ]
+        ///k = 009, n = 3, sim = 95.28%: [ 0, 0, 0 ]
+        ///k = 011, n = 5, sim = 96.84%: [ 0, 0, 0, 0, 0 ]
+        ///k = 013, n = 5, sim = 90.46%: [ 0, 0, 0, 0, 1 ]
+        ///k = 015, n = 5, sim = 92.34%: [ 0, 0, 0, 0, 1 ]
+        ///k = 017, n = 5, sim = 95.00%: [ 0, 0, 0, 1, 1 ]
+        ///k = 019, n = 5, sim = 95.73%: [ 0, 0, 1, 1, 1 ]
+        ///k = 021, n = 5, sim = 95.79%: [ 0, 1, 1, 1, 1 ]
+        ///k = 023, n = 6, sim = 97.34%: [ 0, 1, 1 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string kawase_approximations {
+            get {
+                return ResourceManager.GetString("kawase_approximations", resourceCulture);
             }
         }
         

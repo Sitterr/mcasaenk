@@ -4,6 +4,8 @@ in vec2 pos;
 layout(pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform ivec2 resolution;
+uniform ivec2 glR;
+uniform ivec2 cam;
 uniform float zoom;
 
 uniform isampler2DArray region0;
@@ -14,11 +16,11 @@ uniform samplerBuffer tintpalette;
 uniform float CONTRAST, SUN_LIGHT, BLOCK_LIGHT, WATER_TRANSPARENCY, ADEG;
 uniform bool WATER_SMART_SHADE, SHADE3D, STATIC_SHADE;
 
-uniform sampler2D blurdata;
-uniform int R;
-uniform float coeff[128];
-
-uniform sampler2D oceandepth;
+uniform sampler2DArray blur_tintcolors;
+uniform sampler2D blur_oceandepth;
+uniform int blur_tintcount;
+uniform int blur_blendtints[7];
+uniform int blur_R;
 
 // global
 int layers;
@@ -35,6 +37,23 @@ vec4 blend(vec4 fg, vec4 bg) {
     }
     
     return vec4(outColor, outAlpha);
+}
+float depthQ(int depth) {
+    const float c = 5, r = 8;
+
+    float q = 1;
+    if(depth <= c) q = 0;
+    else if(depth >= c + r) q = 1;
+    else q = pow(((depth - c) / r), 2);
+
+    return q;
+}
+ivec2 blurCoord(ivec2 pos){
+    float inszoom = zoom > 1 ? 1 : zoom;
+    ivec2 gl = glR * 512 + pos - cam;
+    ivec2 loc = gl + ivec2(ivec2(512, 512));
+
+    return ivec2(ivec2(loc.x, (resolution.y / inszoom + 2 * 512) - loc.y) * inszoom);
 }
 // global
 
@@ -56,20 +75,31 @@ BlockData blockData(int id){
 }
 BlockData depth;
 int biomecount;
-vec4 TintColorFor(int tint, int biome, int height){
-    vec4 hdata = texelFetch(tintpalette, tint);
-    int offset = (int(hdata.a * 255) << 16) + (int(hdata.b * 255) << 8) + (int(hdata.g * 255));
-    int type = int(hdata.r * 255) >> 4;
+vec4 TintColorFor(ivec2 pos, int tint, int biome, int height) {
+    for(int i=0;i<blur_tintcount;i++){
+        if(tint == blur_blendtints[i]){
+            vec4 c = texelFetch(blur_tintcolors, ivec3(blurCoord(pos), i), 0);
+            c.a = 1;
+            return c; 
+        }
+    }
 
-    if(type == 1) {
-        return texelFetch(tintpalette, offset).bgra;
-    } else if(type == 2){
-        return texelFetch(tintpalette, offset + biome).bgra;
-    } else if(type == 3){
-        return texelFetch(tintpalette, offset + height).bgra;
-    } else if(type == 4){
-        return texelFetch(tintpalette, offset + height * biomecount + biome).bgra;
-    } else return vec4(1, 1, 1, 1);
+    {
+        vec4 hdata = texelFetch(tintpalette, tint);
+        int offset = (int(hdata.a * 255) << 16) + (int(hdata.b * 255) << 8) + (int(hdata.g * 255));
+        int type = int(hdata.r * 255) >> 4;
+
+        if(type == 1) {
+            return texelFetch(tintpalette, offset).bgra;
+        } else if(type == 2){
+            return texelFetch(tintpalette, offset + biome).bgra;
+        } else if(type == 3){
+            return texelFetch(tintpalette, offset + height).bgra;
+        } else if(type == 4){
+            return texelFetch(tintpalette, offset + height * biomecount + biome).bgra;
+        } else return vec4(1, 1, 1, 1);
+
+    }
 }
 // palette
 
@@ -95,6 +125,12 @@ RegionData regionData(isampler2DArray region, int l, ivec2 pos) {
     regionData.biomeid = a >> 8;
     regionData.light = ((a & 0x00F0) >> 4) / 15.0;
     regionData.shade = (a & 0x000F) / 15.0;
+
+    if(l == layers - 1) {
+        float q = depthQ(regionData.depth);
+        regionData.depth = int(round(texelFetch(blur_oceandepth, blurCoord(pos), 0).r * 65535) * q + regionData.depth * (1 - q));
+    }
+
     return regionData;
 }
 
@@ -104,12 +140,12 @@ int TerrHeight(RegionData d){
 
 bool IsDepth(RegionData d, int l) { return l == layers - 1 && d.depth != 0; }
 
-vec4 ActColor(RegionData d){
-    return mult(d.block.basecolor, TintColorFor(d.block.tint, d.biomeid, d.height));
+vec4 ActColor(RegionData d, ivec2 pos){
+    return mult(d.block.basecolor, TintColorFor(pos, d.block.tint, d.biomeid, d.height));
 }
-vec4 Color(RegionData d, int l) {
-    if(IsDepth(d, l)) return mult(depth.basecolor, TintColorFor(depth.tint, d.biomeid, d.height));
-    else return ActColor(d);
+vec4 Color(RegionData d, int l, ivec2 pos) {
+    if(IsDepth(d, l)) return mult(depth.basecolor, TintColorFor(pos, depth.tint, d.biomeid, d.height));
+    else return ActColor(d, pos);
 }
 bool ContainsInfo(RegionData d) {
     return d.blockid != 0 || d.height != 0;
@@ -144,6 +180,8 @@ void setup(){
     for(int l=0;l<layers;l++) {
         irs[l] = regionData(region0, l, ipos);
     }
+    
+
     irx = ipos.x < 511 ? regionData(region0, 0, ipos + ivec2( 1,  0)) : irs[layers - 1];
     irnx = ipos.x >= 1 ? regionData(region0, 0, ipos + ivec2(-1,  0)) : irs[layers - 1];
     irz = ipos.y < 511 ? regionData(region0, 0, ipos + ivec2( 0,  1)) : irs[layers - 1];
@@ -183,26 +221,16 @@ void main() {
         RegionData ir = irs[l];
         if(ContainsInfo(ir) == false) continue;
 
-        vec4 color = vec4(Color(ir, l).rgb, 1);
+        vec4 color = vec4(Color(ir, l, ipos).rgb, 1);
 
         float fd = 1;
         // water
         {
             if(IsDepth(ir, l)){
-                vec4 terrainColor = ActColor(ir);
+                vec4 terrainColor = ActColor(ir, ipos);
                 int waterDepth = ir.depth;
                 if(waterDepth > ir.height) {
                     terrainColor = color;
-                }
-
-                // kawase
-                {
-                    float q = 1;
-                    if(waterDepth < 8) q = 0;
-                    else if(waterDepth > 18) q = 1;
-                    else q = (waterDepth - 8) / 10.0;
-
-                    waterDepth = int(texelFetch(oceandepth, ivec2(gl_FragCoord.xy) + ivec2(512, 512), 0).r * 65535 * q + waterDepth * (1 - q));
                 }
 
                 fd = pow(2, -4 * (1 - pow(WATER_TRANSPARENCY, 0.1)) * (waterDepth + 3));

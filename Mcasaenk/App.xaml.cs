@@ -31,7 +31,7 @@ namespace Mcasaenk
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "1.2.2", MINECRAFTVERSION = "1.21.5";
+        public const string VERSION = "1.3.-1", MINECRAFTVERSION = "1.21.5";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -49,9 +49,14 @@ namespace Mcasaenk
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
             }
 
+
             if(changed == "On" || changed == nameof(Settings.DEFBIOME) || changed == "TemperatureVariation") {
                 Colormap.TintManager.UpdateTexture();
             }
+            if(changed == "Blend") {
+                Global.App.Window.canvasControl?.pipeline.kawaseShader?.UpdateBlendTintCounter(Colormap.TintManager.GetBlendingTintsIndexes());
+            }
+
         }
         private void OnHardChange(List<string> changed) {
             if(changed.Count == 0) return;

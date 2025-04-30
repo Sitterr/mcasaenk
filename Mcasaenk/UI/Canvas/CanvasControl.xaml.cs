@@ -1,7 +1,6 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shaders;
-using Mcasaenk.Shaders.Blur;
 using Mcasaenk.Shaders.Kawase;
 using Mcasaenk.Shaders.Scale;
 using Mcasaenk.Shaders.Scene;
@@ -22,6 +21,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -38,10 +38,7 @@ namespace Mcasaenk.UI.Canvas {
         readonly WorldPosition screen;
         ScreenshotManager screenshotManager;
 
-        BlurShader blurShader;
-        KawaseShader kawaseShader;
-        SceneShader sceneShader;
-        ScaleShader scaleShader;
+        public ShaderPipeline pipeline;
 
         public CanvasControl() {
             InitializeComponent();
@@ -49,18 +46,7 @@ namespace Mcasaenk.UI.Canvas {
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-            var settings = new GLWpfControlSettings {
-                MajorVersion = 4,
-                MinorVersion = 3
-            };
-            this.Start(settings);
-            GL.Enable(EnableCap.DebugOutput);
-            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
-                string str = Marshal.PtrToStringAnsi(msg);
-                if(type == DebugType.DebugTypeError) {
-                    Console.WriteLine(str);
-                }
-            }, IntPtr.Zero);
+            pipeline = new ShaderPipeline(this);
 
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
@@ -85,52 +71,11 @@ namespace Mcasaenk.UI.Canvas {
 
 
         bool loaded = false;
-        int VBuffer, IBuffer, VAO;
         private void Canvas_Loaded(object sender, RoutedEventArgs e) {
-            VAO = GL.GenVertexArray();
-            GL.BindVertexArray(VAO);
-
             dpix = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
             dpiy = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M22;
 
-            float[] vertices = {
-                1.0f, -1.0f, 0.0f,
-                1.0f,  1.0f, 0.0f,
-               -1.0f,  1.0f, 0.0f,
-               -1.0f, -1.0f, 0.0f,
-            };
-            uint[] indices = { 3, 0, 1, 3, 2, 1 };
-
-            VBuffer = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBuffer);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-            IBuffer = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBuffer);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
-
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-
-            //blurShader = new BlurShader(screen);
-            sceneShader = new SceneShader(screen);
-            scaleShader = new ScaleShader(screen);
-            kawaseShader = new KawaseShader(screen);
-
-            GL.BindVertexArray(0);
-
-            int maxTextureBufferSize;
-            GL.GetInteger(GetPName.MaxTextureBufferSize, out maxTextureBufferSize);
-
-            int maxssbo;
-            GL.GetInteger(GetPName.MaxUniformBufferBindings, out maxssbo);
-
-            int maxtextures;
-            GL.GetInteger(GetPName.MaxTextureImageUnits, out maxtextures);
-
-            int maxrazshirenia;
-            GL.GetInteger(GetPName.MaxDrawBuffers, out maxrazshirenia);
-
+            pipeline.OnLoad();
 
             if(mousehook) {
                 MouseHook.Start();
@@ -177,9 +122,7 @@ namespace Mcasaenk.UI.Canvas {
         }
         private void Canvas_Unloaded(object sender, RoutedEventArgs e) {
             if(mousehook) MouseHook.Stop();
-            sceneShader.Dispose();
-            scaleShader.Dispose();
-            kawaseShader.Dispose();
+            pipeline.Dispose();
         }
 
         int tf = 0, f = 0;
@@ -193,15 +136,8 @@ namespace Mcasaenk.UI.Canvas {
                 tf = 0; f = 0;
             }
 
-            //int[] kawase = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            int[] kawase = Enumerable.Repeat(0, Global.Settings.OCEAN_DEPTH_BLENDING).ToArray();
-            //int[] kawase = new int[(int)Math.Sqrt(Global.Settings.OCEAN_DEPTH_BLENDING)];
-            //for(int i = 0; i < kawase.Length; i++) kawase[i] = i;
+            pipeline.OnRender(screen, tileMap);
 
-            //blurShader.Use(VAO, tileMap);
-            var kawase_texures = kawaseShader.Use(VAO, [kawase], tileMap);
-            sceneShader.Use(VAO, kawase_texures, tileMap);
-            scaleShader.Use(VAO, sceneShader.texture);
         }
 
         TileMap tileMap { get => Global.App.TileMap; }
@@ -262,10 +198,6 @@ namespace Mcasaenk.UI.Canvas {
 
             Resolution.frame.X = (int)Math.Ceiling(screen.Width) + 1;
             Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
-
-            //blurShader?.OnResize();
-            sceneShader?.OnResize();
-            kawaseShader?.OnResize();
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
             screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;

@@ -1,28 +1,25 @@
 ﻿using Mcasaenk.Resources;
-using Mcasaenk.Shaders.Blur;
 using Mcasaenk.UI.Canvas;
+using OpenTK.Compute.OpenCL;
 using OpenTK.Core.Exceptions;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Mcasaenk.Shaders.Kawase {
     public class KawaseShader : Shader {
-        public readonly int fbo;
+        private readonly int fbo;
         private readonly KawaseTexture texture2 = new KawaseTexture();
 
-        private readonly WorldPosition screen;
-
-        private readonly PrepKawase prepShader;
-
-        public KawaseShader(WorldPosition screen) : base(ResourceMapping.def_vert, ResourceMapping.kawase_frag) {
-            this.screen = screen;
-
-            prepShader = new PrepKawase(screen);
+        private readonly int VAO;
+        public KawaseShader(int VAO) : base(ResourceMapping.def_vert, ResourceMapping.kawase_frag) {
+            this.VAO = VAO;
 
             texture2.tints = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2DArray, texture2.tints);
@@ -35,11 +32,10 @@ namespace Mcasaenk.Shaders.Kawase {
             texture2.oceandepth = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, texture2.oceandepth);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, [0f, 0f, 0f, 0f]);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, [0f, 0f, 0f, 0f]);
 
             fbo = GL.GenFramebuffer();
             //GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture, 0);
@@ -50,64 +46,74 @@ namespace Mcasaenk.Shaders.Kawase {
             GL.DeleteFramebuffer(fbo);
             GL.DeleteTexture(texture2.tints);
             GL.DeleteTexture(texture2.oceandepth);
-            prepShader.Dispose();
-        }
-        public void OnResize() {
-            float insimzoom = screen.zoom > 1 ? 1f : (float)screen.zoom;
-            int w = (int)Math.Ceiling(1 + (screen.Width + 2 * 512) * insimzoom);
-            int h = (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * insimzoom);
-
-            GL.BindTexture(TextureTarget.Texture2DArray, texture2.tints);
-            GL.TexImage3D(TextureTarget.Texture2DArray, 0, PixelInternalFormat.Rgba8, w, h, 4, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
-
-            GL.BindTexture(TextureTarget.Texture2D, texture2.oceandepth);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rg16, w, h, 0, PixelFormat.Rg, PixelType.UnsignedShort, IntPtr.Zero);
-
-            prepShader.OnResize();
         }
 
-        public static void AttachFramebuffer(int fbo, KawaseTexture texture) {
+        int[] ikernels = new int[8];
+        public int[] blendtints = [];
+
+        private int fw = -1, fh = -1;
+        private void ResizeFramebuffer(int w, int h) {
+            if(fw != w || fh != h) {
+                GL.BindTexture(TextureTarget.Texture2DArray, texture2.tints);
+                GL.TexImage3D(TextureTarget.Texture2DArray, 0, PixelInternalFormat.Rgba8, w, h, 7, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+
+                GL.BindTexture(TextureTarget.Texture2D, texture2.oceandepth);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rg16, w, h, 0, PixelFormat.Rg, PixelType.UnsignedShort, IntPtr.Zero);
+
+                fw = w; fh = h;
+            }
+        }
+
+        public void UpdateBlendTintCounter(int[] blendtints) { 
+            this.blendtints = blendtints;
+        }
+
+        public static void AttachFramebuffer(int fbo, KawaseTexture texture, int tintcount) {
             GL.BindTexture(TextureTarget.Texture2D, texture.oceandepth);
             GL.BindTexture(TextureTarget.Texture2DArray, texture.tints);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
 
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture.oceandepth, 0);
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1, texture.tints, 0, 0);
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment2, texture.tints, 0, 1);
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment3, texture.tints, 0, 2);
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment4, texture.tints, 0, 3);
 
+            for(int i = 0; i < tintcount; i++) {
+                GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1 + i, texture.tints, 0, i);
+            }
 
-            DrawBuffersEnum[] drawBuffers = [DrawBuffersEnum.ColorAttachment0, DrawBuffersEnum.ColorAttachment1, DrawBuffersEnum.ColorAttachment2, DrawBuffersEnum.ColorAttachment3, DrawBuffersEnum.ColorAttachment4];
-            GL.DrawBuffers(5, drawBuffers);
+            DrawBuffersEnum[] drawBuffers = new DrawBuffersEnum[tintcount + 1];
+            for(int i = 0; i < tintcount + 1; i++) {
+                drawBuffers[i] = DrawBuffersEnum.ColorAttachment0 + i;
+            }
+
+            GL.DrawBuffers(drawBuffers.Length, drawBuffers);
         }
 
-        public KawaseTexture Use(int VAO, int[][] kernels, TileMap tilemap) {
-            float insimzoom = screen.zoom > 1 ? 1f : (float)screen.zoom;
-            int w = (int)Math.Ceiling(1 + (screen.Width + 2 * 512) * insimzoom), h = (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * insimzoom);
+        public KawaseTexture Use(WorldPosition screen, TileMap tilemap, int[] kernels, int R, KawaseTexture texture1) {
+            int w = (int)Math.Ceiling(1 + (screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling(1 + (screen.Height + 2 * R) * screen.InSimZoom);
+            
+            ResizeFramebuffer((int)Math.Ceiling(1 + (screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * screen.InSimZoom));
 
-            prepShader.Use(VAO, tilemap);
-
-            KawaseTexture[] textures = [prepShader.texture1, texture2];
+            KawaseTexture[] textures = [texture1, texture2];
             KawaseTexture finaltexture = textures[0];
 
-            int[] ikernels = new int[5];
             Array.Fill(ikernels, -1);
 
-            int passes = kernels.Max(k => k.Length);
+            int[][] kawasepasses = kernels.Select(KawaseKernels.Get).ToArray();
+
+            int passes = kawasepasses.Max(k => k.Length);
+            if(passes > 0) GL.UseProgram(Handle);
             for(int p = 0; p < passes; p++) {
-                GL.Viewport(0, 0, w, h);
-                AttachFramebuffer(fbo, textures[(p + 1) % 2]);
-                GL.ClearColor(Color4.Transparent); GL.Clear(ClearBufferMask.ColorBufferBit);
-                GL.UseProgram(Handle);
+                GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
+                AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtints.Length);
+                GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
+                
 
                 for(int i = 0; i < kernels.Length; i++) {
-                    if(p < kernels[i].Length) ikernels[i] = kernels[i][p];
+                    if(p < kawasepasses[i].Length) ikernels[i] = kawasepasses[i][p];
                     else ikernels[i] = -1;
                 }
                 GL.Uniform1(GL.GetUniformLocation(Handle, "ikernels"), ikernels.Length, ikernels);
 
-                GL.Uniform1(GL.GetUniformLocation(Handle, "ii"), p);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
 
                 GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture2DArray, textures[p % 2].tints);
@@ -124,7 +130,53 @@ namespace Mcasaenk.Shaders.Kawase {
 
             return finaltexture;
         }
+    }
 
+    public static class KawaseKernels {
+        public readonly static IDictionary<int, KawaseKernel> kernels;
+        static KawaseKernels() {
+            kernels = new Dictionary<int, KawaseKernel>();
+            foreach(string _line in ResourceMapping.kawase_approximations.Split("\n")) {
+                KawaseKernel krnl = new KawaseKernel();
+                int k = -1;
+
+                try {
+                    string line = _line.Replace(" ", "");
+                    string[] parts = line.Split(':');
+
+                    string arr = parts[1].Trim('[', ']');
+                    if(arr == "") krnl.kernel = new int[0];
+                    else krnl.kernel = arr.Split(',').Select(int.Parse).ToArray();
+
+                    foreach(var part in parts[0].Split(',')) {
+                        if(part.StartsWith("k=")) k = Convert.ToInt32(part.Split('=')[1], CultureInfo.InvariantCulture);
+                        if(part.StartsWith("sim=")) krnl.approximation = Convert.ToDouble(part.Split('=')[1].TrimEnd('%'), CultureInfo.InvariantCulture) / 100;
+                    }
+
+                    if(k == -1) throw new Exception();
+                }
+                catch { continue; }
+
+                kernels.Add(k, krnl);
+            }
+
+            kernels = kernels.ToFrozenDictionary();
+        }
+
+        public struct KawaseKernel {
+            public int[] kernel;
+            public double approximation;
+            public KawaseKernel(int[] kernel, double approximation) {
+                this.kernel = kernel;
+                this.approximation = approximation;
+            }
+        }
+
+        public static int[] Get(int k) {
+            if(k <= 1) return [];
+            if(kernels.ContainsKey(k)) return kernels[k].kernel;
+            else return Get(k - 2);
+        }
     }
 
     public struct KawaseTexture {

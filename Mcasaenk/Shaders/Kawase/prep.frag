@@ -2,11 +2,16 @@
 
 in vec2 pos;
 
-layout(location = 0) out vec2 outColor0;
-layout(location = 1) out vec4 outColor1;
-layout(location = 2) out vec4 outColor2;
-layout(location = 3) out vec4 outColor3;
-layout(location = 4) out vec4 outColor4;
+layout(location = 0) out vec2 outDepth;
+layout(location = 1) out vec4 outTint0;
+layout(location = 2) out vec4 outTint1;
+layout(location = 3) out vec4 outTint2;
+layout(location = 4) out vec4 outTint3;
+layout(location = 5) out vec4 outTint4;
+layout(location = 6) out vec4 outTint5;
+layout(location = 7) out vec4 outTint6;
+uniform int tintcount;
+uniform int blendtints[7];
 
 uniform samplerBuffer palette;
 uniform samplerBuffer tintpalette;
@@ -15,21 +20,8 @@ uniform isampler2DArray region0;
 
 // global
 int layers;
-vec4 mult(vec4 v1, vec4 v2){
-    return vec4(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b, v1.a * v2.a);
-}
-vec4 blend(vec4 fg, vec4 bg) {
-    float outAlpha = fg.a + bg.a * (1.0 - fg.a);
-    
-    // Prevent division by zero if outAlpha is 0
-    vec3 outColor = vec3(0.0);
-    if (outAlpha > 0.0) {
-        outColor = (fg.rgb * fg.a + bg.rgb * bg.a * (1.0 - fg.a)) / outAlpha;
-    }
-    
-    return vec4(outColor, outAlpha);
-}
 // global
+
 // palette
 struct BlockData{
     vec4 basecolor;
@@ -86,31 +78,56 @@ RegionData regionData(isampler2DArray region, int l, ivec2 pos) {
     return regionData;
 }
 
-int TerrHeight(RegionData d){
-    return d.height - d.depth;
-}
-
 bool IsDepth(RegionData d, int l) { return l == layers - 1 && d.depth != 0; }
-
-vec4 ActColor(RegionData d){
-    return mult(d.block.basecolor, TintColorFor(d.block.tint, d.biomeid, d.height));
-}
-vec4 Color(RegionData d, int l) {
-    if(IsDepth(d, l)) return mult(depth.basecolor, TintColorFor(depth.tint, d.biomeid, d.height));
-    else return ActColor(d);
-}
-bool ContainsInfo(RegionData d) {
-    return d.blockid != 0 || d.height != 0;
-}
 // reg
 
+RegionData irs[5];
+ivec2 ipos;
+void setup(){
+    layers = textureSize(region0, 0).z;
+    ipos = ivec2(pos * 512);
+    for(int l=0;l<layers;l++) {
+        irs[l] = regionData(region0, l, ipos);
+    }
 
-
+    vec4 f = texelFetch(tintpalette, 16).abgr;
+    biomecount = int(f.a * 255);
+}
 
 void main() {
-    int layers = textureSize(region0, 0).z;
-	ivec2 ipos = ivec2(pos * 512);
-    RegionData wl = regionData(region0, layers - 1, ipos);
+    setup();
 
-    outColor0 = vec2(wl.depth / 65535.0, wl.depth > 0 ? 1 : 0);
+    outTint0 = vec4(0);
+    outTint1 = vec4(0);
+    outTint2 = vec4(0);
+    outTint3 = vec4(0);
+    outTint4 = vec4(0);
+    outTint5 = vec4(0);
+    outTint6 = vec4(0);
+
+    for(int l=0;l<layers;l++){
+        RegionData wl = irs[l];
+
+        if(IsDepth(wl, l)) wl.block = blockData(3);
+        else wl.block = blockData(wl.blockid);
+
+             if(wl.block.tint == blendtints[0] && tintcount > 0) outTint0 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1);
+        else if(wl.block.tint == blendtints[1] && tintcount > 1) outTint1 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1);
+        else if(wl.block.tint == blendtints[2] && tintcount > 2) outTint2 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
+        else if(wl.block.tint == blendtints[3] && tintcount > 3) outTint3 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
+        else if(wl.block.tint == blendtints[4] && tintcount > 4) outTint4 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
+        else if(wl.block.tint == blendtints[5] && tintcount > 5) outTint5 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
+        else if(wl.block.tint == blendtints[6] && tintcount > 6) outTint6 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
+
+        if(l == layers - 1) outDepth = vec2(wl.depth / 65535.0, wl.depth > 0 ? 1.0 : 0.0);
+    }
+
+    if(outTint0.a > 0) outTint0 = vec4(outTint0.rgb / outTint0.a, 1);
+    if(outTint1.a > 0) outTint1 = vec4(outTint1.rgb / outTint1.a, 1);
+    if(outTint2.a > 0) outTint2 = vec4(outTint2.rgb / outTint2.a, 1);
+    if(outTint3.a > 0) outTint3 = vec4(outTint3.rgb / outTint3.a, 1);
+    if(outTint4.a > 0) outTint4 = vec4(outTint4.rgb / outTint4.a, 1);
+    if(outTint5.a > 0) outTint5 = vec4(outTint5.rgb / outTint5.a, 1);
+    if(outTint6.a > 0) outTint6 = vec4(outTint6.rgb / outTint6.a, 1);
+
 }

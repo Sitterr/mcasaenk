@@ -14,13 +14,16 @@ namespace Mcasaenk.Shaders {
 
         public void Data<T>(T[] data) where T : unmanaged {
             fixed(T* p = data) {
-                this.DataP((nint)p);
+                this.DataP((nint)p, data.Length * sizeof(T));
             }
         }
 
-        public abstract void DataP(nint data);
+        public abstract void DataP(nint data, int size = -1);
         public abstract void Use(int point);
     }
+
+
+
 
     public unsafe class ShaderTexture2D : ShaderArray {
         public readonly int l, w, h;
@@ -55,7 +58,7 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-        public override void DataP(nint p) {
+        public override void DataP(nint p, int size = -1) {
             int stagingBuffer;
             GL.CreateBuffers(1, out stagingBuffer);
             GL.NamedBufferStorage(stagingBuffer, l * w * h * brchannels * channelsize, p, BufferStorageFlags.ClientStorageBit);
@@ -76,53 +79,6 @@ namespace Mcasaenk.Shaders {
 
         public static ShaderTexture2D CreateRGBA16i(int l, int w, int h) => new ShaderTexture2D(l, w, h, SizedInternalFormat.Rgba16i, PixelFormat.RgbaInteger, PixelType.Short, 4, sizeof(short));
     }
-
-    //public unsafe class ShaderTexture2D : ShaderArray {
-    //    public readonly int l, w, h;
-    //    private readonly int textureHandle;
-
-    //    private readonly PixelFormat format;
-    //    private readonly PixelType pixelType;
-    //    public ShaderTexture2D(int l, int w, int h, SizedInternalFormat preciseformat, PixelFormat format, PixelType pixelType) {
-    //        this.l = l;
-    //        this.w = w;
-    //        this.h = h;
-
-    //        this.format = format;
-    //        this.pixelType = pixelType;
-
-
-    //        textureHandle = GL.GenTexture();
-    //        GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
-    //        GL.TexStorage3D(TextureTarget3d.Texture2DArray, 1, preciseformat, w, h, l);
-    //    }
-
-    //    private bool disposed = false;
-    //    public override void Dispose() {
-    //        if(disposed) return;
-
-    //        GL.DeleteTexture(textureHandle);
-    //        disposed = true;
-    //    }
-
-    //    public override void DataP(nint p) {
-    //        int stagingBuffer;
-    //        GL.CreateBuffers(1, out stagingBuffer);
-    //        GL.NamedBufferStorage(stagingBuffer, l * w * h * 4 * sizeof(short), p, BufferStorageFlags.ClientStorageBit);
-
-    //        GL.BindBuffer(BufferTarget.PixelUnpackBuffer, stagingBuffer);
-    //        GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
-    //        GL.TextureSubImage3D(textureHandle, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
-
-    //        GL.DeleteBuffers(1, ref stagingBuffer);
-    //    }
-
-    //    public override void Use(int point) {
-    //        GL.ActiveTexture((TextureUnit)point);
-    //        GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
-    //    }
-    //}
-
 
     public unsafe class ShaderBufferTexture : ShaderArray {
         public readonly int size;
@@ -149,7 +105,8 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-        public override void DataP(nint p) {
+        public override void DataP(nint p, int size = -1) {
+            if(size == -1) size = this.size;
             int stagingBuffer;
             GL.CreateBuffers(1, out stagingBuffer);
             GL.NamedBufferStorage(stagingBuffer, size, p, BufferStorageFlags.ClientStorageBit);
@@ -163,9 +120,6 @@ namespace Mcasaenk.Shaders {
             GL.BindTexture(TextureTarget.TextureBuffer, textureHandle);
         }
     }
-
-
-
 
     public unsafe class ShaderSSBO : ShaderArray {
         public readonly int size;
@@ -187,7 +141,8 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-        public override void DataP(nint p) {
+        public override void DataP(nint p, int size = -1) {
+            if(size == -1) size = this.size;
             int stagingBuffer;
             GL.CreateBuffers(1, out stagingBuffer);
             GL.NamedBufferStorage(stagingBuffer, size, p, BufferStorageFlags.ClientStorageBit);

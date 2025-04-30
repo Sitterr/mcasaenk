@@ -25,7 +25,7 @@ namespace Mcasaenk.Colormaping {
             new TintMeta("vanilla_grass", "vn_g", 32 + 1, typeof(Vanilla_Grass)),
             new TintMeta("vanilla_foliage", "vn_f", 32 + 1, typeof(Vanilla_Foliage)),
             new TintMeta("vanilla_dry_foliage", "vn_df", 32 + 1, typeof(Vanilla_Dry_Foliage)),
-            new TintMeta("vanilla_water", "vn_w", 128 + 1, typeof(Vanilla_Water)),
+            new TintMeta("vanilla_water", "vn_w", 512 + 1, typeof(Vanilla_Water)),
             new TintMeta("fixed", "fx", 32 + 1, typeof(FixedTint)),
             new TintMeta("grid", "gr", 32 + 1, typeof(GridTint)),
         ];
