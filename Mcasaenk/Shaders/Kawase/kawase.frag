@@ -1,7 +1,6 @@
 ﻿#version 430 core
 
 in vec2 pos;
-//layout(pixel_center_integer) in vec4 gl_FragCoord;
 in vec4 gl_FragCoord;
 
 layout(location = 0) out vec2 outDepth;
@@ -12,6 +11,7 @@ layout(location = 4) out vec4 outTint3;
 layout(location = 5) out vec4 outTint4;
 layout(location = 6) out vec4 outTint5;
 layout(location = 7) out vec4 outTint6;
+vec4 outTints[7];
 uniform int tintcount;
 
 
@@ -31,21 +31,12 @@ void main() {
         float d = ikernels[i];
 
         if(d == -1) {
-            if(i == 0)      outDepth = texelFetch(t_oceandepth, iFragCoord, 0).xy;
-            else if(i == 1) outTint0 = texelFetch(t_tints, ivec3(iFragCoord, 0), 0);
-            else if(i == 2) outTint1 = texelFetch(t_tints, ivec3(iFragCoord, 1), 0);
-            else if(i == 3) outTint2 = texelFetch(t_tints, ivec3(iFragCoord, 2), 0);
-            else if(i == 4) outTint3 = texelFetch(t_tints, ivec3(iFragCoord, 3), 0);
-            else if(i == 5) outTint4 = texelFetch(t_tints, ivec3(iFragCoord, 4), 0);
-            else if(i == 6) outTint5 = texelFetch(t_tints, ivec3(iFragCoord, 5), 0);
-            else if(i == 7) outTint6 = texelFetch(t_tints, ivec3(iFragCoord, 6), 0);
-
+            if(i == 0) outDepth = texelFetch(t_oceandepth, iFragCoord, 0).xy;
+            else outTints[i - 1] = texelFetch(t_tints, ivec3(iFragCoord, i - 1), 0);
             continue;
         }
 
         d += 0.5;
-        //d += 0.5;
-        //vec2 s = FragCoord / size;
 
         vec2 s0 = (FragCoord + vec2(d, d)) / size;
         vec2 s1 = (FragCoord + vec2(d, -d)) / size;
@@ -81,14 +72,15 @@ void main() {
             vec4 outColor = vec4(0);
             if(br > 0) outColor = vec4(sb / br, 1);
 
-
-            if(i == 1) outTint0 = outColor;
-            else if(i == 2) outTint1 = outColor;
-            else if(i == 3) outTint2 = outColor;
-            else if(i == 4) outTint3 = outColor;
-            else if(i == 5) outTint4 = outColor;
-            else if(i == 6) outTint5 = outColor;
-            else if(i == 7) outTint6 = outColor;
+            outTints[i - 1] = outColor;
         }
     }
+
+    outTint0 = outTints[0];
+    outTint1 = outTints[1];
+    outTint2 = outTints[2];
+    outTint3 = outTints[3];
+    outTint4 = outTints[4];
+    outTint5 = outTints[5];
+    outTint6 = outTints[6];
 }

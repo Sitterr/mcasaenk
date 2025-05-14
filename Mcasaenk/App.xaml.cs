@@ -43,7 +43,6 @@ namespace Mcasaenk
         }
         private void OnLightChange(string changed) {
             TileMap?.RedrawAll();
-
             if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
             if(changed == nameof(Settings.UseMapPalette)) {
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);

@@ -15,10 +15,10 @@ using System.Windows.Media.Animation;
 using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Rendering {
-    public class Pool {
+    public class TaskPool {
         protected readonly int maxConcurrency;
         protected TaskScheduler task_pool;
-        public Pool(int maxConcurrency) {
+        public TaskPool(int maxConcurrency) {
             this.maxConcurrency = maxConcurrency;
 
             //task_pool = new LimitedConcurrencyLevelTaskScheduler(maxConcurrency);
@@ -34,7 +34,7 @@ namespace Mcasaenk.Rendering {
         }
     }
 
-    public class TilePool : Pool {
+    public class TilePool : TaskPool {
         private readonly ConcurrentDictionary<Tile, byte> queued, loading;
         private ConcurrentDictionary<Tile, int> max, curr;
         public TilePool(int maxConcurrency) : base(maxConcurrency) {

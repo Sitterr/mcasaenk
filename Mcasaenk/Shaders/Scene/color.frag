@@ -55,6 +55,11 @@ ivec2 blurCoord(ivec2 pos){
 
     return ivec2(ivec2(loc.x, (resolution.y / inszoom + 2 * 512) - loc.y) * inszoom);
 }
+vec3 contrast(vec3 color) {
+    const float z = 0.00;
+    float alpha = CONTRAST * z + (1 - z / 2);
+    return clamp(alpha * (color - 0.5) + 0.5, 0.0, 1.0);
+}
 // global
 
 
@@ -68,7 +73,7 @@ BlockData blockData(int id){
     vec4 palettedata = texelFetch(palette, id);
 
     BlockData block;
-    block.basecolor.rgb = palettedata.abg;
+    block.basecolor.rgb = contrast(palettedata.abg);
     block.basecolor.a = (int(palettedata.r * 255) & 0x0F) / 15.0;
     block.tint = ((int(palettedata.r * 255) & 0xF0) >> 4);
     return block;

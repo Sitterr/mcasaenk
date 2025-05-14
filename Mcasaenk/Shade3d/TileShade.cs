@@ -100,7 +100,7 @@ namespace Mcasaenk.Shade3d {
                     }
                 }
 
-                if(Recalc()) tile.RegisterRedraw();
+                Recalc();
                 CheckDestruct();
             }
         }

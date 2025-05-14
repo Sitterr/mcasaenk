@@ -151,8 +151,8 @@ namespace Mcasaenk.UI.Canvas {
                             for(int z = stZ; z <= Global.Coord.fairDev((int)NW.Y + (int)Size.Y, 512); z++) {
                                 var tile = tileMap.GetTile(new Point2i(x, z));
                                 if(tile == null) continue;
-                                if(tile.img == null) continue;
-                                graphics.DrawImage(tileMap.GetTile(new Point2i(x, z)).img, new Rect((x - stX) * 512 - xoff, (z - stZ) * 512 - zoff, 512, 512));
+                                //if(tile.img == null) continue;
+                                //graphics.DrawImage(tileMap.GetTile(new Point2i(x, z)).img, new Rect((x - stX) * 512 - xoff, (z - stZ) * 512 - zoff, 512, 512));
                             }
                         }
                     }

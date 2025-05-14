@@ -25,6 +25,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
+    <PackageReference Include="OpenTK" Version="4.9.4" />
     <PackageReference Include="OpenTK.GLWpfControl" Version="4.3.3" />
     <PackageReference Include="WPF.ImageEffects" Version="1.5.0" />
   </ItemGroup>

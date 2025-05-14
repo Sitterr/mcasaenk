@@ -60,10 +60,12 @@ namespace Mcasaenk
             GC.Collect(2, GCCollectionMode.Forced);
         }
 
+        public volatile bool _update;
         public void RedrawAll() {
             foreach(var tile in tiles) {
                 drawTilePool.RegisterRedo(tile.Value);
             }
+            _update = true;
         }
 
 

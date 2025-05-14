@@ -16,56 +16,12 @@ using Mcasaenk.UI.Canvas;
 
 namespace Mcasaenk.Shaders {
     public class ShaderPipeline : IDisposable {
-        private  PrepKawase prepShader;
-        public KawaseShader kawaseShader;
-        private SceneShader sceneShader;
-        private ScaleShader scaleShader;
+        private readonly PrepKawase prepShader;
+        public readonly KawaseShader kawaseShader;
+        private readonly SceneShader sceneShader;
 
-        public int VBuffer, IBuffer, VAO;
-
-        public ShaderPipeline(GLWpfControl canvas) {
-            var openglsettings = new GLWpfControlSettings {
-                MajorVersion = 4,
-                MinorVersion = 3
-            };
-            canvas.Start(openglsettings);
-            GL.Enable(EnableCap.DebugOutput);
-            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
-                string str = Marshal.PtrToStringAnsi(msg);
-                if(type == DebugType.DebugTypeError) {
-                    Console.WriteLine(str);
-                }
-            }, IntPtr.Zero);
-
-
-        }
-
-        public void OnLoad() {
-
-            VAO = GL.GenVertexArray();
-            GL.BindVertexArray(VAO);
-
-            float[] vertices = {
-                1.0f, -1.0f, 0.0f,
-                1.0f,  1.0f, 0.0f,
-               -1.0f,  1.0f, 0.0f,
-               -1.0f, -1.0f, 0.0f,
-            };
-            uint[] indices = { 3, 0, 1, 3, 2, 1 };
-
-            VBuffer = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBuffer);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-            IBuffer = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBuffer);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
-
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-
+        public ShaderPipeline(int VAO) {
             sceneShader = new SceneShader(VAO);
-            scaleShader = new ScaleShader(VAO);
             kawaseShader = new KawaseShader(VAO);
             prepShader = new PrepKawase(VAO);
 
@@ -88,7 +44,6 @@ namespace Mcasaenk.Shaders {
         public void Dispose() {
             if(!disposed) {
                 sceneShader.Dispose();
-                scaleShader.Dispose();
                 kawaseShader.Dispose();
                 prepShader.Dispose();
             }
@@ -113,7 +68,8 @@ namespace Mcasaenk.Shaders {
             prepShader.Use(screen, tilemap, kawaseShader.blendtints, kawaseReach);
             var kawase_tex = kawaseShader.Use(screen, tilemap, kawaseKernels, kawaseReach, prepShader.texture1);
             sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, kawaseReach);
-            scaleShader.Use(screen, sceneShader.texture);
         }
+
+        public int GetLastRender() => sceneShader.texture;
     }
 }

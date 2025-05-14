@@ -69,21 +69,17 @@ namespace Mcasaenk.Shaders.Kawase {
         }
 
         public static void AttachFramebuffer(int fbo, KawaseTexture texture, int tintcount) {
-            GL.BindTexture(TextureTarget.Texture2D, texture.oceandepth);
-            GL.BindTexture(TextureTarget.Texture2DArray, texture.tints);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
-
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture.oceandepth, 0);
-
             for(int i = 0; i < tintcount; i++) {
                 GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1 + i, texture.tints, 0, i);
             }
+        }
 
-            DrawBuffersEnum[] drawBuffers = new DrawBuffersEnum[tintcount + 1];
-            for(int i = 0; i < tintcount + 1; i++) {
+        public static void SetUpFramebuffer(int tintcount) {
+            DrawBuffersEnum[] drawBuffers = new DrawBuffersEnum[1 + tintcount];
+            for(int i = 0; i < 1 + tintcount; i++) {
                 drawBuffers[i] = DrawBuffersEnum.ColorAttachment0 + i;
             }
-
             GL.DrawBuffers(drawBuffers.Length, drawBuffers);
         }
 
@@ -100,32 +96,42 @@ namespace Mcasaenk.Shaders.Kawase {
             int[][] kawasepasses = kernels.Select(KawaseKernels.Get).ToArray();
 
             int passes = kawasepasses.Max(k => k.Length);
-            if(passes > 0) GL.UseProgram(Handle);
-            for(int p = 0; p < passes; p++) {
-                GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
-                AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtints.Length);
-                GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
-                
+            if(passes > 0) {
+                GL.UseProgram(Handle);
 
-                for(int i = 0; i < kernels.Length; i++) {
-                    if(p < kawasepasses[i].Length) ikernels[i] = kawasepasses[i][p];
-                    else ikernels[i] = -1;
+                {
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "t_tints"), 0);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "t_oceandepth"), 1);
+
+                    GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
+
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+
+                    SetUpFramebuffer(blendtints.Length);
                 }
-                GL.Uniform1(GL.GetUniformLocation(Handle, "ikernels"), ikernels.Length, ikernels);
 
-                GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
+                for(int p = 0; p < passes; p++) {
+                    AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtints.Length);                
 
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2DArray, textures[p % 2].tints);
-                GL.Uniform1(GL.GetUniformLocation(Handle, "t_tints"), 0);
+                    for(int i = 0; i < kernels.Length; i++) {
+                        if(p < kawasepasses[i].Length) ikernels[i] = kawasepasses[i][p];
+                        else ikernels[i] = -1;
+                    }
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "ikernels"), ikernels.Length, ikernels);
+
+                    GL.ActiveTexture(TextureUnit.Texture0);
+                    GL.BindTexture(TextureTarget.Texture2DArray, textures[p % 2].tints);
+                    
 
 
-                GL.ActiveTexture(TextureUnit.Texture1);
-                GL.BindTexture(TextureTarget.Texture2D, textures[p % 2].oceandepth);
-                GL.Uniform1(GL.GetUniformLocation(Handle, "t_oceandepth"), 1);
+                    GL.ActiveTexture(TextureUnit.Texture1);
+                    GL.BindTexture(TextureTarget.Texture2D, textures[p % 2].oceandepth);
+                    
 
-                GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-                finaltexture = textures[(p + 1) % 2];
+                    GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                    finaltexture = textures[(p + 1) % 2];
+                }
             }
 
             return finaltexture;

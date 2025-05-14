@@ -1,18 +1,10 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shaders;
-using Mcasaenk.Shaders.Kawase;
 using Mcasaenk.Shaders.Scale;
-using Mcasaenk.Shaders.Scene;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Windowing.Desktop;
 using OpenTK.Wpf;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Security;
-using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -39,6 +31,7 @@ namespace Mcasaenk.UI.Canvas {
         ScreenshotManager screenshotManager;
 
         public ShaderPipeline pipeline;
+        ScaleShader scaleShader;
 
         public CanvasControl() {
             InitializeComponent();
@@ -46,7 +39,7 @@ namespace Mcasaenk.UI.Canvas {
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
-            pipeline = new ShaderPipeline(this);
+            StartOpenGL();
 
             screen = new WorldPosition(new Point(0, 0), (int)ActualWidth, (int)ActualHeight, 1);
 
@@ -69,13 +62,29 @@ namespace Mcasaenk.UI.Canvas {
             this.Render += Canvas_Render;
         }
 
+        public void StartOpenGL() {
+            var openglsettings = new GLWpfControlSettings {
+                MajorVersion = 4,
+                MinorVersion = 3
+            };
+            this.Start(openglsettings);
+            GL.Enable(EnableCap.DebugOutput);
+            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
+                string str = Marshal.PtrToStringAnsi(msg);
+                if(type == DebugType.DebugTypeError) {
+                    Console.WriteLine(str);
+                }
+            }, IntPtr.Zero);
+        }
 
         bool loaded = false;
         private void Canvas_Loaded(object sender, RoutedEventArgs e) {
             dpix = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
             dpiy = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M22;
 
-            pipeline.OnLoad();
+            int VAO = Shader.SetUpRectVAO();
+            pipeline = new ShaderPipeline(VAO);
+            scaleShader = new ScaleShader(VAO);
 
             if(mousehook) {
                 MouseHook.Start();
@@ -123,6 +132,7 @@ namespace Mcasaenk.UI.Canvas {
         private void Canvas_Unloaded(object sender, RoutedEventArgs e) {
             if(mousehook) MouseHook.Stop();
             pipeline.Dispose();
+            scaleShader.Dispose();
         }
 
         int tf = 0, f = 0;
@@ -136,8 +146,14 @@ namespace Mcasaenk.UI.Canvas {
                 tf = 0; f = 0;
             }
 
-            pipeline.OnRender(screen, tileMap);
-
+            if (_update || (tileMap != null && tileMap._update)) {
+                pipeline?.OnRender(screen, tileMap);
+                _update = false;
+                if (tileMap != null) {
+                    tileMap._update = false;
+                }
+            }
+            scaleShader?.Use(screen, pipeline.GetLastRender());
         }
 
         TileMap tileMap { get => Global.App.TileMap; }
@@ -191,6 +207,7 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
+        volatile bool _update;
         void UpdateUILocation() {
             var mid = screen.Mid;
             window.loc_x.Text = ((int)mid.X).ToString();
@@ -198,6 +215,9 @@ namespace Mcasaenk.UI.Canvas {
 
             Resolution.frame.X = (int)Math.Ceiling(screen.Width) + 1;
             Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
+
+            _update = true;
+            //pipeline?.OnRender(screen, tileMap);
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
             screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;

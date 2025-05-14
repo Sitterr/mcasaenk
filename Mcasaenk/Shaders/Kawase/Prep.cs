@@ -56,10 +56,12 @@ namespace Mcasaenk.Shaders.Kawase {
         public void Use(WorldPosition screen, TileMap tilemap, int[] blendtints, int R) {
             int w = (int)Math.Ceiling(1 + (screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling(1 + (screen.Height + 2 * R) * screen.InSimZoom);
             
-            ResizeFramebuffer((int)Math.Ceiling(1 + (screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * screen.InSimZoom));
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+            ResizeFramebuffer((int)Math.Ceiling(1 + (screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * screen.InSimZoom)); 
+            KawaseShader.SetUpFramebuffer(blendtints.Length);
             GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
             KawaseShader.AttachFramebuffer(fbo, texture1, blendtints.Length);
-            GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
+            //GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.UseProgram(Handle);
 
