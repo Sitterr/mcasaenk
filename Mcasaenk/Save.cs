@@ -1,4 +1,5 @@
 ﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
 using Mcasaenk.UI;
 using Mcasaenk.WorldInfo;
@@ -90,7 +91,7 @@ namespace Mcasaenk {
         public readonly ImageSource image;
         public DimensionInfo info;
         public readonly Save save;
-        public TileMap tileMap;
+        public GenDataTileMap tileMap;
 
         public Dimension(Save save, string path, DimensionInfo info, ImageSource image) {
             this.save = save;
@@ -98,11 +99,11 @@ namespace Mcasaenk {
             this.image = image;
             this.name = info.name;
             this.path = path;
-            this.tileMap = new TileMap(this, ExistingRegions());
+            this.tileMap = new GenDataTileMap(this, ExistingRegions());
         }
 
         public void Reset() {
-            this.tileMap = new TileMap(this, ExistingRegions());
+            this.tileMap = new GenDataTileMap(this, ExistingRegions());
         }
 
         public (short height, short miny, short defheight) GetHeight() => (info.height, info.miny, info.defHeight);

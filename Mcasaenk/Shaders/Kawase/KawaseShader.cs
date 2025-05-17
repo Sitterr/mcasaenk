@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Resources;
+﻿using Mcasaenk.Rendering;
+using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Compute.OpenCL;
 using OpenTK.Core.Exceptions;
@@ -83,10 +84,10 @@ namespace Mcasaenk.Shaders.Kawase {
             GL.DrawBuffers(drawBuffers.Length, drawBuffers);
         }
 
-        public KawaseTexture Use(WorldPosition screen, TileMap tilemap, int[] kernels, int R, KawaseTexture texture1) {
-            int w = (int)Math.Ceiling(1 + (screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling(1 + (screen.Height + 2 * R) * screen.InSimZoom);
+        public KawaseTexture Use(WorldPosition screen, int[] kernels, int R, KawaseTexture texture1) {
+            int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
             
-            ResizeFramebuffer((int)Math.Ceiling(1 + (screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * screen.InSimZoom));
+            ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom));
 
             KawaseTexture[] textures = [texture1, texture2];
             KawaseTexture finaltexture = textures[0];

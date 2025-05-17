@@ -61,25 +61,25 @@ namespace Mcasaenk.UI {
 
 
 
-        public void SetCursorInfo(Point2i globalPos, TileMap tileMap) {
+        public void SetCursorInfo(Point2i globalPos, GenDataTileMap tileMap) {
             txt_x.Text = globalPos.X.ToString();
             txt_z.Text = globalPos.Z.ToString();
 
             var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
             int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
-            if(tile?.genData != null) {
+            if(tile != null) {
                 bool info = false;
-                foreach(var col in tile.genData.columns) {
+                foreach(var col in tile.columns) {
                     if(col.ContainsInfo(i) == false) continue;
                     info = true;
 
                     txt_y.Text = (col.heights[i] + Global.Settings.MINY).ToString();
 
-                    bool depth = col == tile.genData.depthColumn && (tile.genData.depthColumn.depths15_lightfrombottom1 != null ? tile.genData.depthColumn.depths15_lightfrombottom1[i] : -1) > 0;
+                    bool depth = col == tile.depthColumn && (tile.depthColumn.depths15_lightfrombottom1 != null ? tile.depthColumn.depths15_lightfrombottom1[i] : -1) > 0;
                     //window.footer.Y = tile.genData.isShade(i);
                     if(depth) {
                         sep_y.Text = "/";
-                        txt_ty.Text = (col.heights[i] + Global.Settings.MINY - tile.genData.depthColumn.depths15_lightfrombottom1[i]).ToString();
+                        txt_ty.Text = (col.heights[i] + Global.Settings.MINY - tile.depthColumn.depths15_lightfrombottom1[i]).ToString();
                     } else {
                         sep_y.Text = "";
                         txt_ty.Text = "";

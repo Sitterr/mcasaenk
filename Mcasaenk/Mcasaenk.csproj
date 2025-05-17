@@ -11,18 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\nikol\.nuget\packages\wpf.imageeffects\1.5.0\contentFiles\any\net5.0-windows7.0\Shaders\ImageShader.fx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Shaders\Scale\scale.frag~RFad8a74d.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Resources\Icon2.ico" />
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<Content Remove="C:\Users\nikol\.nuget\packages\wpf.imageeffects\1.5.0\contentFiles\any\net5.0-windows7.0\Shaders\ImageShader.fx" />
+	</ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
     <PackageReference Include="OpenTK" Version="4.9.4" />

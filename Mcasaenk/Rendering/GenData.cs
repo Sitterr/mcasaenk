@@ -83,7 +83,6 @@ namespace Mcasaenk.Rendering {
                 }
             }
             textureupdate = false;
-
             return texture;
         }
         public void UpdateTextureData() {
@@ -98,7 +97,7 @@ namespace Mcasaenk.Rendering {
         public ushort[] blockIds;
         public ushort[] biomeIds8_light4_shade4;
 
-        private GenerateTilePool pool;
+        private GenDataTileMap pool;
 
         public GenDataColumn(RawDataColumn rawcolumn, bool depthcolumn) {
             this.pool = rawcolumn.pool;
@@ -167,7 +166,7 @@ namespace Mcasaenk.Rendering {
         // disolves in the gendata stage
         public byte[] shadeFrame; // 4bit
 
-        public RawData(GenerateTilePool pool) {
+        public RawData(GenDataTileMap pool) {
             chunkisscreenshotable = new int[32 * 32 / 32];
 
             int colcount = Global.App.Colormap.FilterManager.AreThereHalfTransp() ? Math.Max(0, Global.Settings.TRANSPARENTLAYERS - 1) : 0;
@@ -194,9 +193,9 @@ namespace Mcasaenk.Rendering {
         public ushort[] blockIds;
         public ushort[] biomeIds8_light4_none4;
 
-        public GenerateTilePool pool;
+        public GenDataTileMap pool;
 
-        public RawDataColumn(GenerateTilePool pool, bool candepth = true) {
+        public RawDataColumn(GenDataTileMap pool, bool candepth = true) {
             this.pool = pool;
 
             heights = pool.heightPool.Rent(512 * 512);

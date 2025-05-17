@@ -42,7 +42,7 @@ namespace Mcasaenk
             }
         }
         private void OnLightChange(string changed) {
-            TileMap?.RedrawAll();
+            Global.App.Window.canvasControl.drawTileMap.MassRedo(false);
             if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
             if(changed == nameof(Settings.UseMapPalette)) {
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
@@ -61,6 +61,7 @@ namespace Mcasaenk
             if(changed.Count == 0) return;
             SettingsHub.Freeze();
 
+            Global.App.Window.canvasControl.drawTileMap?.MassRedo(false);
             _openedSave.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
 
@@ -156,8 +157,8 @@ namespace Mcasaenk
         public double RAND;
         public MainWindow Window { get => (MainWindow)this.MainWindow; }
 
-        private TileMap tileMap;
-        public TileMap TileMap {
+        private GenDataTileMap tileMap;
+        public GenDataTileMap TileMap {
             get => tileMap; 
             set{
                 tileMap?.Dispose();
@@ -265,7 +266,6 @@ namespace Mcasaenk
             ShadeConstants.GLB = new ShadeConstants(Settings.MAXABSHEIGHT, Settings.ADEG, Settings.BDEG);
 
             TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
-            TileMap.SetSettings();
 
             Window.OnHardReset();
             Window.canvasControl.OnTilemapChanged(dimchange);

@@ -1,4 +1,5 @@
 ﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
 using Mcasaenk.Shaders.Kawase;
 using Mcasaenk.UI.Canvas;
@@ -9,54 +10,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Shaders.Scene {
     public class SceneShader : Shader {
-        public int fbo, texture;
+        public int fbo;
         private readonly int VAO = 0;
         public SceneShader(int VAO) : base(ResourceMapping.tile_vert, ResourceMapping.scene_frag) {
             this.VAO = VAO;
 
-            texture = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, texture);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
             fbo = GL.GenFramebuffer();
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture, 0);
         }
         public override void Dispose() {
             base.Dispose();
             GL.DeleteFramebuffer(fbo);
-            GL.DeleteTexture(texture);
         }
 
-        private int fw = -1, fh = -1;
-        private void ResizeFramebuffer(int w, int h) {
-            if(fw != w || fh != h) {
-                GL.BindTexture(TextureTarget.Texture2D, texture);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, w, h, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
-                fw = w; fh = h;
-            }
-        }
-
-        public void Use(WorldPosition screen, TileMap tilemap, KawaseTexture tex, int[] blendtints, int kawaseR) {
-            int w = (int)Math.Ceiling(1 + screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(1 + screen.Height * screen.InSimZoom);
+        public void Use(WorldPosition screen, GenDataTileMap tilemap, KawaseTexture tex, int[] blendtints, int kawaseR, int outputtexture) {
+            int w = (int)Math.Ceiling(screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(screen.Height * screen.InSimZoom);
             
-            ResizeFramebuffer(w, h);
             GL.Viewport(0, 0, w, h);
+
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, outputtexture, 0);
+
             GL.ClearColor(Color4.Transparent); GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.UseProgram(Handle);
 
             // vertex uniforms
             {
-                GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.InSimZoom);
-                GL.Uniform2(GL.GetUniformLocation(Handle, "resolution"), w, h);
-                GL.Uniform2(GL.GetUniformLocation(Handle, "cam"), (int)Math.Floor(screen.Start.X), (int)Math.Floor(screen.Start.Y));
+                GL.Uniform1(GL.GetUniformLocation(Handle, "tv_zoom"), (float)screen.InSimZoom);
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_resolution"), w, h);
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_cam"), (int)Math.Floor(screen.Start.X), (int)Math.Floor(screen.Start.Y));
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_regSize"), 512, 512);
             }
 
             GL.BindVertexArray(VAO);
@@ -96,16 +85,14 @@ namespace Mcasaenk.Shaders.Scene {
                 }
 
                 // fragment uniforms
-                foreach(var reg in screen.GetVisibleTilePositions()) {
+                foreach (var reg in tilemap.GetVisibleTilesPositions(screen)) {
                     var tile = tilemap?.GetTile(reg);
                     if(tile == null) continue;
-                    if(tile.genData == null) continue;
 
-                    //tile.genData.GetTexture().Use(0);
-                    tile.genData.GetTexture().Use((int)TextureUnit.Texture0);
+                    tile.GetTexture().Use((int)TextureUnit.Texture0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
-                    GL.Uniform2(GL.GetUniformLocation(Handle, "glR"), reg.X, reg.Z);
+                    GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
                     GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
                 }
             }

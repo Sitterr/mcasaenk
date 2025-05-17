@@ -15,7 +15,6 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static Mcasaenk.Rendering.GenerateTilePool;
 using static Mcasaenk.Shade3d.ShadeConstants;
 using Mcasaenk.UI;
 using Mcasaenk.Rendering.ChunkRenderData;

@@ -12,8 +12,8 @@ namespace Mcasaenk.UI.Canvas {
         private double _zoom;
         private Rect coord;
 
-        public WorldPosition(Point start, double screenWidth, double screenHeight, double zoom) {
-            this.coord = new Rect(start.X, start.Y, screenWidth * zoom, screenHeight * zoom);
+        public WorldPosition(Point start, double width, double height, double zoom) {
+            this.coord = new Rect(start.X, start.Y, width, height);
             _zoom = zoom;
         }
 
@@ -90,20 +90,28 @@ namespace Mcasaenk.UI.Canvas {
             return (gl.Sub(this.Start)).Mult(this.zoom);
         }
 
-        public IEnumerable<Point2i> GetVisibleTilePositions() {
-            double sx = Global.Coord.fairDev((int)Math.Floor(coord.X), 512), sz = Global.Coord.fairDev((int)Math.Floor(coord.Y), 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
-
-            for(int x = 0; x * 512 - tx <= coord.Width + 1; x++) {
-                for(int z = 0; z * 512 - tz <= coord.Height + 1; z++) {
-                    yield return new Point2i(x + sx, z + sz);
-                }
-            }
+        public bool InterSects(WorldPosition p1) { 
+            return coord.IntersectsWith(p1.coord);
         }
 
-        public bool IsVisible(Tile tile) {
-            Rect tileArea = new Rect(tile.pos.X * 512, tile.pos.Z * 512, 512, 512);
-            return coord.IntersectsWith(tileArea);
+        public WorldPosition Extend(double r) {
+            return new WorldPosition(this.Start.Add(new Point(-r, -r)), Width + 2*r, Height + 2*r, zoom);
         }
+
+        //public IEnumerable<Point2i> GetVisibleTilePositions() {
+        //    double sx = Global.Coord.fairDev((int)Math.Floor(coord.X), 512), sz = Global.Coord.fairDev((int)Math.Floor(coord.Y), 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
+
+        //    for(int x = 0; x * 512 - tx <= coord.Width + 1; x++) {
+        //        for(int z = 0; z * 512 - tz <= coord.Height + 1; z++) {
+        //            yield return new Point2i(x + sx, z + sz);
+        //        }
+        //    }
+        //}
+
+        //public bool IsVisible(Tile tile) {
+        //    Rect tileArea = new Rect(tile.pos.X * 512, tile.pos.Z * 512, 512, 512);
+        //    return coord.IntersectsWith(tileArea);
+        //}
 
     }
 }

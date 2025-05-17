@@ -33,6 +33,8 @@ namespace Mcasaenk.UI.Canvas {
         public ShaderPipeline pipeline;
         ScaleShader scaleShader;
 
+        public GroupTileMap drawTileMap;
+
         public CanvasControl() {
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
@@ -146,20 +148,25 @@ namespace Mcasaenk.UI.Canvas {
                 tf = 0; f = 0;
             }
 
-            if (_update || (tileMap != null && tileMap._update)) {
-                pipeline?.OnRender(screen, tileMap);
-                _update = false;
-                if (tileMap != null) {
-                    tileMap._update = false;
+            if (drawTileMap != null) {
+                foreach (var tile in drawTileMap.GetVisibleTilesPositions(screen).Shuffle()) {
+                    if (drawTileMap.ShouldDo(tile)) {
+                        drawTileMap.QueueDo(tile, screen);
+                    }
                 }
             }
-            scaleShader?.Use(screen, pipeline.GetLastRender());
+
+            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap);
         }
 
-        TileMap tileMap { get => Global.App.TileMap; }
+        GenDataTileMap genTileMap { get => Global.App.TileMap; }
+
         MainWindow window { get => Global.App.Window; }
-        public void OnTilemapChanged(bool dimchange) { 
+
+        const double dzoom = 1;
+        public void OnTilemapChanged(bool dimchange) {
             //scenePainter.SetTileMap(tileMap);
+            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, (drawTileMap as OpenGLDrawTileMap));
             screenshotManager = null;
 
             if(dimchange) {
@@ -180,29 +187,24 @@ namespace Mcasaenk.UI.Canvas {
         private void OnSlowTick(object a, object b) {
             window.footer?.Refresh();
 
-            if(tileMap == null) return;
-            foreach(var pos in screen.GetVisibleTilePositions().Shuffle()) {
-                var tile = tileMap.GetTile(pos);
-                if(tile == null) continue;
-                if(tileMap.generateTilePool.ShouldDo(tile)) {
-                    tile.QueueGenerate(screen);
-                }
-                if(tileMap.drawTilePool.ShouldDo(tile)) {
-                    tile.QueueDraw();
+            if(genTileMap == null) return;
+            foreach(var tile in genTileMap.GetVisibleTilesPositions(screen).Shuffle()) {
+                if(genTileMap.ShouldDo(tile)) {
+                    genTileMap.QueueDo(tile, screen);
                 }
             }
 
             if(window.footer.Visibility == Visibility.Visible) {
                 { // footer update
                     //window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
-                    window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
+                    //window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
 
                     //window.footer.ShadeTiles = tileMap.ShadeTiles();
                     //window.footer.ShadeFrames = tileMap.ShadeFrames();
                     window.footer.ShadeTiles = 0;
                     window.footer.ShadeFrames = 0;
 
-                    window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), tileMap);
+                    window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), genTileMap);
                 }
             }
         }
@@ -220,7 +222,7 @@ namespace Mcasaenk.UI.Canvas {
             //pipeline?.OnRender(screen, tileMap);
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
-            screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
+            //screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
             //screenshotPainer.SetManager(screenshotManager);
         }
         public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }
@@ -343,6 +345,9 @@ namespace Mcasaenk.UI.Canvas {
 
             screen.ZoomScale += delta;
             screen.Start = globalMousePos.Sub(mousePos.Dev(screen.zoom));
+
+            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, (drawTileMap as OpenGLDrawTileMap));
+
             UpdateUILocation();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {

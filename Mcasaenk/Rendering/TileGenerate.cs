@@ -13,7 +13,6 @@ using Mcasaenk.Shade3d;
 using System.Net.Http.Headers;
 using System.Xml.Linq;
 using System.Collections.Concurrent;
-using static Mcasaenk.Rendering.GenerateTilePool;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Windows.Documents;
@@ -27,11 +26,11 @@ using Mcasaenk.Colormaping;
 namespace Mcasaenk.Rendering
 {
     public class TileGenerate {
-        public static unsafe GenData StandartGenerate(GenerateTilePool pool, Tile tile) {
-            if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
+        public static unsafe GenData StandartGenerate(GenDataTileMap pool, string regionpath) {
+            if(File.Exists(regionpath) == false) return null;
 
             var rawData = new RawData(pool);
-            using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+            using(var regionReader = new UnmanagedMcaReader(regionpath)) {
                 var streams = regionReader.ReadChunkOffsets();
 
                 for(int i = 0; i < 1024; i++) {
@@ -57,11 +56,11 @@ namespace Mcasaenk.Rendering
             return genData;
         }
 
-        public static unsafe GenData ShadeGenerate(GenerateTilePool pool, Tile tile) {
-            if(File.Exists(tile.GetOrigin().dimension.GetRegionPath(tile.pos)) == false) return null;
+        public static unsafe GenData ShadeGenerate(GenDataTileMap tilemap, Point2i tile, string regionpath) {
+            if(File.Exists(regionpath) == false) return null;
 
-            var rawData = new RawData(pool);
-            using(var regionReader = new UnmanagedMcaReader(tile.GetOrigin().dimension.GetRegionPath(tile.pos))) {
+            var rawData = new RawData(tilemap);
+            using(var regionReader = new UnmanagedMcaReader(regionpath)) {
                 var streams = regionReader.ReadChunkOffsets();
 
                 void doChunk(int cx, int cz) {
@@ -91,14 +90,14 @@ namespace Mcasaenk.Rendering
             var genData = new GenData(rawData);
 
             { // save shades 
-                tile.shade.Construct(rawData, genData);
+                tilemap.GetShadeTile(tile).Construct(rawData, genData);
 
                 // frame
                 {
                     foreach(var p in ShadeConstants.GLB.regionReach) {
                         int _iz = p.p.Z, _ix = p.p.X;
 
-                        var frPos = tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
+                        var frPos = tile + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
 
                         byte[] arr = null;
                         {
@@ -108,11 +107,11 @@ namespace Mcasaenk.Rendering
                                         break;
 
                                     case ShadeConstants.RegionDir.l:
-                                        arr = tile.GetOrigin().GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix + 1, _iz - 1));
+                                        arr = tilemap.GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix + 1, _iz - 1));
                                         break;
 
                                     case ShadeConstants.RegionDir.r:
-                                        arr = tile.GetOrigin().GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix - 1, _iz + 1));
+                                        arr = tilemap.GetTileShadeFrame(frPos).GetFrame(new Point2i(_ix - 1, _iz + 1));
                                         break;
                                 }
                             }
@@ -131,23 +130,20 @@ namespace Mcasaenk.Rendering
                                 ShadeConstants.SetBoth(arr, ai, left, right);
                             }
                         }
-                        tile.GetOrigin().GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));
+                        tilemap.GetTileShadeFrame(frPos).AddFrame(arr, new Point2i(_ix, _iz));
                     }
                 }
 
                 // update tile shades that use the above frame
                 {
-                    var tileMap = tile.GetOrigin();
-
                     foreach(var p in ShadeConstants.GLB.regionReach) {
                         int _iz = p.p.Z, _ix = p.p.X;
                         //int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ), ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
 
-                        var t = tileMap.GetTile(tile.pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp));
-
-                        if(t != null) {
+                        Point2i pos = tile - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
+                        if (tilemap.RegionExists(pos)) {
                             Array.Clear(rawData.shadeFrame);
-                            t.shade.UpdateSelf(rawData.shadeFrame); // reuse
+                            tilemap.GetShadeTile(pos).UpdateSelf(rawData.shadeFrame); // reuse
                         }
                     }
                 }

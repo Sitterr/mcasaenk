@@ -3,10 +3,10 @@ out vec4 FragColor;
 in vec2 pos;
 layout(pixel_center_integer) in vec4 gl_FragCoord;
 
-uniform ivec2 resolution;
-uniform ivec2 glR;
-uniform ivec2 cam;
-uniform float zoom;
+uniform ivec2 tv_resolution;
+uniform ivec2 tv_glR;
+uniform ivec2 tv_cam;
+uniform float tv_zoom;
 
 uniform isampler2DArray region0;
 
@@ -49,11 +49,11 @@ float depthQ(int depth) {
     return q;
 }
 ivec2 blurCoord(ivec2 pos){
-    float inszoom = zoom > 1 ? 1 : zoom;
-    ivec2 gl = glR * 512 + pos - cam;
+    float inszoom = tv_zoom > 1 ? 1 : tv_zoom;
+    ivec2 gl = tv_glR * 512 + pos - tv_cam;
     ivec2 loc = gl + ivec2(ivec2(512, 512));
 
-    return ivec2(ivec2(loc.x, (resolution.y / inszoom + 2 * 512) - loc.y) * inszoom);
+    return ivec2(ivec2(loc.x, (tv_resolution.y / inszoom + 2 * 512) - loc.y) * inszoom);
 }
 vec3 contrast(vec3 color) {
     const float z = 0.00;

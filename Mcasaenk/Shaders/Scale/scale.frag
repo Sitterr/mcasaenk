@@ -1,13 +1,14 @@
 ﻿#version 430 core
 
-out vec4 FragColor;
+out vec3 FragColor;
 in vec2 pos;
 
-uniform sampler2D screenTexture;
+uniform sampler2D region0;
 uniform vec2 glPos;
 uniform ivec2 size;
 uniform float zoom;
 
+uniform vec3 defcolor;
 
 float ctwh(float c){
     return abs(floor(c + 0.5) - c);
@@ -22,35 +23,36 @@ void main() {
     float outsimzoom = zoom < 1 ? 1.0 : zoom;
     vec2 npos = vec2(pos.x, 1 - pos.y);
 
-    FragColor = texture(screenTexture, pos);
+    vec4 tc = texture(region0, npos);
+    FragColor = tc.a * tc.rgb + (1 - tc.a) * defcolor;
 
-    // background grid
-    vec3 gridcol;
-    if(int(((pos.y * size.y + fract(glPos).y - 1) * outsimzoom) / 32) % 2 == int(((npos.x * size.x - fract(glPos).x) * outsimzoom) / 32) % 2) gridcol = vec3(10.0 / 255, 10.0 / 255, 10.0 / 255);
-    else gridcol = vec3(15.0 / 255, 15.0 / 255, 15.0 / 255);
-    FragColor = blend(FragColor.rgb, gridcol, FragColor.a);
-
-    vec2 glPos_ = glPos - fract(glPos);
-    vec2 relPos = npos * size / insimzoom;
-
-    vec2 totPos = glPos_ + relPos;
-
-    // chunk grid
-    if(zoom >= 1 && false) {
-        if(ctwh(fract(totPos.x / 16)) <= 1 * ((1 / 16.0) / zoom) / 2 || ctwh(fract(totPos.y / 16)) <= 1 * ((1 / 16.0) / zoom) / 2){
-            FragColor = vec4(0.5, 0.5, 0.5, 1.0);
-        }
-    }
-
-    // region grid
-    {
-        float dashBrPerReg = max(1, 8 * zoom);
-        if(ctwh(fract(totPos.x / 512)) <= 3 * ((1 / 512.0) / zoom) / 2 && int(floor(-0.5 + fract(totPos.y / 512) * dashBrPerReg * 2)) % 2 == 0){
-            FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-        if(ctwh(fract(totPos.y / 512)) <= 3 * ((1 / 512.0) / zoom) / 2 && int(floor(-0.5 + fract(totPos.x / 512) * dashBrPerReg * 2)) % 2 == 0){
-            FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-    }
+//    // background grid
+//    vec3 gridcol;
+//    if(int(((pos.y * size.y + fract(glPos).y - 1) * outsimzoom) / 32) % 2 == int(((npos.x * size.x - fract(glPos).x) * outsimzoom) / 32) % 2) gridcol = vec3(10.0 / 255, 10.0 / 255, 10.0 / 255);
+//    else gridcol = vec3(15.0 / 255, 15.0 / 255, 15.0 / 255);
+//    FragColor = blend(FragColor.rgb, gridcol, FragColor.a);
+//
+//    vec2 glPos_ = glPos - fract(glPos);
+//    vec2 relPos = npos * size / insimzoom;
+//
+//    vec2 totPos = glPos_ + relPos;
+//
+//    // chunk grid
+//    if(zoom >= 1 && false) {
+//        if(ctwh(fract(totPos.x / 16)) <= 1 * ((1 / 16.0) / zoom) / 2 || ctwh(fract(totPos.y / 16)) <= 1 * ((1 / 16.0) / zoom) / 2){
+//            FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+//        }
+//    }
+//
+//    // region grid
+//    {
+//        float dashBrPerReg = max(1, 8 * zoom);
+//        if(ctwh(fract(totPos.x / 512)) <= 3 * ((1 / 512.0) / zoom) / 2 && int(floor(-0.5 + fract(totPos.y / 512) * dashBrPerReg * 2)) % 2 == 0){
+//            FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+//        }
+//        if(ctwh(fract(totPos.y / 512)) <= 3 * ((1 / 512.0) / zoom) / 2 && int(floor(-0.5 + fract(totPos.x / 512) * dashBrPerReg * 2)) % 2 == 0){
+//            FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+//        }
+//    }
     
 }

@@ -1,4 +1,5 @@
-﻿using Mcasaenk.Resources;
+﻿using Mcasaenk.Rendering;
+using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -53,11 +54,11 @@ namespace Mcasaenk.Shaders.Kawase {
             }
         }
 
-        public void Use(WorldPosition screen, TileMap tilemap, int[] blendtints, int R) {
-            int w = (int)Math.Ceiling(1 + (screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling(1 + (screen.Height + 2 * R) * screen.InSimZoom);
+        public void Use(WorldPosition screen, GenDataTileMap tilemap, int[] blendtints, int R) {
+            int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
             
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
-            ResizeFramebuffer((int)Math.Ceiling(1 + (screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling(1 + (screen.Height + 2 * 512) * screen.InSimZoom)); 
+            ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom)); 
             KawaseShader.SetUpFramebuffer(blendtints.Length);
             GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
             KawaseShader.AttachFramebuffer(fbo, texture1, blendtints.Length);
@@ -67,9 +68,10 @@ namespace Mcasaenk.Shaders.Kawase {
 
             // vertex uniforms
             {
-                GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.InSimZoom);
-                GL.Uniform2(GL.GetUniformLocation(Handle, "resolution"), w, h);
-                GL.Uniform2(GL.GetUniformLocation(Handle, "cam"), (int)Math.Floor(screen.Start.X - R), (int)Math.Floor(screen.Start.Y - R));
+                GL.Uniform1(GL.GetUniformLocation(Handle, "tv_zoom"), (float)screen.InSimZoom);
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_resolution"), w, h);
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_cam"), (int)Math.Floor(screen.Start.X - R), (int)Math.Floor(screen.Start.Y - R));
+                GL.Uniform2(GL.GetUniformLocation(Handle, "tv_regSize"), 512, 512);
             }
 
             GL.BindVertexArray(VAO);
@@ -88,15 +90,14 @@ namespace Mcasaenk.Shaders.Kawase {
                 }
 
                 // fragment uniforms
-                foreach(var reg in new WorldPosition(screen.Start.Add(new System.Windows.Point(-R, -R)), (screen.Width + 2 * R) / screen.zoom, (screen.Height + 2 * R) / screen.zoom, screen.zoom).GetVisibleTilePositions()) {
+                foreach(var reg in tilemap.GetVisibleTilesPositions(new WorldPosition(screen.Start.Add(new System.Windows.Point(-R, -R)), (screen.Width + 2 * R), (screen.Height + 2 * R), screen.zoom))) {
                     var tile = tilemap?.GetTile(reg);
                     if(tile == null) continue;
-                    if(tile.genData == null) continue;
 
-                    tile.genData.GetTexture().Use((int)TextureUnit.Texture0);
+                    tile.GetTexture().Use((int)TextureUnit.Texture0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
-                    GL.Uniform2(GL.GetUniformLocation(Handle, "glR"), reg.X, reg.Z);
+                    GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
                     GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
                 }
             }

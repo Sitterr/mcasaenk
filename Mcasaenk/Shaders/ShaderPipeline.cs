@@ -13,6 +13,7 @@ using static Mcasaenk.Extentions;
 using System.Windows;
 using Mcasaenk.Colormaping;
 using Mcasaenk.UI.Canvas;
+using Mcasaenk.Rendering;
 
 namespace Mcasaenk.Shaders {
     public class ShaderPipeline : IDisposable {
@@ -50,8 +51,7 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-
-        public void OnRender(WorldPosition screen, TileMap tilemap) {
+        public void OnRender(WorldPosition screen, GenDataTileMap tilemap, int outputtexture) {
             int[] kawaseKernels = new int[1 + kawaseShader.blendtints.Length];
             kawaseKernels[0] = Global.Settings.TRANSPARENTLAYERS > 0 ? Global.Settings.OCEAN_DEPTH_BLENDING : 0;
 
@@ -64,12 +64,10 @@ namespace Mcasaenk.Shaders {
             int kawaseReach = (kawaseKernels.Max() - 1) / 2;
             kawaseReach = (int)(kawaseReach * 1.1);
 
-
             prepShader.Use(screen, tilemap, kawaseShader.blendtints, kawaseReach);
-            var kawase_tex = kawaseShader.Use(screen, tilemap, kawaseKernels, kawaseReach, prepShader.texture1);
-            sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, kawaseReach);
-        }
+            var kawase_tex = kawaseShader.Use(screen, kawaseKernels, kawaseReach, prepShader.texture1);
+            sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, kawaseReach, outputtexture);
 
-        public int GetLastRender() => sceneShader.texture;
+        }
     }
 }

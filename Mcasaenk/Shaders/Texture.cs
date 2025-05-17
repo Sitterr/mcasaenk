@@ -58,6 +58,7 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
+        //public nint uploadSync = -1;
         public override void DataP(nint p, int size = -1) {
             int stagingBuffer;
             GL.CreateBuffers(1, out stagingBuffer);
@@ -67,8 +68,17 @@ namespace Mcasaenk.Shaders {
             GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
             GL.TextureSubImage3D(textureHandle, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
 
+
             GL.DeleteBuffers(1, ref stagingBuffer);
+
+            //this.uploadSync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
         }
+
+        //public bool HasLoadingCompleted() {
+        //    if (uploadSync == -1) return false;
+        //    var res = GL.ClientWaitSync(uploadSync, ClientWaitSyncFlags.None, 0);
+        //    return res == WaitSyncStatus.AlreadySignaled;
+        //}
 
         public override void Use(int point) {
             GL.ActiveTexture((TextureUnit)point);

@@ -7,14 +7,15 @@ using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;
 using System.Windows;
 using System.Xml.XPath;
-using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Shade3d {
-    public class TileShade : GenDataEditor {
-        private readonly Tile tile;
+    public class TileShade {
+        private readonly GenDataTileMap tilemap;
+        private readonly Point2i pos;
         private int shadeStride;
-        public TileShade(Tile tile) : base(tile) {
-            this.tile = tile;
+        public TileShade(GenDataTileMap tilemap, Point2i pos) {
+            this.tilemap = tilemap;
+            this.pos = pos;
         }
 
         private byte[][] shadeValues; // colx512x512x20
@@ -40,7 +41,7 @@ namespace Mcasaenk.Shade3d {
                     if(_ix == 0 && _iz == 0) harvested_to[i] = true;
 
 
-                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested_to[i] = true;
+                    if(tilemap.RegionExists(pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == false) harvested_to[i] = true;
 
                     i++;
                 }
@@ -50,10 +51,22 @@ namespace Mcasaenk.Shade3d {
             }
         }
 
-        protected override bool ShouldDestruct() {
+        public bool IsActive { get; set; }
+
+
+        private object locker = new object();
+
+        private void CheckDestruct() {
+            if (ShouldDestruct()) {
+                IsActive = false;
+                Destruct();
+            }
+        }
+
+        private bool ShouldDestruct() {
             return harvested_to.Contains(false) == false;
         }
-        protected override void Destruct() {
+        private void Destruct() {
             this.shadeValues = null;
             genData.FreeData();
             genData = null;
@@ -72,7 +85,7 @@ namespace Mcasaenk.Shade3d {
                     int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
                     int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
 
-                    if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
+                    if(tilemap.GetTileShadeFrame(pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
                         .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested_to[i] = true;
 
                     i++;
@@ -144,8 +157,8 @@ namespace Mcasaenk.Shade3d {
         public readonly ConcurrentDictionary<Point2i, (byte[] frame, bool[] harvested)> frames;
 
         private readonly Point2i pos;
-        private readonly TileMap tileMap;
-        public TileShadeFrames(TileMap tileMap, Point2i pos) {
+        private readonly GenDataTileMap tileMap;
+        public TileShadeFrames(GenDataTileMap tileMap, Point2i pos) {
             this.tileMap = tileMap;
             this.pos = pos;
             frames = new();
@@ -164,7 +177,7 @@ namespace Mcasaenk.Shade3d {
 
                 if(_ix >= dist.X && _iz >= dist.Z) {
                     var pp = pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
-                    harvested[i] = (tileMap.GetTile(pp) == null);
+                    harvested[i] = (tileMap.RegionExists(pp) == false);
 
                     var f = (pp - tilepos).abs();
                     if(!ShadeConstants.GLB.regionReach.Any(r => r.p == f)) {
