@@ -36,29 +36,29 @@ namespace Mcasaenk {
     }
     public enum RegionGridType {
         [Description("none")]
-        None,
+        None = 0,
         [Description("straight")]
-        Straight,
+        Straight = 1,
         [Description("dashed")]
-        dashed,
+        dashed = 2,
     }
     public enum BackgroundType {
         [Description("monotone")]
-        None,
+        None = 0,
         [Description("checker")]
-        Checker,
+        Checker = 1,
     }
     public enum MapGridType {
         [Description("none")]
-        None,
+        None = 0,
         [Description("1:1")]
-        zoom0,
+        zoom0 = 1,
         [Description("1:2")]
-        zoom1,
+        zoom1 = 2,
         [Description("1:4")]
-        zoom2,
+        zoom2 = 3,
         [Description("1:8")]
-        zoom3,
+        zoom3 = 4,
     }
 
     public enum ShadeType {
@@ -239,7 +239,7 @@ namespace Mcasaenk {
         public static Settings DEF() => new Settings() {
             MAXZOOM = 5, MINZOOM = -5,
             ENABLE_COLORMAP_EDITING = false,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, Background = BackgroundType.Checker, MAPGRID = MapGridType.None,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, DATASTORAGEMODEL = GenDataModel.COLOR, PRECOMPUTE_RELVIS = false,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),

@@ -56,13 +56,14 @@ namespace Mcasaenk.Shaders.Kawase {
 
         public void Use(WorldPosition screen, GenDataTileMap tilemap, int[] blendtints, int R) {
             int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
-            
+
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
-            ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom)); 
+            ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom));
+            KawaseShader.AttachFramebuffer(fbo, texture1, blendtints.Length);
             KawaseShader.SetUpFramebuffer(blendtints.Length);
             GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
-            KawaseShader.AttachFramebuffer(fbo, texture1, blendtints.Length);
-            //GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Scissor((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
+            GL.ClearColor(new Color4(0, 0, 0, 0)); GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.UseProgram(Handle);
 
@@ -90,7 +91,7 @@ namespace Mcasaenk.Shaders.Kawase {
                 }
 
                 // fragment uniforms
-                foreach(var reg in tilemap.GetVisibleTilesPositions(new WorldPosition(screen.Start.Add(new System.Windows.Point(-R, -R)), (screen.Width + 2 * R), (screen.Height + 2 * R), screen.zoom))) {
+                foreach(var reg in tilemap.GetVisibleTilesPositions(screen.Extend(R))) {
                     var tile = tilemap?.GetTile(reg);
                     if(tile == null) continue;
 

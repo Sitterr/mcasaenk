@@ -27,7 +27,7 @@ namespace Mcasaenk.UI.Canvas {
     /// </summary>
     public partial class CanvasControl : GLWpfControl {
 
-        readonly WorldPosition screen;
+        WorldPosition screen;
         ScreenshotManager screenshotManager;
 
         public ShaderPipeline pipeline;
@@ -149,7 +149,7 @@ namespace Mcasaenk.UI.Canvas {
             }
 
             if (drawTileMap != null) {
-                foreach (var tile in drawTileMap.GetVisibleTilesPositions(screen).Shuffle()) {
+                foreach (var tile in drawTileMap.GetVisibleTilesPositions(screen)) {
                     if (drawTileMap.ShouldDo(tile)) {
                         drawTileMap.QueueDo(tile, screen);
                     }
@@ -219,7 +219,6 @@ namespace Mcasaenk.UI.Canvas {
             Resolution.frame.Y = (int)Math.Ceiling(screen.Height) + 1;
 
             _update = true;
-            //pipeline?.OnRender(screen, tileMap);
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
             //screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;

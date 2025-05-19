@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Media;
 
 namespace Mcasaenk.UI.Canvas {
-    public class WorldPosition {
+    public struct WorldPosition {
         private double _zoom;
         private Rect coord;
 

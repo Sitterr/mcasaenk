@@ -14,6 +14,7 @@ using System.Windows;
 using Mcasaenk.Colormaping;
 using Mcasaenk.UI.Canvas;
 using Mcasaenk.Rendering;
+using System.Diagnostics;
 
 namespace Mcasaenk.Shaders {
     public class ShaderPipeline : IDisposable {
@@ -51,22 +52,26 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-        public void OnRender(WorldPosition screen, GenDataTileMap tilemap, int outputtexture) {
-            int[] kawaseKernels = new int[1 + kawaseShader.blendtints.Length];
-            kawaseKernels[0] = Global.Settings.TRANSPARENTLAYERS > 0 ? Global.Settings.OCEAN_DEPTH_BLENDING : 0;
+        public void Render(WorldPosition screen, GenDataTileMap tilemap, int outputtexture) {
+            Span<int> kernels = stackalloc int[1 + kawaseShader.blendtints.Length];
+            kernels[0] = Global.Settings.TRANSPARENTLAYERS > 0 ? Global.Settings.OCEAN_DEPTH_BLENDING : 0;
 
             var blendtints = Global.App.Colormap?.TintManager.GetBlendingTints();
             for(int i = 0; i < kawaseShader.blendtints.Length; i++) {
                 var tint = blendtints[i];
-                if(tint is DynamicTint dt) kawaseKernels[1 + i] = dt.Blend;
-                else kawaseKernels[1 + i] = 0;
+                if(tint is DynamicTint dt) kernels[1 + i] = dt.Blend;
+                else kernels[1 + i] = 0;
             }
-            int kawaseReach = (kawaseKernels.Max() - 1) / 2;
-            kawaseReach = (int)(kawaseReach * 1.1);
 
-            prepShader.Use(screen, tilemap, kawaseShader.blendtints, kawaseReach);
-            var kawase_tex = kawaseShader.Use(screen, kawaseKernels, kawaseReach, prepShader.texture1);
-            sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, kawaseReach, outputtexture);
+            int maxR = 0;
+            for(int i = 0; i < kernels.Length; i++) if(kernels[i] > maxR) maxR = kernels[i];
+            maxR = (maxR - 1) / 2;
+            int sc = (int)Math.Pow(2, Math.Abs(screen.ZoomScale));
+            maxR += (sc - maxR % sc);
+
+            prepShader.Use(screen, tilemap, kawaseShader.blendtints, maxR);
+            var kawase_tex = kawaseShader.Use(screen, kernels, maxR, prepShader.texture1);
+            sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, maxR, outputtexture);
 
         }
     }

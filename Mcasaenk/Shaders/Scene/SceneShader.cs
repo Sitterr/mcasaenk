@@ -73,7 +73,10 @@ namespace Mcasaenk.Shaders.Scene {
 
                     Global.App.Colormap.BlocksManager.GetTexture().Use((int)TextureUnit.Texture10);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "palette"), 10);
+                }
 
+                // settings
+                {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "CONTRAST"), (float)Global.Settings.Contrast);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "SUN_LIGHT"), Global.Settings.SUN_LIGHT / 15f);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "BLOCK_LIGHT"), Global.Settings.BLOCK_LIGHT / 15f);

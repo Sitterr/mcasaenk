@@ -50,10 +50,10 @@ float depthQ(int depth) {
 }
 ivec2 blurCoord(ivec2 pos){
     float inszoom = tv_zoom > 1 ? 1 : tv_zoom;
-    ivec2 gl = tv_glR * 512 + pos - tv_cam;
-    ivec2 loc = gl + ivec2(ivec2(512, 512));
+    ivec2 gl = tv_glR * 512 + pos;
+    ivec2 loc = gl - tv_cam + 512;
 
-    return ivec2(ivec2(loc.x, (tv_resolution.y / inszoom + 2 * 512) - loc.y) * inszoom);
+    return ivec2(vec2(loc.x, (tv_resolution.y / inszoom + 2 * 512) - loc.y - 1) * inszoom);
 }
 vec3 contrast(vec3 color) {
     const float z = 0.00;

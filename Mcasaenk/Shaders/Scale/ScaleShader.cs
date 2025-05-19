@@ -38,10 +38,16 @@ namespace Mcasaenk.Shaders.Scale {
                 GL.Uniform2(GL.GetUniformLocation(Handle, "tv_regSize"), tilesize, tilesize);
             }
 
+            // settings
+            {
+                GL.Uniform1(GL.GetUniformLocation(Handle, "REGIONGRID"), (int)Global.Settings.REGIONGRID);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "CHUNKGRID"), (int)Global.Settings.CHUNKGRID);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "BACKGROUND"), (int)Global.Settings.BACKGROUND);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "MAPGRID"), (int)Global.Settings.MAPGRID);
+            }
+
             GL.Uniform3(GL.GetUniformLocation(Handle, "defcolor"), 15 / 255f, 15 / 255f, 15 / 255f);
-            GL.Uniform2(GL.GetUniformLocation(Handle, "glPos"), (float)screen.Start.X, (float)screen.Start.Y);
-            GL.Uniform2(GL.GetUniformLocation(Handle, "size"), w, h);
-            //GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.zoom);
+            GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.zoom);
 
             if (tilemap != null) {
                 foreach (var reg in tilemap.GetVisibleTilesPositions(screen)) {

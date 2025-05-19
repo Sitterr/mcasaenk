@@ -25,7 +25,7 @@ namespace Mcasaenk.Rendering {
 
         private TileMapQuerer querer;
 
-        public GroupTileMap(double bundlebr, double scale) {
+        public GroupTileMap(double bundlebr, double scale, bool doallbydefault) {
             this.bundlebr = bundlebr;
             this.scale = scale;
 
@@ -33,6 +33,8 @@ namespace Mcasaenk.Rendering {
 
             max = new ConcurrentDictionary<Point2i, int>();
             curr = new ConcurrentDictionary<Point2i, int>();
+
+            minmax = doallbydefault ? 1 : 0;
         }
         public void SetQuerer(TileMapQuerer querer) {
             this.querer = querer;
@@ -84,8 +86,7 @@ namespace Mcasaenk.Rendering {
             }
         }
 
-        public void MassRedo(bool potentellyAll) {
-            if(potentellyAll) minmax++;
+        public void MassRedo() {
             foreach (var p in curr.Keys) {
                 Redo(p);
             }
@@ -129,7 +130,7 @@ namespace Mcasaenk.Rendering {
                     {
                         bool atleastone = false;
                         foreach (var screen in observers[p]) {
-                            if (tilemap.Scope(p).InterSects(screen) || screen == null) {
+                            if (tilemap.Scope(p).InterSects(screen)) {
                                 atleastone = true;
                                 break;
                             }
@@ -158,9 +159,8 @@ namespace Mcasaenk.Rendering {
         private readonly Stack<Tile> recycleStack;
         private readonly ConcurrentDictionary<Point2i, Tile> tiles;
         private bool wasUsedForRecycle = false;
-        private object locker = new object();
 
-        public GroupTileMap(double bundlebr, double scale, GroupTileMap<Tile> oldTileMap) : base(bundlebr, scale) {
+        public GroupTileMap(double bundlebr, double scale, bool doallbydefault, GroupTileMap<Tile> oldTileMap) : base(bundlebr, scale, doallbydefault) {
             recycleStack = new Stack<Tile>(oldTileMap?.ID == this.ID ? oldTileMap?.UseForRecycle() : []);
             tiles = new ConcurrentDictionary<Point2i, Tile>();
         }
@@ -223,6 +223,7 @@ namespace Mcasaenk.Rendering {
 
         private readonly Dimension dim;
         private readonly HashSet<Point2i> existingRegions;
+        private readonly List<GroupTileMap> drawTilemaps;
 
 
         private Dictionary<Point2i, TileShadeFrames> shadeFrames;
@@ -241,9 +242,10 @@ namespace Mcasaenk.Rendering {
             return f;
         }
 
-        public GenDataTileMap(Dimension dimension, HashSet<Point2i> existingRegions) : base(1, 1, null) {
+        public GenDataTileMap(Dimension dimension, HashSet<Point2i> existingRegions) : base(1, 1, true, null) {
             this.dim = dimension;
             this.existingRegions = existingRegions;
+            drawTilemaps = new List<GroupTileMap>();
 
             shadeFrames = new Dictionary<Point2i, TileShadeFrames>();
             shadesTiles = new Dictionary<Point2i, TileShade>();
@@ -255,9 +257,9 @@ namespace Mcasaenk.Rendering {
             biomeIds8_light4_shade4Pool = ArrayPool<ushort>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
 
             SetQuerer(new ObserverTaskTileMapQueuer(this, maxConcurrency));
-
-            MassRedo(true);
         }
+        public void AddDrawTileMap(GroupTileMap tilemap) { drawTilemaps.Add(tilemap); }
+        public void RemoveDrawTileMap(GroupTileMap tilemap) { drawTilemaps.Remove(tilemap); }
 
         public override bool ShouldDo(Point2i p) {
             if (!base.ShouldDo(p)) return false;
@@ -270,14 +272,15 @@ namespace Mcasaenk.Rendering {
         }
 
 
-        GroupTileMap DrawTileMap => Global.App.Window.canvasControl.drawTileMap;
         protected override GenData __Do(Point2i p, GenData _) {
             if (!RegionExists(p)) return null;
             var v = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(this, p, dim.GetRegionPath(p)) : TileGenerate.StandartGenerate(this, dim.GetRegionPath(p));
 
             Global.App.Dispatcher.Invoke(() => {
-                foreach (var dt in DrawTileMap.GetVisibleTilesPositions(this.Scope(p).Extend(512))) { 
-                    DrawTileMap.Redo(dt);
+                foreach(var tilemap in drawTilemaps) {
+                    foreach(var dt in tilemap.GetVisibleTilesPositions(this.Scope(p).Extend(512))) {
+                        tilemap.Redo(dt);
+                    }
                 }
             });
 
@@ -293,11 +296,12 @@ namespace Mcasaenk.Rendering {
     public class OpenGLDrawTileMap : GroupTileMap<int> {
         private readonly GenDataTileMap gentilemap;
         private readonly ShaderPipeline gldrawer;
-        public OpenGLDrawTileMap(GenDataTileMap gentilemap, ShaderPipeline gldrawer, double bundlebr, double scale, OpenGLDrawTileMap oldTileMap) : base(bundlebr, Math.Min(scale, 1), oldTileMap) {
+        public OpenGLDrawTileMap(GenDataTileMap gentilemap, ShaderPipeline gldrawer, double bundlebr, double scale, OpenGLDrawTileMap oldTileMap) : base(bundlebr, Math.Min(scale, 1), true, oldTileMap) {
             this.gentilemap = gentilemap;
             this.gldrawer = gldrawer;
 
-            MassRedo(true);
+            gentilemap.RemoveDrawTileMap(oldTileMap);
+            gentilemap.AddDrawTileMap(this);
         }
         public override bool ShouldDo(Point2i p) {
             if (!base.ShouldDo(p)) return false;
@@ -313,7 +317,7 @@ namespace Mcasaenk.Rendering {
 
 
         protected override int __Do(Point2i p, int texture) {
-            gldrawer.OnRender(Scope(p), gentilemap, texture);
+            gldrawer.Render(Scope(p), gentilemap, texture);
             return texture;
         }
 

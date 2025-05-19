@@ -8,9 +8,11 @@ uniform ivec2 tv_cam;
 uniform ivec2 tv_regSize;
 
 out vec2 pos;
+out vec2 glpos;
 
 void main() {
     pos = vec2((position.x + 1) / 2, 1 - (position.y + 1) / 2);
+    glpos = (tv_glR + pos) * tv_regSize;
 
     float glX = (tv_glR.x + pos.x) * tv_regSize.x;
     float glZ = (tv_glR.y + pos.y) * tv_regSize.y;

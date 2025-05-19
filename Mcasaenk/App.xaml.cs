@@ -42,7 +42,7 @@ namespace Mcasaenk
             }
         }
         private void OnLightChange(string changed) {
-            Global.App.Window.canvasControl.drawTileMap.MassRedo(false);
+            Global.App.Window.canvasControl.drawTileMap.MassRedo();
             if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
             if(changed == nameof(Settings.UseMapPalette)) {
                 Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
@@ -61,7 +61,7 @@ namespace Mcasaenk
             if(changed.Count == 0) return;
             SettingsHub.Freeze();
 
-            Global.App.Window.canvasControl.drawTileMap?.MassRedo(false);
+            Global.App.Window.canvasControl.drawTileMap?.MassRedo();
             _openedSave.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
 

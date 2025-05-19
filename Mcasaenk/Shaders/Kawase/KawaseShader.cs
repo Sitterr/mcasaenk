@@ -50,6 +50,7 @@ namespace Mcasaenk.Shaders.Kawase {
         }
 
         int[] ikernels = new int[8];
+        int[][] kawasepasses = new int[8][];
         public int[] blendtints = [];
 
         private int fw = -1, fh = -1;
@@ -84,39 +85,43 @@ namespace Mcasaenk.Shaders.Kawase {
             GL.DrawBuffers(drawBuffers.Length, drawBuffers);
         }
 
-        public KawaseTexture Use(WorldPosition screen, int[] kernels, int R, KawaseTexture texture1) {
+        public unsafe KawaseTexture Use(WorldPosition screen, Span<int> kernels, int R, KawaseTexture texture1) {
             int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
-            
-            ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom));
 
             KawaseTexture[] textures = [texture1, texture2];
             KawaseTexture finaltexture = textures[0];
 
             Array.Fill(ikernels, -1);
+            int passes = 0;
+            for(int i = 0; i < kernels.Length; i++) { 
+                kawasepasses[i] = KawaseKernels.Get(kernels[i]);
+                passes = Math.Max(passes, kawasepasses[i].Length);
+            }
 
-            int[][] kawasepasses = kernels.Select(KawaseKernels.Get).ToArray();
-
-            int passes = kawasepasses.Max(k => k.Length);
             if(passes > 0) {
+                {
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+                    ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom));
+                    SetUpFramebuffer(blendtints.Length);
+
+
+                    GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
+                    GL.Scissor((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
+                }
+                
                 GL.UseProgram(Handle);
 
                 {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "t_tints"), 0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "t_oceandepth"), 1);
-
-                    GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
-
-                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
-
-                    SetUpFramebuffer(blendtints.Length);
                 }
 
                 for(int p = 0; p < passes; p++) {
                     AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtints.Length);                
 
                     for(int i = 0; i < kernels.Length; i++) {
-                        if(p < kawasepasses[i].Length) ikernels[i] = kawasepasses[i][p];
+                        if(p < kawasepasses[i].Length) ikernels[i] = (int)(kawasepasses[i][p] * screen.InSimZoom);
                         else ikernels[i] = -1;
                     }
                     GL.Uniform1(GL.GetUniformLocation(Handle, "ikernels"), ikernels.Length, ikernels);
