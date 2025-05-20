@@ -156,7 +156,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap);
+            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap);
         }
 
         GenDataTileMap genTileMap { get => Global.App.TileMap; }

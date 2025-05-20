@@ -23,7 +23,7 @@ namespace Mcasaenk.Rendering {
         private readonly double scale;
         public virtual double ID => bundlebr;
 
-        private TileMapQuerer querer;
+        protected TileMapQuerer querer;
 
         public GroupTileMap(double bundlebr, double scale, bool doallbydefault) {
             this.bundlebr = bundlebr;
@@ -53,6 +53,14 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
+
+        public (Point2i min, Point2i max) GetVisibleRect(WorldPosition screen) {
+            double sx = Global.Coord.fairDev((int)Math.Floor(screen.Start.X), TileSize), sz = Global.Coord.fairDev((int)Math.Floor(screen.Start.Y), TileSize);
+            double fx = Global.Coord.fairDev((int)Math.Ceiling(screen.Start.X + screen.Width - 1), TileSize), fz = Global.Coord.fairDev((int)Math.Ceiling(screen.Start.Y + screen.Height - 1), TileSize);
+
+            return (new Point2i(sx, sz), new Point2i(fx, fz));
+        }
+
         public abstract void Dispose();
 
         private int minmax = 0;
@@ -158,7 +166,7 @@ namespace Mcasaenk.Rendering {
     public abstract class GroupTileMap<Tile> : GroupTileMap {
         private readonly Stack<Tile> recycleStack;
         private readonly ConcurrentDictionary<Point2i, Tile> tiles;
-        private bool wasUsedForRecycle = false;
+        protected bool wasUsedForRecycle = false;
 
         public GroupTileMap(double bundlebr, double scale, bool doallbydefault, GroupTileMap<Tile> oldTileMap) : base(bundlebr, scale, doallbydefault) {
             recycleStack = new Stack<Tile>(oldTileMap?.ID == this.ID ? oldTileMap?.UseForRecycle() : []);
@@ -261,6 +269,20 @@ namespace Mcasaenk.Rendering {
         public void AddDrawTileMap(GroupTileMap tilemap) { drawTilemaps.Add(tilemap); }
         public void RemoveDrawTileMap(GroupTileMap tilemap) { drawTilemaps.Remove(tilemap); }
 
+        public bool IsLoading(Point2i p) => ((ObserverTaskTileMapQueuer)querer).IsLoading(p);
+        public bool IsQueued(Point2i p) => ((ObserverTaskTileMapQueuer)querer).IsQueued(p);
+
+        public void RedoDrawTilemap(Point2i p, bool extend) {
+            WorldPosition scope = extend ? this.Scope(p).Extend(512) : this.Scope(p);
+            Global.App.Dispatcher.Invoke(() => {
+                foreach(var tilemap in drawTilemaps) {
+                    foreach(var dt in tilemap.GetVisibleTilesPositions(scope)) {
+                        tilemap.Redo(dt);
+                    }
+                }
+            });
+        }
+
         public override bool ShouldDo(Point2i p) {
             if (!base.ShouldDo(p)) return false;
             else return RegionExists(p);
@@ -275,15 +297,8 @@ namespace Mcasaenk.Rendering {
         protected override GenData __Do(Point2i p, GenData _) {
             if (!RegionExists(p)) return null;
             var v = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(this, p, dim.GetRegionPath(p)) : TileGenerate.StandartGenerate(this, dim.GetRegionPath(p));
-
-            Global.App.Dispatcher.Invoke(() => {
-                foreach(var tilemap in drawTilemaps) {
-                    foreach(var dt in tilemap.GetVisibleTilesPositions(this.Scope(p).Extend(512))) {
-                        tilemap.Redo(dt);
-                    }
-                }
-            });
-
+            RedoDrawTilemap(p, true);
+            //Thread.Sleep(1000 * Global.rand.Next(3, 15));
             return v;
         }
 
@@ -296,9 +311,16 @@ namespace Mcasaenk.Rendering {
     public class OpenGLDrawTileMap : GroupTileMap<int> {
         private readonly GenDataTileMap gentilemap;
         private readonly ShaderPipeline gldrawer;
+
+        private int emptyTile;
+        public int GetEmptyTile() => emptyTile;
+
         public OpenGLDrawTileMap(GenDataTileMap gentilemap, ShaderPipeline gldrawer, double bundlebr, double scale, OpenGLDrawTileMap oldTileMap) : base(bundlebr, Math.Min(scale, 1), true, oldTileMap) {
             this.gentilemap = gentilemap;
             this.gldrawer = gldrawer;
+
+            if(this.ID == oldTileMap?.ID) emptyTile = oldTileMap.emptyTile;
+            else emptyTile = CreateTile();
 
             gentilemap.RemoveDrawTileMap(oldTileMap);
             gentilemap.AddDrawTileMap(this);
@@ -314,7 +336,6 @@ namespace Mcasaenk.Rendering {
                 return false;
             }
         }
-
 
         protected override int __Do(Point2i p, int texture) {
             gldrawer.Render(Scope(p), gentilemap, texture);
@@ -335,6 +356,12 @@ namespace Mcasaenk.Rendering {
 
         protected override void DisposeTile(int tile) {
             if(tile != 0) GL.DeleteTexture(tile);
+        }       
+        public override void Dispose() { 
+            base.Dispose();
+            if(wasUsedForRecycle) { 
+                DisposeTile(emptyTile);
+            }
         }
 
     }

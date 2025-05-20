@@ -69,7 +69,7 @@ namespace Mcasaenk.Rendering {
                             SetShadeValuesLine(rdata.shadeFrame, rdata.depthColumn.shadeValues, regionIndex, SHADEX, SHADEZ, (int)x1, (int)z1);
                         }
 
-                        for(int h = airHeight; h >= 100; h--) {
+                        for(int h = airHeight; h >= 0; h--) {
                             var blid = data.GetBlock(cx, cz, h);
                             if(Global.Settings.NOSHADE_SHADE3D == false && data.Colormap.noShades.Contains(blid)) continue;
                             //if(blid == data.Colormap.BLOCK_AIR || blid == data.Colormap.depth) continue;

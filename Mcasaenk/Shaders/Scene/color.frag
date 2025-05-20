@@ -24,20 +24,6 @@ uniform int blur_R;
 
 // global
 int layers;
-vec4 mult(vec4 v1, vec4 v2){
-    return vec4(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b, v1.a * v2.a);
-}
-vec4 blend(vec4 fg, vec4 bg) {
-    float outAlpha = fg.a + bg.a * (1.0 - fg.a);
-    
-    // Prevent division by zero if outAlpha is 0
-    vec3 outColor = vec3(0.0);
-    if (outAlpha > 0.0) {
-        outColor = (fg.rgb * fg.a + bg.rgb * bg.a * (1.0 - fg.a)) / outAlpha;
-    }
-    
-    return vec4(outColor, outAlpha);
-}
 float depthQ(int depth) {
     const float c = 5, r = 8;
 
@@ -146,10 +132,10 @@ int TerrHeight(RegionData d){
 bool IsDepth(RegionData d, int l) { return l == layers - 1 && d.depth != 0; }
 
 vec4 ActColor(RegionData d, ivec2 pos){
-    return mult(d.block.basecolor, TintColorFor(pos, d.block.tint, d.biomeid, d.height));
+    return d.block.basecolor * TintColorFor(pos, d.block.tint, d.biomeid, d.height);
 }
 vec4 Color(RegionData d, int l, ivec2 pos) {
-    if(IsDepth(d, l)) return mult(depth.basecolor, TintColorFor(pos, depth.tint, d.biomeid, d.height));
+    if(IsDepth(d, l)) return depth.basecolor * TintColorFor(pos, depth.tint, d.biomeid, d.height);
     else return ActColor(d, pos);
 }
 bool ContainsInfo(RegionData d) {

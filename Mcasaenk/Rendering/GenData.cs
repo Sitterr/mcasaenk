@@ -122,7 +122,9 @@ namespace Mcasaenk.Rendering {
             biomeIds8_light4_shade4 = null;
         }
         public void UpdateTextureData(Span<short> texturedata) {
+            if(heights == null) return;
             for(int i = 0; i < 512 * 512; i++) {
+                if(heights == null) return;
                 texturedata[i * 4 + 0] = heights[i];
                 texturedata[i * 4 + 1] = depths15_lightfrombottom1 != null ? depths15_lightfrombottom1[i] : (short)0;
                 texturedata[i * 4 + 2] = (short)blockIds[i];

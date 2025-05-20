@@ -237,7 +237,7 @@ namespace Mcasaenk {
             ;
 
         public static Settings DEF() => new Settings() {
-            MAXZOOM = 5, MINZOOM = -5,
+            MAXZOOM = 4, MINZOOM = -4,
             ENABLE_COLORMAP_EDITING = false,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None,
             MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, DATASTORAGEMODEL = GenDataModel.COLOR, PRECOMPUTE_RELVIS = false,
