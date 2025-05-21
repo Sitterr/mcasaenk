@@ -66,7 +66,7 @@ namespace Mcasaenk.Shaders {
             int maxR = 0;
             for(int i = 0; i < kernels.Length; i++) if(kernels[i] > maxR) maxR = kernels[i];
             maxR = (maxR - 1) / 2;
-            int sc = (int)Math.Pow(2, Math.Abs(screen.ZoomScale));
+            int sc = (int)(1 / screen.InSimZoom);
             maxR += (sc - maxR % sc);
 
             prepShader.Use(screen, tilemap, kawaseShader.blendtints, maxR);

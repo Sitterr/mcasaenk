@@ -1,10 +1,14 @@
 ﻿using CommunityToolkit.HighPerformance;
+using Mcasaenk.Nbt;
 using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using Mcasaenk.WorldInfo;
+using Microsoft.Win32;
 using Microsoft.Windows.Themes;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
+using System.IO.Compression;
 using System.Printing;
 using System.Resources;
 using System.Text;
@@ -31,31 +35,81 @@ namespace Mcasaenk.UI {
         public LeftFileMenu leftFileMenu;
         public LeftOptionsMenu leftOptionsMenu;
 
-        ResolutionScale resScale = new ResolutionScale();
+        public ScreenshotManager screenshot;
 
+        ResolutionScale resScale = new ResolutionScale();
         public MainWindow() {
             InitializeComponent();
 
             this.Title = "MCA Saenk v" + App.VERSION;
 
             this.scr_capture.Click += (o, e) => {
-                var screenshottaker = canvasControl?.ScreenshotManager;
-                if(screenshottaker == null) return;
-                if(screenshottaker.Rect().Width == 0 || screenshottaker.Rect().Height == 0) {
-                    MessageBox.Show("Cannot make screenshot with no width/height :(");
-                    return;
-                }
-                if(screenshottaker.Rect().Width > 16384 || screenshottaker.Rect().Height > 16384) {
+                if(screenshot == null) return;
+
+                var res = screenshot.Resolution();
+
+                if(res.X > 16384 || res.Z > 16384) {
                     MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
                     return;
                 }
-                //canvasControl?.ScreenshotManager?.TakeAndSaveScreenshot();
+                if(res.X == 0 || res.Z == 0) {
+                    MessageBox.Show("Cannot make screenshot with no width/height :(");
+                    return;
+                }
+
+                ScreenshotTaker screenshottaker = canvasControl.CreateScreenshotCamera(screenshot);
+                if(screenshottaker == null) return;
+                try {
+                    if(screenshot.ResolutionType() == ResolutionType.map) {
+                        if(res.X == 128 || res.Z == 128) {
+                            var saveFileDialog = new SaveFileDialog {
+                                Filter = "Dat file|*.dat",
+                                Title = "Save screenshot",
+                                FileName = $"map_"
+                            };
+                            if(saveFileDialog.ShowDialog() == true) {
+                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id);
+                                if(nbt == null) return;
+
+                                using(var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
+                                    using(var zipStream = new GZipStream(fs, CompressionMode.Compress, false)) {
+                                        new NbtWriter(zipStream, nbt, "");
+                                    }
+                                }
+
+                                nbt.Dispose();
+                            }
+
+                        } else {
+                            MessageBox.Show("The map screenshot must be 128x128");
+                            return;
+                        }
+                    } else {
+                        var saveFileDialog = new SaveFileDialog {
+                            Filter = "PNG Image|*.png",
+                            Title = "Save screenshot",
+                            FileName = $"{Global.App.OpenedSave?.levelDatInfo?.name ?? "screenshot"}{res.X}x{res.Z}"
+                        };
+
+                        if(saveFileDialog.ShowDialog() == true) {
+                            var encoder = new PngBitmapEncoder();
+                            var screenshot = screenshottaker.TakeScreenshotAsImage();
+                            if(screenshot == null) return;
+                            encoder.Frames.Add(BitmapFrame.Create(screenshot));
+                            using(var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
+                                encoder.Save(fileStream);
+                            }
+                        }
+                    }
+                } finally {
+                    if(screenshottaker is IDisposable disp) disp.Dispose();
+                }
             };
             this.scr_stop.Click += (o, e) => {
                 rad.Reset(true);
             };
             this.scr_rotate.Click += (o, e) => {
-                canvasControl?.ScreenshotManager.Rotate();
+                screenshot?.Rotate();
             };
             this.rad.SetCallback(() => {
                 var res = this.rad.GetResolution();
@@ -85,7 +139,8 @@ namespace Mcasaenk.UI {
                     scale.IsEnabled = true;
                 }
 
-                canvasControl?.SetUpScreenShot(res, resScale, res?.type == ResolutionType.resizeable);
+                screenshot?.Dispose();
+                screenshot = res != null ? new ScreenshotManager(res, resScale, res?.type == ResolutionType.resizeable, canvasControl.screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(resScale.Scale).Dev(2).Floor())) : null;
 
                 scr_capture.IsEnabled = res != null;
                 scr_stop.IsEnabled = res != null;
@@ -100,11 +155,6 @@ namespace Mcasaenk.UI {
 
             scale.SetBinding(ComboBox.SelectedItemProperty, new Binding("Scale") { Source = resScale, Converter = new ResolutionScaleTextToDouble() });
             scale.SelectedIndex = 0;
-            this.resScale.PropertyChanged += (o, e) => {
-                if(e.PropertyName == "Scale") {
-                    canvasControl.ScreenshotManager?.Rescale();
-                }
-            };
 
             {
                 Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
@@ -305,6 +355,9 @@ namespace Mcasaenk.UI {
                 btn_dim_end.IsEnabled = Global.App.OpenedSave.end != null;
                 btn_dim_others.Visibility = Global.App.OpenedSave.dimensions.Any(d => !d.name.StartsWith("minecraft:")) ? Visibility.Visible : Visibility.Collapsed;
             }
+
+            screenshot?.Dispose();
+            screenshot = null;
 
             SetCurrs(Global.App.OpenedSave?.levelDatInfo);
             wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;

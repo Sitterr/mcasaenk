@@ -2,13 +2,18 @@
 using System.IO.Compression;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
+using Mcasaenk.Shaders;
+using Mcasaenk.Shaders.Scale;
 using Microsoft.Win32;
+using OpenTK.Graphics.OpenGL4;
 
 namespace Mcasaenk.UI.Canvas {
 
@@ -44,12 +49,13 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
 
+        public ResolutionType ResolutionType() => resolution.type;
 
         private void OnResolutionChange(object s, System.ComponentModel.PropertyChangedEventArgs e) {
             if(locker) return;
             if(e.PropertyName == nameof(resolution.X) || e.PropertyName == nameof(resolution.Y)) {
                 var size = new Point(resolution.X, resolution.Y).Mult(scale.Scale);
-                Loc1 = Rect().TopLeft.Add(size.Dev(-2));
+                Loc1 = AsRect().TopLeft.Add(size.Dev(-2));
                 Loc2 = Loc1.Add(size);
             }
         }
@@ -59,30 +65,36 @@ namespace Mcasaenk.UI.Canvas {
                 Rescale();
             }
         }
-
-
-        public Rect Rect() => new Rect(Loc1, Loc2);
-
-        public void Rotate() {
-            rotated = !rotated;
-
-            var mid = Rect().Mid();
-            var r = mid.Sub(Loc1);
-
-            Loc1 = mid.Sub(new Point(r.Y, r.X));
-            Loc2 = mid.Add(new Point(r.Y, r.X));
-        }
-        public void Rescale() {
+        private void Rescale() {
             locker = true;
-            var mid = Rect().Mid();
+            var mid = AsRect().Mid();
 
             int x = (int)(resolution.X / scale.Scale), y = (int)(resolution.Y / scale.Scale);
-            if (rotated) (x, y) = (y, x);
+            if(rotated) (x, y) = (y, x);
 
             Loc1 = mid.Sub(new Point(x, y).Dev(2)).Floor();
             Loc2 = mid.Add(new Point(x, y).Dev(2)).Floor();
             locker = false;
         }
+
+
+        public Rect AsRect() => new Rect(Loc1, Loc2);
+        public WorldPosition AsScreen() {
+            Rect r = AsRect();
+            return new WorldPosition(r.TopLeft, r.Width, r.Height, scale.Scale);
+        }
+        public Point2i Resolution() => new Point2i(resolution.X, resolution.Y);
+
+        public void Rotate() {
+            rotated = !rotated;
+
+            var mid = AsRect().Mid();
+            var r = mid.Sub(Loc1);
+
+            Loc1 = mid.Sub(new Point(r.Y, r.X));
+            Loc2 = mid.Add(new Point(r.Y, r.X));
+        }
+        public bool IsRotated() => rotated;
         public void ResizeCorner(Point p) {
             locker = true;
             Loc1 = p;
@@ -131,11 +143,11 @@ namespace Mcasaenk.UI.Canvas {
         }
         public Cursor MouseOverWhat(WorldPosition screen, Point mousePos) {
             double e = (10 + screen.zoom);
-            var p = new Point(e, e).Dev(2);
+            var p = new Point(e, e).Dev(2).Add(new Point(0, 0.5 * screen.zoom));
             var s = new Size(e, e);
 
-            var LocNW = Rect().TopLeft;
-            var Size = Rect().Size.AsPoint();
+            var LocNW = AsRect().TopLeft;
+            var Size = AsRect().Size.AsPoint();
 
             if(canResize) {
                 if(new Rect(screen.GetLocalPos(LocNW).Sub(p), s).Contains(mousePos)) return Cursors.ScrollNW;
@@ -157,12 +169,25 @@ namespace Mcasaenk.UI.Canvas {
 
         public enum ConditionalState : uint { 
             ok                = 0xFF00FF00, 
-            shadesnotfinished = 0xFFFFFF00, 
-            unloadedregions   = 0xFFFFA500,
+            shadesnotfinished = 0xFFA5FF00, 
+            unloadedchunks   = 0xFFFFA500,
             invalid           = 0xFFFF0000,
         }
-        public ConditionalState GetState(GenDataTileMap tilemap) {
+        public ConditionalState GetState(GenDataTileMap gentilemap) {
             if(resolution.X > 16384 || resolution.Y > 16384) return ConditionalState.invalid;
+
+            var screen = this.AsScreen();
+
+            foreach(var rch in gentilemap.GetVisibleChunkPositions(screen)) { 
+                if(gentilemap.GetTile(rch.reg, out var tile) == false) return ConditionalState.unloadedchunks;
+                if(tile.IsChunkScreenshotable(rch.chunk.X, rch.chunk.Z) == false) return ConditionalState.unloadedchunks;
+            }
+            foreach(var reg in gentilemap.GetVisibleTilesPositions(screen)) {
+                if(!gentilemap.GetTile(reg, out var tile)) return ConditionalState.unloadedchunks;
+
+                if(gentilemap.GetShadeTile(reg) is not { IsActive: false })
+                    return ConditionalState.shadesnotfinished;
+            }
             return ConditionalState.ok;
         }
 
@@ -293,5 +318,160 @@ namespace Mcasaenk.UI.Canvas {
         //        }
         //    }
         //}
+    }
+
+    public interface ScreenshotTaker {
+        BitmapSource TakeScreenshotAsImage();
+        CompoundTag_Allgemein TakeScreenshotAsMap(int version);
+    }
+
+    public class OpenGLScreenshotTaker : ScreenshotTaker, IDisposable {
+        private readonly GenDataTileMap gentilemap;
+        private readonly ShaderPipeline renderer;
+        private readonly WorldPosition frame;
+        private readonly bool rotate;
+
+        private readonly ShaderTexture2D sceneimage;
+        public OpenGLScreenshotTaker(GenDataTileMap gentilemap, ShaderPipeline renderer, WorldPosition frame, bool rotate) { 
+            this.gentilemap = gentilemap;
+            this.renderer = renderer;
+            this.frame = frame;
+            this.rotate = rotate;
+
+            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)frame.Width, (int)frame.Height);
+        }
+        public void Dispose() {
+            sceneimage.Dispose();
+        }
+
+        public BitmapSource TakeScreenshotAsImage() {
+            int w = frame.ScreenWidth, h = frame.ScreenHeight;
+            if(rotate) (w, h) = (h, w);
+            return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, Render(), w * 4);
+        }
+
+        public CompoundTag_Allgemein TakeScreenshotAsMap(int version) {
+            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render()), frame, version);
+        }
+
+
+        private byte[] Render() {
+            renderer.Render(frame, gentilemap, sceneimage.textureHandle);
+
+            byte[] data = sceneimage.ReadData();
+            if(frame.zoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.zoom);
+            FlipVertAndConvertRgbaToBgra(data, frame.ScreenWidth, frame.ScreenHeight);
+            if(rotate) data = RotateMinus90(data, frame.ScreenWidth, frame.ScreenHeight);
+            return data;
+        }
+
+
+        static void FlipVertAndConvertRgbaToBgra(byte[] rgba, int width, int height) {
+            int stride = width * 4;
+
+            // Swap rows from top and bottom
+            for(int y = 0; y < height / 2; y++) {
+                int topRowStart = y * stride;
+                int bottomRowStart = (height - 1 - y) * stride;
+
+                for(int x = 0; x < width; x++) {
+                    int topIndex = topRowStart + x * 4;
+                    int bottomIndex = bottomRowStart + x * 4;
+
+                    // Swap pixels between top and bottom row with RGBA->BGRA conversion
+
+                    // Top pixel RGBA
+                    byte rTop = rgba[topIndex];
+                    byte gTop = rgba[topIndex + 1];
+                    byte bTop = rgba[topIndex + 2];
+                    byte aTop = rgba[topIndex + 3];
+
+                    // Bottom pixel RGBA
+                    byte rBottom = rgba[bottomIndex];
+                    byte gBottom = rgba[bottomIndex + 1];
+                    byte bBottom = rgba[bottomIndex + 2];
+                    byte aBottom = rgba[bottomIndex + 3];
+
+                    // Write bottom pixel (converted BGRA) to top position
+                    rgba[topIndex] = bBottom;       // B
+                    rgba[topIndex + 1] = gBottom;   // G
+                    rgba[topIndex + 2] = rBottom;   // R
+                    rgba[topIndex + 3] = aBottom;   // A
+
+                    // Write top pixel (converted BGRA) to bottom position
+                    rgba[bottomIndex] = bTop;
+                    rgba[bottomIndex + 1] = gTop;
+                    rgba[bottomIndex + 2] = rTop;
+                    rgba[bottomIndex + 3] = aTop;
+                }
+            }
+
+            // If height is odd, flip/convert the middle row in place
+            if(height % 2 == 1) {
+                int middleRowStart = (height / 2) * stride;
+                for(int x = 0; x < width; x++) {
+                    int idx = middleRowStart + x * 4;
+                    byte r = rgba[idx];
+                    byte g = rgba[idx + 1];
+                    byte b = rgba[idx + 2];
+                    byte a = rgba[idx + 3];
+
+                    rgba[idx] = b;
+                    rgba[idx + 1] = g;
+                    rgba[idx + 2] = r;
+                    rgba[idx + 3] = a;
+                }
+            }
+        }
+
+        static byte[] ScaleUpRaw32bit(byte[] srcPixels, int width, int height, int scale) {
+            int bytesPerPixel = 4;
+            int srcStride = width * bytesPerPixel;
+            int newWidth = width * scale;
+            int newHeight = height * scale;
+            int destStride = newWidth * bytesPerPixel;
+
+            byte[] destPixels = new byte[newWidth * newHeight * bytesPerPixel];
+
+            for(int y = 0; y < height; y++) {
+                for(int x = 0; x < width; x++) {
+                    int srcIndex = y * srcStride + x * bytesPerPixel;
+
+                    // Copy this pixel into a scale x scale block
+                    for(int dy = 0; dy < scale; dy++) {
+                        for(int dx = 0; dx < scale; dx++) {
+                            int destX = x * scale + dx;
+                            int destY = y * scale + dy;
+                            int destIndex = destY * destStride + destX * bytesPerPixel;
+
+                            System.Buffer.BlockCopy(srcPixels, srcIndex, destPixels, destIndex, bytesPerPixel);
+                        }
+                    }
+                }
+            }
+
+            return destPixels;
+        }
+
+        static byte[] RotateMinus90(byte[] input, int width, int height) {
+            int bytesPerPixel = 4;
+            byte[] output = new byte[input.Length];
+
+            for(int y = 0; y < height; y++) {
+                for(int x = 0; x < width; x++) {
+                    int srcIndex = (y * width + x) * bytesPerPixel;
+
+                    int dstX = y;
+                    int dstY = width - 1 - x;
+                    int dstIndex = (dstY * height + dstX) * bytesPerPixel;
+
+                    for(int b = 0; b < bytesPerPixel; b++) {
+                        output[dstIndex + b] = input[srcIndex + b];
+                    }
+                }
+            }
+
+            return output;
+        }
     }
 }

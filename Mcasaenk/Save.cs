@@ -103,6 +103,7 @@ namespace Mcasaenk {
         }
 
         public void Reset() {
+            this.tileMap?.Dispose();
             this.tileMap = new GenDataTileMap(this, ExistingRegions());
         }
 

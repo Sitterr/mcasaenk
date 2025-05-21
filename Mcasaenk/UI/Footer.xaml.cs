@@ -65,7 +65,7 @@ namespace Mcasaenk.UI {
             txt_x.Text = globalPos.X.ToString();
             txt_z.Text = globalPos.Z.ToString();
 
-            var tile = tileMap?.GetTile(new Point2i(Global.Coord.fairDev(globalPos.X, 512), Global.Coord.fairDev(globalPos.Z, 512)));
+            var tile = tileMap?.GetTile(new Point2i((int)Math.Floor(globalPos.X / 512.0), (int)Math.Floor(globalPos.Z / 512.0)));
             int i = Global.Coord.absMod(globalPos.Z, 512) * 512 + Global.Coord.absMod(globalPos.X, 512);
             if(tile != null) {
                 bool info = false;

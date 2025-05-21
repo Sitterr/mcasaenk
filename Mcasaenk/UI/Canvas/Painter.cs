@@ -168,7 +168,7 @@ namespace Mcasaenk.UI.Canvas {
         public ScreenshotPainer() {
             greenPen = new Pen(new SolidColorBrush(Colors.Green), 2);
             orangePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
-            yellowPen = new Pen(new SolidColorBrush(Colors.Yellow), 2);
+            yellowPen = new Pen(new SolidColorBrush(Colors.LightGreen), 2);
             redPen = new Pen(new SolidColorBrush(Colors.Red), 2);
 
             backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.White));

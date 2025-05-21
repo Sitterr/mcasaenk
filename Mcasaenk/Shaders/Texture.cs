@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Media3D;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Shaders {
@@ -27,13 +28,15 @@ namespace Mcasaenk.Shaders {
 
     public unsafe class ShaderTexture2D : ShaderArray {
         public readonly int l, w, h;
-        private readonly int textureHandle;
+        public readonly int textureHandle;
 
         private readonly PixelFormat format;
         private readonly PixelType pixelType;
         private readonly int brchannels, channelsize;
 
-        private ShaderTexture2D(int l, int w, int h, SizedInternalFormat preciseformat, PixelFormat format, PixelType pixelType, int brchannels, int channelsize) {
+        private readonly TextureTarget type;
+
+        private ShaderTexture2D(TextureTarget type, int l, int w, int h, SizedInternalFormat preciseformat, PixelFormat format, PixelType pixelType, int brchannels, int channelsize) {
             this.l = l;
             this.w = w;
             this.h = h;
@@ -43,11 +46,12 @@ namespace Mcasaenk.Shaders {
 
             this.format = format;
             this.pixelType = pixelType;
-
+            this.type = type;
 
             textureHandle = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
-            GL.TexStorage3D(TextureTarget3d.Texture2DArray, 1, preciseformat, w, h, l);
+            GL.BindTexture(type, textureHandle);
+            if(type == TextureTarget.Texture2DArray) GL.TexStorage3D(TextureTarget3d.Texture2DArray, 1, preciseformat, w, h, l);
+            else GL.TexStorage2D(TextureTarget2d.Texture2D, 1, preciseformat, w, h);
         }
 
         private bool disposed = false;
@@ -65,13 +69,22 @@ namespace Mcasaenk.Shaders {
             GL.NamedBufferStorage(stagingBuffer, l * w * h * brchannels * channelsize, p, BufferStorageFlags.ClientStorageBit);
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, stagingBuffer);
-            GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
-            GL.TextureSubImage3D(textureHandle, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
+            GL.BindTexture(type, textureHandle);
+            if(type == TextureTarget.Texture2DArray) GL.TextureSubImage3D(textureHandle, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
+            else GL.TextureSubImage2D(textureHandle, 0, 0, 0, w, h, format, pixelType, 0);
 
 
             GL.DeleteBuffers(1, ref stagingBuffer);
 
             //this.uploadSync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+        }
+
+        public byte[] ReadData() {
+            GL.BindTexture(type, textureHandle);
+            byte[] data = new byte[l * w * h * brchannels * channelsize];
+            GL.GetTexImage(type, 0, format, pixelType, data);
+
+            return data;
         }
 
         //public bool HasLoadingCompleted() {
@@ -82,12 +95,13 @@ namespace Mcasaenk.Shaders {
 
         public override void Use(int point) {
             GL.ActiveTexture((TextureUnit)point);
-            GL.BindTexture(TextureTarget.Texture2DArray, textureHandle);
+            GL.BindTexture(type, textureHandle);
         }
 
 
 
-        public static ShaderTexture2D CreateRGBA16i(int l, int w, int h) => new ShaderTexture2D(l, w, h, SizedInternalFormat.Rgba16i, PixelFormat.RgbaInteger, PixelType.Short, 4, sizeof(short));
+        public static ShaderTexture2D CreateRGBA16i_Array(int l, int w, int h) => new ShaderTexture2D(TextureTarget.Texture2DArray, l, w, h, SizedInternalFormat.Rgba16i, PixelFormat.RgbaInteger, PixelType.Short, 4, sizeof(short));
+        public static ShaderTexture2D CreateRGBA8_Single(int w, int h) => new ShaderTexture2D(TextureTarget.Texture2D, 1, w, h, SizedInternalFormat.Rgba8, PixelFormat.Rgba, PixelType.UnsignedByte, 4, sizeof(byte));
     }
 
     public unsafe class ShaderBufferTexture : ShaderArray {

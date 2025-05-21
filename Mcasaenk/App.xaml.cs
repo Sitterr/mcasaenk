@@ -157,14 +157,7 @@ namespace Mcasaenk
         public double RAND;
         public MainWindow Window { get => (MainWindow)this.MainWindow; }
 
-        private GenDataTileMap tileMap;
-        public GenDataTileMap TileMap {
-            get => tileMap; 
-            set{
-                tileMap?.Dispose();
-                tileMap = value;
-            }
-        }
+        public GenDataTileMap TileMap;
         public SettingsHub SettingsHub { get; set; }
         public Settings Settings { get; set; }
 

@@ -28,13 +28,12 @@ namespace Mcasaenk.UI.Canvas {
     /// </summary>
     public partial class CanvasControl : GLWpfControl {
 
-        WorldPosition screen;
-        ScreenshotManager screenshotManager;
+        public WorldPosition screen;
 
         public ShaderPipeline pipeline;
         ScaleShader scaleShader;
 
-        public GroupTileMap drawTileMap;
+        public OpenGLDrawTileMap drawTileMap;
 
         public CanvasControl() {
             InitializeComponent();
@@ -151,14 +150,14 @@ namespace Mcasaenk.UI.Canvas {
             }
 
             if (drawTileMap != null) {
-                foreach (var tile in drawTileMap.GetVisibleTilesPositions(screen)) {
+                foreach (var tile in drawTileMap.GetVisibleTilesPositions(window.screenshot != null ? [screen, window.screenshot.AsScreen()] : [screen])) {
                     if (drawTileMap.ShouldDo(tile)) {
                         drawTileMap.QueueDo(tile, screen);
                     }
                 }
             }
 
-            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap, screenshotManager);
+            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap, window.screenshot);
         }
 
         GenDataTileMap genTileMap { get => Global.App.TileMap; }
@@ -168,8 +167,7 @@ namespace Mcasaenk.UI.Canvas {
         const double dzoom = 1;
         public void OnTilemapChanged(bool dimchange) {
             //scenePainter.SetTileMap(tileMap);
-            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, (drawTileMap as OpenGLDrawTileMap));
-            screenshotManager = null;
+            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, drawTileMap);
 
             if(dimchange) {
                 screen.Mid = new Point(0, 0);
@@ -184,6 +182,8 @@ namespace Mcasaenk.UI.Canvas {
             //    }
             //}
         }
+
+        public ScreenshotTaker CreateScreenshotCamera(ScreenshotManager screenshot) => new OpenGLScreenshotTaker(genTileMap, pipeline, screenshot.AsScreen(), screenshot.IsRotated());
 
 
         private void OnSlowTick(object a, object b) {
@@ -222,12 +222,6 @@ namespace Mcasaenk.UI.Canvas {
 
             _update = true;
         }
-        public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
-            screenshotManager?.Dispose();
-            screenshotManager = res != null ? new ScreenshotManager(res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
-            //screenshotPainer.SetManager(screenshotManager);
-        }
-        public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }
         public void GoTo(Point p) {
             screen.Mid = p;
         }
@@ -263,13 +257,13 @@ namespace Mcasaenk.UI.Canvas {
                     mousedownCursor = Mouse.OverrideCursor;
 
                     if(mousedownCursor == Cursors.ScrollNW || mousedownCursor == Cursors.ScrollN) {
-                        screenshotManager.Rebase(true, true);
+                        window.screenshot.Rebase(true, true);
                     } else if(mousedownCursor == Cursors.ScrollNE || mousedownCursor == Cursors.ScrollE) {
-                        screenshotManager.Rebase(true, false);
+                        window.screenshot.Rebase(true, false);
                     } else if(mousedownCursor == Cursors.ScrollSW || mousedownCursor == Cursors.ScrollW) {
-                        screenshotManager.Rebase(false, true);
+                        window.screenshot.Rebase(false, true);
                     } else if(mousedownCursor == Cursors.ScrollSE || mousedownCursor == Cursors.ScrollS) {
-                        screenshotManager.Rebase(false, false);
+                        window.screenshot.Rebase(false, false);
                     }
 
                     Mouse.OverrideCursor = Cursors.Hand;
@@ -310,14 +304,14 @@ namespace Mcasaenk.UI.Canvas {
 
                     if(mousedownCursor == Cursors.Cross) {
                         mouseStart = mouseStart.Floor();
-                        screenshotManager.Move(globalMousePos.Sub(mouseStart));
+                        window.screenshot.Move(globalMousePos.Sub(mouseStart));
                         mouseStart = globalMousePos;
                     } else if(mousedownCursor == Cursors.ScrollNW || mousedownCursor == Cursors.ScrollNE || mousedownCursor == Cursors.ScrollSW || mousedownCursor == Cursors.ScrollSE) {
-                        screenshotManager.ResizeCorner(globalMousePos);
+                        window.screenshot.ResizeCorner(globalMousePos);
                     } else if(mousedownCursor == Cursors.ScrollW || mousedownCursor == Cursors.ScrollE) {
-                        screenshotManager.ResizeAxis((int)globalMousePos.X, true);
+                        window.screenshot.ResizeAxis((int)globalMousePos.X, true);
                     } else if(mousedownCursor == Cursors.ScrollN || mousedownCursor == Cursors.ScrollS) {
-                        screenshotManager.ResizeAxis((int)globalMousePos.Y, false);
+                        window.screenshot.ResizeAxis((int)globalMousePos.Y, false);
                     }
                 }
 
@@ -327,8 +321,8 @@ namespace Mcasaenk.UI.Canvas {
                 Cursor newcursor = null;
                 mousescreenshot = false;
 
-                if(screenshotManager != null) {
-                    newcursor = screenshotManager.MouseOverWhat(screen, mousePos);
+                if(window.screenshot != null) {
+                    newcursor = window.screenshot.MouseOverWhat(screen, mousePos);
 
                     
                     if(newcursor != null) {
@@ -362,18 +356,18 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e) {
-            if(screenshotManager != null) {
+            if(window.screenshot != null) {
                 if(e.Key == Key.D || e.Key == Key.Right) {
-                    screenshotManager.Move(new Point(1, 0));
+                    window.screenshot.Move(new Point(1, 0));
                     e.Handled = true;
                 } else if(e.Key == Key.A || e.Key == Key.Left) {
-                    screenshotManager.Move(new Point(-1, 0));
+                    window.screenshot.Move(new Point(-1, 0));
                     e.Handled = true;
                 } else if(e.Key == Key.W || e.Key == Key.Up) {
-                    screenshotManager.Move(new Point(0, -1));
+                    window.screenshot.Move(new Point(0, -1));
                     e.Handled = true;
                 } else if(e.Key == Key.S || e.Key == Key.Down) {
-                    screenshotManager.Move(new Point(0, 1));
+                    window.screenshot.Move(new Point(0, 1));
                     e.Handled = true;
                 }
             }

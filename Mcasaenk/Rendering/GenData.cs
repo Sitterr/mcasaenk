@@ -74,7 +74,7 @@ namespace Mcasaenk.Rendering {
             freed = true;
         }
         public ShaderTexture2D GetTexture() {
-            if(texture == null) texture = ShaderTexture2D.CreateRGBA16i(columns.Length, 512, 512);
+            if(texture == null) texture = ShaderTexture2D.CreateRGBA16i_Array(columns.Length, 512, 512);
             if(textureupdate && texturedata != default) {
                 texture.Data(texturedata);
 

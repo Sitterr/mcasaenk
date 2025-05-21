@@ -19,8 +19,8 @@ using static Mcasaenk.Global;
 namespace Mcasaenk.Rendering {
     public abstract class GroupTileMap : IDisposable {
 
-        private readonly double bundlebr;
-        private readonly double scale;
+        protected double bundlebr;
+        protected double scale;
         public virtual double ID => bundlebr;
 
         protected TileMapQuerer querer;
@@ -45,18 +45,27 @@ namespace Mcasaenk.Rendering {
         public WorldPosition Scope(Point2i p) {
             return new WorldPosition(new System.Windows.Point(p.X * TileSize, p.Z * TileSize), TileSize, TileSize, scale);
         }
-        public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen) {
-            double sx = Global.Coord.fairDev((int)Math.Floor(screen.Start.X), TileSize), sz = Global.Coord.fairDev((int)Math.Floor(screen.Start.Y), TileSize), tx = Global.Coord.absMod(screen.Start.X, TileSize), tz = Global.Coord.absMod(screen.Start.Y, TileSize);
-            for (int x = 0; x * TileSize - tx < screen.Width; x++) {
-                for (int z = 0; z * TileSize - tz < screen.Height; z++) {
+
+        protected static IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen, int TileSize) {
+            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize), tx = Global.Coord.absMod(screen.Start.X, TileSize), tz = Global.Coord.absMod(screen.Start.Y, TileSize);
+            for(int x = 0; x * TileSize - tx < screen.Width; x++) {
+                for(int z = 0; z * TileSize - tz < screen.Height; z++) {
                     yield return new Point2i(x + sx, z + sz);
+                }
+            }
+        }
+        public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen) => GetVisibleTilesPositions(screen, TileSize);
+        public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition[] screens) {
+            foreach(var screen in screens) {
+                foreach(var p in GetVisibleTilesPositions(screen)) { 
+                    yield return p;
                 }
             }
         }
 
         public (Point2i min, Point2i max) GetVisibleRect(WorldPosition screen) {
-            double sx = Global.Coord.fairDev((int)Math.Floor(screen.Start.X), TileSize), sz = Global.Coord.fairDev((int)Math.Floor(screen.Start.Y), TileSize);
-            double fx = Global.Coord.fairDev((int)Math.Ceiling(screen.Start.X + screen.Width - 1), TileSize), fz = Global.Coord.fairDev((int)Math.Ceiling(screen.Start.Y + screen.Height - 1), TileSize);
+            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize);
+            double fx = Math.Floor(Math.Ceiling(screen.Start.X + screen.Width - 1) / TileSize), fz = Math.Floor(Math.Ceiling(screen.Start.Y + screen.Height - 1) / TileSize);
 
             return (new Point2i(sx, sz), new Point2i(fx, fz));
         }
@@ -242,6 +251,7 @@ namespace Mcasaenk.Rendering {
         private Dictionary<Point2i, TileShade> shadesTiles;
         public TileShade GetShadeTile(Point2i p) {
             if (shadesTiles.TryGetValue(p, out var tile)) return tile;
+            if(existingRegions.Contains(p) == false) return null;
 
             shadesTiles[p] = new TileShade(this, p);
             return shadesTiles[p];
@@ -275,6 +285,12 @@ namespace Mcasaenk.Rendering {
 
         public bool IsLoading(Point2i p) => ((ObserverTaskTileMapQueuer)querer).IsLoading(p);
         public bool IsQueued(Point2i p) => ((ObserverTaskTileMapQueuer)querer).IsQueued(p);
+
+        public IEnumerable<(Point2i reg, Point2i chunk)> GetVisibleChunkPositions(WorldPosition screen) {
+            foreach(var ch in GetVisibleTilesPositions(screen, 16)) {
+                yield return (new Point2i(ch.X, ch.Z) / 32, new Point2i(ch.X, ch.Z) % 32);
+            }
+        }
 
         public void RedoDrawTilemap(Point2i p, bool extend) {
             WorldPosition scope = extend ? this.Scope(p).Extend(512) : this.Scope(p);
@@ -328,6 +344,8 @@ namespace Mcasaenk.Rendering {
 
             gentilemap.RemoveDrawTileMap(oldTileMap);
             gentilemap.AddDrawTileMap(this);
+
+            oldTileMap?.Dispose();
         }
         public override bool ShouldDo(Point2i p) {
             if (!base.ShouldDo(p)) return false;
@@ -363,11 +381,11 @@ namespace Mcasaenk.Rendering {
         }       
         public override void Dispose() {
             if(!disposed){
+                disposed = true;
                 base.Dispose();
-                if(wasUsedForRecycle) {
+                if(!wasUsedForRecycle) {
                     DisposeTile(emptyTile);
                 }
-                disposed = true;
             }
         }
         bool disposed = false;

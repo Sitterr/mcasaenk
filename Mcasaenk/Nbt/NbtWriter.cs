@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mcasaenk.UI.Canvas;
 
 namespace Mcasaenk.Nbt {
     public class NbtWriter {
@@ -79,5 +81,37 @@ namespace Mcasaenk.Nbt {
 
 
 
+    }
+
+    public static class NBTBlueprints {
+        public static CompoundTag_Allgemein CreateMapScreenshot(Span<uint> pixels, WorldPosition frame, int version) {
+            CompoundTag_Allgemein root = new CompoundTag_Allgemein();
+            var data = new CompoundTag_Allgemein();
+            if(version >= 1484) root.Add("DataVersion", NumTag<int>.Get(version));
+            root.Add("data", data);
+            {
+                data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / frame.zoom))));
+                data.Add("dimension", NumTag<sbyte>.Get(0));
+                data.Add("trackingPosition", NumTag<sbyte>.Get(1));
+                data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
+                data.Add("xCenter", NumTag<int>.Get((int)(frame.Start.X + frame.Width / 2)));
+                data.Add("zCenter", NumTag<int>.Get((int)(frame.Start.Y + frame.Height / 2)));
+                if(version < 1519) {
+                    data.Add("height", NumTag<short>.Get(128));
+                    data.Add("width", NumTag<short>.Get(128));
+                } else {
+                    data.Add("banners", ListTag.Get(TagType.Compound));
+                    data.Add("frames", ListTag.Get(TagType.Compound));
+                }
+
+                var bytetag = ArrTag<byte>.Get(16384);
+                for(int i = 0; i < 16384; i++) {
+                    bytetag[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), version).id;
+                }
+                data.Add("colors", bytetag);
+            }
+
+            return root;
+        }
     }
 }

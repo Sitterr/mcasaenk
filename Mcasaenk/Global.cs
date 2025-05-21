@@ -273,10 +273,6 @@ namespace Mcasaenk {
         }
 
         public static class Coord {
-            public static int fairDev(int a, int b) {
-                return (int)Math.Floor((double)a / b);
-            }
-
             public static double absMod(double a, int m) {
                 double res = a % m;
                 if(res < 0) {

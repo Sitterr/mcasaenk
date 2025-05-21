@@ -49,12 +49,13 @@ namespace Mcasaenk.Shaders.Scale {
                 GL.Uniform1(GL.GetUniformLocation(Handle, "MAPGRID"), (int)Global.Settings.MAPGRID);
                 GL.Uniform1(GL.GetUniformLocation(Handle, "OVERLAYS"), Global.Settings.OVERLAYS ? 1 : 0);
                 GL.Uniform1(GL.GetUniformLocation(Handle, "UNLOADED"), Global.Settings.UNLOADED ? 1 : 0);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "USEMAPPALETTE"), Global.Settings.USEMAPPALETTE ? 1 : 0);
             }
 
             GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.zoom);
 
             if(screenshot != null) {
-                var screenshotrec = screenshot.Rect();
+                var screenshotrec = screenshot.AsRect();
                 GL.Uniform4(GL.GetUniformLocation(Handle, "screenshot"), (float)screenshotrec.X, (float)screenshotrec.Y, (float)screenshotrec.Width, (float)screenshotrec.Height);
                 GL.Uniform1(GL.GetUniformLocation(Handle, "screenshot_resizable"), screenshot.canResize ? 1 : 0);
 
