@@ -86,6 +86,7 @@ namespace Mcasaenk.Rendering {
             return texture;
         }
         public void UpdateTextureData() {
+            if(texturedata == null) return;
             for(int i = 0; i < columns.Length; i++) columns[i].UpdateTextureData(texturedata.AsSpan().Slice(i * 512 * 512 * 4));
             //for(int i = 0; i < columns.Length; i++) columns[i].UpdateTextureData(MemoryMarshal.Cast<byte, short>(new Span<byte>((byte*)texturedata.ToPointer(), columns.Length * 512 * 512 * 4 * sizeof(short))).Slice(i * 512 * 512 * 4));
             textureupdate = true;

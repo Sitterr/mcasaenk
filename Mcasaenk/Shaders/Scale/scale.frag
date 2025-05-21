@@ -7,7 +7,10 @@ layout(pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform sampler2D region0;
 uniform float zoom;
-uniform vec3 defcolor;
+
+uniform vec4 screenshot;
+uniform bool screenshot_resizable;
+uniform vec3 screenshot_color;
 
 uniform ivec3 reg_regRect;
 uniform int reg_isloading[400];
@@ -40,7 +43,13 @@ vec4 queuedpattern(vec2 uv, float scale, vec3 c1, vec3 c2){
 
     return mix(vec4(0.0), color, stripe);
 }
-
+bool pointInRect(vec2 point, vec4 rect) {
+    return point.x >= rect.x && point.x <= rect.x + rect.z &&
+           point.y >= rect.y && point.y <= rect.y + rect.w;
+}
+vec4 sqc(vec2 center, float size){
+    return vec4(center - size / 2, vec2(size));
+}
 
 void main() {
     float insimzoom = zoom > 1 ? 1.0 : zoom;
@@ -57,7 +66,7 @@ void main() {
         vec3 gridcol;
         if(int(gl_FragCoord.y / 32) % 2 == int(gl_FragCoord.x / 32) % 2) gridcol = vec3(10) / 255;
         else gridcol = vec3(15, 15, 15) / 255;
-        FragColor = mix(gridcol, FragColor.rgb, tc.a);
+        FragColor = mix(gridcol, FragColor, tc.a);
     }
 
     if(OVERLAYS || UNLOADED) {
@@ -67,14 +76,14 @@ void main() {
             if(UNLOADED){
                 if(((reg_isqueued[indx / 32] >> (indx % 32)) & 1) == 1){
                     vec4 r = queuedpattern(fract(glpos / 512), 4 * max(zoom, 1 / 2.0), vec3(173, 216, 230) / 255, vec3(90) / 255);
-                    FragColor = mix(FragColor.rgb, r.rgb, r.a);
+                    FragColor = mix(FragColor, r.rgb, r.a);
                 }
             }
             if(OVERLAYS){
                 if(((reg_isloading[indx / 32] >> (indx % 32)) & 1) == 1) {
                     vec2 ac = (abs(0.5 - fract(glpos / 512)) * 2);
                     float a = length(ac) / sqrt(2) * 0.40;
-                    FragColor = mix(FragColor.rgb, vec3(200) / 255, a);
+                    FragColor = mix(FragColor, vec3(200) / 255, a);
                 }
             }
         }
@@ -104,4 +113,41 @@ void main() {
     }
 
     
+    if(screenshot != vec4(0)) {
+        vec2 _glpos = glpos - vec2(0, 0.5);
+
+        if(pointInRect(_glpos, screenshot)){
+            FragColor = mix(vec3(1, 1, 1), FragColor, 0.75);
+        }
+
+        if(abs(_glpos.x - screenshot.x) <= 2 / zoom                  && _glpos.y >= screenshot.y && _glpos.y <= screenshot.y + screenshot.w) {
+            FragColor = screenshot_color;
+        }
+        if(abs(_glpos.x - (screenshot.x + screenshot.z)) <= 2 / zoom && _glpos.y >= screenshot.y && _glpos.y <= screenshot.y + screenshot.w) {
+            FragColor = screenshot_color;
+        }
+        if(abs(_glpos.y - screenshot.y) <= 2 / zoom                  && _glpos.x >= screenshot.x && _glpos.x <= screenshot.x + screenshot.z) {
+            FragColor = screenshot_color;
+        }
+        if(abs(_glpos.y - (screenshot.y + screenshot.w)) <= 2 / zoom && _glpos.x >= screenshot.x && _glpos.x <= screenshot.x + screenshot.z) {
+            FragColor = screenshot_color;
+        }
+
+        if(screenshot_resizable){
+            float sqsize = (10 + zoom) / zoom;
+            if(pointInRect(_glpos, sqc(screenshot.xy, sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(0, screenshot.w), sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(screenshot.z, 0), sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(screenshot.z, screenshot.w), sqsize)) || 
+
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(screenshot.z, screenshot.w / 2), sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(0, screenshot.w / 2), sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(screenshot.z / 2, 0), sqsize)) || 
+               pointInRect(_glpos, sqc(screenshot.xy + vec2(screenshot.z / 2, screenshot.w), sqsize))){
+                FragColor = screenshot_color;
+            }
+        }
+    }
+
+
 }

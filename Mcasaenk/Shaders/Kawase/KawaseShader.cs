@@ -148,7 +148,7 @@ namespace Mcasaenk.Shaders.Kawase {
         public readonly static IDictionary<int, KawaseKernel> kernels;
         static KawaseKernels() {
             kernels = new Dictionary<int, KawaseKernel>();
-            foreach(string _line in ResourceMapping.kawase_approximations.Split("\n")) {
+            foreach(string _line in ResourceMapping.kawase_approximations.Split(Environment.NewLine)) {
                 KawaseKernel krnl = new KawaseKernel();
                 int k = -1;
 

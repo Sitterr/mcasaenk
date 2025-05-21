@@ -42,7 +42,7 @@ namespace Mcasaenk {
                     byte g = Convert.ToByte(hex.Substring(4, 2), 16);
                     byte b = Convert.ToByte(hex.Substring(6, 2), 16);
                     return FromArgb(r, g, b, a);
-                } else throw new Exception();
+                } else return WPFColor.Transparent;
             }
             catch {
                 return WPFColor.Transparent;

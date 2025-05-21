@@ -5,6 +5,7 @@ using Mcasaenk.Shaders.Scale;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Wpf;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -73,6 +74,7 @@ namespace Mcasaenk.UI.Canvas {
             GL.Enable(EnableCap.DebugOutput);
             GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
                 string str = Marshal.PtrToStringAnsi(msg);
+                Debug.WriteLine(str);
                 if(type == DebugType.DebugTypeError) {
                     Console.WriteLine(str);
                 }
@@ -156,7 +158,7 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
 
-            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap);
+            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap, screenshotManager);
         }
 
         GenDataTileMap genTileMap { get => Global.App.TileMap; }
@@ -221,7 +223,8 @@ namespace Mcasaenk.UI.Canvas {
             _update = true;
         }
         public void SetUpScreenShot(Resolution res, ResolutionScale scale, bool canresize) {
-            //screenshotManager = res != null ? new ScreenshotManager(tileMap, res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
+            screenshotManager?.Dispose();
+            screenshotManager = res != null ? new ScreenshotManager(res, scale, canresize, screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(scale.Scale).Dev(2).Floor())) : null;
             //screenshotPainer.SetManager(screenshotManager);
         }
         public ScreenshotManager ScreenshotManager { get {  return screenshotManager; } }

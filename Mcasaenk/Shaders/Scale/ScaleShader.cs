@@ -21,7 +21,7 @@ namespace Mcasaenk.Shaders.Scale {
 
         int[] isloading = new int[400], isqueued = new int[400];
 
-        public void Use(WorldPosition screen, OpenGLDrawTileMap drawtilemap, GenDataTileMap gentilemap, int fbo = 1) {
+        public void Use(WorldPosition screen, OpenGLDrawTileMap drawtilemap, GenDataTileMap gentilemap, ScreenshotManager screenshot, int fbo = 1) {
             int w = (int)Math.Ceiling(1 + screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(1 + screen.Height * screen.InSimZoom);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
@@ -51,9 +51,18 @@ namespace Mcasaenk.Shaders.Scale {
                 GL.Uniform1(GL.GetUniformLocation(Handle, "UNLOADED"), Global.Settings.UNLOADED ? 1 : 0);
             }
 
-            GL.Uniform3(GL.GetUniformLocation(Handle, "defcolor"), 15 / 255f, 15 / 255f, 15 / 255f);
             GL.Uniform1(GL.GetUniformLocation(Handle, "zoom"), (float)screen.zoom);
 
+            if(screenshot != null) {
+                var screenshotrec = screenshot.Rect();
+                GL.Uniform4(GL.GetUniformLocation(Handle, "screenshot"), (float)screenshotrec.X, (float)screenshotrec.Y, (float)screenshotrec.Width, (float)screenshotrec.Height);
+                GL.Uniform1(GL.GetUniformLocation(Handle, "screenshot_resizable"), screenshot.canResize ? 1 : 0);
+
+                var statecolor = WPFColor.FromUInt((uint)screenshot.GetState(gentilemap));
+                GL.Uniform3(GL.GetUniformLocation(Handle, "screenshot_color"), statecolor.R / 255f, statecolor.G / 255f, statecolor.B / 255f);
+            } else {
+                GL.Uniform4(GL.GetUniformLocation(Handle, "screenshot"), 0f, 0f, 0f, 0f);
+            }
 
             // per region data
             if(gentilemap != null) {

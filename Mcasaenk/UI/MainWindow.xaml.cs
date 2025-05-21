@@ -49,7 +49,7 @@ namespace Mcasaenk.UI {
                     MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
                     return;
                 }
-                canvasControl?.ScreenshotManager?.TakeAndSaveScreenshot();
+                //canvasControl?.ScreenshotManager?.TakeAndSaveScreenshot();
             };
             this.scr_stop.Click += (o, e) => {
                 rad.Reset(true);

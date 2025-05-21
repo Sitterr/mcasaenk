@@ -205,15 +205,19 @@ namespace Mcasaenk.Rendering {
         protected abstract void DisposeTile(Tile tile);
 
         public override void Dispose() {
-            if (wasUsedForRecycle == false) {
-                foreach (var e in recycleStack) {
-                    DisposeTile(e);
+            if(!disposed) {
+                if(wasUsedForRecycle == false) {
+                    foreach(var e in recycleStack) {
+                        DisposeTile(e);
+                    }
+                    foreach(var e in tiles) {
+                        DisposeTile(e.Value);
+                    }
                 }
-                foreach (var e in tiles) {
-                    DisposeTile(e.Value);
-                }
+                disposed = true;
             }
         }
+        private bool disposed = false;
 
         public Tile[] UseForRecycle() {
             if (wasUsedForRecycle) return [];
@@ -357,12 +361,16 @@ namespace Mcasaenk.Rendering {
         protected override void DisposeTile(int tile) {
             if(tile != 0) GL.DeleteTexture(tile);
         }       
-        public override void Dispose() { 
-            base.Dispose();
-            if(wasUsedForRecycle) { 
-                DisposeTile(emptyTile);
+        public override void Dispose() {
+            if(!disposed){
+                base.Dispose();
+                if(wasUsedForRecycle) {
+                    DisposeTile(emptyTile);
+                }
+                disposed = true;
             }
         }
+        bool disposed = false;
 
     }
 

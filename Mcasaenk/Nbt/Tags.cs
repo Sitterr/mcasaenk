@@ -61,7 +61,7 @@ namespace Mcasaenk.Nbt {
         private T value;
         public NumTag() { }
 
-        public static implicit operator T(NumTag<T> tag) => tag.value;
+        public static implicit operator T(NumTag<T> tag) => tag == null ? default : tag.value;
     }
     public class ArrTag<T> : Tag {
         private static ArrayPool<T> arrpool = ArrayPool<T>.Shared;
