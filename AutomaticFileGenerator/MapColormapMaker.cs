@@ -29,7 +29,7 @@ namespace Utils {
 
             map = map.Select(b => {
                 if(b.Value == "-") return b;
-                else return new KeyValuePair<string, string>(b.Key, JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).color.ToHex(false, false));
+                else return new KeyValuePair<string, string>(b.Key, JavaMapColors.Nearest(ColorApproximationAlgorithm.LAB_Euclidean, WPFColor.FromHex(b.Value)).color.ToHex(false, false));
                 //else return new KeyValuePair<string, string>(b.Key, JavaMapColors.GetById(JavaMapColors.Nearest(WPFColor.FromHex(b.Value)).id).V255.color.ToHex(false, false)); 
             }).ToDictionary();
 

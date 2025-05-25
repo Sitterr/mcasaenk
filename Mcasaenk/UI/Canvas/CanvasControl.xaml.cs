@@ -1,11 +1,15 @@
 ﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shaders;
 using Mcasaenk.Shaders.Scale;
+using Microsoft.Win32;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Wpf;
 using System.Diagnostics;
+using System.IO.Compression;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -20,6 +24,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Xsl;
+using Mcasaenk.Shaders.Dissect;
 
 
 namespace Mcasaenk.UI.Canvas {
@@ -32,6 +37,7 @@ namespace Mcasaenk.UI.Canvas {
 
         public ShaderPipeline pipeline;
         ScaleShader scaleShader;
+        DissectShader dissectShader;
 
         public OpenGLDrawTileMap drawTileMap;
 
@@ -88,6 +94,7 @@ namespace Mcasaenk.UI.Canvas {
             int VAO = Shader.SetUpRectVAO();
             pipeline = new ShaderPipeline(VAO);
             scaleShader = new ScaleShader(VAO);
+            dissectShader = new DissectShader(VAO);
 
             if(mousehook) {
                 MouseHook.Start();
@@ -138,23 +145,20 @@ namespace Mcasaenk.UI.Canvas {
             scaleShader.Dispose();
         }
 
+        int br = 0;
         int tf = 0, f = 0;
         private void Canvas_Render(TimeSpan timer) {
             if(!loaded) return;
-
-            tf += timer.Milliseconds;
-            f++;
+            tf += timer.Milliseconds; f++;
             if(tf > 1000) {
                 window.footer.Fps = f;
                 tf = 0; f = 0;
             }
 
-            if (drawTileMap != null) {
-                foreach (var tile in drawTileMap.GetVisibleTilesPositions(window.screenshot != null ? [screen, window.screenshot.AsScreen()] : [screen])) {
-                    if (drawTileMap.ShouldDo(tile)) {
-                        drawTileMap.QueueDo(tile, screen);
-                    }
-                }
+            if(drawTileMap != null) {
+                WorldPosition map_screenshot = window.screenshot?.ResolutionType() == ResolutionType.map ? window.screenshot.AsScreen() : default;
+
+                drawTileMap.DoVisible(screen, [new KeyValuePair<string, WorldPosition>("map_screenshot", map_screenshot)], tf != 0);
             }
 
             scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap, window.screenshot);
@@ -167,7 +171,7 @@ namespace Mcasaenk.UI.Canvas {
         const double dzoom = 1;
         public void OnTilemapChanged(bool dimchange) {
             //scenePainter.SetTileMap(tileMap);
-            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, drawTileMap);
+            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dissectShader, dzoom, screen.zoom, drawTileMap);
 
             if(dimchange) {
                 screen.Mid = new Point(0, 0);
@@ -189,11 +193,11 @@ namespace Mcasaenk.UI.Canvas {
         private void OnSlowTick(object a, object b) {
             window.footer?.Refresh();
 
-            if(genTileMap == null) return;
-            foreach(var tile in genTileMap.GetVisibleTilesPositions(screen).Shuffle()) {
-                if(genTileMap.ShouldDo(tile)) {
-                    genTileMap.QueueDo(tile, screen);
-                }
+            if(genTileMap != null) {
+                genTileMap.DoVisible(screen);
+            }
+            if(drawTileMap != null) {
+                //drawTileMap.DoVisible(screen, [], false);
             }
 
             if(window.footer.Visibility == Visibility.Visible) {
@@ -342,7 +346,8 @@ namespace Mcasaenk.UI.Canvas {
             screen.ZoomScale += delta;
             screen.Start = globalMousePos.Sub(mousePos.Dev(screen.zoom));
 
-            drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, (drawTileMap as OpenGLDrawTileMap));
+            drawTileMap?.MassRedo(screen.zoom);
+            //drawTileMap = new OpenGLDrawTileMap(genTileMap, pipeline, dzoom, screen.zoom, (drawTileMap as OpenGLDrawTileMap));
 
             UpdateUILocation();
         }
@@ -372,6 +377,8 @@ namespace Mcasaenk.UI.Canvas {
                 }
             }
         }
+
+
         private void OnKeyUp(object sender, KeyEventArgs e) {
             if(e.Key == Key.F5) {
                 Global.App.Reset();

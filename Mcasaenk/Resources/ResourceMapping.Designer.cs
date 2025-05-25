@@ -148,16 +148,6 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] colormap_betaplus {
-            get {
-                object obj = ResourceManager.GetObject("colormap_betaplus", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         public static byte[] colormap_java {
             get {
                 object obj = ResourceManager.GetObject("colormap_java", resourceCulture);
@@ -171,6 +161,26 @@ namespace Mcasaenk.Resources {
         public static byte[] colormap_texture {
             get {
                 object obj = ResourceManager.GetObject("colormap_texture", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] colormap_betaplus {
+            get {
+                object obj = ResourceManager.GetObject("colormap_betaplus", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] copy_frag {
+            get {
+                object obj = ResourceManager.GetObject("copy_frag", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -329,13 +339,13 @@ namespace Mcasaenk.Resources {
         ///k = 005, n = 1, sim = 86.58%: [ 0 ]
         ///k = 007, n = 2, sim = 95.24%: [ 0, 0 ]
         ///k = 009, n = 3, sim = 95.28%: [ 0, 0, 0 ]
-        ///k = 011, n = 5, sim = 96.84%: [ 0, 0, 0, 0, 0 ]
-        ///k = 013, n = 5, sim = 90.46%: [ 0, 0, 0, 0, 1 ]
-        ///k = 015, n = 5, sim = 92.34%: [ 0, 0, 0, 0, 1 ]
+        ///k = 011, n = 4, sim = 89.08%: [ 0, 0, 0, 0 ]
+        ///k = 013, n = 4, sim = 89.91%: [ 0, 0, 0, 1 ]
+        ///k = 015, n = 4, sim = 89.45%: [ 0, 0, 1, 1 ]
         ///k = 017, n = 5, sim = 95.00%: [ 0, 0, 0, 1, 1 ]
         ///k = 019, n = 5, sim = 95.73%: [ 0, 0, 1, 1, 1 ]
         ///k = 021, n = 5, sim = 95.79%: [ 0, 1, 1, 1, 1 ]
-        ///k = 023, n = 6, sim = 97.34%: [ 0, 1, 1 [rest of string was truncated]&quot;;.
+        ///k = 023, n = 6, sim = 97.34%: [ 0, 1, [rest of string was truncated]&quot;;.
         /// </summary>
         public static string kawase_approximations {
             get {

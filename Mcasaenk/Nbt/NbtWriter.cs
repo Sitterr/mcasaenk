@@ -84,7 +84,7 @@ namespace Mcasaenk.Nbt {
     }
 
     public static class NBTBlueprints {
-        public static CompoundTag_Allgemein CreateMapScreenshot(Span<uint> pixels, WorldPosition frame, int version) {
+        public static CompoundTag_Allgemein CreateMapScreenshot(Span<uint> pixels, WorldPosition frame, int version, ColorApproximationAlgorithm coloralgo) {
             CompoundTag_Allgemein root = new CompoundTag_Allgemein();
             var data = new CompoundTag_Allgemein();
             if(version >= 1484) root.Add("DataVersion", NumTag<int>.Get(version));
@@ -106,7 +106,7 @@ namespace Mcasaenk.Nbt {
 
                 var bytetag = ArrTag<byte>.Get(16384);
                 for(int i = 0; i < 16384; i++) {
-                    bytetag[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), version).id;
+                    bytetag[i] = JavaMapColors.Nearest(coloralgo, WPFColor.FromUInt(pixels[i]), version).id;
                 }
                 data.Add("colors", bytetag);
             }

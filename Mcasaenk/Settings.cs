@@ -61,6 +61,15 @@ namespace Mcasaenk {
         zoom3 = 4,
     }
 
+    public enum ColorApproximationAlgorithm {
+        [Description("rgb")]
+        RGB_Euclidean = 0,
+        [Description("lab")]
+        LAB_Euclidean = 1,
+        [Description("cie94")]
+        LAB_CIE94 = 2,
+    }
+
     public enum ShadeType {
         [Description("standard")]
         OG,
@@ -75,11 +84,11 @@ namespace Mcasaenk {
         translucient,
     }
 
-    public enum GenDataModel {
-        [Description("by color")]
-        COLOR,
-        [Description("by block")]
-        ID,
+    public enum RenderMode {
+        //[Description("on cpu")]
+        //CPU,
+        [Description("on gpu")]
+        OPENGL,
     }
 
 
@@ -198,7 +207,7 @@ namespace Mcasaenk {
             if(PREFERHEIGHTMAPS != PreferHeightmap) PREFERHEIGHTMAPS = PreferHeightmap;
             if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
             if(BLOCKINFO != BlockInfo) BLOCKINFO = BlockInfo;
-            if(DATASTORAGEMODEL != DataStorageModel) DATASTORAGEMODEL = DataStorageModel;
+            if(RENDERMODE != RenderMode) RENDERMODE = RenderMode;
             if(PRECOMPUTE_RELVIS != PrecomputeRelvis) PRECOMPUTE_RELVIS = PrecomputeRelvis;
         }
         public override void Reset() {
@@ -215,7 +224,7 @@ namespace Mcasaenk {
             PreferHeightmap = PREFERHEIGHTMAPS;
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
             BlockInfo = BLOCKINFO;
-            DataStorageModel = DATASTORAGEMODEL;
+            RenderMode = RENDERMODE;
             PrecomputeRelvis = PRECOMPUTE_RELVIS;
         }
         public override bool ChangedBack() =>
@@ -232,15 +241,15 @@ namespace Mcasaenk {
                    PREFERHEIGHTMAPS != PreferHeightmap ||
                    SKIP_UNKNOWN_BLOCKS != SkipUnknown ||
                    BLOCKINFO != BlockInfo ||
-                   DATASTORAGEMODEL != DataStorageModel ||
+                   RENDERMODE != RenderMode ||
                    PRECOMPUTE_RELVIS != PrecomputeRelvis
             ;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 4, MINZOOM = -4,
             ENABLE_COLORMAP_EDITING = false,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, DATASTORAGEMODEL = GenDataModel.COLOR, PRECOMPUTE_RELVIS = false,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None, MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, RENDERMODE = RenderMode.OPENGL, PRECOMPUTE_RELVIS = false,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
@@ -253,8 +262,6 @@ namespace Mcasaenk {
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
-
-            USEMAPPALETTE = false,
 
             SUN_LIGHT = 15, BLOCK_LIGHT = 0,
 
@@ -327,20 +334,6 @@ namespace Mcasaenk {
             }
         }
         public double CONTRAST { get => Contrast; set => Contrast = value; }
-
-
-        private bool usemapPalette;
-        [JsonIgnore]
-        public bool UseMapPalette {
-            get => usemapPalette;
-            set {
-                if(usemapPalette == value) return;
-
-                usemapPalette = value;
-                this.OnLightChange(nameof(UseMapPalette));
-            }
-        }
-        public bool USEMAPPALETTE { get => UseMapPalette; set => UseMapPalette = value; }
 
 
         private double waterTransparency;
@@ -664,19 +657,31 @@ namespace Mcasaenk {
         public BackgroundType BACKGROUND { get => Background; set => Background = value; }
 
 
-        private MapGridType screenshot;
+        private MapGridType mapgrid;
         [JsonIgnore]
         public MapGridType MapGrid {
-            get => screenshot;
+            get => mapgrid;
             set {
-                if(screenshot == value) return;
+                if(mapgrid == value) return;
 
-                screenshot = value;
-                OnAutoChange(nameof(Background));
+                mapgrid = value;
+                OnAutoChange(nameof(MapGrid));
             }
         }
         public MapGridType MAPGRID { get => MapGrid; set => MapGrid = value; }
 
+        private ColorApproximationAlgorithm mappalettemethod;
+        [JsonIgnore]
+        public ColorApproximationAlgorithm MapApproximationAlgo {
+            get => mappalettemethod;
+            set {
+                if(mappalettemethod == value) return;
+
+                mappalettemethod = value;
+                OnLightChange(nameof(MapApproximationAlgo));
+            }
+        }
+        public ColorApproximationAlgorithm MAPAPPROXIMATIONALGO { get => MapApproximationAlgo; set => MapApproximationAlgo = value; }
 
         private int regionConcurrency, regionConcurrency_back;
         [JsonIgnore]
@@ -838,7 +843,7 @@ namespace Mcasaenk {
 
                 blockinfo_back = value;
 
-                if(Global.App.OpenedSave == null || DATASTORAGEMODEL == GenDataModel.ID) {
+                if(Global.App.OpenedSave == null || true) {
                     blockinfo = value;
                     OnAutoChange(nameof(BlockInfo));
                     OnAutoChange(nameof(BLOCKINFO));
@@ -930,22 +935,22 @@ namespace Mcasaenk {
 
 
 
-        private GenDataModel dataStorage, dataStorage_back;
+        private RenderMode renderMode, renderMode_back;
         [JsonIgnore]
-        public GenDataModel DataStorageModel {
-            get => dataStorage_back;
+        public RenderMode RenderMode {
+            get => renderMode_back;
             set {
-                if(dataStorage_back == value) return;
+                if(renderMode_back == value) return;
 
-                dataStorage_back = value;
-                OnAutoChange(nameof(DataStorageModel));
+                renderMode_back = value;
+                OnAutoChange(nameof(RenderMode));
                 if(Global.App.OpenedSave == null) {
-                    dataStorage = value;
-                    OnAutoChange(nameof(DATASTORAGEMODEL));
+                    renderMode = value;
+                    OnAutoChange(nameof(RENDERMODE));
                 }
             }
         }
-        public GenDataModel DATASTORAGEMODEL { get => dataStorage; set { dataStorage = value; DataStorageModel = value; BLOCKINFO = true; OnHardChange(nameof(DATASTORAGEMODEL)); } }
+        public RenderMode RENDERMODE { get => renderMode; set { renderMode = value; RenderMode = value; BLOCKINFO = true; OnHardChange(nameof(RENDERMODE)); } }
 
 
 

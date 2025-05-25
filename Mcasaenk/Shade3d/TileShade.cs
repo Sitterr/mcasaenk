@@ -113,7 +113,7 @@ namespace Mcasaenk.Shade3d {
                     }
                 }
 
-                if(Recalc()) tilemap.RedoDrawTilemap(this.pos, false);
+                Recalc();
                 CheckDestruct();
             }
         }

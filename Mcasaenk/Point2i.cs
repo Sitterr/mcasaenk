@@ -23,9 +23,11 @@ namespace Mcasaenk {
 
         public static Point2i operator +(Point2i a, Point2i b) => new Point2i(a.X + b.X, a.Z + b.Z);
         public static Point2i operator -(Point2i a, Point2i b) => new Point2i(a.X - b.X, a.Z - b.Z);
+        public static Point2i operator *(Point2i a, Point2i b) => new Point2i(a.X * b.X, a.Z * b.Z);
+        public static Point2i operator /(Point2i a, Point2i b) => new Point2i((int)Math.Floor((double)a.X / b.X), (int)Math.Floor((double)a.Z / b.Z));
+        public static Point2i operator +(Point2i a, int b) => new Point2i(a.X + b, a.Z + b);
         public static Point2i operator *(Point2i a, float f) => new Point2i((int)(a.X * f), (int)(a.Z * f));
         public static Point2i operator /(Point2i a, float f) => new Point2i((int)(a.X / f), (int)(a.Z / f));
-        public static Point2i operator /(Point2i a, int f) => new Point2i((int)Math.Floor((double)a.X / f), (int)Math.Floor((double)a.Z / f));
         public static Point2i operator %(Point2i a, int f) => new Point2i(Global.Coord.absMod(a.X, f), Global.Coord.absMod(a.Z, f));
         public static bool operator ==(Point2i a, Point2i b) => a.X == b.X && a.Z == b.Z;
         public static bool operator !=(Point2i a, Point2i b) => !(a == b);

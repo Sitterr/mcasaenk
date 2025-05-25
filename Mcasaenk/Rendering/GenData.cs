@@ -150,7 +150,7 @@ namespace Mcasaenk.Rendering {
         public ushort BiomeId(int i) => (ushort)(biomeIds8_light4_shade4[i] >> 8);
         public Tint Tint(int i) => Global.App.Colormap.TintManager.GetBlockVal(TopBlockId(i));
         public Filter Filter(int i) => Global.App.Colormap.FilterManager.GetBlockVal(blockIds[i]);
-        public bool NeedShade(int i) => !Global.App.Colormap.noShades.Contains(blockIds[i]);
+        public bool NeedShade(int i) => !Global.App.Colormap.BlocksManager.noShades.Contains(blockIds[i]);
         public uint ActColor(int i) => IsDepth(i) ? Global.App.Colormap.FullColor(blockIds[i], BiomeId(i), TerrHeight(i)) : Global.App.Colormap.BaseColor(blockIds[i]);
 
         public ushort BlockId(int i) => blockIds[i];

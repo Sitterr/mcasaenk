@@ -145,14 +145,14 @@
   <data name="colormap_bedrock" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\bedrockmap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="colormap_betaplus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Colormaps\betaplus.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="colormap_java" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\javamap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="colormap_texture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\texture.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="colormap_betaplus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Colormaps\betaplus.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="default_pack" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\default_pack.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -250,7 +250,10 @@
   <data name="prep_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Shaders\Kawase\prep.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-    <data name="kawase_approximations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="kawase_approximations" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>kawase_approximations.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
+  </data>
+  <data name="copy_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Shaders\Dissect\copy.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

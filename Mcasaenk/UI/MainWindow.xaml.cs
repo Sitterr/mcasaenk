@@ -68,7 +68,7 @@ namespace Mcasaenk.UI {
                                 FileName = $"map_"
                             };
                             if(saveFileDialog.ShowDialog() == true) {
-                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id);
+                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id, Global.Settings.MAPAPPROXIMATIONALGO);
                                 if(nbt == null) return;
 
                                 using(var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
@@ -111,6 +111,11 @@ namespace Mcasaenk.UI {
             this.scr_rotate.Click += (o, e) => {
                 screenshot?.Rotate();
             };
+            this.resScale.PropertyChanged += (o, e) => {
+                if(e.PropertyName == nameof(ResolutionScale.Scale)) {
+                    Global.Settings.MAPGRID = screenshot?.ResolutionType() == ResolutionType.map ? (MapGridType)((int)Math.Log2(1 / resScale.Scale) + 1) : MapGridType.None;
+                }
+            };
             this.rad.SetCallback(() => {
                 var res = this.rad.GetResolution();
                 if(res?.type == ResolutionType.frame) {
@@ -125,6 +130,8 @@ namespace Mcasaenk.UI {
                     scale.Items.Add("1:4");
                     scale.Items.Add("1:8");
                     scale.SelectedIndex = 0;
+
+                    Global.App.Window.canvasControl.drawTileMap?.MassRedo();
                 } else {
                     scale.Items.Clear();
                     scale.Items.Add("1:1");
@@ -142,6 +149,8 @@ namespace Mcasaenk.UI {
                 screenshot?.Dispose();
                 screenshot = res != null ? new ScreenshotManager(res, resScale, res?.type == ResolutionType.resizeable, canvasControl.screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(resScale.Scale).Dev(2).Floor())) : null;
 
+                Global.Settings.MAPGRID = screenshot?.ResolutionType() == ResolutionType.map ? (MapGridType)((int)Math.Log2(1 / resScale.Scale) + 1) : MapGridType.None;
+
                 scr_capture.IsEnabled = res != null;
                 scr_stop.IsEnabled = res != null;
                 scr_rotate.IsEnabled = res != null;
@@ -151,7 +160,7 @@ namespace Mcasaenk.UI {
                     scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
             });
-            rad.ShowSlot3(Global.Settings.USEMAPPALETTE);
+            //rad.ShowSlot3(Global.Settings.USEMAPPALETTE);
 
             scale.SetBinding(ComboBox.SelectedItemProperty, new Binding("Scale") { Source = resScale, Converter = new ResolutionScaleTextToDouble() });
             scale.SelectedIndex = 0;

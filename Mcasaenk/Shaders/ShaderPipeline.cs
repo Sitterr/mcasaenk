@@ -52,7 +52,7 @@ namespace Mcasaenk.Shaders {
             disposed = true;
         }
 
-        public void Render(WorldPosition screen, GenDataTileMap tilemap, int outputtexture) {
+        public void Render(WorldPosition screen, GenDataTileMap tilemap, WorldPosition map_screenshot, int outputtexture) {
             Span<int> kernels = stackalloc int[1 + kawaseShader.blendtints.Length];
             kernels[0] = Global.Settings.TRANSPARENTLAYERS > 0 ? Global.Settings.OCEAN_DEPTH_BLENDING : 0;
 
@@ -69,10 +69,10 @@ namespace Mcasaenk.Shaders {
             int sc = (int)(1 / screen.InSimZoom);
             maxR += (sc - maxR % sc);
 
+
             prepShader.Use(screen, tilemap, kawaseShader.blendtints, maxR);
             var kawase_tex = kawaseShader.Use(screen, kernels, maxR, prepShader.texture1);
-            sceneShader.Use(screen, tilemap, kawase_tex, kawaseShader.blendtints, maxR, outputtexture);
-
+            sceneShader.Use(screen, tilemap, kawase_tex, map_screenshot, kawaseShader.blendtints, maxR, outputtexture);
         }
     }
 }

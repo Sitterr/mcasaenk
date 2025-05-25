@@ -98,6 +98,9 @@ namespace Mcasaenk.UI.Canvas {
             return new WorldPosition(this.Start.Add(new Point(-r, -r)), Width + 2*r, Height + 2*r, zoom);
         }
 
+        public static bool operator ==(WorldPosition a, WorldPosition b) => a.Start == b.Start && a.Width == b.Width && a.Height == b.Height;
+        public static bool operator !=(WorldPosition a, WorldPosition b) => !(a == b);
+
         //public IEnumerable<Point2i> GetVisibleTilePositions() {
         //    double sx = Global.Coord.fairDev((int)Math.Floor(coord.X), 512), sz = Global.Coord.fairDev((int)Math.Floor(coord.Y), 512), tx = Global.Coord.absMod(coord.X, 512), tz = Global.Coord.absMod(coord.Y, 512);
 

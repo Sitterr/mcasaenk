@@ -117,6 +117,7 @@ namespace Mcasaenk.UI {
 
             var list = resolutions.ToList();
             list.Insert(0, Resolution.screen);
+            list.Add(Resolution.map);
             slot1_topdown.ItemsSource = list;
         }
     }

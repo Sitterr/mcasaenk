@@ -10,14 +10,14 @@ uniform float zoom;
 
 uniform vec4 screenshot;
 uniform bool screenshot_resizable;
-uniform vec3 screenshot_color;
+uniform vec3 screenshot_statecolor;
 
 uniform ivec3 reg_regRect;
 uniform int reg_isloading[400];
 uniform int reg_isqueued[400];
 
 uniform int CHUNKGRID, REGIONGRID, BACKGROUND, MAPGRID;
-uniform bool OVERLAYS, UNLOADED, USEMAPPALETTE;
+uniform bool OVERLAYS, UNLOADED;
 
 float ctwh(float c){
     return abs(round(c) - c);
@@ -57,11 +57,6 @@ void main() {
     vec2 npos = vec2(pos.x, 1 - pos.y);
 
     FragColor = texture(region0, npos);
-    if(USEMAPPALETTE) {
-        if(pointInRect(glpos, screenshot)) {
-            FragColor = ;// todo
-        }
-    }
 
     ivec2 glReg = ivec2(floor(glpos / 512));
 
@@ -72,7 +67,7 @@ void main() {
         else gridcol = vec4(15, 15, 15, 255) / 255;
         FragColor = mix(gridcol, FragColor, FragColor.a);
     }
-
+    
     if(OVERLAYS || UNLOADED) {
         ivec2 rregpos = glReg - reg_regRect.xy;
         int indx = rregpos.y * reg_regRect.z + rregpos.x;
@@ -99,7 +94,7 @@ void main() {
         }
     }
 
-    if(MAPGRID > 0) {
+    if(MAPGRID > 0 && zoom >= 1.0 / MAPGRID) {
         int mapsize = int(128 * pow(2, MAPGRID - 1));
         if(ctwh(fract((glpos.x - mapsize / 2) / mapsize)) <= 1 * ((1.0 / mapsize) / zoom) / 2 || ctwh(fract((glpos.y - mapsize / 2) / mapsize)) <= 1 * ((1.0 / mapsize) / zoom) / 2){
             FragColor = vec4(1, 1, 0, 1);
@@ -119,20 +114,20 @@ void main() {
     
     if(screenshot != vec4(0)) {
         if(pointInRect(glpos, screenshot)){
-            FragColor = mix(vec4(1, 1, 1, 1), FragColor, 0.75);
+            FragColor = mix(vec4(1, 1, 1, 1), FragColor, 0.85);
         }
 
-        if(abs(glpos.x - screenshot.x) <= 2 / zoom                  && glpos.y >= screenshot.y && glpos.y <= screenshot.y + screenshot.w) {
-            FragColor = vec4(screenshot_color, 1);
+        if(abs(glpos.x - screenshot.x) <= 2 / zoom                  && glpos.y >= screenshot.y - 2 / zoom && glpos.y <= screenshot.y + screenshot.w + 2 / zoom) {
+            FragColor = vec4(screenshot_statecolor, 1);
         }
-        if(abs(glpos.x - (screenshot.x + screenshot.z)) <= 2 / zoom && glpos.y >= screenshot.y && glpos.y <= screenshot.y + screenshot.w) {
-            FragColor = vec4(screenshot_color, 1);
+        if(abs(glpos.x - (screenshot.x + screenshot.z)) <= 2 / zoom && glpos.y >= screenshot.y - 2 / zoom && glpos.y <= screenshot.y + screenshot.w + 2 / zoom) {
+            FragColor = vec4(screenshot_statecolor, 1);
         }
         if(abs(glpos.y - screenshot.y) <= 2 / zoom                  && glpos.x >= screenshot.x && glpos.x <= screenshot.x + screenshot.z) {
-            FragColor = vec4(screenshot_color, 1);
+            FragColor = vec4(screenshot_statecolor, 1);
         }
         if(abs(glpos.y - (screenshot.y + screenshot.w)) <= 2 / zoom && glpos.x >= screenshot.x && glpos.x <= screenshot.x + screenshot.z) {
-            FragColor = vec4(screenshot_color, 1);
+            FragColor = vec4(screenshot_statecolor, 1);
         }
 
         if(screenshot_resizable){
@@ -146,7 +141,7 @@ void main() {
                pointInRect(glpos, sqc(screenshot.xy + vec2(0, screenshot.w / 2), sqsize)) || 
                pointInRect(glpos, sqc(screenshot.xy + vec2(screenshot.z / 2, 0), sqsize)) || 
                pointInRect(glpos, sqc(screenshot.xy + vec2(screenshot.z / 2, screenshot.w), sqsize))){
-                FragColor = vec4(screenshot_color, 1);
+                FragColor = vec4(screenshot_statecolor, 1);
             }
         }
     }

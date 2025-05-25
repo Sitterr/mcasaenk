@@ -28,7 +28,7 @@ namespace Mcasaenk.Shaders.Scene {
             GL.DeleteFramebuffer(fbo);
         }
 
-        public void Use(WorldPosition screen, GenDataTileMap tilemap, KawaseTexture tex, int[] blendtints, int kawaseR, int outputtexture) {
+        public void Use(WorldPosition screen, GenDataTileMap tilemap, KawaseTexture tex, WorldPosition map_screenshot, int[] blendtints, int kawaseR, int outputtexture) {
             int w = (int)Math.Ceiling(screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(screen.Height * screen.InSimZoom);
             
             GL.Viewport(0, 0, w, h);
@@ -56,8 +56,8 @@ namespace Mcasaenk.Shaders.Scene {
                     // blured data
                     {
                         GL.ActiveTexture(TextureUnit.Texture8);
-                        GL.BindTexture(TextureTarget.Texture2D, tex.oceandepth);
-                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_oceandepth"), 8);
+                        GL.BindTexture(TextureTarget.Texture2D, tex.meanheight_oceandepth);
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "blur_meanheight_oceandepth"), 8);
 
                         GL.ActiveTexture(TextureUnit.Texture9);
                         GL.BindTexture(TextureTarget.Texture2DArray, tex.tints);
@@ -87,6 +87,19 @@ namespace Mcasaenk.Shaders.Scene {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "ADEG"), (float)Global.Settings.ADEG);
                 }
 
+
+                if(map_screenshot != default) {
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "MAPAPPROXIMATIONALGO"), (int)Global.Settings.MAPAPPROXIMATIONALGO);
+
+                    GL.Uniform4(GL.GetUniformLocation(Handle, "map_screenshot"), (float)map_screenshot.Start.X, (float)map_screenshot.Start.Y, (float)map_screenshot.Width, (float)map_screenshot.Height);
+
+                    if(CheckMapColor()) {
+                        GL.Uniform1(GL.GetUniformLocation(Handle, "map_screenshot_mapcolors"), mapcolors.Length, mapcolors);
+                    }
+                } else {
+                    GL.Uniform4(GL.GetUniformLocation(Handle, "map_screenshot"), 0f, 0f, 0f, 0f);
+                }
+
                 // fragment uniforms
                 foreach (var reg in tilemap.GetVisibleTilesPositions(screen)) {
                     var tile = tilemap?.GetTile(reg);
@@ -95,11 +108,38 @@ namespace Mcasaenk.Shaders.Scene {
                     tile.GetTexture().Use((int)TextureUnit.Texture0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
+                    //tilemap.GetTile(reg + new Point2i(1, 0))?.GetTexture().Use((int)TextureUnit.Texture1); GL.Uniform1(GL.GetUniformLocation(Handle, "regionr"), 1);
+                    //tilemap.GetTile(reg - new Point2i(1, 0))?.GetTexture().Use((int)TextureUnit.Texture2); GL.Uniform1(GL.GetUniformLocation(Handle, "regionl"), 2);
+                    //tilemap.GetTile(reg + new Point2i(0, 1))?.GetTexture().Use((int)TextureUnit.Texture3); GL.Uniform1(GL.GetUniformLocation(Handle, "regiond"), 3);
+                    //tilemap.GetTile(reg - new Point2i(0, 1))?.GetTexture().Use((int)TextureUnit.Texture4); GL.Uniform1(GL.GetUniformLocation(Handle, "regiont"), 4);
+
                     GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
                     GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
                 }
             }
 
+        }
+
+        uint[] mapcolors = new uint[64];
+        private int version = -1;
+        bool CheckMapColor() {
+            if(version != Global.App.OpenedSave.levelDatInfo.version_id) {
+                version = Global.App.OpenedSave.levelDatInfo.version_id;
+
+                int jp = 0;
+                for(int i = 0; i < JavaMapColors.colors.Length; i++) {
+                    if(JavaMapColors.colors[i].version > version) continue;
+
+                    mapcolors[jp++] = JavaMapColors.colors[i].V255.color.ToUInt();
+                }
+                for(; jp < mapcolors.Length; jp++) {
+                    mapcolors[jp] = 0x00000000;
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

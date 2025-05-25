@@ -74,10 +74,6 @@
                                         <RowDefinition Height="auto"/>
                                         <RowDefinition Height="2"/>
                                         <RowDefinition Height="auto" MinHeight="10"/>
-                                        <RowDefinition Height="40"/>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition Height="2"/>
-                                        <RowDefinition Height="auto" MinHeight="10"/>
                                     </Grid.RowDefinitions>
 
 
@@ -155,21 +151,6 @@
                                     </DockPanel>
                                     <Slider Grid.Row="10" Grid.Column="2" Minimum="0" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=BlockLight}"/>
-
-
-
-                                    <StackPanel Grid.Row="12" Grid.Column="0" Orientation="Horizontal">
-                                        <Label>
-                                            <TextBlock Text="use only map colors"/>
-                                            <Label.ToolTip>
-                                                <StackPanel>
-                                                    <TextBlock Text="• when turned on, a new screenshot option will appear, allowing you to make a capture to export to ingame map"/>
-                                                    <TextBlock Text="• the .dat file then needs to replace an exising one in the data folder a minecraft world's folder"/>
-                                                </StackPanel>
-                                            </Label.ToolTip>
-                                        </Label>
-                                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=UseMapPalette}"/>
-                                    </StackPanel>
 
                                 </Grid>
                             </Border>

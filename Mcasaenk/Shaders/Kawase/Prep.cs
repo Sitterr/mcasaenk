@@ -22,10 +22,10 @@ namespace Mcasaenk.Shaders.Kawase {
             GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
             GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
-            //GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureBorderColor, [0f, 0f, 0f, 0f]);
+            GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureBorderColor, [0f, 0f, 0f, 0f]);
 
-            texture1.oceandepth = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, texture1.oceandepth);
+            texture1.meanheight_oceandepth = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, texture1.meanheight_oceandepth);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
@@ -38,7 +38,7 @@ namespace Mcasaenk.Shaders.Kawase {
             base.Dispose();
             GL.DeleteFramebuffer(fbo);
             GL.DeleteTexture(texture1.tints);
-            GL.DeleteTexture(texture1.oceandepth);
+            GL.DeleteTexture(texture1.meanheight_oceandepth);
         }
 
         private int fw = -1, fh = -1;
@@ -47,8 +47,8 @@ namespace Mcasaenk.Shaders.Kawase {
                 GL.BindTexture(TextureTarget.Texture2DArray, texture1.tints);
                 GL.TexImage3D(TextureTarget.Texture2DArray, 0, PixelInternalFormat.Rgba8, w, h, 7, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 
-                GL.BindTexture(TextureTarget.Texture2D, texture1.oceandepth);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rg16, w, h, 0, PixelFormat.Rg, PixelType.UnsignedShort, IntPtr.Zero);
+                GL.BindTexture(TextureTarget.Texture2D, texture1.meanheight_oceandepth);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R32ui, w, h, 0, PixelFormat.RedInteger, PixelType.UnsignedInt, IntPtr.Zero);
 
                 fw = w; fh = h;
             }

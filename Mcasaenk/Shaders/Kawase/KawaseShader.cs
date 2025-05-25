@@ -30,8 +30,8 @@ namespace Mcasaenk.Shaders.Kawase {
             GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
             GL.TexParameter(TextureTarget.Texture2DArray, TextureParameterName.TextureBorderColor, [0f, 0f, 0f, 0f]);
 
-            texture2.oceandepth = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, texture2.oceandepth);
+            texture2.meanheight_oceandepth = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, texture2.meanheight_oceandepth);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
@@ -46,7 +46,7 @@ namespace Mcasaenk.Shaders.Kawase {
             base.Dispose();
             GL.DeleteFramebuffer(fbo);
             GL.DeleteTexture(texture2.tints);
-            GL.DeleteTexture(texture2.oceandepth);
+            GL.DeleteTexture(texture2.meanheight_oceandepth);
         }
 
         int[] ikernels = new int[8];
@@ -59,8 +59,8 @@ namespace Mcasaenk.Shaders.Kawase {
                 GL.BindTexture(TextureTarget.Texture2DArray, texture2.tints);
                 GL.TexImage3D(TextureTarget.Texture2DArray, 0, PixelInternalFormat.Rgba8, w, h, 7, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 
-                GL.BindTexture(TextureTarget.Texture2D, texture2.oceandepth);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rg16, w, h, 0, PixelFormat.Rg, PixelType.UnsignedShort, IntPtr.Zero);
+                GL.BindTexture(TextureTarget.Texture2D, texture2.meanheight_oceandepth);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R32ui, w, h, 0, PixelFormat.RedInteger, PixelType.UnsignedInt, IntPtr.Zero);
 
                 fw = w; fh = h;
             }
@@ -71,7 +71,7 @@ namespace Mcasaenk.Shaders.Kawase {
         }
 
         public static void AttachFramebuffer(int fbo, KawaseTexture texture, int tintcount) {
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture.oceandepth, 0);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture.meanheight_oceandepth, 0);
             for(int i = 0; i < tintcount; i++) {
                 GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1 + i, texture.tints, 0, i);
             }
@@ -114,7 +114,7 @@ namespace Mcasaenk.Shaders.Kawase {
                 {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "t_tints"), 0);
-                    GL.Uniform1(GL.GetUniformLocation(Handle, "t_oceandepth"), 1);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "t_meanheight_oceandepth"), 1);
                 }
 
                 for(int p = 0; p < passes; p++) {
@@ -132,7 +132,7 @@ namespace Mcasaenk.Shaders.Kawase {
 
 
                     GL.ActiveTexture(TextureUnit.Texture1);
-                    GL.BindTexture(TextureTarget.Texture2D, textures[p % 2].oceandepth);
+                    GL.BindTexture(TextureTarget.Texture2D, textures[p % 2].meanheight_oceandepth);
                     
 
                     GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
@@ -192,10 +192,10 @@ namespace Mcasaenk.Shaders.Kawase {
     }
 
     public struct KawaseTexture {
-        public int tints, oceandepth;
+        public int tints, meanheight_oceandepth;
         public KawaseTexture(int tints, int oceandepth) {
             this.tints = tints;
-            this.oceandepth = oceandepth;
+            this.meanheight_oceandepth = oceandepth;
         }
     }
 }

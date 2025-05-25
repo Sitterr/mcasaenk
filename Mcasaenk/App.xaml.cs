@@ -44,10 +44,6 @@ namespace Mcasaenk
         private void OnLightChange(string changed) {
             Global.App.Window.canvasControl.drawTileMap.MassRedo();
             if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
-            if(changed == nameof(Settings.UseMapPalette)) {
-                Window.rad.ShowSlot3(this.Settings.USEMAPPALETTE);
-            }
-
 
             if(changed == "On" || changed == nameof(Settings.DEFBIOME) || changed == "TemperatureVariation") {
                 Colormap.TintManager.UpdateTexture();

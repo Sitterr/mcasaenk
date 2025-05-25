@@ -170,8 +170,39 @@ namespace Mcasaenk {
         public static uint ToUInt(this WPFColor c) {
             return (uint)((c.A << 24) | (c.R << 16) | (c.G << 8) | (c.B));
         }
-        public static uint ToGLUInt(this WPFColor c) {
-            return (uint)((c.A << 24) | (c.B << 16) | (c.G << 8) | (c.R));
+        public static (double L, double A, double B) ToLAB(this WPFColor c) {
+            double PivotXYZ(double n) => (n > 0.008856) ? Math.Pow(n, 1.0 / 3.0) : (7.787 * n + 16.0 / 116.0);
+
+            // Normalize RGB values to the range 0 - 1
+            double rNorm = c.R / 255.0;
+            double gNorm = c.G / 255.0;
+            double bNorm = c.B / 255.0;
+
+            // Convert RGB to linear RGB
+            rNorm = (rNorm > 0.04045) ? Math.Pow((rNorm + 0.055) / 1.055, 2.4) : (rNorm / 12.92);
+            gNorm = (gNorm > 0.04045) ? Math.Pow((gNorm + 0.055) / 1.055, 2.4) : (gNorm / 12.92);
+            bNorm = (bNorm > 0.04045) ? Math.Pow((bNorm + 0.055) / 1.055, 2.4) : (bNorm / 12.92);
+
+            // Convert to XYZ
+            double x = rNorm * 0.4124 + gNorm * 0.3576 + bNorm * 0.1805;
+            double y = rNorm * 0.2126 + gNorm * 0.7152 + bNorm * 0.0722;
+            double z = rNorm * 0.0193 + gNorm * 0.1192 + bNorm * 0.9505;
+
+            // Normalize for D65 white point
+            x /= 0.95047;
+            y /= 1.00000;
+            z /= 1.08883;
+
+            // Convert XYZ to LAB
+            x = PivotXYZ(x);
+            y = PivotXYZ(y);
+            z = PivotXYZ(z);
+
+            double l = 116 * y - 16;
+            double a = 500 * (x - y);
+            double b = 200 * (y - z);
+
+            return (l, a, b);
         }
 
         public static string ToHex(this WPFColor c, bool containAlpha, bool hashtag) {

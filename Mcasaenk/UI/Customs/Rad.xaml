@@ -61,7 +61,7 @@
             <Border Background="Transparent" Height="38">
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel>
-                        <TextBlock FontSize="12" HorizontalAlignment="Center" FontStyle="{Binding Path=FontStyle}"
+                        <TextBlock FontSize="12" HorizontalAlignment="Center" FontStyle="{Binding Path=FontStyle}" Foreground="{Binding Path=Fore}"
                         Text="{Binding Path=Name}"/>
                     </StackPanel>
                     <StackPanel>

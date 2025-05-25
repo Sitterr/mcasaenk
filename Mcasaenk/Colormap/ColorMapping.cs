@@ -32,7 +32,6 @@ namespace Mcasaenk.Colormaping {
 
         public const ushort INVBLOCK = 0, NONEBLOCK = 1, ERRORBLOCK = 2;
         public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
-        public readonly ISet<ushort> noShades;
 
         public readonly BlockRegistry Block;
         public readonly BiomeRegistry Biome;
@@ -130,6 +129,7 @@ namespace Mcasaenk.Colormaping {
                 }
             }
 
+            BlocksManager.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => FilterManager.GetBlockVal(blid) != FilterManager.Invis)).ToFrozenSet();
             BlocksManager.FinishBlocksEdit();
             Block.Freeze();
             Biome.Freeze();
@@ -138,8 +138,6 @@ namespace Mcasaenk.Colormaping {
             // this.depth = rawmap != null ? Block.GetId(rawmap.depth) : NONEBLOCK;
             FilterManager.AddBlock(BlockManager.depth, FilterManager.Depth);
 
-            this.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => FilterManager.GetBlockVal(blid) != FilterManager.Invis)).ToFrozenSet();
-            //
         }
         private bool disposed = false;
         public void Dispose() {
@@ -203,6 +201,7 @@ namespace Mcasaenk.Colormaping {
     public class BlockManager {
         private Colormap colormap;
 
+        public ISet<ushort> noShades;
         private IDictionary<ushort, uint> map;
         public const ushort depth = 3;
         public BlockManager(Colormap colormap, string depth) {
@@ -244,7 +243,7 @@ namespace Mcasaenk.Colormaping {
 
         public ShaderBufferTexture GetTexture() {
             if(gputexture == null) {
-                gputexture = new ShaderBufferTexture(map.Keys.Max() * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                gputexture = new ShaderBufferTexture(texturedata.Length * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
             }
 
             if(updatedata) {
@@ -255,12 +254,13 @@ namespace Mcasaenk.Colormaping {
             return gputexture;
         }
 
-        public void UpdateTexture() { // !! in app.xaml.cs notify !!
+        public void UpdateTexture() {
             for(int i = 0; i < texturedata.Length; i++) {
                 ushort id = (ushort)i;
                 texturedata[i] = (this.GetValueOrDefault(id, 0) << 8);
                 texturedata[i] += (uint)(colormap.TintManager.IndexOf(colormap.TintManager.GetBlockVal(id)) << 4);
-                texturedata[i] += (uint)(colormap.FilterManager.GetBlockVal(id).ABSORBTION);
+                texturedata[i] += (uint)(colormap.FilterManager.GetBlockVal(id).ABSORBTION / 2) << 1;
+                texturedata[i] += noShades.Contains(id) ? 1u : 0u;
             }
 
             updatedata = true;
@@ -389,7 +389,7 @@ namespace Mcasaenk.Colormaping {
             if(texturedata == null || texturedata?.Length < ELEMENTS.Count + ELEMENTS.Count * w * h) texturedata = new uint[ELEMENTS.Count + ELEMENTS.Count * w * h];
 
             int i = 0;
-            int c = 16 + 1;
+            int c = MAXCOUNT + 1;
             foreach(var el in ELEMENTS) { 
 
                 var blendmode = el.GetBlendMode();
@@ -407,7 +407,7 @@ namespace Mcasaenk.Colormaping {
                 c += len;
                 i++;
             }
-            texturedata[16] = (uint)w;
+            texturedata[MAXCOUNT] = (uint)w;
 
             Global.App.Window.canvasControl?.pipeline.kawaseShader?.UpdateBlendTintCounter(GetBlendingTintsIndexes());
         }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Net.Sockets;
 using System.Reflection;
@@ -116,6 +117,10 @@ namespace Mcasaenk.UI.Canvas {
         public void Move(Point byHow) {
             Loc1 = Loc1.Add(byHow);
             Loc2 = Loc2.Add(byHow);
+        }
+        public void Teleport(Point where) {
+            Loc1 = where;
+            Loc2 = where.Add(new Point(resolution.X, resolution.Y).Mult(scale.Scale)).Floor();
         }
         public void Rebase(bool north, bool west) {
             Point new1 = new Point(0, 0), new2 = new Point();
@@ -322,7 +327,7 @@ namespace Mcasaenk.UI.Canvas {
 
     public interface ScreenshotTaker {
         BitmapSource TakeScreenshotAsImage();
-        CompoundTag_Allgemein TakeScreenshotAsMap(int version);
+        CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo);
     }
 
     public class OpenGLScreenshotTaker : ScreenshotTaker, IDisposable {
@@ -338,7 +343,7 @@ namespace Mcasaenk.UI.Canvas {
             this.frame = frame;
             this.rotate = rotate;
 
-            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)frame.Width, (int)frame.Height);
+            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)(frame.Width * frame.InSimZoom), (int)(frame.Height * frame.InSimZoom));
         }
         public void Dispose() {
             sceneimage.Dispose();
@@ -347,83 +352,48 @@ namespace Mcasaenk.UI.Canvas {
         public BitmapSource TakeScreenshotAsImage() {
             int w = frame.ScreenWidth, h = frame.ScreenHeight;
             if(rotate) (w, h) = (h, w);
-            return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, Render(), w * 4);
+            return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, Render(false), w * 4);
         }
 
-        public CompoundTag_Allgemein TakeScreenshotAsMap(int version) {
-            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render()), frame, version);
+        public CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo) {
+            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render(true)), frame, version, coloralgo);
         }
-
-
-        private byte[] Render() {
-            renderer.Render(frame, gentilemap, sceneimage.textureHandle);
+        private byte[] Render(bool map) {
+            renderer.Render(frame, gentilemap, map ? frame : default, sceneimage.textureHandle);
 
             byte[] data = sceneimage.ReadData();
-            if(frame.zoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.zoom);
-            FlipVertAndConvertRgbaToBgra(data, frame.ScreenWidth, frame.ScreenHeight);
+            if(frame.OutSimzoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.OutSimzoom);
+            FlipVert(data, frame.ScreenWidth, frame.ScreenHeight);
+            RgbaToBgra(data);
             if(rotate) data = RotateMinus90(data, frame.ScreenWidth, frame.ScreenHeight);
             return data;
         }
 
+        static void FlipVert(byte[] data, int width, int height) {
+            const int channels = 4; // For RGBA/BGRA
+            int rowSize = width * channels;
 
-        static void FlipVertAndConvertRgbaToBgra(byte[] rgba, int width, int height) {
-            int stride = width * 4;
-
-            // Swap rows from top and bottom
             for(int y = 0; y < height / 2; y++) {
-                int topRowStart = y * stride;
-                int bottomRowStart = (height - 1 - y) * stride;
+                int topIndex = y * rowSize;
+                int bottomIndex = (height - 1 - y) * rowSize;
 
-                for(int x = 0; x < width; x++) {
-                    int topIndex = topRowStart + x * 4;
-                    int bottomIndex = bottomRowStart + x * 4;
-
-                    // Swap pixels between top and bottom row with RGBA->BGRA conversion
-
-                    // Top pixel RGBA
-                    byte rTop = rgba[topIndex];
-                    byte gTop = rgba[topIndex + 1];
-                    byte bTop = rgba[topIndex + 2];
-                    byte aTop = rgba[topIndex + 3];
-
-                    // Bottom pixel RGBA
-                    byte rBottom = rgba[bottomIndex];
-                    byte gBottom = rgba[bottomIndex + 1];
-                    byte bBottom = rgba[bottomIndex + 2];
-                    byte aBottom = rgba[bottomIndex + 3];
-
-                    // Write bottom pixel (converted BGRA) to top position
-                    rgba[topIndex] = bBottom;       // B
-                    rgba[topIndex + 1] = gBottom;   // G
-                    rgba[topIndex + 2] = rBottom;   // R
-                    rgba[topIndex + 3] = aBottom;   // A
-
-                    // Write top pixel (converted BGRA) to bottom position
-                    rgba[bottomIndex] = bTop;
-                    rgba[bottomIndex + 1] = gTop;
-                    rgba[bottomIndex + 2] = rTop;
-                    rgba[bottomIndex + 3] = aTop;
-                }
-            }
-
-            // If height is odd, flip/convert the middle row in place
-            if(height % 2 == 1) {
-                int middleRowStart = (height / 2) * stride;
-                for(int x = 0; x < width; x++) {
-                    int idx = middleRowStart + x * 4;
-                    byte r = rgba[idx];
-                    byte g = rgba[idx + 1];
-                    byte b = rgba[idx + 2];
-                    byte a = rgba[idx + 3];
-
-                    rgba[idx] = b;
-                    rgba[idx + 1] = g;
-                    rgba[idx + 2] = r;
-                    rgba[idx + 3] = a;
+                for(int i = 0; i < rowSize; i++) {
+                    byte temp = data[topIndex + i];
+                    data[topIndex + i] = data[bottomIndex + i];
+                    data[bottomIndex + i] = temp;
                 }
             }
         }
+        static void RgbaToBgra(byte[] data) {
+            for(int i = 0; i < data.Length; i += 4) {
+                byte r = data[i];
+                byte b = data[i + 2];
 
+                data[i] = b;       // B
+                data[i + 2] = r;   // R
+                                   // G and A stay in place
+            }
+        }
         static byte[] ScaleUpRaw32bit(byte[] srcPixels, int width, int height, int scale) {
             int bytesPerPixel = 4;
             int srcStride = width * bytesPerPixel;

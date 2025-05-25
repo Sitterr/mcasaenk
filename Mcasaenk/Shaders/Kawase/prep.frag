@@ -2,7 +2,7 @@
 
 in vec2 pos;
 
-layout(location = 0) out vec2 outDepth;
+layout(location = 0) out uint outMeanheights_Oceandepth;
 layout(location = 1) out vec4 outTint0;
 layout(location = 2) out vec4 outTint1;
 layout(location = 3) out vec4 outTint2;
@@ -26,14 +26,17 @@ int layers;
 struct BlockData{
     vec4 basecolor;
     int tint;
+    bool noshade;
 };
 BlockData blockData(int id){
     vec4 palettedata = texelFetch(palette, id);
 
     BlockData block;
     block.basecolor.rgb = palettedata.abg;
-    block.basecolor.a = (int(palettedata.r * 255) & 0x0F) / 15.0;
-    block.tint = ((int(palettedata.r * 255) & 0xF0) >> 4);
+    int r = int(palettedata.r * 255);
+    block.noshade = (r & 1) == 1;
+    block.basecolor.a = ((r >> 1) & 7) / 7.0;
+    block.tint = ((r & 0xF0) >> 4);
     return block;
 }
 BlockData depth;
@@ -77,8 +80,11 @@ RegionData regionData(isampler2DArray region, int l, ivec2 pos) {
     regionData.shade = (a & 0x000F) / 15.0;
     return regionData;
 }
-
 bool IsDepth(RegionData d, int l) { return l == layers - 1 && d.depth != 0; }
+int TerrHeight(RegionData d, int l){
+    if(IsDepth(d, l)) return d.height - d.depth;
+    return d.height + d.depth / 2;
+}
 // reg
 
 RegionData irs[5];
@@ -105,9 +111,16 @@ void main() {
     outTint5 = vec4(0);
     outTint6 = vec4(0);
 
+    float relvis[5];
+    float ostatuk = 1;
     for(int l=0;l<layers;l++){
-        RegionData wl = irs[l];
+        if(irs[l].block.noshade == false) {
+            float a = (ostatuk * (1 - pow(1 - irs[l].block.basecolor.a, max(1, irs[l].depth))));
+            relvis[l] = a;
+            ostatuk -= a;
+        }
 
+        RegionData wl = irs[l];
         if(IsDepth(wl, l)) wl.block = blockData(3);
         else wl.block = blockData(wl.blockid);
 
@@ -118,9 +131,20 @@ void main() {
         else if(wl.block.tint == blendtints[4] && tintcount > 4) outTint4 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
         else if(wl.block.tint == blendtints[5] && tintcount > 5) outTint5 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
         else if(wl.block.tint == blendtints[6] && tintcount > 6) outTint6 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
-
-        if(l == layers - 1) outDepth = vec2(wl.depth / 65535.0, wl.depth > 0 ? 1.0 : 0.0);
     }
+    if(ostatuk < 1){
+        for(int l = 0; l < layers; l++) {
+            relvis[l] += ((relvis[l] / (1 - ostatuk)) * ostatuk);
+        }
+    } else {
+        relvis[layers - 1] = 1;
+    }
+    float mh = 0;
+    for(int l = 0; l < layers; l++) {
+        mh += relvis[l] * TerrHeight(irs[l], l);
+    }
+    outMeanheights_Oceandepth = (((irs[layers - 1].depth << 1) + (irs[layers - 1].depth > 0 ? 1 : 0)) << 16) | uint(mh);
+
 
     if(outTint0.a > 0) outTint0 = vec4(outTint0.rgb / outTint0.a, 1);
     if(outTint1.a > 0) outTint1 = vec4(outTint1.rgb / outTint1.a, 1);

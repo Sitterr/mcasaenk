@@ -71,7 +71,7 @@ namespace Mcasaenk.Rendering {
 
                         for(int h = airHeight; h >= 0; h--) {
                             var blid = data.GetBlock(cx, cz, h);
-                            if(Global.Settings.NOSHADE_SHADE3D == false && data.Colormap.noShades.Contains(blid)) continue;
+                            if(Global.Settings.NOSHADE_SHADE3D == false && data.Colormap.BlocksManager.noShades.Contains(blid)) continue;
                             //if(blid == data.Colormap.BLOCK_AIR || blid == data.Colormap.depth) continue;
                             var filter = data.Colormap.FilterManager.GetBlockVal(blid);
                             if(filter.ABSORBTION == 0 || filter == data.Colormap.FilterManager.Depth) continue;
@@ -142,7 +142,7 @@ namespace Mcasaenk.Rendering {
                         {
                             startblockid = blockid;
                             startbiomeid = biomeid;
-                            startheight = height;
+                            startheight = (short)(height + 1);
                             startfilter = filter;
                             depth = 1;
                         }
