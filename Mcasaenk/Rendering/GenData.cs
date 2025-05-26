@@ -1,6 +1,6 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Shade3d;
-using Mcasaenk.Shaders;
+using Mcasaenk.Opengl_rendering;
 using OpenTK.Compute.OpenCL;
 using OpenTK.Graphics.OpenGL4;
 using System;
@@ -22,16 +22,16 @@ namespace Mcasaenk.Rendering {
         public ushort[] topblocks;
 
         public GenDataColumn depthColumn;
+        private bool istemp, temp_waterRelief = false;
 
         private ShaderTexture2D texture;
         short[] texturedata;
         private void FreeTextureData() {
-            if(texturedata != default) {      
+            if(texturedata != null) {      
                 ArrayPool<short>.Shared.Return(texturedata, true);
                 texturedata = default;
             }
         }
-        //private short[] texturedata;
         private bool textureupdate = false, freed = false, disposed = false;
 
         public GenData(RawData rawData) {
@@ -43,9 +43,19 @@ namespace Mcasaenk.Rendering {
             }
             depthColumn = this.columns[rawData.columns.Length] = new GenDataColumn(rawData.depthColumn, true);
 
-            //texturedata = Marshal.AllocHGlobal(columns.Length * 512 * 512 * 4 * sizeof(short));
-            texturedata = ArrayPool<short>.Shared.Rent(columns.Length * 512 * 512 * 4);
-            UpdateTextureData();
+            if(Global.Settings.RENDERMODE == RenderMode.OPENGL) {
+                texturedata = ArrayPool<short>.Shared.Rent(columns.Length * 512 * 512 * 4);
+                UpdateTextureData();
+            }
+        }
+        private GenData(GenData genData) {
+            this.chunkisscreenshotable = genData.chunkisscreenshotable;
+            this.columns = new GenDataColumn[genData.columns.Length];
+            for(int i = 0; i < columns.Length; i++) {
+                this.columns[i] = new GenDataColumn(genData.columns[i]);
+            }
+            this.depthColumn = this.columns.Last();
+            this.istemp = true;
         }
 
         public void Dispose() {
@@ -64,6 +74,25 @@ namespace Mcasaenk.Rendering {
             return ((chunkisscreenshotable[z] >> x) & 1) == 1;
         }
 
+
+        public void SetTemporal_WaterRelief() {
+            if(istemp == false) throw new Exception();
+            if(depthColumn.depths15_lightfrombottom1 == null) return;
+
+            temp_waterRelief = true;
+            var old = depthColumn.depths15_lightfrombottom1;
+            depthColumn.depths15_lightfrombottom1 = ArrayPool<short>.Shared.Rent(512 * 512);
+            for(int i = 0; i < 512 * 512; i++) depthColumn.depths15_lightfrombottom1[i] = old[i];
+        }
+
+        public void DisposeTemporal() {
+            if(istemp == false) throw new Exception();
+            if(temp_waterRelief) ArrayPool<short>.Shared.Return(depthColumn.depths15_lightfrombottom1);
+        }
+
+        public GenData GetTempInstance() {
+            return new GenData(this);
+        }
 
 
         public void FreeData() {
@@ -92,7 +121,7 @@ namespace Mcasaenk.Rendering {
             textureupdate = true;
         }
     }
-    public class GenDataColumn { // 64bit
+    public class GenDataColumn {
         private bool maybedepth;
         public short[] heights, depths15_lightfrombottom1;
         public ushort[] blockIds;
@@ -110,8 +139,16 @@ namespace Mcasaenk.Rendering {
 
             this.maybedepth = depthcolumn && depths15_lightfrombottom1 != null;
         }
+        public GenDataColumn(GenDataColumn gencolumn) {
+            this.heights = gencolumn.heights;
+            this.depths15_lightfrombottom1 = gencolumn.depths15_lightfrombottom1;
+            this.blockIds = gencolumn.blockIds;
+            this.biomeIds8_light4_shade4 = gencolumn.biomeIds8_light4_shade4;
+            this.maybedepth = gencolumn.maybedepth;
+        }
 
         public void FreeData() {
+            if(Global.Settings.RENDERMODE == RenderMode.LEGACY) return;
             if(heights != null) pool.heightPool.Return(heights, true);
             if(depths15_lightfrombottom1 != null) pool.depthsPool.Return(depths15_lightfrombottom1, true);
             if(blockIds != null) pool.blockIdsPool.Return(blockIds, true);
@@ -135,7 +172,7 @@ namespace Mcasaenk.Rendering {
 
 
 
-        public bool IsDepth(int i) => maybedepth && depths15_lightfrombottom1[i] != 0;
+        public bool IsDepth(int i) => maybedepth && (depths15_lightfrombottom1[i] >> 1) != 0;
         public uint Color(int i) => IsDepth(i) ? Global.App.Colormap.BaseColor(BlockManager.depth) : ActColor(i);
         public short Height(int i) => heights[i];
         public short TerrHeight(int i) => TerrHeight(IsDepth(i), Height(i), Depth(i));
@@ -147,6 +184,7 @@ namespace Mcasaenk.Rendering {
         public byte BlockLight(int i) => (byte)((biomeIds8_light4_shade4[i] & 0x00FF) >> 4);
         public byte Shade(int i) => (byte)((biomeIds8_light4_shade4[i] & 0x000F));
         public void set_shade(int i, byte shade) => biomeIds8_light4_shade4[i] = (ushort)((biomeIds8_light4_shade4[i] & 0xFFF0) + shade);
+        public void set_depth(int i, short depth) => depths15_lightfrombottom1[i] = (short)((depth << 1) | (depths15_lightfrombottom1[i] & 1));
         public ushort BiomeId(int i) => (ushort)(biomeIds8_light4_shade4[i] >> 8);
         public Tint Tint(int i) => Global.App.Colormap.TintManager.GetBlockVal(TopBlockId(i));
         public Filter Filter(int i) => Global.App.Colormap.FilterManager.GetBlockVal(blockIds[i]);
@@ -156,8 +194,10 @@ namespace Mcasaenk.Rendering {
         public ushort BlockId(int i) => blockIds[i];
         public ushort TopBlockId(int i) => IsDepth(i) ? BlockManager.depth : blockIds[i];
 
-        public bool ContainsInfo(int i) => heights != null;
-        //public bool ContainsInfo(int i) => heights[i] != default || blockIds[i] != default || biomeIds8_light4_shade4[i] != default;
+        public bool ContainsInfo(int i) {
+            if(heights == null) return false;
+            return heights[i] != default || blockIds[i] != default || biomeIds8_light4_shade4[i] != default;
+        }
     }
 
 

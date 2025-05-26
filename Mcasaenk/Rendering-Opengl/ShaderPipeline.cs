@@ -1,6 +1,6 @@
-﻿using Mcasaenk.Shaders.Kawase;
-using Mcasaenk.Shaders.Scale;
-using Mcasaenk.Shaders.Scene;
+﻿using Mcasaenk.Opengl_rendering.Kawase;
+using Mcasaenk.Opengl_rendering.Scale;
+using Mcasaenk.Opengl_rendering.Scene;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Wpf;
 using System;
@@ -16,7 +16,7 @@ using Mcasaenk.UI.Canvas;
 using Mcasaenk.Rendering;
 using System.Diagnostics;
 
-namespace Mcasaenk.Shaders {
+namespace Mcasaenk.Opengl_rendering {
     public class ShaderPipeline : IDisposable {
         private readonly PrepKawase prepShader;
         public readonly KawaseShader kawaseShader;

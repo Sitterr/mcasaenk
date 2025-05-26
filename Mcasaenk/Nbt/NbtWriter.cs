@@ -94,6 +94,7 @@ namespace Mcasaenk.Nbt {
                 data.Add("dimension", NumTag<sbyte>.Get(0));
                 data.Add("trackingPosition", NumTag<sbyte>.Get(1));
                 data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
+                data.Add("locked", NumTag<bool>.Get(true));
                 data.Add("xCenter", NumTag<int>.Get((int)(frame.Start.X + frame.Width / 2)));
                 data.Add("zCenter", NumTag<int>.Get((int)(frame.Start.Y + frame.Height / 2)));
                 if(version < 1519) {

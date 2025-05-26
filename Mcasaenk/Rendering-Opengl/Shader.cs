@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace Mcasaenk.Shaders {
+namespace Mcasaenk.Opengl_rendering {
     public class Shader : IDisposable {
         public int Handle;
 

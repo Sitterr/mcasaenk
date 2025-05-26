@@ -22,6 +22,7 @@
     <local:TransluciencyLevelTextConverter x:Key="TransluciencyLevelTextConverter"/>
     <local:GreaterThanConverter x:Key="GreaterThanConverter"/>
 
+    <SolidColorBrush x:Key="CANVASBACK">#ff0f0f0f</SolidColorBrush>
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKFULL">#ff1f1f1f</SolidColorBrush>
     <SolidColorBrush x:Key="BACKCTRL">#dd2f2f2f</SolidColorBrush>

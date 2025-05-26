@@ -1,5 +1,6 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Nbt;
+using Mcasaenk.Opengl_rendering;
 using Mcasaenk.Rendering;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
@@ -42,14 +43,11 @@ namespace Mcasaenk
             }
         }
         private void OnLightChange(string changed) {
-            Global.App.Window.canvasControl.drawTileMap.MassRedo();
+            Global.App.Window.canvas.DrawMassRedo();
             if(changed == nameof(Settings.DEFBIOME)) Colormap.Biome.UpdateDef();
 
             if(changed == "On" || changed == nameof(Settings.DEFBIOME) || changed == "TemperatureVariation") {
                 Colormap.TintManager.UpdateTexture();
-            }
-            if(changed == "Blend") {
-                Global.App.Window.canvasControl?.pipeline.kawaseShader?.UpdateBlendTintCounter(Colormap.TintManager.GetBlendingTintsIndexes());
             }
 
         }
@@ -57,8 +55,12 @@ namespace Mcasaenk
             if(changed.Count == 0) return;
             SettingsHub.Freeze();
 
-            Global.App.Window.canvasControl.drawTileMap?.MassRedo();
-            _openedSave.Reset();
+            if(changed.Contains("RENDERMODE")) {
+                Window.SetCanvas(Global.Settings.RENDERMODE);
+            }
+
+            Global.App.Window.canvas.DrawMassRedo();
+            _openedSave?.Reset();
             SetWorld(changed.Contains(nameof(Settings.DIMENSION)));
 
             if(changed.Contains(nameof(Settings.COLOR_MAPPING_MODE))) {
@@ -70,10 +72,14 @@ namespace Mcasaenk
             Colormap?.UpdateHeightmapCompatability();
             Colormap?.TintManager.Freeze();
             Colormap?.FilterManager.Freeze();
+            
+
 
             if(changed.Contains("ABSORBTION")) {
                 Colormap?.BlocksManager.UpdateTexture();
             }
+
+
 
             SettingsHub.FinishFreeze(false);
         }
@@ -240,6 +246,7 @@ namespace Mcasaenk
             Window.OnColormapChange();
         }
         void SetWorld(bool dimchange) {
+            if(_openedSave == null) return;
             RAND = Global.rand.NextDouble();
 
             {
@@ -257,7 +264,7 @@ namespace Mcasaenk
             TileMap = _openedSave.GetDimension(Global.Settings.DIMENSION).tileMap;
 
             Window.OnHardReset();
-            Window.canvasControl.OnTilemapChanged(dimchange);
+            Window.canvas.OnTilemapChange(TileMap, dimchange);
 
             GC.Collect(2, GCCollectionMode.Forced);
 

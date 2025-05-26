@@ -51,7 +51,7 @@ namespace Mcasaenk.Shade3d {
             }
         }
 
-        public bool IsActive { get; set; }
+        public bool IsActive { get; private set; }
 
 
         private object locker = new object();

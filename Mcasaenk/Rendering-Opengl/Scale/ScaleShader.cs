@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.HighPerformance;
 using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
-using Mcasaenk.Shaders.Scene;
+using Mcasaenk.Opengl_rendering.Scene;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mcasaenk.Shaders.Scale {
+namespace Mcasaenk.Opengl_rendering.Scale {
     public class ScaleShader : Shader {
         private readonly int VAO;
         public ScaleShader(int VAO) : base(ResourceMapping.tile_vert, ResourceMapping.scale_frag) {

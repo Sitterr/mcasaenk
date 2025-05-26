@@ -88,10 +88,14 @@ namespace Mcasaenk {
                     double score = double.MaxValue;
                     if(algo == ColorApproximationAlgorithm.RGB_Euclidean) {
                         score = length(color.R - variant.color.R, color.G - variant.color.G, color.B - variant.color.B);
-                    } else if(algo == ColorApproximationAlgorithm.LAB_Euclidean) { 
+                    } else if(algo == ColorApproximationAlgorithm.LAB_Euclidean) {
                         var color_lab = color.ToLAB();
                         var variant_lab = variant.color.ToLAB();
                         score = length(color_lab.L - variant_lab.L, color_lab.A - variant_lab.A, color_lab.B - variant_lab.B);
+                    } else if(algo == ColorApproximationAlgorithm.LAB_CIE94) {
+                        var color_lab = color.ToLAB();
+                        var variant_lab = variant.color.ToLAB();
+                        score = GlobalColors.CIE94(color_lab, variant_lab);
                     }
 
                     if(score < bestscore) {

@@ -127,6 +127,13 @@
                                                 </Run.Foreground>
                                             </Run>
                                         </TextBlock>
+                                        <Label.ToolTip>
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="GPU rendering is better(that is if you have a gpu) in every way, aside from rare compatibilities"/>
+                                                <TextBlock Text="and two known ultra-niche cases where legacy mode is slightly more accurate. This toggle mainly"/>
+                                                <TextBlock Text="exists because i love my old slow af code and also to show off how easily you can switch modes :)"/>
+                                            </StackPanel>
+                                        </Label.ToolTip>
                                     </Label>
                                     <ComboBox Margin="10 0 0 0" 
                                               DockPanel.Dock="Left"

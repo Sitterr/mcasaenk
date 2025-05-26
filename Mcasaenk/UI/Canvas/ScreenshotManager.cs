@@ -11,8 +11,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
-using Mcasaenk.Shaders;
-using Mcasaenk.Shaders.Scale;
+using Mcasaenk.Opengl_rendering;
+using Mcasaenk.Opengl_rendering.Scale;
 using Microsoft.Win32;
 using OpenTK.Graphics.OpenGL4;
 
@@ -39,15 +39,9 @@ namespace Mcasaenk.UI.Canvas {
             resolution.PropertyChanged += OnResolutionChange;
             scale.PropertyChanged += OnScaleChange;
         }
-        ~ScreenshotManager() { Dispose(); }
-        bool disposed = false;
         public void Dispose() {
-            if(!disposed) {
-                disposed = true;
-
-                resolution.PropertyChanged -= OnResolutionChange;
-                scale.PropertyChanged -= OnScaleChange;
-            }
+            resolution.PropertyChanged -= OnResolutionChange;
+            scale.PropertyChanged -= OnScaleChange;
         }
 
         public ResolutionType ResolutionType() => resolution.type;
@@ -180,6 +174,7 @@ namespace Mcasaenk.UI.Canvas {
         }
         public ConditionalState GetState(GenDataTileMap gentilemap) {
             if(resolution.X > 16384 || resolution.Y > 16384) return ConditionalState.invalid;
+            if(gentilemap == null) return ConditionalState.invalid;
 
             var screen = this.AsScreen();
 
@@ -196,252 +191,10 @@ namespace Mcasaenk.UI.Canvas {
             return ConditionalState.ok;
         }
 
-
-        //private BitmapSource TakeScreenshot(BitmapScalingMode scalingMode) {
-        //    try {
-        //        var Size = Rect().Size.AsPoint();
-        //        var NW = Rect().TopLeft;
-
-        //        var (rx, ry) = (resolution.X, resolution.Y);
-        //        if (rotated) (ry, rx) = (resolution.X, resolution.Y);
-        //        var renderBitmap = new RenderTargetBitmap(rx, ry, 96, 96, PixelFormats.Pbgra32);
-        //        if (tileMap != null) {
-        //            var drawing = new DrawingVisual();
-
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-        //            {
-        //                /* totally not bugged as fuck
-        //                        RenderOptions.SetBitmapScalingMode(drawing, BitmapScalingMode.NearestNeighbor);
-        //                        RenderOptions.SetEdgeMode(drawing, EdgeMode.Aliased);
-        //                 */
-
-        //                drawing.GetType().GetProperty("VisualEdgeMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, EdgeMode.Aliased);
-        //                drawing.GetType().GetProperty("VisualBitmapScalingMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(drawing, scalingMode);
-        //            }
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-        //            // ?!??!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!!?!??!?!?!?!??!???!?!?????!?!?!
-
-        //            using (DrawingContext graphics = drawing.RenderOpen()) {
-        //                var scaleTransform = new ScaleTransform(scale.Scale, scale.Scale);
-        //                graphics.PushTransform(scaleTransform);
-
-        //                int xoff = Global.Coord.absMod((int)NW.X, 512), zoff = Global.Coord.absMod((int)NW.Y, 512);
-        //                int stX = Global.Coord.fairDev((int)NW.X, 512), stZ = Global.Coord.fairDev((int)NW.Y, 512);
-        //                for (int x = stX; x <= Global.Coord.fairDev((int)NW.X + (int)Size.X, 512); x++) {
-        //                    for (int z = stZ; z <= Global.Coord.fairDev((int)NW.Y + (int)Size.Y, 512); z++) {
-        //                        var tile = tileMap.GetTile(new Point2i(x, z));
-        //                        if (tile == null) continue;
-        //                        //if(tile.img == null) continue;
-        //                        //graphics.DrawImage(tileMap.GetTile(new Point2i(x, z)).img, new Rect((x - stX) * 512 - xoff, (z - stZ) * 512 - zoff, 512, 512));
-        //                    }
-        //                }
-        //            }
-        //            renderBitmap.Render(drawing);
-        //        }
-
-        //        if (rotated) return new TransformedBitmap(renderBitmap, new RotateTransform(-90));
-        //        return renderBitmap;
-        //    } catch {
-        //        MessageBox.Show("The image couldn't generate\nThis often occurs if the image size was too big");
-        //        return null;
-        //    }
-        //}
-
-        //public void TakeAndSaveScreenshot() {
-        //    if (resolution.type == ResolutionType.map) {
-        //        if (resolution.X != 128 || resolution.Y != 128) {
-        //            MessageBox.Show("The map screenshot must be 128x128");
-        //            return;
-        //        }
-        //        TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id);
-        //    } else TakeScreenshotAsImage();
-        //}
-
-        //void TakeScreenshotAsImage() {
-        //    var saveFileDialog = new SaveFileDialog {
-        //        Filter = "PNG Image|*.png",
-        //        Title = "Save screenshot",
-        //        FileName = $"{Global.App.OpenedSave?.levelDatInfo?.name ?? "screenshot"}{resolution.X}x{resolution.Y}"
-        //    };
-
-        //    if (saveFileDialog.ShowDialog() == true) {
-        //        var encoder = new PngBitmapEncoder();
-        //        var screenshot = this.TakeScreenshot(BitmapScalingMode.NearestNeighbor);
-        //        if (screenshot == null) return;
-        //        encoder.Frames.Add(BitmapFrame.Create(screenshot));
-        //        using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
-        //            encoder.Save(fileStream);
-        //        }
-        //    }
-        //}
-
-        //void TakeScreenshotAsMap(int version) {
-        //    var saveFileDialog = new SaveFileDialog {
-        //        Filter = "Dat file|*.dat",
-        //        Title = "Save screenshot",
-        //        FileName = $"map_"
-        //    };
-
-        //    if (saveFileDialog.ShowDialog() == true) {
-        //        using CompoundTag_Allgemein root = new CompoundTag_Allgemein();
-        //        var data = new CompoundTag_Allgemein();
-        //        if (version >= 1484) root.Add("DataVersion", NumTag<int>.Get(version));
-        //        root.Add("data", data);
-        //        {
-        //            data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / scale.Scale))));
-        //            data.Add("dimension", NumTag<sbyte>.Get(0));
-        //            data.Add("trackingPosition", NumTag<sbyte>.Get(1));
-        //            data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
-        //            data.Add("xCenter", NumTag<int>.Get((int)(Loc1.X + Loc2.X) / 2));
-        //            data.Add("zCenter", NumTag<int>.Get((int)(Loc1.Y + Loc2.Y) / 2));
-        //            if (version < 1519) {
-        //                data.Add("height", NumTag<short>.Get(128));
-        //                data.Add("width", NumTag<short>.Get(128));
-        //            } else {
-        //                data.Add("banners", ListTag.Get(TagType.Compound));
-        //                data.Add("frames", ListTag.Get(TagType.Compound));
-        //            }
-
-        //            uint[] pixels = new uint[16384];
-        //            var screenshot = this.TakeScreenshot(BitmapScalingMode.NearestNeighbor);
-        //            screenshot.CopyPixels(pixels, 512, 0);
-
-        //            var bytetag = ArrTag<byte>.Get(16384);
-        //            for (int i = 0; i < 16384; i++) {
-        //                bytetag[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), version).id;
-        //            }
-        //            data.Add("colors", bytetag);
-        //        }
-
-        //        using (var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
-        //            using (var zipStream = new GZipStream(fs, CompressionMode.Compress, false)) {
-        //                new NbtWriter(zipStream, root, "");
-        //            }
-        //        }
-        //    }
-        //}
     }
 
     public interface ScreenshotTaker {
         BitmapSource TakeScreenshotAsImage();
         CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo);
-    }
-
-    public class OpenGLScreenshotTaker : ScreenshotTaker, IDisposable {
-        private readonly GenDataTileMap gentilemap;
-        private readonly ShaderPipeline renderer;
-        private readonly WorldPosition frame;
-        private readonly bool rotate;
-
-        private readonly ShaderTexture2D sceneimage;
-        public OpenGLScreenshotTaker(GenDataTileMap gentilemap, ShaderPipeline renderer, WorldPosition frame, bool rotate) { 
-            this.gentilemap = gentilemap;
-            this.renderer = renderer;
-            this.frame = frame;
-            this.rotate = rotate;
-
-            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)(frame.Width * frame.InSimZoom), (int)(frame.Height * frame.InSimZoom));
-        }
-        public void Dispose() {
-            sceneimage.Dispose();
-        }
-
-        public BitmapSource TakeScreenshotAsImage() {
-            int w = frame.ScreenWidth, h = frame.ScreenHeight;
-            if(rotate) (w, h) = (h, w);
-            return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, Render(false), w * 4);
-        }
-
-        public CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo) {
-            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render(true)), frame, version, coloralgo);
-        }
-        private byte[] Render(bool map) {
-            renderer.Render(frame, gentilemap, map ? frame : default, sceneimage.textureHandle);
-
-            byte[] data = sceneimage.ReadData();
-            if(frame.OutSimzoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.OutSimzoom);
-            FlipVert(data, frame.ScreenWidth, frame.ScreenHeight);
-            RgbaToBgra(data);
-            if(rotate) data = RotateMinus90(data, frame.ScreenWidth, frame.ScreenHeight);
-            return data;
-        }
-
-        static void FlipVert(byte[] data, int width, int height) {
-            const int channels = 4; // For RGBA/BGRA
-            int rowSize = width * channels;
-
-            for(int y = 0; y < height / 2; y++) {
-                int topIndex = y * rowSize;
-                int bottomIndex = (height - 1 - y) * rowSize;
-
-                for(int i = 0; i < rowSize; i++) {
-                    byte temp = data[topIndex + i];
-                    data[topIndex + i] = data[bottomIndex + i];
-                    data[bottomIndex + i] = temp;
-                }
-            }
-        }
-        static void RgbaToBgra(byte[] data) {
-            for(int i = 0; i < data.Length; i += 4) {
-                byte r = data[i];
-                byte b = data[i + 2];
-
-                data[i] = b;       // B
-                data[i + 2] = r;   // R
-                                   // G and A stay in place
-            }
-        }
-        static byte[] ScaleUpRaw32bit(byte[] srcPixels, int width, int height, int scale) {
-            int bytesPerPixel = 4;
-            int srcStride = width * bytesPerPixel;
-            int newWidth = width * scale;
-            int newHeight = height * scale;
-            int destStride = newWidth * bytesPerPixel;
-
-            byte[] destPixels = new byte[newWidth * newHeight * bytesPerPixel];
-
-            for(int y = 0; y < height; y++) {
-                for(int x = 0; x < width; x++) {
-                    int srcIndex = y * srcStride + x * bytesPerPixel;
-
-                    // Copy this pixel into a scale x scale block
-                    for(int dy = 0; dy < scale; dy++) {
-                        for(int dx = 0; dx < scale; dx++) {
-                            int destX = x * scale + dx;
-                            int destY = y * scale + dy;
-                            int destIndex = destY * destStride + destX * bytesPerPixel;
-
-                            System.Buffer.BlockCopy(srcPixels, srcIndex, destPixels, destIndex, bytesPerPixel);
-                        }
-                    }
-                }
-            }
-
-            return destPixels;
-        }
-
-        static byte[] RotateMinus90(byte[] input, int width, int height) {
-            int bytesPerPixel = 4;
-            byte[] output = new byte[input.Length];
-
-            for(int y = 0; y < height; y++) {
-                for(int x = 0; x < width; x++) {
-                    int srcIndex = (y * width + x) * bytesPerPixel;
-
-                    int dstX = y;
-                    int dstY = width - 1 - x;
-                    int dstIndex = (dstY * height + dstX) * bytesPerPixel;
-
-                    for(int b = 0; b < bytesPerPixel; b++) {
-                        output[dstIndex + b] = input[srcIndex + b];
-                    }
-                }
-            }
-
-            return output;
-        }
     }
 }

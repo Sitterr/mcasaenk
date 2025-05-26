@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Mcasaenk.Resources;
 using OpenTK.Graphics.OpenGL4;
 
-namespace Mcasaenk.Shaders.Dissect {
+namespace Mcasaenk.Opengl_rendering.Dissect {
     public class DissectShader : Shader {
         private readonly int VAO;
         private readonly int fbo;

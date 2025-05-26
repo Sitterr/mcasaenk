@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mcasaenk.Shaders.Kawase {
+namespace Mcasaenk.Opengl_rendering.Kawase {
     class PrepKawase : Shader {
         private readonly int fbo, VAO;
         public readonly KawaseTexture texture1 = new KawaseTexture();

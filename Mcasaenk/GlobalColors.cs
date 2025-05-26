@@ -205,6 +205,41 @@ namespace Mcasaenk {
             return (l, a, b);
         }
 
+        public static double CIE94((double L, double A, double B) lab1, (double L, double A, double B) lab2) {
+            const double kL = 0.298;
+            const double kC = 0.317;
+            const double kH = 0.385;
+
+            const double k1 = 0.045;
+            const double k2 = 0.015;
+
+            double l1 = lab1.L, a1 = lab1.A, b1 = lab1.B;
+            double l2 = lab2.L, a2 = lab2.A, b2 = lab2.B;
+
+            double deltaL = l1 - l2;
+            double deltaA = a1 - a2;
+            double deltaB = b1 - b2;
+
+            double c1 = Math.Sqrt(a1 * a1 + b1 * b1);
+            double c2 = Math.Sqrt(a2 * a2 + b2 * b2);
+            double deltaC = c1 - c2;
+
+            double deltaH_squared = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+            double deltaH = Math.Sqrt(Math.Max(0.0, deltaH_squared));
+
+            double sL = 1.0;
+            double sC = 1.0 + k1 * c1;
+            double sH = 1.0 + k2 * c1;
+
+            double lightness_term = deltaL / (kL * sL);
+            double chroma_term = deltaC / (kC * sC);
+            double hue_term = deltaH / (kH * sH);
+
+            return Math.Sqrt(lightness_term * lightness_term +
+                        chroma_term * chroma_term +
+                        hue_term * hue_term);
+        }
+
         public static string ToHex(this WPFColor c, bool containAlpha, bool hashtag) {
             string basec = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
             if(containAlpha) basec = c.A.ToString("X2") + basec;

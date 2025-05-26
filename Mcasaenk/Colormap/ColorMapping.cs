@@ -19,7 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Mcasaenk.Rendering;
 using System.Linq;
-using Mcasaenk.Shaders;
+using Mcasaenk.Opengl_rendering;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Platform.Windows;
@@ -242,8 +242,9 @@ namespace Mcasaenk.Colormaping {
         private bool updatedata;
 
         public ShaderBufferTexture GetTexture() {
-            if(gputexture == null) {
+            if(gputexture == null || gputexture?.disposed == true) {
                 gputexture = new ShaderBufferTexture(texturedata.Length * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                updatedata = true;
             }
 
             if(updatedata) {
@@ -255,12 +256,12 @@ namespace Mcasaenk.Colormaping {
         }
 
         public void UpdateTexture() {
+            if(texturedata == null) return;
             for(int i = 0; i < texturedata.Length; i++) {
                 ushort id = (ushort)i;
                 texturedata[i] = (this.GetValueOrDefault(id, 0) << 8);
                 texturedata[i] += (uint)(colormap.TintManager.IndexOf(colormap.TintManager.GetBlockVal(id)) << 4);
-                texturedata[i] += (uint)(colormap.FilterManager.GetBlockVal(id).ABSORBTION / 2) << 1;
-                texturedata[i] += noShades.Contains(id) ? 1u : 0u;
+                texturedata[i] += (uint)(colormap.FilterManager.GetBlockVal(id).ABSORBTION);
             }
 
             updatedata = true;
@@ -369,11 +370,12 @@ namespace Mcasaenk.Colormaping {
         }
 
         public ShaderBufferTexture GetTexture() {
-            if(gputexture == null || gputexture?.size < texturedata.Length * 4) {
+            if(gputexture == null || gputexture?.size < texturedata.Length * 4 || gputexture?.disposed == true) {
                 gputexture?.Dispose();
 
                 int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
                 gputexture = new ShaderBufferTexture((MAXCOUNT + MAXCOUNT * w * h) * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                textureupdate = true;
             }
             if(textureupdate) {
                 gputexture.Data(texturedata);
@@ -383,33 +385,35 @@ namespace Mcasaenk.Colormaping {
             return gputexture;
         }
         public void UpdateTexture() {
-            textureupdate = true;
+            if(Global.Settings.RENDERMODE == RenderMode.OPENGL) {
+                textureupdate = true;
 
-            int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
-            if(texturedata == null || texturedata?.Length < ELEMENTS.Count + ELEMENTS.Count * w * h) texturedata = new uint[ELEMENTS.Count + ELEMENTS.Count * w * h];
+                int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
+                if(texturedata == null || texturedata?.Length < ELEMENTS.Count + ELEMENTS.Count * w * h) texturedata = new uint[ELEMENTS.Count + ELEMENTS.Count * w * h];
 
-            int i = 0;
-            int c = MAXCOUNT + 1;
-            foreach(var el in ELEMENTS) { 
+                int i = 0;
+                int c = MAXCOUNT + 1;
+                foreach(var el in ELEMENTS) {
 
-                var blendmode = el.GetBlendMode();
-                el.FillGPUData(texturedata.AsSpan().Slice(c));
-                int len = blendmode switch {
-                    Blending.single => 1,
-                    Blending.biomeonly => w,
-                    Blending.heightonly => h,
-                    Blending.grid => w * h,
-                };
+                    var blendmode = el.GetBlendMode();
+                    el.FillGPUData(texturedata.AsSpan().Slice(c));
+                    int len = blendmode switch {
+                        Blending.single => 1,
+                        Blending.biomeonly => w,
+                        Blending.heightonly => h,
+                        Blending.grid => w * h,
+                    };
 
-                texturedata[i] = (uint)blendmode << 4; // 8 bit
-                texturedata[i] += (uint)(c << 8); // 16 bit
+                    texturedata[i] = (uint)blendmode << 4; // 8 bit
+                    texturedata[i] += (uint)(c << 8); // 16 bit
 
-                c += len;
-                i++;
+                    c += len;
+                    i++;
+                }
+                texturedata[MAXCOUNT] = (uint)w;
+
+                //Global.App.Window.canvas?.pipeline.kawaseShader?.UpdateBlendTintCounter(GetBlendingTintsIndexes());
             }
-            texturedata[MAXCOUNT] = (uint)w;
-
-            Global.App.Window.canvasControl?.pipeline.kawaseShader?.UpdateBlendTintCounter(GetBlendingTintsIndexes());
         }
 
     }

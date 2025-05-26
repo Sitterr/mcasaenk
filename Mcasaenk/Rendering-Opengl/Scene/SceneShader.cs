@@ -1,7 +1,7 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
-using Mcasaenk.Shaders.Kawase;
+using Mcasaenk.Opengl_rendering.Kawase;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Mcasaenk.Shaders.Scene {
+namespace Mcasaenk.Opengl_rendering.Scene {
     public class SceneShader : Shader {
         public int fbo;
         private readonly int VAO = 0;
@@ -85,6 +85,11 @@ namespace Mcasaenk.Shaders.Scene {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "SHADE3D"), Global.Settings.SHADE3D ? 1 : 0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "STATIC_SHADE"), Global.Settings.STATIC_SHADE ? 1 : 0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "ADEG"), (float)Global.Settings.ADEG);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "SHADETYPE"), (int)Global.Settings.SHADETYPE);
+
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "Jmap_REVEALED_WATER"), (float)Global.Settings.Jmap_REVEALED_WATER);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "Jmap_WATER_MODE"), (int)Global.Settings.Jmap_WATER_MODE);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "Jmap_MAP_DIRECTION"), (int)Global.Settings.Jmap_MAP_DIRECTION);
                 }
 
 

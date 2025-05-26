@@ -61,9 +61,9 @@ void main() {
     ivec2 glReg = ivec2(floor(glpos / 512));
 
 
-    if(BACKGROUND == 1){
+    {
         vec4 gridcol;
-        if(int(gl_FragCoord.y / 32) % 2 == int(gl_FragCoord.x / 32) % 2) gridcol = vec4(10, 10, 10, 255) / 255;
+        if(int(gl_FragCoord.y / 32) % 2 == int(gl_FragCoord.x / 32) % 2 && BACKGROUND == 1) gridcol = vec4(10, 10, 10, 255) / 255;
         else gridcol = vec4(15, 15, 15, 255) / 255;
         FragColor = mix(gridcol, FragColor, FragColor.a);
     }

@@ -14,8 +14,9 @@ uniform isampler2DArray region0;
 uniform samplerBuffer palette;
 uniform samplerBuffer tintpalette;
 
-uniform float CONTRAST, SUN_LIGHT, BLOCK_LIGHT, WATER_TRANSPARENCY, ADEG;
+uniform float CONTRAST, SUN_LIGHT, BLOCK_LIGHT, WATER_TRANSPARENCY, ADEG, Jmap_REVEALED_WATER;
 uniform bool WATER_SMART_SHADE, SHADE3D, STATIC_SHADE;
+uniform int SHADETYPE, Jmap_WATER_MODE, Jmap_MAP_DIRECTION;
 
 uniform sampler2DArray blur_tintcolors;
 uniform usampler2D blur_meanheight_oceandepth;
@@ -134,7 +135,6 @@ float colorDiff(vec3 c1, vec3 c2) {
 struct BlockData{
     vec4 basecolor;
     int tint;
-    bool noshade;
 };
 BlockData blockData(int id){
     vec4 palettedata = texelFetch(palette, id);
@@ -142,8 +142,7 @@ BlockData blockData(int id){
     BlockData block;
     block.basecolor.rgb = palettedata.abg;
     int r = int(palettedata.r * 255);
-    block.noshade = (r & 1) == 1;
-    block.basecolor.a = ((r >> 1) & 7) / 7.0;
+    block.basecolor.a = (r & 0x0F) / 15.0;
     block.tint = ((r & 0xF0) >> 4);
     return block;
 }
@@ -229,6 +228,8 @@ ivec2 ipos;
 RegionData irs[5];
 int irx, irnx, irz, irnz;
 
+float jmap_normal = 220/220.0, jmap_dark = 180/220.0, jmap_darker = 135/220.0, jmap_light = 255/220.0;
+
 int meanheight(ivec2 pos){
     return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r & 0xFFFF));
 }
@@ -256,11 +257,15 @@ void setup(){
     }
     
     if(STATIC_SHADE){
-        irx = meanheight(ipos + ivec2( 1,  0));
+        irx  = meanheight(ipos + ivec2( 1,  0));
         irnx = meanheight(ipos + ivec2(-1,  0));
-        irz = meanheight(ipos + ivec2( 0,  1));
+        irz  = meanheight(ipos + ivec2( 0,  1));
         irnz = meanheight(ipos + ivec2( 0, -1));
     }
+
+    jmap_dark += (1 - jmap_dark) * (0.5 - CONTRAST) * 2;
+    jmap_darker += (1 - jmap_darker) * (0.5 - CONTRAST) * 2;
+    jmap_light -= (jmap_light - 1) * (0.5 - CONTRAST) * 2;
 
     depth = blockData(3); //depthid
 
@@ -294,25 +299,73 @@ void main() {
         float fd = 1;
         // water
         {
-            if(IsDepth(ir, l)){
-                vec4 terrainColor = ActColor(ir, ipos);
-                int waterDepth = ir.depth;
-                if(waterDepth > ir.height) {
-                    terrainColor = color;
+            if(IsDepth(ir, l)) {
+
+                if(SHADETYPE == 0){
+                    vec4 terrainColor = ActColor(ir, ipos);
+                    int waterDepth = ir.depth;
+                    if(waterDepth > ir.height) {
+                        terrainColor = color;
+                    }
+
+                    fd = pow(2, -4 * (1 - pow(WATER_TRANSPARENCY, 0.1)) * (waterDepth + 3));
+                    color = terrainColor * fd + color * (1 - fd);
+
+                    float multintensity = pow(fd, 0.75) * CONTRAST + 1 * (1 - CONTRAST);
+                    color = vec4(color.rgb * multintensity, color.a);
                 }
+                else if(SHADETYPE == 1) {
+                    if(Jmap_WATER_MODE == 0){
+                        int hd = ir.depth;
+                        if(hd > 9 * Jmap_REVEALED_WATER){
+                            color = vec4(color.rgb * jmap_dark, color.a);
+                        } else if(hd <= 2 * Jmap_REVEALED_WATER){
+                            color = vec4(color.rgb * jmap_light, color.a);
+                        } else if(hd <= 4 * Jmap_REVEALED_WATER){
+                            if(ipos.x % 2 == ipos.y % 2) color = vec4(color.rgb * jmap_light, color.a);
+                            color = vec4(color.rgb * jmap_normal, color.a);                     
+                        } else if(hd <= 6 * Jmap_REVEALED_WATER){
+                            color = vec4(color.rgb * jmap_normal, color.a);
+                        } else if(hd <= 9 * Jmap_REVEALED_WATER){
+                            if(ipos.x % 2 != ipos.y % 2) color = vec4(color.rgb * jmap_dark, color.a);
+                            color = vec4(color.rgb * jmap_normal, color.a);                     
+                        }
+                    } else if(Jmap_WATER_MODE == 1){
+                        vec4 terrainColor = ActColor(ir, ipos);
 
-                fd = pow(2, -4 * (1 - pow(WATER_TRANSPARENCY, 0.1)) * (waterDepth + 3));
-                color = terrainColor * fd + color * (1 - fd);
+                        int terrHeight = ir.height - ir.depth;
+                        int compHeight = terrHeight;
+                        if(Jmap_MAP_DIRECTION == 0) compHeight = irnz;
+                        else if(Jmap_MAP_DIRECTION == 1) compHeight = irz;
+                        else if(Jmap_MAP_DIRECTION == 2) compHeight = irnx;
+                        else if(Jmap_MAP_DIRECTION == 3) compHeight = irx;
 
-                float multintensity = pow(fd, 0.75) * CONTRAST + 1 * (1 - CONTRAST);
-                color = vec4(color.rgb * multintensity, color.a);  
+                        if(terrHeight < compHeight) terrainColor = vec4(terrainColor.rgb * jmap_dark, terrainColor.a);
+                        else if(terrHeight > compHeight) terrainColor = vec4(terrainColor.rgb * jmap_light, terrainColor.a);
+                        color = mix(color, terrainColor, WATER_TRANSPARENCY);
+                    }
+                }
             }
         }
 
-        // static shades
-        if(STATIC_SHADE && ir.block.noshade == false) {
-            float stShade = staticShade(fd);
-            color = color + vec4(stShade, stShade, stShade, 0);
+        {
+            // static shades
+            if(SHADETYPE == 0 && STATIC_SHADE) {
+                float stShade = staticShade(fd);
+                color = color + vec4(stShade, stShade, stShade, 0);
+            } else if(SHADETYPE == 1){
+                if(IsDepth(ir, l) == false){
+                    int terrHeight = ir.height;
+                    int compHeight = terrHeight;
+                    if(Jmap_MAP_DIRECTION == 0) compHeight = irnz;
+                    else if(Jmap_MAP_DIRECTION == 1) compHeight = irz;
+                    else if(Jmap_MAP_DIRECTION == 2) compHeight = irnx;
+                    else if(Jmap_MAP_DIRECTION == 3) compHeight = irx;
+
+                    if(terrHeight < compHeight) color = vec4(color.rgb * 180 / 220.0, color.a);
+                    else if(terrHeight > compHeight) color = vec4(color.rgb * 255 / 220.0, color.a);
+                }
+            }
         }
 
         // shadows & light

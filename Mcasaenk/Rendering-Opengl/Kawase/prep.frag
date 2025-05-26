@@ -26,7 +26,6 @@ int layers;
 struct BlockData{
     vec4 basecolor;
     int tint;
-    bool noshade;
 };
 BlockData blockData(int id){
     vec4 palettedata = texelFetch(palette, id);
@@ -34,8 +33,7 @@ BlockData blockData(int id){
     BlockData block;
     block.basecolor.rgb = palettedata.abg;
     int r = int(palettedata.r * 255);
-    block.noshade = (r & 1) == 1;
-    block.basecolor.a = ((r >> 1) & 7) / 7.0;
+    block.basecolor.a = (r & 0x0F) / 15.0;
     block.tint = ((r & 0xF0) >> 4);
     return block;
 }
@@ -114,7 +112,7 @@ void main() {
     float relvis[5];
     float ostatuk = 1;
     for(int l=0;l<layers;l++){
-        if(irs[l].block.noshade == false) {
+        if(true) {
             float a = (ostatuk * (1 - pow(1 - irs[l].block.basecolor.a, max(1, irs[l].depth))));
             relvis[l] = a;
             ostatuk -= a;
@@ -132,13 +130,10 @@ void main() {
         else if(wl.block.tint == blendtints[5] && tintcount > 5) outTint5 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
         else if(wl.block.tint == blendtints[6] && tintcount > 6) outTint6 += vec4(TintColorFor(wl.block.tint, wl.biomeid, wl.height).rgb, 1); 
     }
-    if(ostatuk < 1){
-        for(int l = 0; l < layers; l++) {
-            relvis[l] += ((relvis[l] / (1 - ostatuk)) * ostatuk);
-        }
-    } else {
-        relvis[layers - 1] = 1;
+    for(int l = 0; l < layers; l++) {
+        relvis[l] += ((relvis[l] / (1 - ostatuk)) * ostatuk);
     }
+
     float mh = 0;
     for(int l = 0; l < layers; l++) {
         mh += relvis[l] * TerrHeight(irs[l], l);

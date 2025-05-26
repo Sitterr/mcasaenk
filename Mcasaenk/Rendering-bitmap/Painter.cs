@@ -1,33 +1,24 @@
-﻿/*
-using Mcasaenk.Colormaping;
-using Mcasaenk.Rendering;
-using Microsoft.Win32.SafeHandles;
-using System;
-using System.CodeDom;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Effects;
+using Mcasaenk.UI.Canvas;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Xps;
+using System.Windows.Media;
+using System.Windows;
+using Mcasaenk.Rendering;
 
-namespace Mcasaenk.UI.Canvas {
+namespace Mcasaenk.Bitmap_rendering {
     public abstract class Painter {
 
         private readonly DrawingGroup drawingGroup;
         public Painter() {
             drawingGroup = new DrawingGroup();
-           //RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
+            //RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
         }
 
-        public Drawing GetDrawing() {  return drawingGroup; }
+        public Drawing GetDrawing() { return drawingGroup; }
 
         public void Update(WorldPosition wPos) {
             using var graphics = this.drawingGroup.Open();
@@ -38,38 +29,40 @@ namespace Mcasaenk.UI.Canvas {
     }
 
     public class ScenePainter : Painter {
-        private TileMap tileMap = null;
-        public void SetTileMap(TileMap tileMap) {
-            this.tileMap = tileMap;
+        private BitmapDrawTileMap drawTileMap;
+        private GenDataTileMap genTileMap;
+        public void SetTileMap(BitmapDrawTileMap drawTileMap, GenDataTileMap genTileMap) {
+            this.drawTileMap = drawTileMap;
+            this.genTileMap = genTileMap;
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            if(tileMap == null) return;
+            if(drawTileMap == null) return;
             graphics.PushTransform(new ScaleTransform(screen.zoom, screen.zoom));
-            foreach(var pos in screen.GetVisibleTilePositions()) {
-                var tile = tileMap.GetTile(pos);
-                if(tile == null) continue;
-                Rect rect = new Rect(tile.pos.X * 512 - screen.Start.X, tile.pos.Z * 512 - screen.Start.Y, 512, 512);
-                if(tile.img != null) {
-                    graphics.DrawImage(tile.img, rect);
-                } else {
+            foreach(var pos in drawTileMap.GetVisibleTilesPositions(screen)) {
+                Rect rect = new Rect(pos.X * 512 - screen.Start.X, pos.Z * 512 - screen.Start.Y, 512, 512);
+                if(drawTileMap.GetTile(pos, out var img)) {
+                    graphics.DrawImage(img, rect);
+                } else if(genTileMap?.RegionExists(pos) == true) {
                     if(Global.App.Settings.UNLOADED) graphics.DrawImage(GetUnloadedOverlay(), rect);
                 }
 
                 if(Global.App.Settings.OVERLAYS) {
-                    if(tileMap.generateTilePool.IsLoading(tile)) {
-                        graphics.DrawImage(GetLoadingOverlay(), rect);
-                    } else if(tileMap.drawTilePool.IsLoading(tile)) {
-                        graphics.DrawImage(GetDrawingOverlay(), rect);
-                    }
+                    if(genTileMap != null) {
+                        if(genTileMap.IsLoading(pos)) {
+                            graphics.DrawImage(GetLoadingOverlay(), rect);
+                        } else if(drawTileMap.IsLoading(pos)) {
+                            graphics.DrawImage(GetDrawingOverlay(), rect);
+                        }
 
-                    if(tile.shade.IsActive) {
-                        graphics.DrawImage(GetRedOverlay(), rect);
+                        if(genTileMap.GetShadeTile(pos)?.IsActive == true) {
+                            graphics.DrawImage(GetRedOverlay(), rect);
+                        }
                     }
                 }
             }
         }
-    
+
 
         private ImageSource _unloadedOverlay = null;
         private ImageSource GetUnloadedOverlay() {
@@ -132,7 +125,8 @@ namespace Mcasaenk.UI.Canvas {
             using(var graphics = drawingVisual.RenderOpen()) {
                 var radient = new RadialGradientBrush(centerColor, Global.FromArgb(alpha, outerColor)) {
                     Center = new Point(0.5, 0.5),
-                    RadiusX = 1.75, RadiusY = 1.75,
+                    RadiusX = 1.75,
+                    RadiusY = 1.75,
                     GradientOrigin = new Point(0.5, 0.5),
                 };
                 graphics.DrawRectangle(radient, null, new Rect(0, 0, 512, 512));
@@ -164,7 +158,12 @@ namespace Mcasaenk.UI.Canvas {
 
         private Brush backBrush;
         private Pen greenPen, orangePen, yellowPen, redPen;
+
         private ScreenshotManager manager;
+
+        private GenDataTileMap genTileMap;
+        private BitmapDrawTileMap drawTileMap;
+
         public ScreenshotPainer() {
             greenPen = new Pen(new SolidColorBrush(Colors.Green), 2);
             orangePen = new Pen(new SolidColorBrush(Colors.Orange), 2);
@@ -174,72 +173,28 @@ namespace Mcasaenk.UI.Canvas {
             backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.White));
         }
 
-        public void SetManager(ScreenshotManager manager) {
+        public void SetManager(BitmapDrawTileMap drawTileMap, GenDataTileMap genTileMap, ScreenshotManager manager) {
+            this.drawTileMap = drawTileMap;
+            this.genTileMap = genTileMap;
             this.manager = manager;
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             if(manager == null) return;
 
-
             Pen outline = greenPen;
-            var glrect = manager.Rect();
-            var tilemap = manager.tileMap;
-            if(glrect.Width == 0 || glrect.Height == 0 || glrect.Width > 16384 || glrect.Height > 16384) {
-                outline = redPen;
-            } else if(tilemap == null) {
-                outline = orangePen;
-            } else {
-                for(int x = Global.Coord.fairDev((int)glrect.X, 512); x <= Global.Coord.fairDev((int)glrect.X + (int)glrect.Width - 1, 512); x++) {
-                    for(int z = Global.Coord.fairDev((int)glrect.Y, 512); z <= Global.Coord.fairDev((int)glrect.Y + (int)glrect.Height - 1, 512); z++) {
-                        var tile = tilemap.GetTile(new Point2i(x, z));
-                        if(tile == null || tile?.genData == null || tilemap.drawTilePool.IsQueued(tile) || tilemap.drawTilePool.IsLoading(tile) || tilemap.drawTilePool.ShouldDo(tile)) {
-                            outline = orangePen;
-                            goto Final;
-                        }
-                        if(tile.shade.IsActive) {
-                            outline = yellowPen;
-                        }
+            var glrect = manager.AsRect();
 
+            var state = manager.GetState(genTileMap);
+            outline = state switch {
+                ScreenshotManager.ConditionalState.ok => greenPen,
+                ScreenshotManager.ConditionalState.shadesnotfinished => yellowPen,
+                ScreenshotManager.ConditionalState.unloadedchunks => orangePen,
+                ScreenshotManager.ConditionalState.invalid => redPen,
+                _ => greenPen
+            };
 
-                        var interSect = new Rect(new Point(x, z).Mult(512), new Size(512, 512));
-                        interSect.Intersect(glrect);
-
-                        for(int xch = Global.Coord.absMod((int)interSect.X, 512) / 16; xch <= (int)Global.Coord.absMod((int)interSect.X + interSect.Width - 1, 512) / 16; xch++) {
-                            for(int zch = Global.Coord.absMod((int)interSect.Y, 512) / 16; zch <= (int)Global.Coord.absMod((int)interSect.Y + interSect.Height - 1, 512) / 16; zch++) {
-                                if(tile.genData.IsChunkScreenshotable(xch, zch) == false) {
-                                    for(int xx = 0; xx < 16; xx++) {
-                                        for(int zz = 0; zz < 16; zz++) {
-                                            int zi = (zch * 16 + zz), xi = (xch * 16 + xx);
-                                            if(interSect.Contains(x * 512 + xi, z * 512 + zi) == false) continue;
-                                            int i = zi * 512 + xi, br = 0;
-                                            for(int w = 0; w < tile.genData.columns.Length; w++) {
-                                                if(tile.genData.columns[w].ContainsInfo(i)) {
-                                                    br++;
-                                                    var filter = tile.genData.columns[w].Filter(i);
-                                                    if(filter == Global.App.Colormap.FilterManager.Error || filter.ABSORBTION == 0) {
-                                                        outline = orangePen;
-                                                        goto Final;
-                                                    }
-                                                }
-                                            }
-                                            if(br == 0) {
-                                                outline = orangePen;
-                                                goto Final;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-
-
-            Final:
-            var locrect = manager.LocalRect(screen);
+            var locrect = new Rect(screen.GetLocalPos(glrect.TopLeft), screen.GetLocalPos(glrect.BottomRight));
             graphics.DrawRectangle(backBrush, outline, locrect);
 
             if(manager.canResize) {
@@ -259,6 +214,7 @@ namespace Mcasaenk.UI.Canvas {
             }
         }
     }
+
 
     class ChunkGridPainter : Painter {
         private Pen pen;
@@ -342,7 +298,7 @@ namespace Mcasaenk.UI.Canvas {
         }
 
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
-            int size = Global.Settings.MAPGRID switch { 
+            int size = Global.Settings.MAPGRID switch {
                 MapGridType.zoom0 => 128,
                 MapGridType.zoom1 => 256,
                 MapGridType.zoom2 => 512,
@@ -371,7 +327,7 @@ namespace Mcasaenk.UI.Canvas {
             regionPainter = new RegionGridPainter();
             mapPainter = new MapGridPainter();
         }
-    
+
         protected override void Render(DrawingContext graphics, WorldPosition screen) {
             if(Global.App.Settings.CHUNKGRID == ChunkGridType.Straight) {
                 if(screen.ZoomScale >= 0) {
@@ -403,7 +359,7 @@ namespace Mcasaenk.UI.Canvas {
             }
 
             {
-                const double squareSize = 16;
+                const double squareSize = 32;
                 Brush darkBrush = new SolidColorBrush(Color.FromRgb(10, 10, 10));
                 Brush lightBrush = new SolidColorBrush(Color.FromRgb(15, 15, 15));
 
@@ -438,4 +394,3 @@ namespace Mcasaenk.UI.Canvas {
         }
     }
 }
-*/

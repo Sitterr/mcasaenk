@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mcasaenk.UI" 
-        xmlns:canvas="clr-namespace:Mcasaenk.UI.Canvas"
         xmlns:resx="clr-namespace:Mcasaenk.Resources"
         xmlns:gl="clr-namespace:Mcasaenk"
         mc:Ignorable="d"
@@ -35,9 +34,8 @@
             <Border x:Name="settings_cont2" HorizontalAlignment="Stretch" Background="{StaticResource BACK}" CornerRadius="3"/>
         </DockPanel>-->
 
-        
-        <canvas:CanvasControl Focusable="True" x:Name="canvasControl" x:FieldModifier="public" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
-        </canvas:CanvasControl>
+        <Grid Background="{StaticResource CANVASBACK}" x:Name="canvasHolder" Focusable="True" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
+        </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
             <Grid Margin="10 10 10 0">

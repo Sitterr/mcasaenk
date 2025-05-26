@@ -20,19 +20,19 @@ using System.Windows.Markup;
 namespace Mcasaenk {
     public enum Direction {
         [Description("north")]
-        North,
+        North = 0,
         [Description("south")]
-        South,
+        South = 1,
         [Description("east")]
-        East,
+        East = 2,
         [Description("west")]
-        West,
+        West = 3,
     }
     public enum ChunkGridType {
         [Description("none")]
-        None,
+        None = 0,
         [Description("straight")]
-        Straight,
+        Straight = 1,
     }
     public enum RegionGridType {
         [Description("none")]
@@ -72,22 +72,22 @@ namespace Mcasaenk {
 
     public enum ShadeType {
         [Description("standard")]
-        OG,
+        OG = 0,
         [Description("in-game map")]
-        jmap,
+        jmap = 1,
     }
 
     public enum JsmapWaterMode {
         [Description("vanilla")]
-        vanilla,
+        vanilla = 0,
         [Description("translucient")]
-        translucient,
+        translucient = 1,
     }
 
     public enum RenderMode {
-        //[Description("on cpu")]
-        //CPU,
-        [Description("on gpu")]
+        [Description("legacy")]
+        LEGACY,
+        [Description("opengl")]
         OPENGL,
     }
 
@@ -208,7 +208,6 @@ namespace Mcasaenk {
             if(SKIP_UNKNOWN_BLOCKS != SkipUnknown) SKIP_UNKNOWN_BLOCKS = SkipUnknown;
             if(BLOCKINFO != BlockInfo) BLOCKINFO = BlockInfo;
             if(RENDERMODE != RenderMode) RENDERMODE = RenderMode;
-            if(PRECOMPUTE_RELVIS != PrecomputeRelvis) PRECOMPUTE_RELVIS = PrecomputeRelvis;
         }
         public override void Reset() {
             Y = Y_OFFICIAL;
@@ -225,7 +224,6 @@ namespace Mcasaenk {
             SkipUnknown = SKIP_UNKNOWN_BLOCKS;
             BlockInfo = BLOCKINFO;
             RenderMode = RENDERMODE;
-            PrecomputeRelvis = PRECOMPUTE_RELVIS;
         }
         public override bool ChangedBack() =>
                    Y_OFFICIAL != Y ||
@@ -241,15 +239,14 @@ namespace Mcasaenk {
                    PREFERHEIGHTMAPS != PreferHeightmap ||
                    SKIP_UNKNOWN_BLOCKS != SkipUnknown ||
                    BLOCKINFO != BlockInfo ||
-                   RENDERMODE != RenderMode ||
-                   PRECOMPUTE_RELVIS != PrecomputeRelvis
+                   RENDERMODE != RenderMode
             ;
 
         public static Settings DEF() => new Settings() {
             MAXZOOM = 4, MINZOOM = -4,
             ENABLE_COLORMAP_EDITING = false,
             CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None, MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, RENDERMODE = RenderMode.OPENGL, PRECOMPUTE_RELVIS = false,
+            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, RENDERMODE = RenderMode.LEGACY,
             FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
@@ -268,7 +265,7 @@ namespace Mcasaenk {
             CONTRAST = 0.50,
 
             SHADE3D = true, STATIC_SHADE = true,
-            NOSHADE_SHADE3D = false, NOSHADE_STATIC_SHADE = true,
+            NOSHADE_SHADE3D = false,
 
             WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true, OCEAN_DEPTH_BLENDING = 1,
             Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
@@ -900,21 +897,6 @@ namespace Mcasaenk {
             }
         }
 
-
-        private bool noshade_staticShade;
-        [JsonIgnore]
-        public bool NoShade_StaticShade {
-            get => noshade_staticShade;
-            set {
-                if(noshade_staticShade == value) return;
-
-                noshade_staticShade = value;
-                OnLightChange(nameof(NoShade_StaticShade));
-            }
-        }
-        public bool NOSHADE_STATIC_SHADE { get => NoShade_StaticShade; set => NoShade_StaticShade = value; }
-
-
         private bool noshade_shade3d, noshade_shade3d_back;
         [JsonIgnore]
         public bool NoShade_Shade3d {
@@ -944,7 +926,7 @@ namespace Mcasaenk {
 
                 renderMode_back = value;
                 OnAutoChange(nameof(RenderMode));
-                if(Global.App.OpenedSave == null) {
+                if(Global.App.OpenedSave == null && false) {
                     renderMode = value;
                     OnAutoChange(nameof(RENDERMODE));
                 }
@@ -955,28 +937,21 @@ namespace Mcasaenk {
 
 
 
-
-
-        #region depr
-        private bool precomputerelvis, precomputerelvis_back;
+        private bool usemapPalette;
         [JsonIgnore]
-        public bool PrecomputeRelvis {
-            get => precomputerelvis_back;
+        public bool _UseMapPalette {
+            get => usemapPalette;
             set {
-                if(precomputerelvis_back == value) return;
+                if(usemapPalette == value) return;
 
-                precomputerelvis_back = value;
-
-                OnAutoChange(nameof(PrecomputeRelvis));
-                if(Global.App.OpenedSave == null) {
-                    precomputerelvis = value;
-                    OnAutoChange(nameof(PRECOMPUTE_RELVIS));
-                }
+                usemapPalette = value;
+                this.OnLightChange(nameof(_UseMapPalette));
             }
         }
-        public bool PRECOMPUTE_RELVIS { get => precomputerelvis; set { precomputerelvis = value; PrecomputeRelvis = value; OnHardChange(nameof(PRECOMPUTE_RELVIS)); } }
-        public bool DarfRelVisPrecompute() => !(Global.Settings.SHADETYPE == ShadeType.jmap) && PRECOMPUTE_RELVIS && Global.Settings.TRANSPARENTLAYERS > 1 && false;
-        #endregion
+
+
+
+
     }
 
 

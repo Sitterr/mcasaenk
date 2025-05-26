@@ -12,8 +12,8 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.TextFormatting;
 using Mcasaenk.Shade3d;
-using Mcasaenk.Shaders;
-using Mcasaenk.Shaders.Dissect;
+using Mcasaenk.Opengl_rendering;
+using Mcasaenk.Opengl_rendering.Dissect;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -82,11 +82,27 @@ namespace Mcasaenk.Rendering {
         public bool IsLoading(Point2i p) => loading.ContainsKey(p);
     }
 
+    public static class TileMap {
+        public static IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen, int TileSize) {
+            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize), tx = Global.Coord.absMod(screen.Start.X, TileSize), tz = Global.Coord.absMod(screen.Start.Y, TileSize);
+            for(int x = 0; x * TileSize - tx < screen.Width; x++) {
+                for(int z = 0; z * TileSize - tz < screen.Height; z++) {
+                    yield return new Point2i(x + sx, z + sz);
+                }
+            }
+        }
 
+        public static (Point2i min, Point2i max) GetVisibleRect(WorldPosition screen, int TileSize) {
+            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize);
+            double fx = Math.Floor(Math.Ceiling(screen.Start.X + screen.Width - 1) / TileSize), fz = Math.Floor(Math.Ceiling(screen.Start.Y + screen.Height - 1) / TileSize);
+
+            return (new Point2i(sx, sz), new Point2i(fx, fz));
+        }
+    }
 
     public abstract class GroupTileMap<Tile> : IDisposable {
         private readonly Stack<Tile> recycleStack;
-        private readonly Dictionary<Point2i, Tile> tiles;
+        private IDictionary<Point2i, Tile> tiles;
         protected bool wasUsedForRecycle = false;
 
         protected double bundlebr;
@@ -95,17 +111,24 @@ namespace Mcasaenk.Rendering {
 
         protected TileMapQuerer<Tile> queuer;
 
-        public GroupTileMap(double bundlebr, double scale, bool doallbydefault, GroupTileMap<Tile> oldTileMap) {
+        public GroupTileMap(double bundlebr, double scale, bool doallbydefault, bool concurrent, GroupTileMap<Tile> oldTileMap) {
             recycleStack = new Stack<Tile>(oldTileMap?.ID == this.ID ? oldTileMap?.UseForRecycle() : []);
-            tiles = new Dictionary<Point2i, Tile>();
 
             this.bundlebr = bundlebr;
             this.scale = scale;
 
+            if(concurrent) {
+                max = new ConcurrentDictionary<Point2i, int>();
+                curr = new ConcurrentDictionary<Point2i, int>();
+                tiles = new ConcurrentDictionary<Point2i, Tile>();
+            } else {
+                max = new Dictionary<Point2i, int>();
+                curr = new Dictionary<Point2i, int>();
+                tiles = new Dictionary<Point2i, Tile>();
+            }
+
             queuer = new TileMapQuerer<Tile>(this);
 
-            max = new Dictionary<Point2i, int>();
-            curr = new Dictionary<Point2i, int>();
             minmax = doallbydefault ? 1 : 0;
         }
         protected void SetQueuer(TileMapQuerer<Tile> queuer) { this.queuer = queuer; }
@@ -115,15 +138,8 @@ namespace Mcasaenk.Rendering {
         public WorldPosition Scope(Point2i p) {
             return new WorldPosition(new System.Windows.Point(p.X * TileSize, p.Z * TileSize), TileSize, TileSize, scale);
         }
-        protected static IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen, int TileSize) {
-            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize), tx = Global.Coord.absMod(screen.Start.X, TileSize), tz = Global.Coord.absMod(screen.Start.Y, TileSize);
-            for(int x = 0; x * TileSize - tx < screen.Width; x++) {
-                for(int z = 0; z * TileSize - tz < screen.Height; z++) {
-                    yield return new Point2i(x + sx, z + sz);
-                }
-            }
-        }
-        public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen) => GetVisibleTilesPositions(screen, TileSize);
+        
+        public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen) => TileMap.GetVisibleTilesPositions(screen, TileSize);
         public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition[] screens) {
             foreach(var screen in screens) {
                 foreach(var p in GetVisibleTilesPositions(screen)) {
@@ -131,12 +147,7 @@ namespace Mcasaenk.Rendering {
                 }
             }
         }
-        public (Point2i min, Point2i max) GetVisibleRect(WorldPosition screen) {
-            double sx = Math.Floor(Math.Floor(screen.Start.X) / TileSize), sz = Math.Floor(Math.Floor(screen.Start.Y) / TileSize);
-            double fx = Math.Floor(Math.Ceiling(screen.Start.X + screen.Width - 1) / TileSize), fz = Math.Floor(Math.Ceiling(screen.Start.Y + screen.Height - 1) / TileSize);
-
-            return (new Point2i(sx, sz), new Point2i(fx, fz));
-        }
+        public (Point2i min, Point2i max) GetVisibleRect(WorldPosition screen) => TileMap.GetVisibleRect(screen, TileSize);
 
         public bool GetTile(Point2i p, out Tile tile) {
             return tiles.TryGetValue(p, out tile);
@@ -155,7 +166,7 @@ namespace Mcasaenk.Rendering {
 
 
         private int minmax = 0;
-        private readonly Dictionary<Point2i, int> max, curr;
+        private IDictionary<Point2i, int> max, curr;
         public int GetTileState(Point2i p) {
             if(curr.TryGetValue(p, out int v)) return v;
             return -1;
@@ -193,14 +204,19 @@ namespace Mcasaenk.Rendering {
         }
         protected abstract Tile _Do(Point2i p, Tile tile);
 
-        protected void MassClear() {        
-            foreach(var t in tiles) { 
-                recycleStack.Push(t.Value);
-            }
-            tiles.Clear();
+        public virtual void MassRedo() {
             curr.Clear();
             max.Clear();
         }
+
+        protected void Reset() {
+            foreach(var t in tiles) {
+                recycleStack.Push(t.Value);
+            }
+            tiles.Clear();
+            MassRedo();
+        }
+
         protected abstract Tile CreateTile();
 
 
@@ -230,21 +246,36 @@ namespace Mcasaenk.Rendering {
 
     }
 
-    public abstract class DrawGroupTileMap<Tile> : GroupTileMap<Tile> {
+    public interface DrawGroupTileMap {
+        void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan);
+        void Reset(GenDataTileMap gentilemap = null);
+        void MassRedo();
+        void OnScaleChange(double scale);
+    }
+
+    public abstract class DrawGroupTileMap<Tile> : GroupTileMap<Tile>, DrawGroupTileMap {
         protected GenDataTileMap gentilemap;
-        private readonly Dictionary<Point2i, int[]> gendepend;
+        private readonly IDictionary<Point2i, int[]> gendepend;
         protected readonly Dictionary<string, WorldPosition> extras;
 
         private List<Point2i> depend;
         private int[] empt;
         private int primarydep;
-        public DrawGroupTileMap(GenDataTileMap gentilemap, double bundlebr, double scale, GroupTileMap<Tile> oldTileMap) : base(bundlebr, Math.Min(1, scale), false, oldTileMap) {
-            gendepend = new Dictionary<Point2i, int[]>();
+        public DrawGroupTileMap(GenDataTileMap gentilemap, double bundlebr, double scale, bool concurrent, GroupTileMap<Tile> oldTileMap) : base(bundlebr, Math.Min(1, scale), false, concurrent, oldTileMap) {
             extras = new Dictionary<string, WorldPosition>();
-            MassRedo(scale, gentilemap);
+
+            if(concurrent) {
+                gendepend = new ConcurrentDictionary<Point2i, int[]>();
+            } else {
+                gendepend = new Dictionary<Point2i, int[]>();
+            }
+
+            Reset(gentilemap);
+            OnScaleChange(scale);
         }
 
         private bool ShouldDo(Point2i p, bool quickscan) {
+            if(gentilemap == null) return false;
             if(base.ShouldDo(p)) return true;
 
             int[] states = gendepend.GetValueOrDefault(p, empt);
@@ -282,14 +313,22 @@ namespace Mcasaenk.Rendering {
             }
         }
 
-        public void MassRedo(double scale = -1, GenDataTileMap gentilemap = null) {
-            base.MassClear();
+        public override void MassRedo() {
+            base.MassRedo();
+            gendepend.Clear();
+        }
+
+        public void Reset(GenDataTileMap gentilemap = null) {
+            base.Reset();
             if(gentilemap != null) this.gentilemap = gentilemap;
-            if(scale > 0) this.scale = Math.Min(1, scale);
             gendepend.Clear();
             extras.Clear();
             depend = GetDependencies();
             empt = new int[depend.Count];
+        }
+
+        public virtual void OnScaleChange(double scale) {
+            if(scale > 0) this.scale = Math.Min(1, scale);
         }
 
         protected override Tile _Do(Point2i p, Tile tile) {
@@ -306,6 +345,7 @@ namespace Mcasaenk.Rendering {
 
         private List<Point2i> GetDependencies() {
             List<Point2i> list = new();
+            if(gentilemap == null) return list;
             var (min, max) = gentilemap.GetVisibleRect(this.Scope(new Point2i(0, 0)));
             int w = max.Z - min.Z + 1;
             primarydep = 0;
@@ -335,11 +375,11 @@ namespace Mcasaenk.Rendering {
         public ArrayPool<ushort> blockIdsPool;
         public ArrayPool<ushort> biomeIds8_light4_shade4Pool;
 
-        private readonly Dimension dim;
+        public readonly Dimension dim;
         private readonly HashSet<Point2i> existingRegions;
 
-        private Dictionary<Point2i, TileShadeFrames> shadeFrames;
-        private Dictionary<Point2i, TileShade> shadesTiles;
+        private ConcurrentDictionary<Point2i, TileShadeFrames> shadeFrames;
+        private ConcurrentDictionary<Point2i, TileShade> shadesTiles;
         public TileShade GetShadeTile(Point2i p) {
             if (shadesTiles.TryGetValue(p, out var tile)) return tile;
             if(existingRegions.Contains(p) == false) return null;
@@ -355,12 +395,12 @@ namespace Mcasaenk.Rendering {
             return f;
         }
 
-        public GenDataTileMap(Dimension dimension, HashSet<Point2i> existingRegions) : base(1, 1, true, null) {
+        public GenDataTileMap(Dimension dimension, HashSet<Point2i> existingRegions) : base(1, 1, true, true, null) {
             this.dim = dimension;
             this.existingRegions = existingRegions;
 
-            shadeFrames = new Dictionary<Point2i, TileShadeFrames>();
-            shadesTiles = new Dictionary<Point2i, TileShade>();
+            shadeFrames = new ConcurrentDictionary<Point2i, TileShadeFrames>();
+            shadesTiles = new ConcurrentDictionary<Point2i, TileShade>();
 
             int maxConcurrency = Global.Settings.MAXCONCURRENCY;
             heightPool = ArrayPool<short>.Create(512 * 512, maxConcurrency * (Global.Settings.TRANSPARENTLAYERS + 1));
@@ -375,7 +415,7 @@ namespace Mcasaenk.Rendering {
         public bool IsQueued(Point2i p) => ((ObserverTaskTileMapQueuer<GenData>)queuer).IsQueued(p);
 
         public IEnumerable<(Point2i reg, Point2i chunk)> GetVisibleChunkPositions(WorldPosition screen) {
-            foreach(var ch in GetVisibleTilesPositions(screen, 16)) {
+            foreach(var ch in TileMap.GetVisibleTilesPositions(screen, 16)) {
                 yield return (new Point2i(ch.X, ch.Z) / 32, new Point2i(ch.X, ch.Z) % 32);
             }
         }
@@ -407,103 +447,5 @@ namespace Mcasaenk.Rendering {
         }
         protected override GenData CreateTile() => null;
     }
-
-    public class OpenGLDrawTileMap : DrawGroupTileMap<int> {
-        private readonly DissectShader dissectShader;
-        private readonly ShaderPipeline gldrawer;
-        public readonly int emptyTile;
-
-        public OpenGLDrawTileMap(GenDataTileMap gentilemap, ShaderPipeline gldrawer, DissectShader dissectShader, double bundlebr, double scale, OpenGLDrawTileMap oldTileMap) : base(gentilemap, bundlebr, Math.Min(scale, 1), oldTileMap) {
-            this.gldrawer = gldrawer;
-            this.dissectShader = dissectShader;
-
-            this.emptyTile = CreateTile();
-
-            {
-                thebigtexture = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture2D, thebigtexture);
-                //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, 500, 500, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
-                //GL.BindTexture(TextureTarget.Texture2D, thebigtexture);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            }
-        }
-
-        HashSet<Point2i> todo = new();
-        protected override int __Do(Point2i p, int texture) {
-            todo.Add(p);
-            // actual work in DoVisible();
-            return texture;
-        }
-
-        public override void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
-            todo.Clear();
-            base.DoVisible(visiblescreen, movingextras, quickscan);
-
-            if(todo.Count > 0) {
-                Point2i min = new Point2i(int.MaxValue, int.MaxValue), max = new Point2i(int.MinValue, int.MinValue);
-                foreach(var t in todo) {
-                    min.X = Math.Min(min.X, t.X);
-                    min.Z = Math.Min(min.Z, t.Z);
-
-                    max.X = Math.Max(max.X, t.X);
-                    max.Z = Math.Max(max.Z, t.Z);
-                }
-
-                Point2i bigsize = (max - min + 1) * TileSizeR;
-                ResizeTheBigTexture(bigsize);
-                gldrawer.Render(new WorldPosition(new Point(min.X * TileSize, min.Z * TileSize), bigsize.X / scale, bigsize.Z / scale, scale), gentilemap, extras.GetValueOrDefault("map_screenshot", (WorldPosition)default), thebigtexture);
-                
-                dissectShader.Use(thebigtexture, todo.Select(t => (t - min, GetTile(t))), new Point2i(TileSizeR, TileSizeR), bigsize);
-            }
-        }
-
-        private int thebigtexture;
-        private Point2i thebigtexture_size = new Point2i(0, 0);
-        private void ResizeTheBigTexture(Point2i size) {
-            if(size.X > thebigtexture_size.X || size.Z > thebigtexture_size.Z) {
-                GL.DeleteTexture(thebigtexture);
-                thebigtexture = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture2D, thebigtexture);
-                //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, 500, 500, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
-                GL.TexStorage2D(TextureTarget2d.Texture2D, 1, SizedInternalFormat.Rgba8, size.X, size.Z);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
-                thebigtexture_size = size;
-            }
-        }
-
-        protected override int CreateTile() {
-            int texture = GL.GenTexture();
-
-            GL.BindTexture(TextureTarget.Texture2D, texture);
-
-            GL.TexStorage2D(TextureTarget2d.Texture2D, 1, SizedInternalFormat.Rgba8, TileSizeR, TileSizeR);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
-            
-            //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, TileSizeR, TileSizeR, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
-
-            return texture;
-        }
-
-        protected override void DisposeTile(int tile) {
-            if(tile != 0) GL.DeleteTexture(tile);
-        }       
-        public override void Dispose() {
-            if(!disposed){
-                disposed = true;
-                base.Dispose();
-                DisposeTile(emptyTile);
-                GL.DeleteTexture(thebigtexture);
-            }
-        }
-        bool disposed = false;
-
-    }
-
 
 }

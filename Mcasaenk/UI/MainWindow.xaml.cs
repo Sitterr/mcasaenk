@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.HighPerformance;
+using Mcasaenk.Bitmap_rendering;
 using Mcasaenk.Nbt;
+using Mcasaenk.Opengl_rendering;
 using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using Mcasaenk.WorldInfo;
 using Microsoft.Win32;
 using Microsoft.Windows.Themes;
+using OpenTK.Wpf;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
@@ -37,6 +40,9 @@ namespace Mcasaenk.UI {
 
         public ScreenshotManager screenshot;
 
+        public CanvasCoordinator canvas;
+        private FrameworkElement canvasControl;
+
         ResolutionScale resScale = new ResolutionScale();
         public MainWindow() {
             InitializeComponent();
@@ -57,7 +63,7 @@ namespace Mcasaenk.UI {
                     return;
                 }
 
-                ScreenshotTaker screenshottaker = canvasControl.CreateScreenshotCamera(screenshot);
+                ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
                 if(screenshottaker == null) return;
                 try {
                     if(screenshot.ResolutionType() == ResolutionType.map) {
@@ -119,7 +125,7 @@ namespace Mcasaenk.UI {
             this.rad.SetCallback(() => {
                 var res = this.rad.GetResolution();
                 if(res?.type == ResolutionType.frame) {
-                    var canvasSize = canvasControl.ScreenSize();
+                    var canvasSize = canvas.ScreenSize();
                     res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
                     res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
                 }
@@ -130,8 +136,6 @@ namespace Mcasaenk.UI {
                     scale.Items.Add("1:4");
                     scale.Items.Add("1:8");
                     scale.SelectedIndex = 0;
-
-                    Global.App.Window.canvasControl.drawTileMap?.MassRedo();
                 } else {
                     scale.Items.Clear();
                     scale.Items.Add("1:1");
@@ -146,8 +150,9 @@ namespace Mcasaenk.UI {
                     scale.IsEnabled = true;
                 }
 
+                Global.Settings._UseMapPalette = res?.type == ResolutionType.map;
                 screenshot?.Dispose();
-                screenshot = res != null ? new ScreenshotManager(res, resScale, res?.type == ResolutionType.resizeable, canvasControl.screen.Mid.Floor().Sub(new Point(res.X, res.Y).Dev(resScale.Scale).Dev(2).Floor())) : null;
+                screenshot = res != null ? new ScreenshotManager(res, resScale, res?.type == ResolutionType.resizeable, canvas.GetScreen().Mid.Floor().Sub(new Point(res.X, res.Y).Dev(resScale.Scale).Dev(2).Floor())) : null;
 
                 Global.Settings.MAPGRID = screenshot?.ResolutionType() == ResolutionType.map ? (MapGridType)((int)Math.Log2(1 / resScale.Scale) + 1) : MapGridType.None;
 
@@ -167,7 +172,7 @@ namespace Mcasaenk.UI {
 
             {
                 Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
-                    if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange();
+                    if(e.PropertyName == nameof(Settings.DIMENSION)) DimensionSetup();
                 };
                 btn_dim_overworld.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:overworld";
@@ -258,6 +263,7 @@ namespace Mcasaenk.UI {
                 };
 
                 Global.App.OpenedSave = null;
+                SetCanvas(Global.Settings.RENDERMODE);
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
@@ -266,7 +272,7 @@ namespace Mcasaenk.UI {
                 loc_go.Click += (o, e) => {
                     if(!int.TryParse(loc_x.Text, out int x)) return;
                     if(!int.TryParse(loc_z.Text, out int z)) return;
-                    canvasControl.GoTo(new Point(x, z));
+                    canvas.GoTo(new Point(x, z));
                 };
 
                 Brush transp = new SolidColorBrush(Colors.Transparent), fore = (Brush)this.TryFindResource("FORE"), fore_hover = (Brush)this.TryFindResource("FORE_HOVER"), fore_press = (Brush)this.TryFindResource("FORE_PRESS");
@@ -315,40 +321,25 @@ namespace Mcasaenk.UI {
             }
         }
 
-        Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
-        Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
-        Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
-        Color others_back = (Color)ColorConverter.ConvertFromString("#6670a0b2");
+        public void SetCanvas(RenderMode renderMode) {
+            switch(renderMode) { 
+                case RenderMode.OPENGL: {
+                        var control = new GLWpfControl();
+                        this.canvas = new GLCanvasCoordinator(control);
+                        this.canvasControl = control;
+                        break;
+                    }
 
-        void dim_onchange() {
-            if(Global.App.OpenedSave == null) {
-                dim_bor.Background = new SolidColorBrush(Colors.Transparent);
-                return;
+                case RenderMode.LEGACY: {
+                        var control = new BitmapCanvasCoordinator.OnRenderFrameworkElement();
+                        this.canvas = new BitmapCanvasCoordinator(control);
+                        this.canvasControl = control;
+                        break;
+                    }
             }
 
-            btn_dim_overworld.Opacity = 0.65;
-            btn_dim_nether.Opacity = 0.65;
-            btn_dim_end.Opacity = 0.65;
-            btn_dim_others.Opacity = 0.65;
-
-            switch(Global.Settings.DIMENSION) {
-                case "minecraft:overworld":
-                    dim_bor.Background = new SolidColorBrush(overworld_back);
-                    btn_dim_overworld.Opacity = 1;
-                    break;
-                case "minecraft:the_nether":
-                    dim_bor.Background = new SolidColorBrush(nether_back);
-                    btn_dim_nether.Opacity = 1;
-                    break;
-                case "minecraft:the_end":
-                    dim_bor.Background = new SolidColorBrush(end_back);
-                    btn_dim_end.Opacity = 1;
-                    break;
-                default:
-                    dim_bor.Background = new SolidColorBrush(others_back);
-                    btn_dim_others.Opacity = 1;
-                    break;
-            }
+            canvasHolder.Children.Clear();
+            canvasHolder.Children.Add(canvasControl);
         }
 
 
@@ -376,11 +367,11 @@ namespace Mcasaenk.UI {
 
             canvasControl.Focus();
 
-            dim_onchange();
+            DimensionSetup();
         }
 
 
-        public void SetCurrs(LevelDatInfo level) {
+        private void SetCurrs(LevelDatInfo level) {
             if(level == null) return;
 
             currs_icon.Source = level.image;
@@ -390,8 +381,52 @@ namespace Mcasaenk.UI {
             currs_name.Text = level.name;
             currs_version.Text = level.version_name;
         }
+        private void DimensionSetup() {
+            if(Global.App.OpenedSave == null) {
+                dim_bor.Background = new SolidColorBrush(Colors.Transparent);
+                return;
+            }
+
+            btn_dim_overworld.Opacity = 0.65;
+            btn_dim_nether.Opacity = 0.65;
+            btn_dim_end.Opacity = 0.65;
+            btn_dim_others.Opacity = 0.65;
+
+            Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
+            Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
+            Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
+            Color others_back = (Color)ColorConverter.ConvertFromString("#6670a0b2");
+
+            switch(Global.Settings.DIMENSION) {
+                case "minecraft:overworld":
+                    dim_bor.Background = new SolidColorBrush(overworld_back);
+                    btn_dim_overworld.Opacity = 1;
+                    break;
+                case "minecraft:the_nether":
+                    dim_bor.Background = new SolidColorBrush(nether_back);
+                    btn_dim_nether.Opacity = 1;
+                    break;
+                case "minecraft:the_end":
+                    dim_bor.Background = new SolidColorBrush(end_back);
+                    btn_dim_end.Opacity = 1;
+                    break;
+                default:
+                    dim_bor.Background = new SolidColorBrush(others_back);
+                    btn_dim_others.Opacity = 1;
+                    break;
+            }
+        }
 
     }
+
+
+
+
+
+
+
+
+
 
     // noting here
     class PageSlider {

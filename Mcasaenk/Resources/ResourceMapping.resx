@@ -125,19 +125,19 @@
     <value>biomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="kawase_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Kawase\kawase.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\Kawase\kawase.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="scale_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Scale\scale.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\Scale\scale.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="scene_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Scene\color.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\Scene\color.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="def_vert" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\def.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\def.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="tile_vert" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\tile.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\tile.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="capture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\capture.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -248,12 +248,12 @@
     <value>Images\___.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="prep_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Kawase\prep.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\Kawase\prep.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="kawase_approximations" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>kawase_approximations.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
   <data name="copy_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Shaders\Dissect\copy.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Rendering-Opengl\Dissect\copy.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>
