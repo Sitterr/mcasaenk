@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mcasaenk.Resources;
+﻿using Mcasaenk.Resources;
 using OpenTK.Graphics.OpenGL4;
 
-namespace Mcasaenk.Opengl_rendering.Dissect {
+namespace Mcasaenk.Rendering_Opengl {
     public class DissectShader : Shader {
         private readonly int VAO;
         private readonly int fbo;
@@ -31,13 +26,13 @@ namespace Mcasaenk.Opengl_rendering.Dissect {
             GL.BindTexture(TextureTarget.Texture2D, bigtexture);
             GL.Uniform1(GL.GetUniformLocation(Handle, "bigtexture"), 0);
 
-            foreach(var sm in smalltextures) {               
+            foreach(var sm in smalltextures) {
                 GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, sm.tex, 0);
 
                 Point2i st = sm.p * smallSize;
                 GL.Uniform2(GL.GetUniformLocation(Handle, "st"), st.X, bigSize.Z - st.Z - smallSize.Z);
 
-                GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
             }
 
         }

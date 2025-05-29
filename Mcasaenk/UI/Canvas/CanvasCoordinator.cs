@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mcasaenk.Rendering;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows;
+using Mcasaenk.Rendering;
+using Mcasaenk.Rendering_Opengl;
 
 namespace Mcasaenk.UI.Canvas {
     public abstract class CanvasCoordinator {
@@ -19,8 +15,10 @@ namespace Mcasaenk.UI.Canvas {
         protected MainWindow window;
 
         private int millisecondsReminder;
-        public CanvasCoordinator(FrameworkElement canvas, MainWindow window, int millisecondsReminder) {
+        public CanvasCoordinator(FrameworkElement canvas, MainWindow window, int millisecondsReminder, WorldPosition lastpos) {
             this.millisecondsReminder = millisecondsReminder;
+
+            this.screen = new WorldPosition(lastpos.Mid, 0, 0, lastpos.zoom);
 
             this.canvas = canvas;
             this.window = window;
@@ -40,6 +38,7 @@ namespace Mcasaenk.UI.Canvas {
 
             canvas.Loaded += (o, e) => OnLoaded();
             canvas.Unloaded += (o, e) => OnUnloaded();
+
         }
         public WorldPosition GetScreen() => screen;
 
@@ -92,10 +91,10 @@ namespace Mcasaenk.UI.Canvas {
             }
 
             IsLoaded = true;
-            { 
+            {
                 int w = (int)(canvas.ActualWidth * dpix), h = (int)(canvas.ActualHeight * dpiy);
-                screen = new WorldPosition(new Point(-w/2, -h/2), w, h, 1);
-            }            
+                screen = new WorldPosition(screen.Start.Add(new Point(-w / 2, -h / 2)), w, h, 1);
+            }
             UpdateUILocation();
             canvas.Focus();
         }
@@ -112,13 +111,17 @@ namespace Mcasaenk.UI.Canvas {
 
             if(window.footer.Visibility == Visibility.Visible) {
                 { // footer update
-                    //window.footer.DrawTime = TileDraw.drawTime / TileDraw.drawCount;
-                    //window.footer.GenerateTime = GenerateTilePool.redrawAcc / GenerateTilePool.redrawCount;
 
-                    //window.footer.ShadeTiles = tileMap.ShadeTiles();
-                    //window.footer.ShadeFrames = tileMap.ShadeFrames();
-                    window.footer.ShadeTiles = 0;
-                    window.footer.ShadeFrames = 0;
+                    if(drawTileMap != null) {
+                        window.footer.DrawTime = drawTileMap.MeanDoTime();
+                    }
+
+                    if(genTileMap != null) {
+                        window.footer.GenerateTime = genTileMap.MeanDoTime();
+
+                        window.footer.ShadeTiles = genTileMap.ShadeTiles();
+                        window.footer.ShadeFrames = genTileMap.ShadeFrames();
+                    }
 
                     window.footer.SetCursorInfo(new Point2i(screen.GetGlobalPos(mousePos).Floor()), genTileMap);
                 }
@@ -283,7 +286,7 @@ namespace Mcasaenk.UI.Canvas {
                 mousescreenshot = false;
 
                 if(window.screenshot != null) {
-                    newcursor = window.screenshot.MouseOverWhat(screen, mousePos);
+                    newcursor = window.screenshot.MouseOverWhat(screen, mousePos, this is GLCanvasCoordinator);
 
 
                     if(newcursor != null) {
@@ -308,6 +311,7 @@ namespace Mcasaenk.UI.Canvas {
             UpdateUILocation();
         }
         private void OnSizeChange(object sender, SizeChangedEventArgs e) {
+            if(IsLoaded == false) return;
             screen.ScreenWidth = (int)(canvas.ActualWidth * dpix);
             screen.ScreenHeight = (int)(canvas.ActualHeight * dpiy);
             UpdateUILocation();

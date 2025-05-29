@@ -1,33 +1,22 @@
-﻿using CommunityToolkit.HighPerformance;
-using Mcasaenk.Bitmap_rendering;
-using Mcasaenk.Nbt;
-using Mcasaenk.Opengl_rendering;
-using Mcasaenk.Resources;
-using Mcasaenk.UI.Canvas;
-using Mcasaenk.WorldInfo;
-using Microsoft.Win32;
-using Microsoft.Windows.Themes;
-using OpenTK.Wpf;
-using System.ComponentModel;
-using System.Diagnostics.Eventing.Reader;
+﻿using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
-using System.Printing;
-using System.Resources;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml.Linq;
-using static System.Formats.Asn1.AsnWriter;
+using Mcasaenk.Nbt;
+using Mcasaenk.Rendering_bitmap;
+using Mcasaenk.Rendering_Opengl;
+using Mcasaenk.Resources;
+using Mcasaenk.UI.Canvas;
+using Mcasaenk.WorldInfo;
+using Microsoft.Win32;
+using OpenTK.Wpf;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -53,17 +42,19 @@ namespace Mcasaenk.UI {
                 if(screenshot == null) return;
 
                 var res = screenshot.Resolution();
+                var state = screenshot.GetState(Global.App.TileMap);
 
                 if(res.X > 16384 || res.Z > 16384) {
                     MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
                     return;
-                }
-                if(res.X == 0 || res.Z == 0) {
+                } else if(res.X == 0 || res.Z == 0) {
                     MessageBox.Show("Cannot make screenshot with no width/height :(");
                     return;
                 }
 
-                ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
+                if(state == ScreenshotManager.ConditionalState.invalid) return;
+
+                    ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
                 if(screenshottaker == null) return;
                 try {
                     if(screenshot.ResolutionType() == ResolutionType.map) {
@@ -74,7 +65,7 @@ namespace Mcasaenk.UI {
                                 FileName = $"map_"
                             };
                             if(saveFileDialog.ShowDialog() == true) {
-                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.OpenedSave.levelDatInfo.version_id, Global.Settings.MAPAPPROXIMATIONALGO);
+                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.TileMap.dim, Global.App.OpenedSave.levelDatInfo.version_id, Global.Settings.MAPAPPROXIMATIONALGO);
                                 if(nbt == null) return;
 
                                 using(var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
@@ -279,7 +270,7 @@ namespace Mcasaenk.UI {
 
                 loc_txt.TextBlock.Text = "Location";
                 loc_txt.TextBlock.FontSize = 18;
-                
+
                 loc_txt.Click += (o, e) => {
                     List<(TextBlock txtblocks, object data)> options = new();
 
@@ -322,17 +313,18 @@ namespace Mcasaenk.UI {
         }
 
         public void SetCanvas(RenderMode renderMode) {
-            switch(renderMode) { 
+            WorldPosition lastpos = canvas != null ? canvas.GetScreen() : WorldPosition.Empty;
+            switch(renderMode) {
                 case RenderMode.OPENGL: {
                         var control = new GLWpfControl();
-                        this.canvas = new GLCanvasCoordinator(control);
+                        this.canvas = new GLCanvasCoordinator(control, lastpos);
                         this.canvasControl = control;
                         break;
                     }
 
                 case RenderMode.LEGACY: {
-                        var control = new BitmapCanvasCoordinator.OnRenderFrameworkElement();
-                        this.canvas = new BitmapCanvasCoordinator(control);
+                        var control = new WPFCanvas.OnRenderFrameworkElement();
+                        this.canvas = new WPFCanvas(control, lastpos);
                         this.canvasControl = control;
                         break;
                     }

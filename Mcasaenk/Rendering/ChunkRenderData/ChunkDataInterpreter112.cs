@@ -1,17 +1,10 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Nbt;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter112 : IChunkInterpreter {
         private CompoundTag_Optimal tag;
-      
+
         private ArrTag<long> world_surface, ocean_floor, motion_blocking;
 
         private ArrTag<byte> biomes;

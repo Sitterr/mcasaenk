@@ -21,6 +21,7 @@
     <local:GamemodeColorConverter x:Key="GamemodeColorConverter"/>
     <local:TransluciencyLevelTextConverter x:Key="TransluciencyLevelTextConverter"/>
     <local:GreaterThanConverter x:Key="GreaterThanConverter"/>
+    <local:EnumEqualityConverter x:Key="EnumEqualityConverter"/>
 
     <SolidColorBrush x:Key="CANVASBACK">#ff0f0f0f</SolidColorBrush>
     <SolidColorBrush x:Key="BACK">#dd1f1f1f</SolidColorBrush>

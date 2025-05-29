@@ -1,18 +1,7 @@
-﻿using Mcasaenk.Colormaping;
+﻿using System.Buffers;
+using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering_Opengl;
 using Mcasaenk.Shade3d;
-using Mcasaenk.Opengl_rendering;
-using OpenTK.Compute.OpenCL;
-using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.TextFormatting;
 
 namespace Mcasaenk.Rendering {
 
@@ -27,7 +16,7 @@ namespace Mcasaenk.Rendering {
         private ShaderTexture2D texture;
         short[] texturedata;
         private void FreeTextureData() {
-            if(texturedata != null) {      
+            if(texturedata != null) {
                 ArrayPool<short>.Shared.Return(texturedata, true);
                 texturedata = default;
             }
@@ -62,7 +51,7 @@ namespace Mcasaenk.Rendering {
             if(!disposed) {
                 texture?.Dispose();
                 if(!freed) {
-                    foreach(var col in columns) col.FreeData();              
+                    foreach(var col in columns) col.FreeData();
                 }
                 FreeTextureData();
 
@@ -148,11 +137,13 @@ namespace Mcasaenk.Rendering {
         }
 
         public void FreeData() {
-            if(Global.Settings.RENDERMODE == RenderMode.LEGACY) return;
-            if(heights != null) pool.heightPool.Return(heights, true);
-            if(depths15_lightfrombottom1 != null) pool.depthsPool.Return(depths15_lightfrombottom1, true);
-            if(blockIds != null) pool.blockIdsPool.Return(blockIds, true);
-            if(biomeIds8_light4_shade4 != null) pool.biomeIds8_light4_shade4Pool.Return(biomeIds8_light4_shade4, true);
+            if(Global.Settings.RENDERMODE == RenderMode.LEGACY || Global.Settings.BLOCKINFO == true) return;
+            if(pool != null) {
+                if(heights != null) pool.heightPool.Return(heights, true);
+                if(depths15_lightfrombottom1 != null) pool.depthsPool.Return(depths15_lightfrombottom1, true);
+                if(blockIds != null) pool.blockIdsPool.Return(blockIds, true);
+                if(biomeIds8_light4_shade4 != null) pool.biomeIds8_light4_shade4Pool.Return(biomeIds8_light4_shade4, true);
+            }
 
             heights = null;
             depths15_lightfrombottom1 = null;
@@ -230,7 +221,7 @@ namespace Mcasaenk.Rendering {
             else chunkisscreenshotable[z] &= ~(1 << x);
         }
     }
-    public class RawDataColumn {    
+    public class RawDataColumn {
         public short[] heights, depths15_lightfrombottom1;
         public byte[] shadeValues; // 4bit
         public ushort[] blockIds;
@@ -241,21 +232,25 @@ namespace Mcasaenk.Rendering {
         public RawDataColumn(GenDataTileMap pool, bool candepth = true) {
             this.pool = pool;
 
-            heights = pool.heightPool.Rent(512 * 512);
-            blockIds = pool.blockIdsPool.Rent(512 * 512);
-            biomeIds8_light4_none4 = pool.biomeIds8_light4_shade4Pool.Rent(512 * 512);
-            if(candepth) depths15_lightfrombottom1 = pool.depthsPool.Rent(512 * 512);
+            if(pool != null) {
+                heights = pool.heightPool.Rent(512 * 512);
+                blockIds = pool.blockIdsPool.Rent(512 * 512);
+                biomeIds8_light4_none4 = pool.biomeIds8_light4_shade4Pool.Rent(512 * 512);
+                if(candepth) depths15_lightfrombottom1 = pool.depthsPool.Rent(512 * 512);
+            } else {
+                heights = new short[512 * 512];
+                blockIds = new ushort[512 * 512];
+                biomeIds8_light4_none4 = new ushort[512 * 512];
+                if(candepth) depths15_lightfrombottom1 = new short[512 * 512];
+            }
 
-            //heights = new short[512 * 512];
-            //blockIds = new ushort[512 * 512];
-            //biomeIds8_light4_none4 = new ushort[512 * 512];
-            //if(candepth) depths15_lightfrombottom1 = new short[512 * 512];
+
 
             if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) {
                 shadeValues = new byte[512 * 512 * ShadeConstants.GLB.blockReachLenMax];
             }
         }
-        
+
         public void Input(int i, ushort blockid, byte light, bool lightfrombottom, ushort biomeid, short height, short depth, int r_absortion, ref byte r_relvisost) {
             blockIds[i] = blockid;
             biomeIds8_light4_none4[i] = BiomeLightMaker(biomeid, light);

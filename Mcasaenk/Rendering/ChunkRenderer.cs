@@ -1,24 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Xml.Linq;
-using Mcasaenk.Shade3d;
-using System.Windows.Shapes;
-using Accessibility;
-using System.Windows.Controls;
+﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering.ChunkRenderData;
-using System.Transactions;
-using System.Windows.Media.Media3D;
-using System.Reflection.Metadata;
-using Mcasaenk.Colormaping;
-using System.Windows.Documents;
-using System.Windows.Media.Animation;
-using System.Runtime.InteropServices;
+using Mcasaenk.Shade3d;
 
 namespace Mcasaenk.Rendering {
     public class ChunkRenderer {

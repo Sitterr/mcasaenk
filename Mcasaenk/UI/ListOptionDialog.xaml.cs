@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -21,7 +11,7 @@ namespace Mcasaenk.UI {
             InitializeComponent();
             this.Title = title;
 
-            
+
             var borderBrush = this.TryFindResource("BORDER") as SolidColorBrush;
             grid.RowDefinitions.Clear();
             for(int i = 0; i < options.Length * 2 - 1; i++) {
@@ -51,7 +41,7 @@ namespace Mcasaenk.UI {
                     grid.Children.Add(sep);
                 }
             }
-            
+
         }
 
         private object result = null;

@@ -1,29 +1,10 @@
 ﻿using System.Collections.Frozen;
-using System.IO;
-using System.Windows.Media.Imaging;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using Mcasaenk.Rendering;
+using Mcasaenk.Rendering_Opengl;
 using Mcasaenk.Resources;
 using Mcasaenk.WorldInfo;
 using static Mcasaenk.Colormaping.Tint;
-using System.Security.Policy;
-using System.DirectoryServices.ActiveDirectory;
-using System;
-using System.Xml.Linq;
-using System.Text.Json.Serialization;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
-using System.Windows.Media;
-using System.Drawing;
-using System.Windows.Documents;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Mcasaenk.Rendering;
-using System.Linq;
-using Mcasaenk.Opengl_rendering;
-using System.Runtime.InteropServices;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Platform.Windows;
-using System.Windows.Markup.Localizer;
 
 namespace Mcasaenk.Colormaping {
 
@@ -120,7 +101,7 @@ namespace Mcasaenk.Colormaping {
                         filter = new Filter(FilterManager, f.name, true, true) { ABSORBTION = (int)(Math.Round(15 - f.transparency * 15)) };
                         FilterManager.ELEMENTS.Add(filter);
                     } else filter = FilterManager.Invis;
-               
+
                     foreach(var block in f.blocks) {
                         if(Block.TryGetId(block.minecraftname(), out ushort id)) {
                             FilterManager.AddBlock(id, filter);
@@ -149,10 +130,10 @@ namespace Mcasaenk.Colormaping {
             disposed = true;
         }
 
-        public uint BaseColor(ushort block) => block switch { 
+        public uint BaseColor(ushort block) => block switch {
             ERRORBLOCK => 0xFFFF0000,
-            INVBLOCK =>   0x00000000,
-            NONEBLOCK =>  0xFF0000FF,
+            INVBLOCK => 0x00000000,
+            NONEBLOCK => 0xFF0000FF,
             _ => BlocksManager.GetValueOrDefault(block, (uint)0)
         };
         public uint FullColor(ushort block, ushort biome, short height) => TintManager.GetBlockVal(block).GetTintedColor(BaseColor(block), biome, height);
@@ -161,7 +142,7 @@ namespace Mcasaenk.Colormaping {
 
         public bool AirHeightmapCompatible, WaterHeightmapCompatible;
         public void UpdateHeightmapCompatability() {
-            AirHeightmapCompatible = true; 
+            AirHeightmapCompatible = true;
             WaterHeightmapCompatible = true;
 
             foreach(var airblock in HeightmapFilter.AIRBLOCKS) {
@@ -197,7 +178,7 @@ namespace Mcasaenk.Colormaping {
 
     }
 
-    
+
     public class BlockManager {
         private Colormap colormap;
 
@@ -481,7 +462,7 @@ namespace Mcasaenk.Colormaping {
             BLOCKS = new HashSet<ushort>();
         }
 
-        public void _AddBlock(ushort block) { 
+        public void _AddBlock(ushort block) {
             Blocks.Add(block);
             OnAutoChange(nameof(Blocks));
         }

@@ -1,20 +1,10 @@
-﻿using Mcasaenk.Colormaping;
+﻿using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows.Media;
+using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
-using Mcasaenk.UI;
 using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using static Mcasaenk.Global;
 
 namespace Mcasaenk {
     public class Save {

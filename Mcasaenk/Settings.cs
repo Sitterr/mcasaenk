@@ -1,21 +1,10 @@
-﻿using Mcasaenk.Colormaping;
-using Mcasaenk.Rendering;
-using Mcasaenk.Rendering.ChunkRenderData;
-using Mcasaenk.Shade3d;
-using Mcasaenk.UI;
-using Mcasaenk.UI.Canvas;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Windows.Data;
-using System.Windows.Markup;
+using Mcasaenk.Colormaping;
+using Mcasaenk.Shade3d;
+using Mcasaenk.UI;
 
 namespace Mcasaenk {
     public enum Direction {
@@ -86,9 +75,9 @@ namespace Mcasaenk {
 
     public enum RenderMode {
         [Description("legacy")]
-        LEGACY,
+        LEGACY = 0,
         [Description("opengl")]
-        OPENGL,
+        OPENGL = 1,
     }
 
 
@@ -152,7 +141,7 @@ namespace Mcasaenk {
         protected virtual void OnPropertyChanged(string propertyName) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        public bool CHANGED_BACK { 
+        public bool CHANGED_BACK {
             get => settings.Any(s => s.ChangedBack());
         }
     }
@@ -243,34 +232,53 @@ namespace Mcasaenk {
             ;
 
         public static Settings DEF() => new Settings() {
-            MAXZOOM = 4, MINZOOM = -4,
+            MAXZOOM = 4,
+            MINZOOM = -4,
             ENABLE_COLORMAP_EDITING = false,
-            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None, MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94,
-            MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2, RENDERMODE = RenderMode.LEGACY,
-            FOOTER = true, OVERLAYS = true, UNLOADED = true,
+            CHUNKGRID = ChunkGridType.None,
+            REGIONGRID = RegionGridType.None,
+            BACKGROUND = BackgroundType.Checker,
+            MAPGRID = MapGridType.None,
+            MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94,
+            MAXCONCURRENCY = 8,
+            CHUNKRENDERMAXCONCURRENCY = 16,
+            DRAWMAXCONCURRENCY = 8,
+            TRANSPARENTLAYERS = 2,
+            RENDERMODE = RenderMode.OPENGL,
+            FOOTER = true,
+            OVERLAYS = true,
+            UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
                 new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 },
                 new Resolution() { Name = "WQHD", type = ResolutionType.stat, X = 2560, Y = 1440 },
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
-            PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true,
+            PREFERHEIGHTMAPS = true,
+            SKIP_UNKNOWN_BLOCKS = true,
             BLOCKINFO = false,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
 
-            SUN_LIGHT = 15, BLOCK_LIGHT = 0,
+            SUN_LIGHT = 15,
+            BLOCK_LIGHT = 0,
 
             CONTRAST = 0.50,
 
-            SHADE3D = true, STATIC_SHADE = true,
+            SHADE3D = true,
+            STATIC_SHADE = true,
             NOSHADE_SHADE3D = false,
 
-            WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true, OCEAN_DEPTH_BLENDING = 1,
-            Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
+            WATER_TRANSPARENCY = 0.50,
+            WATER_SMART_SHADE = true,
+            OCEAN_DEPTH_BLENDING = 1,
+            Jmap_WATER_MODE = JsmapWaterMode.vanilla,
+            Jmap_REVEALED_WATER = 1,
+            Jmap_MAP_DIRECTION = Direction.North,
 
-            ADEG = 120, BDEG = 15,
+            ADEG = 120,
+            BDEG = 15,
         };
 
         private string dimension;
@@ -303,11 +311,12 @@ namespace Mcasaenk {
             }
         }
         [JsonIgnore]
-        public short Y_OFFICIAL { get => y; set { 
+        public short Y_OFFICIAL {
+            get => y; set {
                 value = Math.Clamp(value, MINY, MAXY);
-                y = value; Y = value; 
+                y = value; Y = value;
                 OnHardChange(nameof(Y_OFFICIAL)); OnAutoChange(nameof(ABSY));
-            } 
+            }
         }
         [JsonIgnore]
         public short MINY { get; set; } = -64;
@@ -698,7 +707,7 @@ namespace Mcasaenk {
         public int MAXCONCURRENCY { get => regionConcurrency; set { regionConcurrency = value; RegionConcurrency = value; OnHardChange(nameof(MAXCONCURRENCY)); } }
 
 
-        private int chunkConcurrency,chunkConcurrency_back;
+        private int chunkConcurrency, chunkConcurrency_back;
         [JsonIgnore]
         public int ChunkConcurrency {
             get => chunkConcurrency_back;
@@ -840,7 +849,7 @@ namespace Mcasaenk {
 
                 blockinfo_back = value;
 
-                if(Global.App.OpenedSave == null || true) {
+                if(Global.App.OpenedSave == null || RENDERMODE == RenderMode.LEGACY) {
                     blockinfo = value;
                     OnAutoChange(nameof(BlockInfo));
                     OnAutoChange(nameof(BLOCKINFO));
@@ -932,7 +941,7 @@ namespace Mcasaenk {
                 }
             }
         }
-        public RenderMode RENDERMODE { get => renderMode; set { renderMode = value; RenderMode = value; BLOCKINFO = true; OnHardChange(nameof(RENDERMODE)); } }
+        public RenderMode RENDERMODE { get => renderMode; set { renderMode = value; RenderMode = value; OnHardChange(nameof(RENDERMODE)); } }
 
 
 

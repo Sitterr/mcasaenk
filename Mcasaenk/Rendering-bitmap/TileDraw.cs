@@ -1,37 +1,11 @@
-﻿
-using Accessibility;
-using CommunityToolkit.HighPerformance;
+﻿using System.Buffers;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Shade3d;
-using System;
-using System.Buffers;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
-using System.Xml.Linq;
-using static Mcasaenk.Global;
 
-namespace Mcasaenk.Bitmap_rendering {
+namespace Mcasaenk.Rendering_bitmap {
     public static unsafe class TileDraw {
 
         public static long drawTime = 0, drawCount = 1;

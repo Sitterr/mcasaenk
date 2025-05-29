@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Mcasaenk.UI.Canvas;
 
 namespace Mcasaenk.Nbt {
     public class NbtWriter {
         private readonly Stream stream;
 
-        public NbtWriter(Stream stream, Tag tag, string name = "") { 
+        public NbtWriter(Stream stream, Tag tag, string name = "") {
             this.stream = stream;
 
             stream.WriteByte((byte)tag.TagType());
@@ -84,19 +79,31 @@ namespace Mcasaenk.Nbt {
     }
 
     public static class NBTBlueprints {
-        public static CompoundTag_Allgemein CreateMapScreenshot(Span<uint> pixels, WorldPosition frame, int version, ColorApproximationAlgorithm coloralgo) {
+        public static CompoundTag_Allgemein CreateMapScreenshot(Span<uint> pixels, WorldPosition frame, Dimension dim, int version, ColorApproximationAlgorithm coloralgo) {
             CompoundTag_Allgemein root = new CompoundTag_Allgemein();
             var data = new CompoundTag_Allgemein();
             if(version >= 1484) root.Add("DataVersion", NumTag<int>.Get(version));
             root.Add("data", data);
             {
-                data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / frame.zoom))));
-                data.Add("dimension", NumTag<sbyte>.Get(0));
+                data.Add("scale", NumTag<sbyte>.Get((sbyte)Math.Log2((int)(1 / frame.zoom))));               
                 data.Add("trackingPosition", NumTag<sbyte>.Get(1));
-                data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
-                data.Add("locked", NumTag<bool>.Get(true));
-                data.Add("xCenter", NumTag<int>.Get((int)(frame.Start.X + frame.Width / 2)));
-                data.Add("zCenter", NumTag<int>.Get((int)(frame.Start.Y + frame.Height / 2)));
+
+                if(version >= 2566) {
+                    data.Add("dimension", NumTag<string>.Get(dim.name));
+                } else {
+                    data.Add("dimension", NumTag<sbyte>.Get(0));
+                }
+
+                if(version >= 1952) {
+                    data.Add("locked", NumTag<sbyte>.Get(1));
+                    data.Add("xCenter", NumTag<int>.Get((int)(frame.Start.X + frame.Width / 2)));
+                    data.Add("zCenter", NumTag<int>.Get((int)(frame.Start.Y + frame.Height / 2)));
+                    data.Add("unlimitedTracking", NumTag<sbyte>.Get(1));
+                } else {
+                    data.Add("xCenter", NumTag<int>.Get(123_456_789));
+                    data.Add("zCenter", NumTag<int>.Get(123_456_789));
+                }
+
                 if(version < 1519) {
                     data.Add("height", NumTag<short>.Get(128));
                     data.Add("width", NumTag<short>.Get(128));

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Mcasaenk.Rendering {
+﻿namespace Mcasaenk.Rendering {
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler {
         // Indicates whether the current thread is processing work items.
         [ThreadStatic]
@@ -103,8 +96,7 @@ namespace Mcasaenk.Rendering {
                 Monitor.TryEnter(_tasks, ref lockTaken);
                 if(lockTaken) return _tasks;
                 else throw new NotSupportedException();
-            }
-            finally {
+            } finally {
                 if(lockTaken) Monitor.Exit(_tasks);
             }
         }

@@ -1,29 +1,16 @@
-﻿using Mcasaenk.Colormaping;
-using Mcasaenk.Nbt;
-using Mcasaenk.Opengl_rendering;
+﻿using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Runtime;
+using System.Text.Json;
+using System.Windows;
+using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
-using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
 using Mcasaenk.Shade3d;
 using Mcasaenk.UI;
-using Mcasaenk.UI.Canvas;
-using Mcasaenk.WorldInfo;
-using Microsoft.Win32;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
-using System.Reflection;
-using System.Runtime;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
-using System.Windows;
 
-namespace Mcasaenk
-{
+namespace Mcasaenk {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -72,7 +59,7 @@ namespace Mcasaenk
             Colormap?.UpdateHeightmapCompatability();
             Colormap?.TintManager.Freeze();
             Colormap?.FilterManager.Freeze();
-            
+
 
 
             if(changed.Contains("ABSORBTION")) {
@@ -98,7 +85,7 @@ namespace Mcasaenk
 
             // settings
             {
-                        
+
                 var settFile = Path.Combine(APPFOLDER, "settings.json");
                 if(File.Exists(settFile)) Settings = JsonSerializer.Deserialize<Mcasaenk.Settings>(File.ReadAllText(settFile));
                 else Settings = Settings.DEF();
@@ -204,7 +191,7 @@ namespace Mcasaenk
                 SettingsHub.FinishFreeze(false);
             }
         }
-        
+
 
 
 

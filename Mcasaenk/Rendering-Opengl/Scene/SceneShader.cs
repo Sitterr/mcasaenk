@@ -1,19 +1,11 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
-using Mcasaenk.Opengl_rendering.Kawase;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Mcasaenk.Opengl_rendering.Scene {
+namespace Mcasaenk.Rendering_Opengl {
     public class SceneShader : Shader {
         public int fbo;
         private readonly int VAO = 0;
@@ -28,9 +20,9 @@ namespace Mcasaenk.Opengl_rendering.Scene {
             GL.DeleteFramebuffer(fbo);
         }
 
-        public void Use(WorldPosition screen, GenDataTileMap tilemap, KawaseTexture tex, WorldPosition map_screenshot, int[] blendtints, int kawaseR, int outputtexture) {
+        public void Use(WorldPosition screen, GenDataTileMap tilemap, Colormap colormap, KawaseTexture tex, WorldPosition map_screenshot, int[] blendtints, int kawaseR, int outputtexture) {
             int w = (int)Math.Ceiling(screen.Width * screen.InSimZoom), h = (int)Math.Ceiling(screen.Height * screen.InSimZoom);
-            
+
             GL.Viewport(0, 0, w, h);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
@@ -50,7 +42,7 @@ namespace Mcasaenk.Opengl_rendering.Scene {
 
             GL.BindVertexArray(VAO);
 
-            if(Global.App.Colormap != null && tilemap != null) {
+            if(colormap != null && tilemap != null) {
                 // fragment uniforms
                 {
                     // blured data
@@ -68,10 +60,10 @@ namespace Mcasaenk.Opengl_rendering.Scene {
                         GL.Uniform1(GL.GetUniformLocation(Handle, "blur_R"), kawaseR);
                     }
 
-                    Global.App.Colormap.TintManager.GetTexture().Use((int)TextureUnit.Texture11);
+                    colormap.TintManager.GetTexture().Use((int)TextureUnit.Texture11);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintpalette"), 11);
 
-                    Global.App.Colormap.BlocksManager.GetTexture().Use((int)TextureUnit.Texture10);
+                    colormap.BlocksManager.GetTexture().Use((int)TextureUnit.Texture10);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "palette"), 10);
                 }
 
@@ -106,20 +98,15 @@ namespace Mcasaenk.Opengl_rendering.Scene {
                 }
 
                 // fragment uniforms
-                foreach (var reg in tilemap.GetVisibleTilesPositions(screen)) {
+                foreach(var reg in tilemap.GetVisibleTilesPositions(screen)) {
                     var tile = tilemap?.GetTile(reg);
                     if(tile == null) continue;
 
                     tile.GetTexture().Use((int)TextureUnit.Texture0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
-                    //tilemap.GetTile(reg + new Point2i(1, 0))?.GetTexture().Use((int)TextureUnit.Texture1); GL.Uniform1(GL.GetUniformLocation(Handle, "regionr"), 1);
-                    //tilemap.GetTile(reg - new Point2i(1, 0))?.GetTexture().Use((int)TextureUnit.Texture2); GL.Uniform1(GL.GetUniformLocation(Handle, "regionl"), 2);
-                    //tilemap.GetTile(reg + new Point2i(0, 1))?.GetTexture().Use((int)TextureUnit.Texture3); GL.Uniform1(GL.GetUniformLocation(Handle, "regiond"), 3);
-                    //tilemap.GetTile(reg - new Point2i(0, 1))?.GetTexture().Use((int)TextureUnit.Texture4); GL.Uniform1(GL.GetUniformLocation(Handle, "regiont"), 4);
-
                     GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
-                    GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
                 }
             }
 

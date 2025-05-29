@@ -93,7 +93,7 @@
                                     <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="12" TickFrequency="1"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=RegionConcurrency}"/>
                                 </StackPanel>
-                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                <StackPanel Grid.Row="0" Grid.Column="2" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=RenderMode, Converter={StaticResource EnumEqualityConverter}, ConverterParameter=LEGACY}">
                                     <DockPanel>
                                         <TextBlock>
                                             <Run Text="render concurrency"/>

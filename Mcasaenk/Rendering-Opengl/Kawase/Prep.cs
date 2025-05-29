@@ -1,15 +1,11 @@
-﻿using Mcasaenk.Rendering;
+﻿using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Mcasaenk.Opengl_rendering.Kawase {
+namespace Mcasaenk.Rendering_Opengl {
     class PrepKawase : Shader {
         private readonly int fbo, VAO;
         public readonly KawaseTexture texture1 = new KawaseTexture();
@@ -54,7 +50,7 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
             }
         }
 
-        public void Use(WorldPosition screen, GenDataTileMap tilemap, int[] blendtints, int R) {
+        public void Use(WorldPosition screen, GenDataTileMap tilemap, Colormap colormap, int[] blendtints, int R) {
             int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
@@ -77,13 +73,13 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
 
             GL.BindVertexArray(VAO);
 
-            if(Global.App.Colormap != null && tilemap != null) {
+            if(colormap != null && tilemap != null) {
                 // fragment uniforms
                 {
-                    Global.App.Colormap.TintManager.GetTexture().Use((int)TextureUnit.Texture11);
+                    colormap.TintManager.GetTexture().Use((int)TextureUnit.Texture11);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintpalette"), 11);
 
-                    Global.App.Colormap.BlocksManager.GetTexture().Use((int)TextureUnit.Texture10);
+                    colormap.BlocksManager.GetTexture().Use((int)TextureUnit.Texture10);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "palette"), 10);
 
                     GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
@@ -99,7 +95,8 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
                     GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
-                    GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+
+                    GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
                 }
             }
         }

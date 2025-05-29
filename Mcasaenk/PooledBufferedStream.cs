@@ -1,14 +1,5 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+﻿using System.Buffers;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mcasaenk {
     public class PooledBufferedStream : Stream {

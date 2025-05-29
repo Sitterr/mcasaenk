@@ -1,23 +1,8 @@
-﻿using System;
-using System.Buffers;
-using System.Collections;
+﻿using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.TextFormatting;
 using Mcasaenk.Shade3d;
-using Mcasaenk.Opengl_rendering;
-using Mcasaenk.Opengl_rendering.Dissect;
 using Mcasaenk.UI.Canvas;
-using OpenTK.Graphics.OpenGL4;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using static Mcasaenk.Global;
 
 namespace Mcasaenk.Rendering {
     public class TileMapQuerer<T> {
@@ -25,16 +10,19 @@ namespace Mcasaenk.Rendering {
         public TileMapQuerer(GroupTileMap<T> tilemap) {
             this.tilemap = tilemap;
         }
-        public virtual void QueueDo(Point2i p, WorldPosition observer) { tilemap.Do(p); }
+        public virtual void QueueDo(Point2i p, WorldPosition observer) { tilemap.Do(p, default); }
     }
-    public class ObserverTaskTileMapQueuer<T> : TileMapQuerer<T> {
+    public class ObserverTaskTileMapQueuer<T> : TileMapQuerer<T>, IDisposable {
         private readonly ConcurrentDictionary<Point2i, byte> queued, loading;
         private readonly TaskPool taskPool;
         private readonly TaskCreationOptions taskCreationOptions;
 
         private ConcurrentDictionary<Point2i, List<WorldPosition>> observers = new();
 
+        private readonly CancellationTokenSource cancelToken;
+
         public ObserverTaskTileMapQueuer(GroupTileMap<T> tilemap, int maxConcurrency, TaskCreationOptions taskCreationOptions = TaskCreationOptions.None) : base(tilemap) {
+            cancelToken = new CancellationTokenSource();
             taskPool = new TaskPool(maxConcurrency);
 
             this.taskCreationOptions = taskCreationOptions;
@@ -42,13 +30,16 @@ namespace Mcasaenk.Rendering {
             queued = new ConcurrentDictionary<Point2i, byte>();
             loading = new ConcurrentDictionary<Point2i, byte>();
         }
+        public void Dispose() {
+            cancelToken.Cancel();
+        }
 
         public override void QueueDo(Point2i p, WorldPosition observer) {
-            if (queued.ContainsKey(p)) return;
+            if(queued.ContainsKey(p)) return;
             queued.TryAdd(p, default);
 
-            if (observers.ContainsKey(p) == false) observers.TryAdd(p, new List<WorldPosition>());
-            if (observers[p].Contains(observer) == false) observers[p].Add(observer);
+            if(observers.ContainsKey(p) == false) observers.TryAdd(p, new List<WorldPosition>());
+            if(observers[p].Contains(observer) == false) observers[p].Add(observer);
 
             Task task = new Task(() => {
                 try {
@@ -56,8 +47,8 @@ namespace Mcasaenk.Rendering {
 
                     {
                         bool atleastone = false;
-                        foreach (var screen in observers[p]) {
-                            if (tilemap.Scope(p).InterSects(screen)) {
+                        foreach(var screen in observers[p]) {
+                            if(tilemap.Scope(p).InterSects(screen)) {
                                 atleastone = true;
                                 break;
                             }
@@ -67,7 +58,7 @@ namespace Mcasaenk.Rendering {
                         }
                     }
 
-                    tilemap.Do(p);
+                    tilemap.Do(p, cancelToken.Token);
                     observers[p].Clear();
 
                 } finally {
@@ -138,7 +129,7 @@ namespace Mcasaenk.Rendering {
         public WorldPosition Scope(Point2i p) {
             return new WorldPosition(new System.Windows.Point(p.X * TileSize, p.Z * TileSize), TileSize, TileSize, scale);
         }
-        
+
         public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition screen) => TileMap.GetVisibleTilesPositions(screen, TileSize);
         public IEnumerable<Point2i> GetVisibleTilesPositions(WorldPosition[] screens) {
             foreach(var screen in screens) {
@@ -153,12 +144,12 @@ namespace Mcasaenk.Rendering {
             return tiles.TryGetValue(p, out tile);
         }
         public Tile GetTile(Point2i p) {
-            if (GetTile(p, out var tile)) return tile;
+            if(GetTile(p, out var tile)) return tile;
             else return default;
         }
         private Tile GetOrCreateTile(Point2i p) {
-            if (GetTile(p, out var tile)) return tile;
-            if (recycleStack.Count > 0) return recycleStack.Pop();
+            if(GetTile(p, out var tile)) return tile;
+            if(recycleStack.Count > 0) return recycleStack.Pop();
             return CreateTile();
         }
 
@@ -187,22 +178,28 @@ namespace Mcasaenk.Rendering {
 
 
 
+        private int timebr, timeacc;
+        public int MeanDoTime() => timebr > 0 ? timeacc / timebr : 0;
 
+        public void Do(Point2i p, CancellationToken cancellationToken) {
+            Stopwatch st = Stopwatch.StartNew();
 
-        public void Do(Point2i p) {
             int c = max.GetValueOrDefault(p, minmax);
-
             var cr = GetOrCreateTile(p);
-            var val = _Do(p, cr);
+            var val = _Do(p, cr, cancellationToken);
             if(!EqualityComparer<Tile>.Default.Equals(cr, val) && cr is IDisposable dcr) dcr.Dispose();
 
 
             curr[p] = c;
             if(max.ContainsKey(p) == false) max[p] = c;
 
-            tiles[p] = val;           
+            tiles[p] = val;
+
+            st.Stop();
+            timebr++;
+            timeacc += (int)st.ElapsedMilliseconds;
         }
-        protected abstract Tile _Do(Point2i p, Tile tile);
+        protected abstract Tile _Do(Point2i p, Tile tile, CancellationToken cancellationToken);
 
         public virtual void MassRedo() {
             curr.Clear();
@@ -215,6 +212,9 @@ namespace Mcasaenk.Rendering {
             }
             tiles.Clear();
             MassRedo();
+
+            timebr = 0;
+            timeacc = 0;
         }
 
         protected abstract Tile CreateTile();
@@ -238,7 +238,7 @@ namespace Mcasaenk.Rendering {
         private bool disposed = false;
 
         public Tile[] UseForRecycle() {
-            if (wasUsedForRecycle) return [];
+            if(wasUsedForRecycle) return [];
             wasUsedForRecycle = true;
             this.Dispose();
             return recycleStack.ToArray().Concat(tiles.Values).ToArray();
@@ -251,6 +251,8 @@ namespace Mcasaenk.Rendering {
         void Reset(GenDataTileMap gentilemap = null);
         void MassRedo();
         void OnScaleChange(double scale);
+
+        int MeanDoTime();
     }
 
     public abstract class DrawGroupTileMap<Tile> : GroupTileMap<Tile>, DrawGroupTileMap {
@@ -331,7 +333,7 @@ namespace Mcasaenk.Rendering {
             if(scale > 0) this.scale = Math.Min(1, scale);
         }
 
-        protected override Tile _Do(Point2i p, Tile tile) {
+        protected override Tile _Do(Point2i p, Tile tile, CancellationToken _) {
             int[] states = gendepend.GetValueOrDefault(p, new int[depend.Count]);
             Point2i min = gentilemap.GetVisibleRect(this.Scope(p)).min;
             for(int i = 0; i < depend.Count; i++) {
@@ -381,19 +383,21 @@ namespace Mcasaenk.Rendering {
         private ConcurrentDictionary<Point2i, TileShadeFrames> shadeFrames;
         private ConcurrentDictionary<Point2i, TileShade> shadesTiles;
         public TileShade GetShadeTile(Point2i p) {
-            if (shadesTiles.TryGetValue(p, out var tile)) return tile;
+            if(shadesTiles.TryGetValue(p, out var tile)) return tile;
             if(existingRegions.Contains(p) == false) return null;
 
             shadesTiles[p] = new TileShade(this, p);
             return shadesTiles[p];
         }
         public TileShadeFrames GetTileShadeFrame(Point2i p) {
-            if (shadeFrames.TryGetValue(p, out var tile)) return tile;
+            if(shadeFrames.TryGetValue(p, out var tile)) return tile;
 
             var f = new TileShadeFrames(this, p);
             shadeFrames[p] = f;
             return f;
         }
+        public int ShadeTiles() => shadesTiles.Values.Where(t => t.IsActive).Count();
+        public int ShadeFrames() => shadeFrames.Values.Select(t => t.frames.Count).Sum();
 
         public GenDataTileMap(Dimension dimension, HashSet<Point2i> existingRegions) : base(1, 1, true, true, null) {
             this.dim = dimension;
@@ -436,16 +440,25 @@ namespace Mcasaenk.Rendering {
         private bool ShouldDo(Point2i p) {
             if(RegionExists(p) == false) return false;
             return base.ShouldDo(p);
-        } 
-        protected override GenData _Do(Point2i p, GenData _) {
-            var v = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(this, p, dim.GetRegionPath(p)) : TileGenerate.StandartGenerate(this, dim.GetRegionPath(p));
-            return v;
+        }
+        protected override GenData _Do(Point2i p, GenData _, CancellationToken cancellationToken) {
+            try {
+                var v = (Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.SHADE3D) ? TileGenerate.ShadeGenerate(this, p, dim.GetRegionPath(p), cancellationToken) : TileGenerate.StandartGenerate(this, dim.GetRegionPath(p), cancellationToken);
+                return v;
+            } catch {
+                return null;
+            }
         }
 
         protected override void DisposeTile(GenData tile) {
             tile?.Dispose();
         }
         protected override GenData CreateTile() => null;
+
+        public override void Dispose() {
+            base.Dispose();
+            (queuer as ObserverTaskTileMapQueuer<GenData>).Dispose();
+        }
     }
 
 }

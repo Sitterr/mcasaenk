@@ -1,19 +1,10 @@
-﻿using Mcasaenk.Rendering;
+﻿using System.Collections.Frozen;
+using System.Globalization;
 using Mcasaenk.Resources;
 using Mcasaenk.UI.Canvas;
-using OpenTK.Compute.OpenCL;
-using OpenTK.Core.Exceptions;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Mcasaenk.Opengl_rendering.Kawase {
+namespace Mcasaenk.Rendering_Opengl {
     public class KawaseShader : Shader {
         private readonly int fbo;
         private readonly KawaseTexture texture2 = new KawaseTexture();
@@ -51,7 +42,6 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
 
         int[] ikernels = new int[8];
         int[][] kawasepasses = new int[8][];
-        public int[] blendtints = [];
 
         private int fw = -1, fh = -1;
         private void ResizeFramebuffer(int w, int h) {
@@ -64,10 +54,6 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
 
                 fw = w; fh = h;
             }
-        }
-
-        public void UpdateBlendTintCounter(int[] blendtints) { 
-            this.blendtints = blendtints;
         }
 
         public static void AttachFramebuffer(int fbo, KawaseTexture texture, int tintcount) {
@@ -85,7 +71,7 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
             GL.DrawBuffers(drawBuffers.Length, drawBuffers);
         }
 
-        public unsafe KawaseTexture Use(WorldPosition screen, Span<int> kernels, int R, KawaseTexture texture1) {
+        public unsafe KawaseTexture Use(WorldPosition screen, Span<int> kernels, int[] blendtintindexes, int R, KawaseTexture texture1) {
             int w = (int)Math.Ceiling((screen.Width + 2 * R) * screen.InSimZoom), h = (int)Math.Ceiling((screen.Height + 2 * R) * screen.InSimZoom);
 
             KawaseTexture[] textures = [texture1, texture2];
@@ -93,7 +79,7 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
 
             Array.Fill(ikernels, -1);
             int passes = 0;
-            for(int i = 0; i < kernels.Length; i++) { 
+            for(int i = 0; i < kernels.Length; i++) {
                 kawasepasses[i] = KawaseKernels.Get(kernels[i]);
                 passes = Math.Max(passes, kawasepasses[i].Length);
             }
@@ -102,23 +88,23 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
                 {
                     GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
                     ResizeFramebuffer((int)Math.Ceiling((screen.Width + 2 * 512) * screen.InSimZoom), (int)Math.Ceiling((screen.Height + 2 * 512) * screen.InSimZoom));
-                    SetUpFramebuffer(blendtints.Length);
+                    SetUpFramebuffer(blendtintindexes.Length);
 
 
                     GL.Viewport((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
                     GL.Scissor((int)((512 - R) * screen.InSimZoom), (int)((512 - R) * screen.InSimZoom), w, h);
                 }
-                
+
                 GL.UseProgram(Handle);
 
                 {
-                    GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtints.Length);
+                    GL.Uniform1(GL.GetUniformLocation(Handle, "tintcount"), blendtintindexes.Length);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "t_tints"), 0);
                     GL.Uniform1(GL.GetUniformLocation(Handle, "t_meanheight_oceandepth"), 1);
                 }
 
                 for(int p = 0; p < passes; p++) {
-                    AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtints.Length);                
+                    AttachFramebuffer(fbo, textures[(p + 1) % 2], blendtintindexes.Length);
 
                     for(int i = 0; i < kernels.Length; i++) {
                         if(p < kawasepasses[i].Length) ikernels[i] = (int)(kawasepasses[i][p] * screen.InSimZoom);
@@ -128,14 +114,14 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
 
                     GL.ActiveTexture(TextureUnit.Texture0);
                     GL.BindTexture(TextureTarget.Texture2DArray, textures[p % 2].tints);
-                    
+
 
 
                     GL.ActiveTexture(TextureUnit.Texture1);
                     GL.BindTexture(TextureTarget.Texture2D, textures[p % 2].meanheight_oceandepth);
-                    
 
-                    GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+
+                    GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
                     finaltexture = textures[(p + 1) % 2];
                 }
             }
@@ -166,8 +152,7 @@ namespace Mcasaenk.Opengl_rendering.Kawase {
                     }
 
                     if(k == -1) throw new Exception();
-                }
-                catch { continue; }
+                } catch { continue; }
 
                 kernels.Add(k, krnl);
             }

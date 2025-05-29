@@ -1,24 +1,13 @@
-﻿using Mcasaenk.Colormaping;
-using Mcasaenk.Shade3d;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing.Printing;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using static System.Net.WebRequestMethods;
+using Mcasaenk.Colormaping;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -44,7 +33,7 @@ namespace Mcasaenk.UI {
                     BinaryBlockGroupWindow.Group group = BinaryBlockGroupWindow.Group.Def;
                     if(blockfilter == colormap.FilterManager.Invis) group = BinaryBlockGroupWindow.Group.AlwaysThis;
                     //else if(blockfilter != null && blockfilter != colormap.FilterManager.Default) group = BinaryBlockGroupWindow.Group.Other;
-                    
+
                     return (n.Value, true, group);
                 });
 
@@ -78,8 +67,7 @@ namespace Mcasaenk.UI {
             btn_colormapfolder.Click += (_, _) => {
                 try {
                     Process.Start("explorer.exe", Path.Combine(Global.App.APPFOLDER, "colormaps"));
-                }
-                catch { }
+                } catch { }
             };
 
             light_blue_b = this.TryFindResource("LIGHT_BLUE_B") as Brush;
@@ -442,7 +430,7 @@ namespace Mcasaenk.UI {
                 txtname = txtnametext = new TextBlock();
             }
 
-            var starr = new TextBlock() { Text = " ✶" };          
+            var starr = new TextBlock() { Text = " ✶" };
             {
                 FrameworkElement el_absorb = new FrameworkElement();
                 MultiBinding bind_absorb = new MultiBinding() { Converter = new DifferenceBoolConverter(), ConverterParameter = true };

@@ -1,12 +1,6 @@
-﻿using Mcasaenk.Colormaping;
+﻿using System.Buffers;
+using Mcasaenk.Colormaping;
 using Mcasaenk.Nbt;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter118 : IChunkInterpreter {
@@ -76,7 +70,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                                     var wl = properties["waterlogged"];
                                     if(wl != null) waterlogged = (NumTag<string>)wl == "true";
                                 }
-                                waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);                             
+                                waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);
 
                                 ushort id = Colormap.Block.GetId(name);
                                 if(waterlogged && BlockManager.depth == Colormap.BLOCK_WATER) id = Colormap.BLOCK_WATER;

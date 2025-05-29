@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -49,7 +48,7 @@ namespace Mcasaenk.UI {
             WM_RBUTTONUP = 0x0205,
 
             WM_MBUTTONDOWN = 0x0207,
-            WM_MBUTTONUP =0x0208,
+            WM_MBUTTONUP = 0x0208,
         }
 
         [StructLayout(LayoutKind.Sequential)]

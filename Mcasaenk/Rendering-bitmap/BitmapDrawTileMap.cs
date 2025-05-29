@@ -1,22 +1,13 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Buffers;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
 using Mcasaenk.UI.Canvas;
-using Mcasaenk.Colormaping;
-using Mcasaenk.Nbt;
-using System.Reflection;
-using System.Windows.Threading;
-using System.Diagnostics;
 
-namespace Mcasaenk.Bitmap_rendering {
-
+namespace Mcasaenk.Rendering_bitmap {
     public class BitmapDrawTileMap : DrawGroupTileMap<WriteableBitmap> {
         private readonly ArrayPool<uint> pixelPool;
 
@@ -77,89 +68,11 @@ namespace Mcasaenk.Bitmap_rendering {
         protected override void DisposeTile(WriteableBitmap bitmap) { }
     }
 
-
-    public class BitmapCanvasCoordinator : CanvasCoordinator {
-        public class OnRenderFrameworkElement : FrameworkElement {
-
-            public delegate void A_OnRender(DrawingContext context);
-            protected override void OnRender(DrawingContext drawingContext) {
-                base.OnRender(drawingContext);
-
-                OnDraw.Invoke(drawingContext);
-            }
-
-            public event A_OnRender OnDraw;
-        }
-
-        List<Painter> painters;
-        ScenePainter scenePainter;
-        ScreenshotPainer screenshotPainer;
-        GridPainter2 gridPainter;
-        BackgroundPainter backgroundPainter;
-
-        DispatcherTimer fasttick;
-        public BitmapCanvasCoordinator(OnRenderFrameworkElement canvas) : base(canvas, Global.App.Window, 50) {
-            scenePainter = new ScenePainter();
-            screenshotPainer = new ScreenshotPainer();
-            gridPainter = new GridPainter2();
-            backgroundPainter = new BackgroundPainter();
-            painters = [
-                backgroundPainter,
-                scenePainter,
-                screenshotPainer,
-                gridPainter,
-            ];
-
-            canvas.OnDraw += OnRender;
-
-            fasttick = new DispatcherTimer(DispatcherPriority.Send);
-            fasttick.Interval = TimeSpan.FromMilliseconds(16); // ~60 FPS
-            fasttick.Tick += OnFastTick;
-            fasttick.Start();
-        }
-
-        protected override void OnUnloaded() {
-            base.OnUnloaded();
-
-            ((OnRenderFrameworkElement)canvas).OnDraw -= OnRender;
-            fasttick.Tick -= OnFastTick;
-            fasttick.Stop();
-        }
-
-        protected override (double dpix, double dpiy) GetDpiScale() => (1, 1);
-
-        private void OnRender(DrawingContext context) {
-            foreach(var painter in painters) {
-                context.DrawDrawing(painter.GetDrawing());
-            }
-        }
-
-        private DateTime lastm;
-        private void OnFastTick(object sender, EventArgs e) {
-            bool slowtick = base.OnFastTick((int)((DateTime.Now - lastm).TotalMilliseconds));
-            lastm = DateTime.Now;
-
-            if(true) {
-                scenePainter.SetTileMap(drawTileMap as BitmapDrawTileMap, genTileMap);
-                screenshotPainer.SetManager(drawTileMap as BitmapDrawTileMap, genTileMap, window.screenshot);
-            }
-
-            foreach(var painter in painters) {
-                painter.Update(screen);
-            }
-        }
-
-        protected override DrawGroupTileMap CreateGroupTileMap() => new BitmapDrawTileMap(genTileMap, drawTileMap as BitmapDrawTileMap);
-
-        public override ScreenshotTaker CreateScreenshotCamera(ScreenshotManager screenshot) => new BitmapClusterScreenshotTaker(drawTileMap as BitmapDrawTileMap, screenshot.AsScreen(), screenshot.IsRotated());
-    }
-
-
     public class BitmapClusterScreenshotTaker : ScreenshotTaker {
         private readonly BitmapDrawTileMap drawTileMap;
         private WorldPosition frame;
         private bool rotate;
-        public BitmapClusterScreenshotTaker(BitmapDrawTileMap drawTilemap, WorldPosition frame, bool rotate) {
+        public BitmapClusterScreenshotTaker(BitmapDrawTileMap drawTileMap, WorldPosition frame, bool rotate) {
             this.drawTileMap = drawTileMap;
             this.frame = frame;
             this.rotate = rotate;
@@ -214,12 +127,12 @@ namespace Mcasaenk.Bitmap_rendering {
             return this.Render();
         }
 
-        public CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo) {
+        public CompoundTag_Allgemein TakeScreenshotAsMap(Dimension dim, int version, ColorApproximationAlgorithm coloralgo) {
             uint[] pixels = new uint[16384];
             var screenshot = this.Render();
             screenshot.CopyPixels(pixels, 512, 0);
 
-            return NBTBlueprints.CreateMapScreenshot(pixels, frame, version, coloralgo);
+            return NBTBlueprints.CreateMapScreenshot(pixels, frame, dim, version, coloralgo);
         }
     }
 }

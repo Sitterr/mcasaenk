@@ -1,12 +1,5 @@
-﻿using Accessibility;
+﻿using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
-using OpenTK.Graphics.ES20;
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
-using System.Windows;
-using System.Xml.XPath;
 
 namespace Mcasaenk.Shade3d {
     public class TileShade {
@@ -57,7 +50,7 @@ namespace Mcasaenk.Shade3d {
         private object locker = new object();
 
         private void CheckDestruct() {
-            if (ShouldDestruct()) {
+            if(ShouldDestruct()) {
                 IsActive = false;
                 Destruct();
             }
@@ -124,7 +117,7 @@ namespace Mcasaenk.Shade3d {
                 var shadeValues = this.shadeValues[w];
 
                 if(shadeValues == null) continue;
-                
+
                 for(int i = 0; i < 512 * 512; i++) {
                     if(genData.columns[w].ContainsInfo(i) == false) continue;
                     if(genData.columns[w].Shade(i) == 15) continue;
@@ -183,7 +176,7 @@ namespace Mcasaenk.Shade3d {
                     if(!ShadeConstants.GLB.regionReach.Any(r => r.p == f)) {
                         harvested[i] = true;
                     }
-                    
+
                 }
                 if(_ix == dist.X && _iz == dist.Z) {
                     harvested[i] = true;

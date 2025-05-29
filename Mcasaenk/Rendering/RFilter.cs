@@ -1,13 +1,6 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Rendering {
@@ -35,7 +28,7 @@ namespace Mcasaenk.Rendering {
                     AIRBLOCKS.AddRange(parts.Select(p => p.minecraftname()));
                 } else if(group == "WATERINV") {
                     WATERINVBLOCKS.AddRange(parts.Select(p => p.minecraftname()));
-                } else if(group == "WATER") { 
+                } else if(group == "WATER") {
                     WATERBLOCK = parts[0].minecraftname();
                 }
             });

@@ -1,17 +1,10 @@
-﻿using CommunityToolkit.HighPerformance;
-using Mcasaenk.Rendering;
+﻿using Mcasaenk.Rendering;
 using Mcasaenk.Resources;
-using Mcasaenk.Opengl_rendering.Scene;
 using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Mcasaenk.Opengl_rendering.Scale {
+namespace Mcasaenk.Rendering_Opengl {
     public class ScaleShader : Shader {
         private readonly int VAO;
         public ScaleShader(int VAO) : base(ResourceMapping.tile_vert, ResourceMapping.scale_frag) {
@@ -37,7 +30,7 @@ namespace Mcasaenk.Opengl_rendering.Scale {
                 GL.Uniform2(GL.GetUniformLocation(Handle, "tv_resolution"), w, h);
                 GL.Uniform2(GL.GetUniformLocation(Handle, "tv_cam"), (int)Math.Floor(screen.Start.X), (int)Math.Floor(screen.Start.Y));
                 int tilesize = 0;
-                if (drawtilemap != null) tilesize = drawtilemap.TileSize;
+                if(drawtilemap != null) tilesize = drawtilemap.TileSize;
                 GL.Uniform2(GL.GetUniformLocation(Handle, "tv_regSize"), tilesize, tilesize);
             }
 
@@ -99,7 +92,7 @@ namespace Mcasaenk.Opengl_rendering.Scale {
                     GL.Uniform1(GL.GetUniformLocation(Handle, "region0"), 0);
 
                     GL.Uniform2(GL.GetUniformLocation(Handle, "tv_glR"), reg.X, reg.Z);
-                    GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
                 }
             }
         }

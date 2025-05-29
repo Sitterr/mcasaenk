@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.Windows;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
-using Mcasaenk.Rendering;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Mcasaenk {
     [StructLayout(LayoutKind.Sequential)]
@@ -43,8 +37,7 @@ namespace Mcasaenk {
                     byte b = Convert.ToByte(hex.Substring(6, 2), 16);
                     return FromArgb(r, g, b, a);
                 } else return WPFColor.Transparent;
-            }
-            catch {
+            } catch {
                 return WPFColor.Transparent;
             }
         }
@@ -99,7 +92,7 @@ namespace Mcasaenk {
         public BitmapSource ToBitmapSource(bool save = false) {
             if(changed == true || last == null || (last?.Dispatcher == null && save) || last?.Dispatcher?.CheckAccess() == false) {
                 changed = false;
-                last = pixels.FromRGBMatrix();                
+                last = pixels.FromRGBMatrix();
             }
             return last;
         }

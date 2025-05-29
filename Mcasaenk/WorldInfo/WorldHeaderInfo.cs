@@ -1,19 +1,13 @@
-﻿using Mcasaenk.Nbt;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO.Compression;
+﻿using System.Buffers;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO.Compression;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Mcasaenk.Nbt;
 using Mcasaenk.Resources;
-using System.Text.Json;
-using Mcasaenk.UI;
-using System.Text.RegularExpressions;
-using System.ComponentModel;
 
 namespace Mcasaenk.WorldInfo {
 
@@ -34,7 +28,7 @@ namespace Mcasaenk.WorldInfo {
 
         public static unsafe bool ReadModMeta(ReadInterface read, out PackMetadata metadata) {
             metadata = null;
-            try {           
+            try {
                 ImageSource icon = null;
                 string id = null, name = "";
                 string description = null;
@@ -66,21 +60,20 @@ namespace Mcasaenk.WorldInfo {
                         if(line.Contains("=")) {
                             var parts = line.Split('=').Select(s => s.Trim()).ToArray();
 
-                            if(chapter == "mods" || chapter == ""){
+                            if(chapter == "mods" || chapter == "") {
                                 if(parts[0] == "modId") {
                                     name = parts[1].Substring(1, parts[1].Length - 2);
                                 } else if(parts[0] == "logoFile") {
                                     string iconname = parts[1].Substring(1, parts[1].Length - 2);
                                     icon = read.ReadBitmap(iconname)?.ToBitmapSource();
-                                } else if(parts[0] == "description") {                 
+                                } else if(parts[0] == "description") {
                                     if(parts[1].StartsWith("'''")) {
                                         if(parts[1].Substring(3).EndsWith("'''")) description = parts[1].Substring(3, parts[1].Length - 6);
                                         else {
                                             multyline = parts[1].Substring(3);
                                             multylineval = &description;
                                         }
-                                    } 
-                                    else if(parts[1].StartsWith('"') || parts[1].StartsWith("'")) description = parts[1].Substring(1, parts[1].Length - 2);
+                                    } else if(parts[1].StartsWith('"') || parts[1].StartsWith("'")) description = parts[1].Substring(1, parts[1].Length - 2);
                                 }
                             }
                         }
@@ -99,22 +92,20 @@ namespace Mcasaenk.WorldInfo {
                 if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_server)?.ToBitmapSource();
                 metadata = new PackMetadata(read.GetBasePath(), name, icon, description, id);
                 return true;
-            }
-            catch {
+            } catch {
                 return false;
             }
         }
 
         public static bool ReadPackMeta(ReadInterface read, string name, out PackMetadata metadata) {
             metadata = null;
-            try {                
+            try {
                 if(read.ExistsFile("pack.mcmeta") == false) return false;
                 ImageSource icon = read.ReadBitmap("pack.png")?.ToBitmapSource();
                 if(icon == null) icon = WPFBitmap.FromBytes(ResourceMapping.unknown_pack).ToBitmapSource();
                 metadata = new PackMetadata(read.GetBasePath(), name, icon, readDescription(read.ReadAllText("pack.mcmeta")));
                 return true;
-            }
-            catch {
+            } catch {
                 return false;
             }
         }
@@ -126,8 +117,7 @@ namespace Mcasaenk.WorldInfo {
                 var descr = pack.EnumerateObject().Where(p => p.NameEquals("description"));
                 if(descr.Count() == 0) return "";
                 return Regex.Replace(descr.First().Value.GetString(), @"§.", "");
-            }
-            catch {
+            } catch {
                 return "";
             }
         }
@@ -160,7 +150,7 @@ namespace Mcasaenk.WorldInfo {
             if(image == null) image = defaultIcon;
             if(image.CanFreeze) image.Freeze();
             this.image = image;
-            this.foldername = folder.Name;         
+            this.foldername = folder.Name;
             this.lastopened = lastopened;
             this.resourcepack = folder.GetFiles().Any(f => f.Name == "resources.zip");
 
@@ -201,7 +191,7 @@ namespace Mcasaenk.WorldInfo {
 
                 var player = (CompoundTag_Optimal)data["Player"];
                 {
-                    
+
                     if(player?["Pos"] != null) {
                         var pos = (List<Tag>)(ListTag)player["Pos"];
                         mainPlayer.pl_x = (int)(NumTag<double>)pos[0];
@@ -227,7 +217,7 @@ namespace Mcasaenk.WorldInfo {
                         this.mods = enabled.Where(e => e.StartsWith("mod:")).Select(e => e.Substring(4)).ToArray();
                     }
                     this.datapacks = enabled.Where(e => e.StartsWith("file/")).Select(e => e.Substring(5)).ToArray();
-                    
+
                 }
             }
 
@@ -274,8 +264,7 @@ namespace Mcasaenk.WorldInfo {
                             }
 
                             otherPlayers.Add(player);
-                        }
-                        catch {
+                        } catch {
                             continue;
                         }
                     }
@@ -308,8 +297,7 @@ namespace Mcasaenk.WorldInfo {
                     icon = new BitmapImage(new Uri(Path.Combine(path, "icon.png")));
                 }
                 return new LevelDatInfo(globaltag, new DirectoryInfo(path), icon, DateOnly.FromDateTime(File.GetLastWriteTime(Path.Combine(path, "level.dat"))));
-            }
-            catch {
+            } catch {
                 return null;
             }
         }

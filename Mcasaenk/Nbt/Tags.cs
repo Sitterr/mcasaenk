@@ -1,11 +1,5 @@
-﻿using Microsoft.Extensions.ObjectPool;
-using System;
-using System.Buffers;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Buffers;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Mcasaenk.Nbt {
     public enum TagType : byte {

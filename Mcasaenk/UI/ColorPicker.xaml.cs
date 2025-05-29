@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -27,7 +17,7 @@ namespace Mcasaenk.UI {
             txt_r.Text = color.R.ToString();
             txt_g.Text = color.G.ToString();
             txt_b.Text = color.B.ToString();
-            
+
 
             btn_transp.Click += (o, e) => {
                 txt_r.Text = "";
@@ -62,8 +52,7 @@ namespace Mcasaenk.UI {
 
                 rescolor = new WPFColor(r, g, b);
                 img.Background = new SolidColorBrush(Color.FromRgb(r, g, b));
-            }
-            catch {
+            } catch {
                 rescolor = WPFColor.Transparent;
                 img.Background = Global.CreateCheckerBrush(Color.FromRgb(150, 150, 150), Color.FromRgb(200, 200, 200));
             }

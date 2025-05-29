@@ -1,20 +1,8 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
 using Mcasaenk.Nbt;
 using Mcasaenk.Rendering;
-using Mcasaenk.Opengl_rendering;
-using Mcasaenk.Opengl_rendering.Scale;
-using Microsoft.Win32;
-using OpenTK.Graphics.OpenGL4;
 
 namespace Mcasaenk.UI.Canvas {
 
@@ -99,7 +87,7 @@ namespace Mcasaenk.UI.Canvas {
         }
         public void ResizeAxis(int a, bool x) {
             locker = true;
-            if (x) {
+            if(x) {
                 Loc1.X = a;
                 resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
             } else {
@@ -119,7 +107,7 @@ namespace Mcasaenk.UI.Canvas {
         public void Rebase(bool north, bool west) {
             Point new1 = new Point(0, 0), new2 = new Point();
 
-            if (north) {
+            if(north) {
                 new1.Y = Math.Min(Loc1.Y, Loc2.Y);
                 new2.Y = Math.Max(Loc1.Y, Loc2.Y);
             } else {
@@ -127,7 +115,7 @@ namespace Mcasaenk.UI.Canvas {
                 new2.Y = Math.Min(Loc1.Y, Loc2.Y);
             }
 
-            if (west) {
+            if(west) {
                 new1.X = Math.Min(Loc1.X, Loc2.X);
                 new2.X = Math.Max(Loc1.X, Loc2.X);
             } else {
@@ -140,9 +128,10 @@ namespace Mcasaenk.UI.Canvas {
             //resolution.X = (int)(Math.Abs(Loc1.X - Loc2.X) * scale.Scale);
             //resolution.Y = (int)(Math.Abs(Loc1.Y - Loc2.Y) * scale.Scale);
         }
-        public Cursor MouseOverWhat(WorldPosition screen, Point mousePos) {
+        public Cursor MouseOverWhat(WorldPosition screen, Point mousePos, bool opengl = false) {
             double e = (10 + screen.zoom);
-            var p = new Point(e, e).Dev(2).Add(new Point(0, 0.5 * screen.zoom));
+            var p = new Point(e, e).Dev(2);
+            if(opengl) p = p.Add(new Point(0, 0.5 * screen.zoom));
             var s = new Size(e, e);
 
             var LocNW = AsRect().TopLeft;
@@ -166,11 +155,11 @@ namespace Mcasaenk.UI.Canvas {
         }
 
 
-        public enum ConditionalState : uint { 
-            ok                = 0xFF00FF00, 
-            shadesnotfinished = 0xFFA5FF00, 
-            unloadedchunks   = 0xFFFFA500,
-            invalid           = 0xFFFF0000,
+        public enum ConditionalState : uint {
+            ok = 0xFF00FF00,
+            shadesnotfinished = 0xFFA5FF00,
+            unloadedchunks = 0xFFFFA500,
+            invalid = 0xFFFF0000,
         }
         public ConditionalState GetState(GenDataTileMap gentilemap) {
             if(resolution.X > 16384 || resolution.Y > 16384) return ConditionalState.invalid;
@@ -178,7 +167,7 @@ namespace Mcasaenk.UI.Canvas {
 
             var screen = this.AsScreen();
 
-            foreach(var rch in gentilemap.GetVisibleChunkPositions(screen)) { 
+            foreach(var rch in gentilemap.GetVisibleChunkPositions(screen)) {
                 if(gentilemap.GetTile(rch.reg, out var tile) == false) return ConditionalState.unloadedchunks;
                 if(tile.IsChunkScreenshotable(rch.chunk.X, rch.chunk.Z) == false) return ConditionalState.unloadedchunks;
             }
@@ -195,6 +184,6 @@ namespace Mcasaenk.UI.Canvas {
 
     public interface ScreenshotTaker {
         BitmapSource TakeScreenshotAsImage();
-        CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo);
+        CompoundTag_Allgemein TakeScreenshotAsMap(Dimension dim, int version, ColorApproximationAlgorithm coloralgo);
     }
 }

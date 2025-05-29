@@ -1,11 +1,4 @@
 ﻿using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Mcasaenk.Colormaping.Tint;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {

@@ -1,27 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mcasaenk.Rendering;
-using Mcasaenk.Opengl_rendering.Dissect;
-using Mcasaenk.Opengl_rendering.Scale;
-using Mcasaenk.Opengl_rendering;
-using Mcasaenk.UI.Canvas;
-using Mcasaenk.UI;
-using OpenTK.Wpf;
-using Mcasaenk.Nbt;
-using System.Runtime.InteropServices;
-using System.Windows.Media.Imaging;
+﻿using System.Runtime.InteropServices;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Mcasaenk.Nbt;
+using Mcasaenk.Rendering;
+using Mcasaenk.UI.Canvas;
 using OpenTK.Graphics.OpenGL4;
-using System.Windows;
-using System.Diagnostics;
-using static Mcasaenk.Extentions;
-using Mcasaenk.Colormaping;
 
-namespace Mcasaenk.Opengl_rendering {
-
+namespace Mcasaenk.Rendering_Opengl {
     public class OpenGLDrawTileMap : DrawGroupTileMap<int> {
         private readonly DissectShader dissectShader;
         private readonly ShaderPipeline gldrawer;
@@ -71,7 +56,7 @@ namespace Mcasaenk.Opengl_rendering {
 
                 Point2i bigsize = (max - min + 1) * TileSizeR;
                 ResizeTheBigTexture(bigsize);
-                gldrawer.Render(new WorldPosition(new Point(min.X * TileSize, min.Z * TileSize), bigsize.X / scale, bigsize.Z / scale, scale), gentilemap, extras.GetValueOrDefault("map_screenshot", (WorldPosition)default), thebigtexture);
+                gldrawer.Render(new WorldPosition(new System.Windows.Point(min.X * TileSize, min.Z * TileSize), bigsize.X / scale, bigsize.Z / scale, scale), gentilemap, Global.App.Colormap, extras.GetValueOrDefault("map_screenshot", (WorldPosition)default), thebigtexture);
 
                 dissectShader.Use(thebigtexture, todo.Select(t => (t - min, GetTile(t))), new Point2i(TileSizeR, TileSizeR), bigsize);
             }
@@ -123,78 +108,6 @@ namespace Mcasaenk.Opengl_rendering {
         bool disposed = false;
 
     }
-
-    public class GLCanvasCoordinator : CanvasCoordinator {
-        const double DRAWZOOM = 1;
-
-        public ShaderPipeline pipeline;
-        ScaleShader scaleShader;
-        DissectShader dissectShader;
-
-        private GLWpfControl canvas;
-        public GLCanvasCoordinator(GLWpfControl canvas) : base(canvas, Global.App.Window, 50) {
-            this.canvas = canvas;
-            StartOpenGL();
-        }
-        protected override (double dpix, double dpiy) GetDpiScale() => (PresentationSource.FromVisual(canvas).CompositionTarget.TransformToDevice.M11, PresentationSource.FromVisual(canvas).CompositionTarget.TransformToDevice.M22);
-
-        protected override void OnLoaded() {
-            base.OnLoaded();
-
-            int VAO = Shader.SetUpRectVAO();
-            pipeline = new ShaderPipeline(VAO);
-            scaleShader = new ScaleShader(VAO);
-            dissectShader = new DissectShader(VAO);
-
-            canvas.Render += Canvas_Render;
-
-            drawTileMap = CreateGroupTileMap();
-        }
-
-        protected override void OnUnloaded() {
-            base.OnUnloaded();
-
-            pipeline.Dispose();
-            scaleShader.Dispose();
-            dissectShader.Dispose();
-
-            foreach(var tex in ShaderArray.AllInstances) {
-                tex.Dispose();
-            }
-            ShaderArray.AllInstances.Clear();
-
-            canvas.Render -= Canvas_Render;
-            canvas.Dispose();
-        }
-
-        private void Canvas_Render(TimeSpan elapsedTime) {
-            bool slowtick = base.OnFastTick(elapsedTime.Milliseconds);
-
-            if(Global.App.Colormap != null) pipeline?.kawaseShader.UpdateBlendTintCounter(Global.App.Colormap.TintManager.GetBlendingTintsIndexes());
-
-            scaleShader?.Use(screen, (OpenGLDrawTileMap)drawTileMap, genTileMap, window.screenshot);
-        }
-
-        public override ScreenshotTaker CreateScreenshotCamera(ScreenshotManager screenshot) => new OpenGLScreenshotTaker(genTileMap, pipeline, screenshot.AsScreen(), screenshot.IsRotated());
-        protected override DrawGroupTileMap<int> CreateGroupTileMap() => new OpenGLDrawTileMap(genTileMap, pipeline, dissectShader, DRAWZOOM, screen.zoom, (OpenGLDrawTileMap)drawTileMap);
-
-        public void StartOpenGL() {
-            var openglsettings = new GLWpfControlSettings {
-                MajorVersion = 4,
-                MinorVersion = 3
-            };
-            canvas.Start(openglsettings);
-            GL.Enable(EnableCap.DebugOutput);
-            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
-                string str = Marshal.PtrToStringAnsi(msg);
-                Debug.WriteLine(str);
-                if(type == DebugType.DebugTypeError) {
-                    Console.WriteLine(str);
-                }
-            }, IntPtr.Zero);
-        }
-    }
-
     public class OpenGLScreenshotTaker : ScreenshotTaker, IDisposable {
         private readonly GenDataTileMap gentilemap;
         private readonly ShaderPipeline renderer;
@@ -220,11 +133,11 @@ namespace Mcasaenk.Opengl_rendering {
             return BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, Render(false), w * 4);
         }
 
-        public CompoundTag_Allgemein TakeScreenshotAsMap(int version, ColorApproximationAlgorithm coloralgo) {
-            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render(true)), frame, version, coloralgo);
+        public CompoundTag_Allgemein TakeScreenshotAsMap(Dimension dim, int version, ColorApproximationAlgorithm coloralgo) {
+            return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render(true)), frame, dim, version, coloralgo);
         }
         private byte[] Render(bool map) {
-            renderer.Render(frame, gentilemap, map ? frame : default, sceneimage.textureHandle);
+            renderer.Render(frame, gentilemap, Global.App.Colormap, map ? frame : default, sceneimage.textureHandle);
 
             byte[] data = sceneimage.ReadData();
             if(frame.OutSimzoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.OutSimzoom);
@@ -309,6 +222,4 @@ namespace Mcasaenk.Opengl_rendering {
             return output;
         }
     }
-
-
 }

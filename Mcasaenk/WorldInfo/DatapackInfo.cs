@@ -1,23 +1,11 @@
-﻿using Mcasaenk.Rendering;
-using Mcasaenk.Resources;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.IO.Compression;
+﻿using System.Collections.Frozen;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Transactions;
-using System.Configuration;
+using Mcasaenk.Resources;
 using static Mcasaenk.Global;
-using System.Globalization;
-using CommunityToolkit.HighPerformance;
 
 namespace Mcasaenk.WorldInfo {
 
@@ -153,8 +141,7 @@ namespace Mcasaenk.WorldInfo {
             try {
                 if(levelDat.version_id < 2825) return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla117);
                 else return new DatapacksInfo(worldsdatapacks.Concat(modsdatapacks), vanilla118);
-            }
-            finally {
+            } finally {
                 foreach(var dp in worldsdatapacks) dp.read.Dispose();
             }
         }
@@ -167,7 +154,7 @@ namespace Mcasaenk.WorldInfo {
                     string name = Global.ReadName(fileorfolder);
                     var read = ReadInterface.GetSuitable(fileorfolder);
                     if(PackMetadata.ReadPackMeta(read, name, out var meta) == false) continue;
-                    if(!levelDat.datapacks.Contains(meta.id)) continue; 
+                    if(!levelDat.datapacks.Contains(meta.id)) continue;
                     yield return (read, meta);
                 }
             }

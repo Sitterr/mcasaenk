@@ -1,13 +1,7 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
+﻿using System.Text;
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 
-namespace Mcasaenk.Opengl_rendering {
+namespace Mcasaenk.Rendering_Opengl {
     public class Shader : IDisposable {
         public int Handle;
 
@@ -89,22 +83,17 @@ namespace Mcasaenk.Opengl_rendering {
             GL.BindVertexArray(VAO);
 
             float[] vertices = {
-                1.0f, -1.0f, 0.0f,
-                1.0f,  1.0f, 0.0f,
-               -1.0f,  1.0f, 0.0f,
-               -1.0f, -1.0f, 0.0f,
+                -1.0f, -1.0f,
+                 1.0f, -1.0f,
+                -1.0f,  1.0f,
+                 1.0f,  1.0f
             };
-            uint[] indices = { 3, 0, 1, 3, 2, 1 };
 
             int VBuffer = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBuffer);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
-            int IBuffer = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBuffer);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
-
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
             return VAO;

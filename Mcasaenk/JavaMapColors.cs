@@ -1,12 +1,4 @@
-﻿using Accessibility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-
-namespace Mcasaenk {
+﻿namespace Mcasaenk {
     public static class JavaMapColors {
         private static MapColor nullcolor = new MapColor(0, 0, 0);
         public static readonly MapColor[] colors = [
@@ -121,7 +113,7 @@ namespace Mcasaenk {
             return colors.FirstOrDefault(d => d.mapid == id / 4);
         }
     }
-    
+
 
     public struct MapColor {
         public readonly byte mapid;

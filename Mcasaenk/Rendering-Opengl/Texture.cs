@@ -1,15 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Media3D;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Mcasaenk.Opengl_rendering {
+namespace Mcasaenk.Rendering_Opengl {
     public unsafe abstract class ShaderArray : IDisposable {
         public bool disposed { get; protected set; }
         public abstract void Dispose();

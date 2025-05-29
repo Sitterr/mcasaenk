@@ -148,6 +148,16 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] colormap_betaplus {
+            get {
+                object obj = ResourceManager.GetObject("colormap_betaplus", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] colormap_java {
             get {
                 object obj = ResourceManager.GetObject("colormap_java", resourceCulture);
@@ -164,17 +174,7 @@ namespace Mcasaenk.Resources {
                 return ((byte[])(obj));
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] colormap_betaplus {
-            get {
-                object obj = ResourceManager.GetObject("colormap_betaplus", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>

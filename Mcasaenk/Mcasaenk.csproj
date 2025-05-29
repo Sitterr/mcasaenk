@@ -1,44 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ApplicationIcon>Resources\Icon2.ico</ApplicationIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ApplicationIcon>Resources\Icon2.ico</ApplicationIcon>
+		<AssemblyTitle>Mcasaenk</AssemblyTitle>
+		<Version>1.3</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Resources\Icon2.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Resources\Icon2.ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Remove="C:\Users\nikol\.nuget\packages\wpf.imageeffects\1.5.0\contentFiles\any\net5.0-windows7.0\Shaders\ImageShader.fx" />
 	</ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
-    <PackageReference Include="OpenTK" Version="4.9.4" />
-    <PackageReference Include="OpenTK.GLWpfControl" Version="4.3.3" />
-    <PackageReference Include="WPF.ImageEffects" Version="1.5.0" />
-  </ItemGroup>
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
+		<PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.2" />
+		<PackageReference Include="OpenTK.GLWpfControl" Version="4.3.3" />
+		<PackageReference Include="WPF.ImageEffects" Version="1.5.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Resources\ResourceMapping.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ResourceMapping.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Resources\ResourceMapping.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ResourceMapping.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\ResourceMapping.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ResourceMapping.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\ResourceMapping.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ResourceMapping.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
 
 </Project>

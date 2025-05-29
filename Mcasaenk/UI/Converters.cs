@@ -1,17 +1,11 @@
-﻿using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using Mcasaenk.WorldInfo;
 
-namespace Mcasaenk.UI
-{
+namespace Mcasaenk.UI {
     public class GreaterThanConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return System.Convert.ToDouble(value) > System.Convert.ToDouble(parameter);
@@ -50,7 +44,7 @@ namespace Mcasaenk.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if(value is bool visibility) {
                 return visibility ? Visibility.Visible : Visibility.Collapsed;
-            } else { 
+            } else {
                 return value.Equals(parameter) ? Visibility.Visible : Visibility.Collapsed;
             }
             return Visibility.Visible;
@@ -83,7 +77,7 @@ namespace Mcasaenk.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if(value is not Gamemode gm) return "";
 
-            return gm switch { 
+            return gm switch {
                 Gamemode.Survival => (SolidColorBrush)Application.Current.FindResource("LIGHT_YELLOW_B"),
                 Gamemode.Hardcore => (SolidColorBrush)Application.Current.FindResource("LIGHT_RED_B"),
                 Gamemode.Creative => (SolidColorBrush)Application.Current.FindResource("LIGHT_GREEN_B"),
@@ -104,7 +98,7 @@ namespace Mcasaenk.UI
                 0 => "none",
                 1 => "depth only",
                 2 => "1 level",
-                _ => $"{n-1} levels",
+                _ => $"{n - 1} levels",
             };
         }
 
@@ -208,7 +202,7 @@ namespace Mcasaenk.UI
     public class VisibilityMultConverter : IMultiValueConverter {
         public object Convert(object[] value, Type targetType, object _parameter, CultureInfo culture) {
             string parameter = "And";
-            if(_parameter is string s) {  parameter = s; }
+            if(_parameter is string s) { parameter = s; }
 
             bool res = true;
             if(parameter == "And") res = value.Select(o => (bool)o).All(v => v);
@@ -287,6 +281,22 @@ namespace Mcasaenk.UI
             throw new NotImplementedException();
         }
     }
+
+
+
+    public class EnumEqualityConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value == null || parameter == null)
+                return false;
+
+            return value.ToString() == (string)parameter;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
 
     [ValueConversion(typeof(Enum), typeof(IEnumerable<ValueDescription>))]
     public class EnumToCollectionConverter : IValueConverter {

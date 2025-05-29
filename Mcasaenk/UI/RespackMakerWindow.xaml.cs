@@ -1,18 +1,6 @@
-﻿using Mcasaenk.Colormaping;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
+﻿using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using Mcasaenk.Colormaping;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -43,7 +31,7 @@ namespace Mcasaenk.UI {
                 colormap_editor.Visibility = Visibility.Visible;
             } else if(mode == OperationMode.ColormapMaker) {
                 colormap_maker.SetUp();
-                colormap_maker.Visibility = Visibility.Visible;         
+                colormap_maker.Visibility = Visibility.Visible;
             }
         }
 
@@ -57,7 +45,7 @@ namespace Mcasaenk.UI {
         }
 
         private async void ColormapMakerClosed() {
-            colormap_maker.Visibility= Visibility.Collapsed;
+            colormap_maker.Visibility = Visibility.Collapsed;
 
             txt_loading.Visibility = Visibility.Visible;
             RawColormap colormap = null;

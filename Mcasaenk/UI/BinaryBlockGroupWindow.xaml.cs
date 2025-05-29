@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -32,7 +21,7 @@ namespace Mcasaenk.UI {
                 btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_finish.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
             };
 
-            if(blocks.All(f => f.important)) { 
+            if(blocks.All(f => f.important)) {
                 toggle_showall.Visibility = Visibility.Collapsed;
                 lbl_showall.Visibility = Visibility.Collapsed;
             }
@@ -99,8 +88,8 @@ namespace Mcasaenk.UI {
         }
 
         public void SetUp() {
-            grid_availabe.ItemsSource = startingstate.Where(x => x.group != Group.This).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.Def)).ToArray();
-            grid_selected.ItemsSource = startingstate.Where(x => x.group == Group.This || x.group == Group.AlwaysThis).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.This)).ToArray();
+            grid_availabe.ItemsSource = startingstate.Where(x => !x.name.StartsWith('_') && !x.name.EndsWith('_')).Where(x => x.group != Group.This).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.Def)).ToArray();
+            grid_selected.ItemsSource = startingstate.Where(x => !x.name.StartsWith('_') && !x.name.EndsWith('_')).Where(x => x.group == Group.This || x.group == Group.AlwaysThis).Select(x => new BinaryBlockRow(x.name, x.important, x.group == Group.This)).ToArray();
             toggle_showall.IsChecked = false;
             txt_searchleft.Text = "";
             txt_searchright.Text = "";
@@ -126,14 +115,14 @@ namespace Mcasaenk.UI {
 
             init = false;
         }
-        public BinaryBlockRow(BinaryBlockRow row) { 
+        public BinaryBlockRow(BinaryBlockRow row) {
             this.BlockName = row.BlockName;
             this.CanMove = row.CanMove;
 
             init = false;
         }
 
-        
+
         private string blockname;
         public string BlockName {
             get => blockname;

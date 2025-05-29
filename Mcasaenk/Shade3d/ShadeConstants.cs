@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Automation;
-using System.Windows.Media.Media3D;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mcasaenk.Shade3d {
     public class ShadeConstants {
@@ -62,7 +52,7 @@ namespace Mcasaenk.Shade3d {
 
             var size = new SizeF(Math.Abs((float)cosAcotgB), Math.Abs((float)sinAcotgB));
             blockReach = CreateReach(new PointF(0, 0), size, true);
-            for(int i=0;i<blockReach.Length;i++) {
+            for(int i = 0; i < blockReach.Length; i++) {
                 var r = blockReach[i];
 
                 if(r.p == new Point2i(0, 0)) r.dir = RegionDir.l;
@@ -80,7 +70,7 @@ namespace Mcasaenk.Shade3d {
             var res = Tiles(a, size, precision);
             for(int i = 0; i < res.lenX; i++) {
                 for(int j = 0; j < res.lenY; j++) {
-                    Debug.Write(res[i, j] switch { 
+                    Debug.Write(res[i, j] switch {
                         RegionDir.n => ".",
                         RegionDir.r => "r",
                         RegionDir.l => "l",

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mcasaenk.UI.Canvas;
-using System.Windows.Media.Imaging;
+﻿using System.Windows;
 using System.Windows.Media;
-using System.Windows;
+using System.Windows.Media.Imaging;
 using Mcasaenk.Rendering;
+using Mcasaenk.UI.Canvas;
 
-namespace Mcasaenk.Bitmap_rendering {
+namespace Mcasaenk.Rendering_bitmap {
     public abstract class Painter {
 
         private readonly DrawingGroup drawingGroup;
@@ -170,7 +165,7 @@ namespace Mcasaenk.Bitmap_rendering {
             yellowPen = new Pen(new SolidColorBrush(Colors.LightGreen), 2);
             redPen = new Pen(new SolidColorBrush(Colors.Red), 2);
 
-            backBrush = new SolidColorBrush(Global.FromArgb(0.25, Colors.White));
+            backBrush = new SolidColorBrush(Global.FromArgb(0.15, Colors.White));
         }
 
         public void SetManager(BitmapDrawTileMap drawTileMap, GenDataTileMap genTileMap, ScreenshotManager manager) {

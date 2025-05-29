@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
+﻿using System.Collections.Frozen;
 using System.IO;
-using System.Linq;
+using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using System.Text.RegularExpressions;
-using static Mcasaenk.Global;
-using System.Collections.Frozen;
 
 namespace Mcasaenk {
     public interface SaveInterface : IDisposable {
@@ -32,7 +26,7 @@ namespace Mcasaenk {
         string ReadAllText(string path);
         IEnumerable<string> ReadAllLines(string path);
         WPFBitmap ReadBitmap(string path);
-     
+
 
         string[] GetFiles(string path, bool toponly = true);
 
@@ -105,7 +99,7 @@ namespace Mcasaenk {
             using(FileStream fileStream = new FileStream(Path.Combine(baselocation, loc), FileMode.Create)) {
                 encoder.Save(fileStream);
             }
-        } 
+        }
         public void SaveLines(string loc, IEnumerable<string> lines) => File.WriteAllLines(Path.Combine(baselocation, loc), lines);
     }
 
@@ -173,7 +167,7 @@ namespace Mcasaenk {
               ?!??!?!?!?!?!?!?!?!!?!?!?!?!?!?!?!?!?!?!?!?!?!??!!??!!??!!?!?!?!?!?!?!??!?!?!?!?!?!?!?!??!?!?!?!?!?!?!?!?!?!??!?!?!?!?!?!?  */
         }
         private static string[] sep = ["/", "\\", "\\\\"];
-        public string[] GetFiles(string path, bool toponly = true) { 
+        public string[] GetFiles(string path, bool toponly = true) {
             var all = entries.Keys.Where(ek => ek.StartsWith(path));
             if(toponly) all = all.Where(p => sep.Any(x => p.Substring(path.Length).Contains(x)) == false);
 

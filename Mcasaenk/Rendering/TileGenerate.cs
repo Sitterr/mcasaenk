@@ -1,35 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.Windows;
-using System.Diagnostics;
-using Mcasaenk.UI.Canvas;
-using System.IO;
-using Mcasaenk.Shade3d;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
-using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-using System.Reflection;
-using System.Windows.Documents;
-using Accessibility;
+﻿using System.IO;
 using Mcasaenk.Nbt;
-using CommunityToolkit.HighPerformance.Buffers;
 using Mcasaenk.Rendering.ChunkRenderData;
-using System.Buffers;
-using Mcasaenk.Colormaping;
+using Mcasaenk.Shade3d;
 
-namespace Mcasaenk.Rendering
-{
+namespace Mcasaenk.Rendering {
     public class TileGenerate {
-        public static unsafe GenData StandartGenerate(GenDataTileMap pool, string regionpath) {
+        public static unsafe GenData StandartGenerate(GenDataTileMap pool, string regionpath, CancellationToken cancellationToken) {
             if(File.Exists(regionpath) == false) return null;
 
-            var rawData = new RawData(pool);
+            var rawData = new RawData(Global.Settings.RENDERMODE == RenderMode.OPENGL ? pool : null);
             using(var regionReader = new UnmanagedMcaReader(regionpath)) {
                 var streams = regionReader.ReadChunkOffsets();
 
@@ -39,6 +18,8 @@ namespace Mcasaenk.Rendering
                     if(chunkdata == null) continue;
 
                     ChunkRenderer.Extract(chunkdata, cx * 16, cz * 16, Global.Settings.ABSY, rawData);
+
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 //Parallel.For(0, 1024, i => {
@@ -56,10 +37,10 @@ namespace Mcasaenk.Rendering
             return genData;
         }
 
-        public static unsafe GenData ShadeGenerate(GenDataTileMap tilemap, Point2i tile, string regionpath) {
+        public static unsafe GenData ShadeGenerate(GenDataTileMap tilemap, Point2i tile, string regionpath, CancellationToken cancellationToken) {
             if(File.Exists(regionpath) == false) return null;
 
-            var rawData = new RawData(tilemap);
+            var rawData = new RawData(null);
             using(var regionReader = new UnmanagedMcaReader(regionpath)) {
                 var streams = regionReader.ReadChunkOffsets();
 
@@ -75,6 +56,7 @@ namespace Mcasaenk.Rendering
                         int _cx = _c, _cz = i - _c;
                         int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
                         doChunk(cx, cz);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
 
                 }
@@ -83,6 +65,7 @@ namespace Mcasaenk.Rendering
                         int _cx = _c, _cz = 32 - _c + i - 1;
                         int cx = ShadeConstants.GLB.flowX(_cx, 0, 32), cz = ShadeConstants.GLB.flowZ(_cz, 0, 32);
                         doChunk(cx, cz);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
             }
@@ -115,7 +98,7 @@ namespace Mcasaenk.Rendering
                                         break;
                                 }
                             }
-                            if(arr == null) arr = new byte[512 * 512];                
+                            if(arr == null) arr = new byte[512 * 512];
                         }
 
                         int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
@@ -141,7 +124,7 @@ namespace Mcasaenk.Rendering
                         //int iz = ShadeConstants.GLB.flowZ(_iz, 0, ShadeConstants.GLB.rZ), ix = ShadeConstants.GLB.flowX(_ix, 0, ShadeConstants.GLB.rX);
 
                         Point2i pos = tile - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
-                        if (tilemap.RegionExists(pos)) {
+                        if(tilemap.RegionExists(pos)) {
                             Array.Clear(rawData.shadeFrame);
                             tilemap.GetShadeTile(pos).UpdateSelf(rawData.shadeFrame); // reuse
                         }
