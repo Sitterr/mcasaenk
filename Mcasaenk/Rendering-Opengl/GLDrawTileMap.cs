@@ -40,7 +40,7 @@ namespace Mcasaenk.Rendering_Opengl {
             this.Reset(this.gentilemap);
         }
 
-        public override void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
+        public override void DoVisible(KeyValuePair<string, WorldPosition> visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
             todo.Clear();
             base.DoVisible(visiblescreen, movingextras, quickscan);
 

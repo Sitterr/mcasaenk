@@ -10,14 +10,12 @@ namespace Mcasaenk.Rendering {
         public TileMapQuerer(GroupTileMap<T> tilemap) {
             this.tilemap = tilemap;
         }
-        public virtual void QueueDo(Point2i p, WorldPosition observer) { tilemap.Do(p, default); }
+        public virtual void QueueDo(Point2i p) { tilemap.Do(p, default); }
     }
     public class ObserverTaskTileMapQueuer<T> : TileMapQuerer<T>, IDisposable {
         private readonly ConcurrentDictionary<Point2i, byte> queued, loading;
         private readonly TaskPool taskPool;
         private readonly TaskCreationOptions taskCreationOptions;
-
-        private ConcurrentDictionary<Point2i, List<WorldPosition>> observers = new();
 
         private readonly CancellationTokenSource cancelToken;
 
@@ -34,12 +32,14 @@ namespace Mcasaenk.Rendering {
             cancelToken.Cancel();
         }
 
-        public override void QueueDo(Point2i p, WorldPosition observer) {
+        private ConcurrentDictionary<string, WorldPosition> observers = new();
+        public void Observer(string name, WorldPosition screen) {
+            observers[name] = screen;
+        }
+
+        public override void QueueDo(Point2i p) {
             if(queued.ContainsKey(p)) return;
             queued.TryAdd(p, default);
-
-            if(observers.ContainsKey(p) == false) observers.TryAdd(p, new List<WorldPosition>());
-            if(observers[p].Contains(observer) == false) observers[p].Add(observer);
 
             Task task = new Task(() => {
                 try {
@@ -47,7 +47,7 @@ namespace Mcasaenk.Rendering {
 
                     {
                         bool atleastone = false;
-                        foreach(var screen in observers[p]) {
+                        foreach(var screen in observers.Values) {
                             if(tilemap.Scope(p).InterSects(screen)) {
                                 atleastone = true;
                                 break;
@@ -59,7 +59,6 @@ namespace Mcasaenk.Rendering {
                     }
 
                     tilemap.Do(p, cancelToken.Token);
-                    observers[p].Clear();
 
                 } finally {
                     queued.TryRemove(p, out _);
@@ -152,7 +151,9 @@ namespace Mcasaenk.Rendering {
             if(recycleStack.Count > 0) return recycleStack.Pop();
             return CreateTile();
         }
-
+        public void Observer(string name, WorldPosition screen) {
+            if(queuer is ObserverTaskTileMapQueuer<Tile> q) q.Observer(name, screen);
+        }
 
 
 
@@ -247,7 +248,7 @@ namespace Mcasaenk.Rendering {
     }
 
     public interface DrawGroupTileMap {
-        void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan);
+        void DoVisible(KeyValuePair<string, WorldPosition> visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan);
         void Reset(GenDataTileMap gentilemap = null);
         void MassRedo();
         void OnScaleChange(double scale);
@@ -295,7 +296,7 @@ namespace Mcasaenk.Rendering {
             return false;
         }
 
-        public virtual void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
+        public virtual void DoVisible(KeyValuePair<string, WorldPosition> visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
             foreach(var me in movingextras) {
                 WorldPosition old = new WorldPosition();
                 if(this.extras.TryGetValue(me.Key, out var wp)) {
@@ -308,9 +309,10 @@ namespace Mcasaenk.Rendering {
                 extras[me.Key] = me.Value;
             }
 
-            foreach(var tile in this.GetVisibleTilesPositions(visiblescreen)) {
+            base.Observer(visiblescreen.Key, visiblescreen.Value);
+            foreach(var tile in this.GetVisibleTilesPositions(visiblescreen.Value)) {
                 if(ShouldDo(tile, quickscan)) {
-                    queuer.QueueDo(tile, visiblescreen);
+                    queuer.QueueDo(tile);
                 }
             }
         }
@@ -429,10 +431,11 @@ namespace Mcasaenk.Rendering {
             return existingRegions.Contains(p);
         }
 
-        public void DoVisible(WorldPosition visiblescreen) {
-            foreach(var tile in this.GetVisibleTilesPositions(visiblescreen)) {
+        public void DoVisible(KeyValuePair<string, WorldPosition> visiblescreen) {
+            base.Observer(visiblescreen.Key, visiblescreen.Value);
+            foreach(var tile in this.GetVisibleTilesPositions(visiblescreen.Value)) {
                 if(ShouldDo(tile)) {
-                    queuer.QueueDo(tile, visiblescreen);
+                    queuer.QueueDo(tile);
                 }
             }
         }

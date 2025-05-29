@@ -232,53 +232,34 @@ namespace Mcasaenk {
             ;
 
         public static Settings DEF() => new Settings() {
-            MAXZOOM = 4,
-            MINZOOM = -4,
+            MAXZOOM = 4, MINZOOM = -4,
             ENABLE_COLORMAP_EDITING = false,
-            CHUNKGRID = ChunkGridType.None,
-            REGIONGRID = RegionGridType.None,
-            BACKGROUND = BackgroundType.Checker,
-            MAPGRID = MapGridType.None,
-            MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94,
-            MAXCONCURRENCY = 8,
-            CHUNKRENDERMAXCONCURRENCY = 16,
-            DRAWMAXCONCURRENCY = 8,
-            TRANSPARENTLAYERS = 2,
+            CHUNKGRID = ChunkGridType.None, REGIONGRID = RegionGridType.None, BACKGROUND = BackgroundType.Checker, MAPGRID = MapGridType.None,
+            MAPAPPROXIMATIONALGO = ColorApproximationAlgorithm.LAB_CIE94, MAXCONCURRENCY = 8, CHUNKRENDERMAXCONCURRENCY = 16, DRAWMAXCONCURRENCY = 8, TRANSPARENTLAYERS = 2,
             RENDERMODE = RenderMode.OPENGL,
-            FOOTER = true,
-            OVERLAYS = true,
-            UNLOADED = true,
+            FOOTER = true, OVERLAYS = true, UNLOADED = true,
             MCDIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "saves"),
             PREDEFINEDRES = [
                 new Resolution() { Name = "Full HD", type = ResolutionType.stat, X = 1920, Y = 1080 },
                 new Resolution() { Name = "WQHD", type = ResolutionType.stat, X = 2560, Y = 1440 },
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
-            PREFERHEIGHTMAPS = true,
-            SKIP_UNKNOWN_BLOCKS = true,
-            BLOCKINFO = false,
+            PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true, BLOCKINFO = false,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,
 
-            SUN_LIGHT = 15,
-            BLOCK_LIGHT = 0,
+            SUN_LIGHT = 15, BLOCK_LIGHT = 0,
 
             CONTRAST = 0.50,
 
-            SHADE3D = true,
-            STATIC_SHADE = true,
-            NOSHADE_SHADE3D = false,
+            SHADE3D = true, STATIC_SHADE = true, NOSHADE_SHADE3D = false,
 
-            WATER_TRANSPARENCY = 0.50,
-            WATER_SMART_SHADE = true,
+            WATER_TRANSPARENCY = 0.50, WATER_SMART_SHADE = true,
             OCEAN_DEPTH_BLENDING = 1,
-            Jmap_WATER_MODE = JsmapWaterMode.vanilla,
-            Jmap_REVEALED_WATER = 1,
-            Jmap_MAP_DIRECTION = Direction.North,
+            Jmap_WATER_MODE = JsmapWaterMode.vanilla, Jmap_REVEALED_WATER = 1, Jmap_MAP_DIRECTION = Direction.North,
 
-            ADEG = 120,
-            BDEG = 15,
+            ADEG = 120, BDEG = 15,
         };
 
         private string dimension;

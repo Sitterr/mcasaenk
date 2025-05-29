@@ -20,7 +20,7 @@ namespace Mcasaenk.Rendering_bitmap {
         public bool IsLoading(Point2i p) => ((ObserverTaskTileMapQueuer<WriteableBitmap>)queuer).IsLoading(p);
         public bool IsQueued(Point2i p) => ((ObserverTaskTileMapQueuer<WriteableBitmap>)queuer).IsQueued(p);
 
-        public override void DoVisible(WorldPosition visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
+        public override void DoVisible(KeyValuePair<string, WorldPosition> visiblescreen, KeyValuePair<string, WorldPosition>[] movingextras, bool quickscan) {
             base.DoVisible(visiblescreen, [], quickscan);
         }
         protected override WriteableBitmap __Do(Point2i pos, WriteableBitmap bitmap) {

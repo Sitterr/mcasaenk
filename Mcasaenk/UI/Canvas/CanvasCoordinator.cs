@@ -106,7 +106,7 @@ namespace Mcasaenk.UI.Canvas {
             window.footer?.Refresh();
 
             if(genTileMap != null) {
-                genTileMap.DoVisible(screen);
+                genTileMap.DoVisible(new KeyValuePair<string, WorldPosition>("screen", screen));
             }
 
             if(window.footer.Visibility == Visibility.Visible) {
@@ -152,7 +152,7 @@ namespace Mcasaenk.UI.Canvas {
             if(IsLoaded && genTileMap != null && drawTileMap == null) drawTileMap = CreateGroupTileMap();
             if(drawTileMap != null) {
                 WorldPosition map_screenshot = window.screenshot?.ResolutionType() == ResolutionType.map ? window.screenshot.AsScreen() : default;
-                drawTileMap.DoVisible(screen, [new KeyValuePair<string, WorldPosition>("map_screenshot", map_screenshot)], !slowtick);
+                drawTileMap.DoVisible(new KeyValuePair<string, WorldPosition>("screen", screen), [new KeyValuePair<string, WorldPosition>("map_screenshot", map_screenshot)], !slowtick);
             }
 
 
