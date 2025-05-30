@@ -6,8 +6,8 @@
 
 
 ## Install&nbsp;&nbsp;[![total downloads](https://img.shields.io/github/downloads/Sitterr/mcasaenk/total.svg)](https://github.com/Sitterr/mcasaenk/releases)
-### Windows universal: [**Download Version 1.2.2**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2.2/mcasaenk-1.2.2.zip)
-### Windows framework-dependent: [**Download Version 1.2.2**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2.2/mcasaenk-1.2.2-framework.zip)
+### Windows universal: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.0/mcasaenk-1.3.0.zip)
+### Windows framework-dependent: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2.2/mcasaenk-1.3.0-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
@@ -18,12 +18,12 @@ Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already ins
 * **Colormaps:** apart from the 4 build-in distinct styles(_default_, _java map_, _bedrock map_, _betaplus_), you can create new styles based on resource packs(vanilla and optifine) and mods
 * **Filtering:** includes support for semi-transparent blocks and an intuitive, versatile filtering system
 * **Support for mods and datapacks:** can identify and read custom blocks, biomes, and dimensions defined in datapacks and mods
-* **30+ different individual settings:** _contrast_, _lightning_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen real-time and do not require a re-render
+* **30+ different individual settings:** _contrast_, _lightning_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen dynamically in real-time thanks to hardware acceleration
 * **Extensive interface for screenshot capturing:** drag and scale a virtual window representing the screenshot, before capturing. Can also export screenshots as in-game minecraft maps
 
 
 ## Supported Versions
-Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 1.21.4+.
+Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 1.21.5+.
 Additionally, it strives to support modded worlds(Fabric and Forge), making efforts to extract information about custom blocks, as well as biomes(1.16+) and dimensions(1.16+).
 
 
