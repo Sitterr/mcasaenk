@@ -6,8 +6,8 @@
 
 
 ## Install&nbsp;&nbsp;[![total downloads](https://img.shields.io/github/downloads/Sitterr/mcasaenk/total.svg)](https://github.com/Sitterr/mcasaenk/releases)
-### Windows universal: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.0/mcasaenk-1.3.0.zip)
-### Windows framework-dependent: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.2.2/mcasaenk-1.3.0-framework.zip)
+### Windows universal: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3/mcasaenk-1.3.0.zip)
+### Windows framework-dependent: [**Download Version 1.3.0**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3/mcasaenk-1.3.0-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
@@ -33,13 +33,13 @@ Additionally, it strives to support modded worlds(Fabric and Forge), making effo
 
 ![img21](https://github.com/user-attachments/assets/d0445c4f-7c7b-41fc-9bfb-a7f29e39d319)
 
-![img122](https://github.com/user-attachments/assets/81ea20c4-9eea-4df2-9f3a-adacd3b70526)
-
 ![img75____](https://github.com/user-attachments/assets/26607061-3257-4e5a-bda9-3dc718f722e3)
 
 ![img42](https://github.com/user-attachments/assets/5dbbe59d-5ced-4ed8-b982-b0780b9b0f9a)
 
 ![img59](https://github.com/user-attachments/assets/36b88da5-768b-435d-992b-1ae8dfa67494)
+
+![img35_](https://github.com/user-attachments/assets/7accf1c1-ce29-49eb-bfdf-679c38e17740)
 
 ![umg13](https://github.com/user-attachments/assets/a3fad97f-360d-482e-b78b-ae383b85963f)
 
