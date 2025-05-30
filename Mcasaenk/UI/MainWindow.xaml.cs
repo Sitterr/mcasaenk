@@ -1,26 +1,22 @@
-﻿using CommunityToolkit.HighPerformance;
-using Mcasaenk.Resources;
-using Mcasaenk.UI.Canvas;
-using Mcasaenk.WorldInfo;
-using Microsoft.Windows.Themes;
-using System.ComponentModel;
-using System.Diagnostics.Eventing.Reader;
-using System.Printing;
-using System.Resources;
-using System.Text;
+﻿using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml.Linq;
-using static System.Formats.Asn1.AsnWriter;
+using Mcasaenk.Nbt;
+using Mcasaenk.Rendering_bitmap;
+using Mcasaenk.Rendering_Opengl;
+using Mcasaenk.Resources;
+using Mcasaenk.UI.Canvas;
+using Mcasaenk.WorldInfo;
+using Microsoft.Win32;
+using OpenTK.Wpf;
 
 namespace Mcasaenk.UI {
     /// <summary>
@@ -31,36 +27,96 @@ namespace Mcasaenk.UI {
         public LeftFileMenu leftFileMenu;
         public LeftOptionsMenu leftOptionsMenu;
 
-        ResolutionScale resScale = new ResolutionScale();
+        public ScreenshotManager screenshot;
 
+        public CanvasCoordinator canvas;
+        private FrameworkElement canvasControl;
+
+        ResolutionScale resScale = new ResolutionScale();
         public MainWindow() {
             InitializeComponent();
 
             this.Title = "MCA Saenk v" + App.VERSION;
 
             this.scr_capture.Click += (o, e) => {
-                var screenshottaker = canvasControl?.ScreenshotManager;
-                if(screenshottaker == null) return;
-                if(screenshottaker.Rect().Width == 0 || screenshottaker.Rect().Height == 0) {
+                if(screenshot == null) return;
+
+                var res = screenshot.Resolution();
+                var state = screenshot.GetState(Global.App.TileMap);
+
+                if(res.X > 16384 || res.Z > 16384) {
+                    MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
+                    return;
+                } else if(res.X == 0 || res.Z == 0) {
                     MessageBox.Show("Cannot make screenshot with no width/height :(");
                     return;
                 }
-                if(screenshottaker.Rect().Width > 16384 || screenshottaker.Rect().Height > 16384) {
-                    MessageBox.Show("The size of the screenshot is too large\nThe maximum in both width and height is 16384");
-                    return;
+
+                if(state == ScreenshotManager.ConditionalState.invalid) return;
+
+                    ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
+                if(screenshottaker == null) return;
+                try {
+                    if(screenshot.ResolutionType() == ResolutionType.map) {
+                        if(res.X == 128 || res.Z == 128) {
+                            var saveFileDialog = new SaveFileDialog {
+                                Filter = "Dat file|*.dat",
+                                Title = "Save screenshot",
+                                FileName = $"map_"
+                            };
+                            if(saveFileDialog.ShowDialog() == true) {
+                                var nbt = screenshottaker.TakeScreenshotAsMap(Global.App.TileMap.dim, Global.App.OpenedSave.levelDatInfo.version_id, Global.Settings.MAPAPPROXIMATIONALGO);
+                                if(nbt == null) return;
+
+                                using(var fs = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
+                                    using(var zipStream = new GZipStream(fs, CompressionMode.Compress, false)) {
+                                        new NbtWriter(zipStream, nbt, "");
+                                    }
+                                }
+
+                                nbt.Dispose();
+                            }
+
+                        } else {
+                            MessageBox.Show("The map screenshot must be 128x128");
+                            return;
+                        }
+                    } else {
+                        var saveFileDialog = new SaveFileDialog {
+                            Filter = "PNG Image|*.png",
+                            Title = "Save screenshot",
+                            FileName = $"{Global.App.OpenedSave?.levelDatInfo?.name ?? "screenshot"}{res.X}x{res.Z}"
+                        };
+
+                        if(saveFileDialog.ShowDialog() == true) {
+                            var encoder = new PngBitmapEncoder();
+                            var screenshot = screenshottaker.TakeScreenshotAsImage();
+                            if(screenshot == null) return;
+                            encoder.Frames.Add(BitmapFrame.Create(screenshot));
+                            using(var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create)) {
+                                encoder.Save(fileStream);
+                            }
+                        }
+                    }
+                } finally {
+                    if(screenshottaker is IDisposable disp) disp.Dispose();
                 }
-                canvasControl?.ScreenshotManager?.TakeAndSaveScreenshot();
             };
             this.scr_stop.Click += (o, e) => {
                 rad.Reset(true);
             };
             this.scr_rotate.Click += (o, e) => {
-                canvasControl?.ScreenshotManager.Rotate();
+                screenshot?.Rotate();
+            };
+            this.resScale.PropertyChanged += (o, e) => {
+                if(e.PropertyName == nameof(ResolutionScale.Scale)) {
+                    Global.Settings.MAPGRID = screenshot?.ResolutionType() == ResolutionType.map ? (MapGridType)((int)Math.Log2(1 / resScale.Scale) + 1) : MapGridType.None;
+                }
             };
             this.rad.SetCallback(() => {
                 var res = this.rad.GetResolution();
                 if(res?.type == ResolutionType.frame) {
-                    var canvasSize = canvasControl.ScreenSize();
+                    var canvasSize = canvas.ScreenSize();
                     res.X = (int)Math.Ceiling(canvasSize.Width) + 1;
                     res.Y = (int)Math.Ceiling(canvasSize.Height) + 1;
                 }
@@ -85,7 +141,11 @@ namespace Mcasaenk.UI {
                     scale.IsEnabled = true;
                 }
 
-                canvasControl?.SetUpScreenShot(res, resScale, res?.type == ResolutionType.resizeable);
+                Global.Settings._UseMapPalette = res?.type == ResolutionType.map;
+                screenshot?.Dispose();
+                screenshot = res != null ? new ScreenshotManager(res, resScale, res?.type == ResolutionType.resizeable, canvas.GetScreen().Mid.Floor().Sub(new Point(res.X, res.Y).Dev(resScale.Scale).Dev(2).Floor())) : null;
+
+                Global.Settings.MAPGRID = screenshot?.ResolutionType() == ResolutionType.map ? (MapGridType)((int)Math.Log2(1 / resScale.Scale) + 1) : MapGridType.None;
 
                 scr_capture.IsEnabled = res != null;
                 scr_stop.IsEnabled = res != null;
@@ -96,19 +156,14 @@ namespace Mcasaenk.UI {
                     scr_stop.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 }
             });
-            rad.ShowSlot3(Global.Settings.USEMAPPALETTE);
+            //rad.ShowSlot3(Global.Settings.USEMAPPALETTE);
 
             scale.SetBinding(ComboBox.SelectedItemProperty, new Binding("Scale") { Source = resScale, Converter = new ResolutionScaleTextToDouble() });
             scale.SelectedIndex = 0;
-            this.resScale.PropertyChanged += (o, e) => {
-                if(e.PropertyName == "Scale") {
-                    canvasControl.ScreenshotManager?.Rescale();
-                }
-            };
 
             {
                 Global.Settings.PropertyChanged += (object sender, PropertyChangedEventArgs e) => {
-                    if(e.PropertyName == nameof(Settings.DIMENSION)) dim_onchange();
+                    if(e.PropertyName == nameof(Settings.DIMENSION)) DimensionSetup();
                 };
                 btn_dim_overworld.Click += (o, e) => {
                     Global.Settings.DIMENSION = "minecraft:overworld";
@@ -199,6 +254,7 @@ namespace Mcasaenk.UI {
                 };
 
                 Global.App.OpenedSave = null;
+                SetCanvas(Global.Settings.RENDERMODE);
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
@@ -207,14 +263,14 @@ namespace Mcasaenk.UI {
                 loc_go.Click += (o, e) => {
                     if(!int.TryParse(loc_x.Text, out int x)) return;
                     if(!int.TryParse(loc_z.Text, out int z)) return;
-                    canvasControl.GoTo(new Point(x, z));
+                    canvas.GoTo(new Point(x, z));
                 };
 
                 Brush transp = new SolidColorBrush(Colors.Transparent), fore = (Brush)this.TryFindResource("FORE"), fore_hover = (Brush)this.TryFindResource("FORE_HOVER"), fore_press = (Brush)this.TryFindResource("FORE_PRESS");
 
                 loc_txt.TextBlock.Text = "Location";
                 loc_txt.TextBlock.FontSize = 18;
-                
+
                 loc_txt.Click += (o, e) => {
                     List<(TextBlock txtblocks, object data)> options = new();
 
@@ -256,12 +312,68 @@ namespace Mcasaenk.UI {
             }
         }
 
-        Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
-        Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
-        Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
-        Color others_back = (Color)ColorConverter.ConvertFromString("#6670a0b2");
+        public void SetCanvas(RenderMode renderMode) {
+            WorldPosition lastpos = canvas != null ? canvas.GetScreen() : WorldPosition.Empty;
+            switch(renderMode) {
+                case RenderMode.OPENGL: {
+                        var control = new GLWpfControl();
+                        this.canvas = new GLCanvasCoordinator(control, lastpos);
+                        this.canvasControl = control;
+                        break;
+                    }
 
-        void dim_onchange() {
+                case RenderMode.LEGACY: {
+                        var control = new WPFCanvas.OnRenderFrameworkElement();
+                        this.canvas = new WPFCanvas(control, lastpos);
+                        this.canvasControl = control;
+                        break;
+                    }
+            }
+
+            canvasHolder.Children.Clear();
+            canvasHolder.Children.Add(canvasControl);
+        }
+
+
+        public void OnColormapChange() {
+            leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
+        }
+
+
+        public void OnHardReset() {
+            if(Global.App.OpenedSave != null) {
+                btn_dim_overworld.IsEnabled = Global.App.OpenedSave.overworld != null;
+                btn_dim_nether.IsEnabled = Global.App.OpenedSave.nether != null;
+                btn_dim_end.IsEnabled = Global.App.OpenedSave.end != null;
+                btn_dim_others.Visibility = Global.App.OpenedSave.dimensions.Any(d => !d.name.StartsWith("minecraft:")) ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            screenshot?.Dispose();
+            screenshot = null;
+
+            SetCurrs(Global.App.OpenedSave?.levelDatInfo);
+            wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
+            title.Visibility = wrldPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
+            rad.Reset(Global.App.OpenedSave != null);
+
+            canvasControl.Focus();
+
+            DimensionSetup();
+        }
+
+
+        private void SetCurrs(LevelDatInfo level) {
+            if(level == null) return;
+
+            currs_icon.Source = level.image;
+
+            currs_lastopened.Text = level.lastopened.ToString();
+            currs_folder.Text = level.foldername;
+            currs_name.Text = level.name;
+            currs_version.Text = level.version_name;
+        }
+        private void DimensionSetup() {
             if(Global.App.OpenedSave == null) {
                 dim_bor.Background = new SolidColorBrush(Colors.Transparent);
                 return;
@@ -271,6 +383,11 @@ namespace Mcasaenk.UI {
             btn_dim_nether.Opacity = 0.65;
             btn_dim_end.Opacity = 0.65;
             btn_dim_others.Opacity = 0.65;
+
+            Color overworld_back = (Color)ColorConverter.ConvertFromString("#664d7132");
+            Color nether_back = (Color)ColorConverter.ConvertFromString("#66723232");
+            Color end_back = (Color)ColorConverter.ConvertFromString("#66ABB270");
+            Color others_back = (Color)ColorConverter.ConvertFromString("#6670a0b2");
 
             switch(Global.Settings.DIMENSION) {
                 case "minecraft:overworld":
@@ -292,44 +409,16 @@ namespace Mcasaenk.UI {
             }
         }
 
-
-        public void OnColormapChange() {
-            leftSettingsMenu.SetUpColormapSettings(Global.App.Colormap);
-        }
-
-
-        public void OnHardReset() {
-            if(Global.App.OpenedSave != null) {
-                btn_dim_overworld.IsEnabled = Global.App.OpenedSave.overworld != null;
-                btn_dim_nether.IsEnabled = Global.App.OpenedSave.nether != null;
-                btn_dim_end.IsEnabled = Global.App.OpenedSave.end != null;
-                btn_dim_others.Visibility = Global.App.OpenedSave.dimensions.Any(d => !d.name.StartsWith("minecraft:")) ? Visibility.Visible : Visibility.Collapsed;
-            }
-
-            SetCurrs(Global.App.OpenedSave?.levelDatInfo);
-            wrldPanel.Visibility = Global.App.OpenedSave?.levelDatInfo != null ? Visibility.Visible : Visibility.Collapsed;
-            title.Visibility = wrldPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-
-            rad.Reset(Global.App.OpenedSave != null);
-
-            canvasControl.Focus();
-
-            dim_onchange();
-        }
-
-
-        public void SetCurrs(LevelDatInfo level) {
-            if(level == null) return;
-
-            currs_icon.Source = level.image;
-
-            currs_lastopened.Text = level.lastopened.ToString();
-            currs_folder.Text = level.foldername;
-            currs_name.Text = level.name;
-            currs_version.Text = level.version_name;
-        }
-
     }
+
+
+
+
+
+
+
+
+
 
     // noting here
     class PageSlider {

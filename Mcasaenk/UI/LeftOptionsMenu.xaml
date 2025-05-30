@@ -93,7 +93,7 @@
                                     <Slider IsSnapToTickEnabled="True" Minimum="1" Maximum="12" TickFrequency="1"
                                             Value="{Binding Source={x:Static gl:Global.Settings}, Path=RegionConcurrency}"/>
                                 </StackPanel>
-                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                <StackPanel Grid.Row="0" Grid.Column="2" IsEnabled="{Binding Source={x:Static gl:Global.Settings}, Path=RenderMode, Converter={StaticResource EnumEqualityConverter}, ConverterParameter=LEGACY}">
                                     <DockPanel>
                                         <TextBlock>
                                             <Run Text="render concurrency"/>
@@ -115,40 +115,53 @@
                                 </StackPanel>
 
                                 <DockPanel Grid.Row="2" Grid.Column="0">
-                                    <TextBlock VerticalAlignment="Center" DockPanel.Dock="Left">
-                                            <Run Text="storing method"/>
+                                    <Label>
+                                        <TextBlock VerticalAlignment="Center" DockPanel.Dock="Left">
+                                            <Run Text="render mode"/>
                                             <Run Text="✶">
                                                 <Run.Foreground>
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DataStorageModel" />
-                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="DATASTORAGEMODEL" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="RenderMode" />
+                                                        <Binding Source="{x:Static gl:Global.Settings}" Path="RENDERMODE" />
                                                     </MultiBinding>
                                                 </Run.Foreground>
                                             </Run>
-                                    </TextBlock>
+                                        </TextBlock>
+                                        <Label.ToolTip>
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="GPU rendering is better(that is if you have a gpu) in every way, aside from rare compatibilities"/>
+                                                <TextBlock Text="and two known ultra-niche cases where legacy mode is slightly more accurate. This toggle mainly"/>
+                                                <TextBlock Text="exists because i love my old slow af code and also to show off how easily you can switch modes :)"/>
+                                            </StackPanel>
+                                        </Label.ToolTip>
+                                    </Label>
                                     <ComboBox Margin="10 0 0 0" 
                                               DockPanel.Dock="Left"
                                               Width="auto"
                                               HorizontalAlignment="Stretch"
-                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=DataStorageModel, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=RenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                               SelectedValuePath="Value"
                                               DisplayMemberPath="Description"
-                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=DataStorageModel}"/>
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=RenderMode}"/>
                                 </DockPanel>
-                                <!--<StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal">
-                                    <TextBlock>
-                                        <Run Text="precalculate visibility"/>
-                                        <Run Text="✶">
-                                            <Run.Foreground>
-                                                <MultiBinding Converter="{StaticResource DifferenceConverter}">
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PrecomputeRelvis" />
-                                                    <Binding Source="{x:Static gl:Global.Settings}" Path="PRECOMPUTE_RELVIS" />
-                                                </MultiBinding>
-                                            </Run.Foreground>
-                                        </Run>
-                                    </TextBlock>
-                                    <ToggleButton Margin="10 0 0 0" IsChecked="{Binding Source={x:Static gl:Global.Settings}, Path=PrecomputeRelvis}"/>
-                                </StackPanel>-->
+                                <DockPanel Grid.Row="2" Grid.Column="2">
+                                    <Label>
+                                        <TextBlock Text="map palette approxim." VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                        <Label.ToolTip>
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="sets the color space used to calculate the most similar color in the map palette."/>
+                                            </StackPanel>
+                                        </Label.ToolTip>
+                                    </Label>
+                                    <ComboBox Margin="10 0 0 0" 
+                                              DockPanel.Dock="Left"
+                                              Width="auto"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Source={x:Static gl:Global.Settings}, Path=MapApproximationAlgo, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="Description"
+                                              SelectedValue="{Binding Source={x:Static gl:Global.Settings}, Path=MapApproximationAlgo}"/>
+                                </DockPanel>
 
                                 <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">
                                     <DockPanel>
@@ -175,7 +188,7 @@
                                                   Text="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers, Converter={StaticResource TransluciencyLevelTextConverter}}"/>
                                     </DockPanel>
                                     <Border Height="3"/>
-                                    <Slider IsSnapToTickEnabled="True" Minimum="0" Maximum="6" TickFrequency="1"
+                                    <Slider IsSnapToTickEnabled="True" Minimum="0" Maximum="5" TickFrequency="1"
                                            Value="{Binding Source={x:Static gl:Global.Settings}, Path=TransparentLayers}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="4" Grid.Column="3" HorizontalAlignment="Center">
@@ -352,7 +365,7 @@
                                     <Label>
                                         <TextBlock Margin="0">
                                             <Run Text="footer block info"/>
-                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=DATASTORAGEMODEL, Converter={StaticResource StarConverter}, ConverterParameter={x:Static gl:GenDataModel.COLOR}}">
+                                            <Run Text="{Binding Source={x:Static gl:Global.Settings}, Path=RENDERMODE, Converter={StaticResource StarConverter}, ConverterParameter={x:Static gl:RenderMode.OPENGL}}">
                                                 <Run.Foreground> 
                                                     <MultiBinding Converter="{StaticResource DifferenceConverter}">
                                                         <Binding Source="{x:Static gl:Global.Settings}" Path="BlockInfo" />
@@ -365,10 +378,10 @@
                                             <StackPanel Orientation="Vertical">
                                                 <TextBlock Text="• determines whether to show the name and biome of the block currently beneath the cursor"/>
                                                 <TextBlock>
-                                                    <Run Text="• requires memory only if"/>
-                                                    <Run Text="store method" FontStyle="Italic"/>
+                                                    <Run Text="• requires additional memory only if"/>
+                                                    <Run Text="render mode" FontStyle="Italic"/>
                                                     <Run Text="is"/>
-                                                    <Run Text="by color" FontStyle="Italic"/>
+                                                    <Run Text="GPU" FontStyle="Italic"/>
                                                 </TextBlock>
                                             </StackPanel>
                                         </Label.ToolTip>

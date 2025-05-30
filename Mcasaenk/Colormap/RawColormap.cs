@@ -1,12 +1,5 @@
-﻿using Mcasaenk.Rendering;
-using Mcasaenk.UI;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using Mcasaenk.Rendering;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -172,12 +165,12 @@ namespace Mcasaenk.Colormaping {
             }
 
             if(colormap.depth.minecraftname() != "minecraft:water") output.SaveLines("depth.block", [colormap.depth]);
-            
+
             output.SaveLines("__palette__.blocks", colormap.blocks.Select(bl => {
                 if(bl.Value.color.A > 0) return $"{bl.Key}={bl.Value.color.ToHex(false, false)}";
                 else return $"{bl.Key}=-";
             }));
-            
+
 
         }
 
@@ -205,7 +198,7 @@ namespace Mcasaenk.Colormaping {
             string blockstext = "";
             if(read.ExistsFile("__colormap__")) blockstext = read.ReadAllText("__colormap__");
             if(read.ExistsFile("__palette__.txt")) blockstext = read.ReadAllText("__palette__.txt");
-            if(read.ExistsFile("__palette__.blocks")) blockstext = read.ReadAllText("__palette__.blocks");            
+            if(read.ExistsFile("__palette__.blocks")) blockstext = read.ReadAllText("__palette__.blocks");
             TxtFormatReader.ReadStandartFormat(blockstext, (group, parts) => {
                 string name = parts[0].minecraftname();
                 WPFColor color = WPFColor.FromHex(parts[1]);
@@ -227,7 +220,7 @@ namespace Mcasaenk.Colormaping {
         public readonly string message;
         public readonly string[] clarifications;
         public readonly Type type;
-        private ConstructedColormapNotice(Type type, string message, string[] clarifications) { 
+        private ConstructedColormapNotice(Type type, string message, string[] clarifications) {
             this.message = message;
             this.clarifications = clarifications;
             this.type = type;
@@ -239,7 +232,7 @@ namespace Mcasaenk.Colormaping {
 
         public static ConstructedColormapNotice ShouldBeTinted = new(Type.warning,
             "the model of this block suggests that it be somehow tinted",
-            ["if the base color is rich, this warning may be false positive", 
+            ["if the base color is rich, this warning may be false positive",
              "if the base color is greyish though, it most certainly does need to be tinted"]);
 
         public static ConstructedColormapNotice NoModel = new(Type.tip,

@@ -1,33 +1,17 @@
-﻿using Mcasaenk.Nbt;
-using Microsoft.Extensions.ObjectPool;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using static Mcasaenk.Rendering.GenerateTilePool;
-using static Mcasaenk.Shade3d.ShadeConstants;
-using Mcasaenk.UI;
-using Mcasaenk.Rendering.ChunkRenderData;
-using Mcasaenk.UI.Canvas;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Media3D;
-using System.Threading.Channels;
-using static Mcasaenk.Global;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Mcasaenk.UI;
+using Microsoft.Extensions.ObjectPool;
+using static Mcasaenk.Shade3d.ShadeConstants;
 
 namespace Mcasaenk {
     public class Global {
@@ -39,7 +23,7 @@ namespace Mcasaenk {
 
         public static ViewModel ViewModel;
 
-        static Global(){
+        static Global() {
             pows2 = new int[32];
             pows2[0] = 1;
             for(int i = 1; i < pows2.Length; i++) {
@@ -57,7 +41,7 @@ namespace Mcasaenk {
 
             return res;
         }
-        public static string ReadName(string fileorfolder, bool extention=true) {
+        public static string ReadName(string fileorfolder, bool extention = true) {
             if(fileorfolder == null || fileorfolder == "") return "";
             string filename = extention ? Path.GetFileName(fileorfolder) : Path.GetFileNameWithoutExtension(fileorfolder);
             if(filename == string.Empty) filename = Path.GetDirectoryName(fileorfolder);
@@ -70,7 +54,7 @@ namespace Mcasaenk {
 
 
         private static int[] pows2;
-        public static int Pow2(int i) { 
+        public static int Pow2(int i) {
             return pows2[i];
         }
         public static double Pow(double a, double b) {
@@ -274,10 +258,6 @@ namespace Mcasaenk {
         }
 
         public static class Coord {
-            public static int fairDev(int a, int b) {
-                return (int)Math.Floor((double)a / b);
-            }
-
             public static double absMod(double a, int m) {
                 double res = a % m;
                 if(res < 0) {
@@ -348,6 +328,10 @@ namespace Mcasaenk {
     }
 
     public static class Extentions {
+
+        public static double DecPart(this double a) => a - Math.Floor(a);
+        public static float DecPart(this float a) => a - (float)Math.Floor(a);
+
         public static JsonElement getObjectOrFirstElement(this JsonElement element, string objectName) {
             if(element.ValueKind == JsonValueKind.Array) {
                 return element.EnumerateArray().First().GetProperty(objectName);
@@ -406,8 +390,7 @@ namespace Mcasaenk {
 
 
         public static Predicate<T> Or<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
-            return delegate (T item)
-            {
+            return delegate (T item) {
                 foreach(var predicate in predicates.Append(predicate0)) {
                     if(predicate(item)) {
                         return true;
@@ -417,8 +400,7 @@ namespace Mcasaenk {
             };
         }
         public static Predicate<T> And<T>(this Predicate<T> predicate0, params Predicate<T>[] predicates) {
-            return delegate (T item)
-            {
+            return delegate (T item) {
                 foreach(var predicate in predicates.Append(predicate0)) {
                     if(!predicate(item)) {
                         return false;
@@ -513,6 +495,9 @@ namespace Mcasaenk {
         }
         public static Point Mult(this Point p, double mult) {
             return new Point(p.X * mult, p.Y * mult);
+        }
+        public static Point Mult(this Point p, double multx, double multy) {
+            return new Point(p.X * multx, p.Y * multy);
         }
         public static Point Floor(this Point p) {
             return new Point(Math.Floor(p.X), Math.Floor(p.Y));

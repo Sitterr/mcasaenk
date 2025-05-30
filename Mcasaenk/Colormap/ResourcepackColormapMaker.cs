@@ -1,15 +1,8 @@
-﻿using Mcasaenk.Resources;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Media;
+using Mcasaenk.Resources;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -100,8 +93,7 @@ namespace Mcasaenk.Colormaping {
                                     }
                                 }
                             }
-                        }
-                        catch {
+                        } catch {
                             var answer = ColorOfTexture(textures.First().Value.image);
                             colormap.blocks.Add(blockname, new RawBlock() { color = answer, details = new CreationDetails() { shouldTint = VanillaTints.IsNormallyTinted(blockname), q = answer.A, creationMethod = answer.A > 0 ? BlockCreationMethod.Texture : BlockCreationMethod.None } });
                         }
@@ -305,7 +297,7 @@ namespace Mcasaenk.Colormaping {
             {
                 TxtFormatReader.ReadStandartFormat(ResourceMapping.tintblocks, (group, parts) => {
                     if(group == "FILTERS") {
-          
+
                         List<string> blocks = [];
                         if(parts[1].StartsWith('/') && parts[1].EndsWith('/')) {
                             string part1 = parts[1].Substring(1, parts[1].Length - 2);
@@ -356,8 +348,7 @@ namespace Mcasaenk.Colormaping {
                         var el = json;
                         models[dloc] = el;
                         return el;
-                    }
-                    catch {
+                    } catch {
                         return null;
                     }
                 }
@@ -385,8 +376,7 @@ namespace Mcasaenk.Colormaping {
                             try {
                                 file = JsonSerializer.Deserialize<T>(pack.ReadAllText(loc), new JsonSerializerOptions() { IncludeFields = true });
                                 return true;
-                            }
-                            catch {
+                            } catch {
                                 return false;
                             }
                         } else if(typeof(T) == typeof(WPFBitmap)) {
@@ -451,8 +441,7 @@ namespace Mcasaenk.Colormaping {
                     }
 
                     return toLocation(modelname, "models", "json");
-                }
-                catch {
+                } catch {
                     return "";
                 }
             }

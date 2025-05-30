@@ -1,11 +1,4 @@
 ﻿using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Mcasaenk.Colormaping.Tint;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -25,7 +18,7 @@ namespace Mcasaenk.Colormaping {
             new TintMeta("vanilla_grass", "vn_g", 32 + 1, typeof(Vanilla_Grass)),
             new TintMeta("vanilla_foliage", "vn_f", 32 + 1, typeof(Vanilla_Foliage)),
             new TintMeta("vanilla_dry_foliage", "vn_df", 32 + 1, typeof(Vanilla_Dry_Foliage)),
-            new TintMeta("vanilla_water", "vn_w", 128 + 1, typeof(Vanilla_Water)),
+            new TintMeta("vanilla_water", "vn_w", 512 + 1, typeof(Vanilla_Water)),
             new TintMeta("fixed", "fx", 32 + 1, typeof(FixedTint)),
             new TintMeta("grid", "gr", 32 + 1, typeof(GridTint)),
         ];
@@ -48,8 +41,27 @@ namespace Mcasaenk.Colormaping {
         public virtual uint GetTintedColor(uint baseColor, ushort biome, short height) => ColorMult(baseColor, TintColorFor(biome, height));
 
         public abstract Blending GetBlendMode();
-        public enum Blending { none, heightonly, biomeonly, full }
+        public enum Blending { single = 1, biomeonly = 2, heightonly = 3, grid = 4 }
 
+
+        public void FillGPUData(Span<uint> mem) {
+            int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
+
+            var blendmode = this.GetBlendMode();
+            if(blendmode == Blending.single) {
+                mem[0] = this.TintColorFor(Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
+            } else if(blendmode == Blending.biomeonly) {
+                for(int x = 0; x < w; x++) mem[x] = this.TintColorFor((ushort)x, Colormap.DEFHEIGHT);
+            } else if(blendmode == Blending.heightonly) {
+                for(int x = 0; x < h; x++) mem[x] = this.TintColorFor(Global.Settings.DEFBIOME, (short)x);
+            } else if(blendmode == Blending.grid) {
+                for(int xx = 0; xx < w; xx++) {
+                    for(int yy = 0; yy < h; yy++) {
+                        mem[xx + yy * w] = TintColorFor((ushort)xx, (short)yy);
+                    }
+                }
+            }
+        }
     }
 
     public abstract class DynamicTint : Tint {
@@ -117,9 +129,9 @@ namespace Mcasaenk.Colormaping {
         }
 
         public override Blending GetBlendMode() {
-            if(!On) return Blending.none;
+            if(!On) return Blending.single;
             if(Blend == 1) return Blending.heightonly;
-            if(TemperatureVariation > 0) return Blending.full;
+            if(TemperatureVariation > 0) return Blending.grid;
             else return Blending.biomeonly;
         }
     }
@@ -145,9 +157,9 @@ namespace Mcasaenk.Colormaping {
         }
 
         public override Blending GetBlendMode() {
-            if(!On) return Blending.none;
+            if(!On) return Blending.single;
             if(Blend == 1) return Blending.heightonly;
-            if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage" || tint == "dry_foliage")) return Blending.full;
+            if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage" || tint == "dry_foliage")) return Blending.grid;
             else return Blending.biomeonly;
         }
     }
@@ -173,7 +185,7 @@ namespace Mcasaenk.Colormaping {
 
             hasBaseColor = true;
         }
-        public override Blending GetBlendMode() => Blending.none;
+        public override Blending GetBlendMode() => Blending.single;
 
         public FixedTint(GroupManager<Tint> groupManager, string name, uint tint) : base(groupManager, name) {
             this.tint = tint;
@@ -218,10 +230,10 @@ namespace Mcasaenk.Colormaping {
 
 
         public override Blending GetBlendMode() {
-            if(!On) return Blending.none;
+            if(!On) return Blending.single;
             else if(sprite.GetLength(0) == 1 || Blend == 1) return Blending.heightonly;
             else if(sprite.GetLength(1) == 1 || heightparity) return Blending.biomeonly;
-            else return Blending.full;
+            else return Blending.grid;
         }
 
 
@@ -230,7 +242,7 @@ namespace Mcasaenk.Colormaping {
         //public static NullTint Tint = new NullTint(), Error = new NullTint();
         public NullTint(GroupManager<Tint> groupManager) : base(groupManager, "nulltint") { }
 
-        public override Blending GetBlendMode() => Blending.none;
+        public override Blending GetBlendMode() => Blending.single;
 
         public override uint TintColorFor(ushort biome, short height) => 0xFFFFFFFF;
 

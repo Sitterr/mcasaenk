@@ -1,26 +1,12 @@
-﻿using Mcasaenk.Colormaping;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Net;
-using System.Windows.Media.Imaging;
-using System.Net.NetworkInformation;
-using Microsoft.Win32;
-using System.ComponentModel;
-using System.Drawing;
-using static Mcasaenk.UI.ColormapEditor;
-using System.Globalization;
+﻿using System.ComponentModel;
 using System.Data;
-using System.Windows.Media.Animation;
-using System.Windows.Input;
+using System.Globalization;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
+using Mcasaenk.Colormaping;
 
 // complete mess, pls dont look
 namespace Mcasaenk.UI {
@@ -77,11 +63,11 @@ namespace Mcasaenk.UI {
                 }
             };
             btn_delete.SetBinding(EButton.IsEnabledProperty, new Binding {
-                    Source = blockgrid,
-                    Path = new PropertyPath("SelectedItems.Count"),
-                    Converter = new GreaterThanConverter(),
-                    ConverterParameter = 0
-                });
+                Source = blockgrid,
+                Path = new PropertyPath("SelectedItems.Count"),
+                Converter = new GreaterThanConverter(),
+                ConverterParameter = 0
+            });
 
             btn_add.Click += (o, e) => {
                 var dialog = ChooseNameDialog.AddBLockDialog(((IEnumerable<EditBlockRow>)blockgrid.ItemsSource).Select(bl => bl.BlockName).ToArray());
@@ -336,8 +322,8 @@ namespace Mcasaenk.UI {
         public static DependencyProperty ColorProperty;
         public WPFColor Color {
             get { return (WPFColor)base.GetValue(ColorProperty); }
-            set { 
-                base.SetValue(ColorProperty, value); 
+            set {
+                base.SetValue(ColorProperty, value);
             }
         }
 
@@ -411,7 +397,7 @@ namespace Mcasaenk.UI {
     }
     class LinkTextBlock : BorderLikeButton {
         private Brush fore, fore_hover, fore_press, transp;
-        public LinkTextBlock() : this(false) { 
+        public LinkTextBlock() : this(false) {
         }
         public LinkTextBlock(bool unterstrichimmeran) {
             fore = (Brush)this.TryFindResource("FORE");

@@ -1,15 +1,7 @@
-﻿using Accessibility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-
-namespace Mcasaenk {
+﻿namespace Mcasaenk {
     public static class JavaMapColors {
         private static MapColor nullcolor = new MapColor(0, 0, 0);
-        public static readonly MapColor[] originals = [
+        public static readonly MapColor[] colors = [
             new MapColor(1, 0xFF7fb238),
             new MapColor(2, 0xFFf7e9a3),
             new MapColor(3, 0xFFc7c7c7),
@@ -73,19 +65,31 @@ namespace Mcasaenk {
             new MapColor(61, 0xFF7fa796, 3105),
         ];
 
-        public static (byte id, WPFColor color) Nearest(WPFColor color, int version = int.MaxValue) {
+        public static (byte id, WPFColor color) Nearest(ColorApproximationAlgorithm algo, WPFColor color, int version = int.MaxValue) {
             (byte, WPFColor) nearest = (0, WPFColor.Transparent);
 
             if(color.A == 0) return nearest;
 
-            int bestscore = int.MaxValue;
-            foreach(var mapcolor in originals) {
+            double bestscore = double.MaxValue;
+            foreach(var mapcolor in colors) {
                 if(mapcolor.version > version) continue;
 
                 (byte id, WPFColor color)[] variants = [mapcolor.V180, mapcolor.V220, mapcolor.V255, mapcolor.V135];
 
                 foreach(var variant in variants) {
-                    int score = (color.R - variant.color.R) * (color.R - variant.color.R) + (color.G - variant.color.G) * (color.G - variant.color.G) + (color.B - variant.color.B) * (color.B - variant.color.B);
+                    double score = double.MaxValue;
+                    if(algo == ColorApproximationAlgorithm.RGB_Euclidean) {
+                        score = length(color.R - variant.color.R, color.G - variant.color.G, color.B - variant.color.B);
+                    } else if(algo == ColorApproximationAlgorithm.LAB_Euclidean) {
+                        var color_lab = color.ToLAB();
+                        var variant_lab = variant.color.ToLAB();
+                        score = length(color_lab.L - variant_lab.L, color_lab.A - variant_lab.A, color_lab.B - variant_lab.B);
+                    } else if(algo == ColorApproximationAlgorithm.LAB_CIE94) {
+                        var color_lab = color.ToLAB();
+                        var variant_lab = variant.color.ToLAB();
+                        score = GlobalColors.CIE94(color_lab, variant_lab);
+                    }
+
                     if(score < bestscore) {
                         bestscore = score;
                         nearest = variant;
@@ -95,13 +99,21 @@ namespace Mcasaenk {
 
             }
             return nearest;
+
+            double length(params double[] a) {
+                double res = 0;
+                foreach(var v in a) {
+                    res += v * v;
+                }
+                return Math.Sqrt(res);
+            }
         }
 
         public static MapColor GetById(byte id) {
-            return originals.FirstOrDefault(d => d.mapid == id / 4);
+            return colors.FirstOrDefault(d => d.mapid == id / 4);
         }
     }
-    
+
 
     public struct MapColor {
         public readonly byte mapid;

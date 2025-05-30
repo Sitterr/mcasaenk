@@ -1,13 +1,6 @@
 ﻿using Mcasaenk.Colormaping;
 using Mcasaenk.Rendering.ChunkRenderData;
 using Mcasaenk.Resources;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Rendering {
@@ -35,7 +28,7 @@ namespace Mcasaenk.Rendering {
                     AIRBLOCKS.AddRange(parts.Select(p => p.minecraftname()));
                 } else if(group == "WATERINV") {
                     WATERINVBLOCKS.AddRange(parts.Select(p => p.minecraftname()));
-                } else if(group == "WATER") { 
+                } else if(group == "WATER") {
                     WATERBLOCK = parts[0].minecraftname();
                 }
             });
@@ -55,7 +48,7 @@ namespace Mcasaenk.Rendering {
             short floor_height = data.GetTerrainHeight(x, z);
             short motion_height = data.GetMotionHeight(x, z);
 
-            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == data.Colormap.depth) {
+            if(motion_height == surface_height && data.GetBlock(x, z, floor_height + 1) == BlockManager.depth) {
                 return floor_height;
             }
 

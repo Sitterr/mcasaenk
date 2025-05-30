@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.Windows;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
-using Mcasaenk.Rendering;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Mcasaenk {
     [StructLayout(LayoutKind.Sequential)]
@@ -26,7 +20,7 @@ namespace Mcasaenk {
         public static WPFColor FromArgb(byte a, byte r, byte g, byte b) => new WPFColor(r, g, b, a);
         public static WPFColor FromColor(WPFColor c, byte a = 255) => new WPFColor(c.R, c.G, c.B, a);
 
-        public static WPFColor FromUInt(uint c) => new WPFColor((byte)((c >> 16) & 0xFF), (byte)((c >> 8) & 0xFF), (byte)(c & 0xFF), (byte)((c >> 24) & 0xFF));
+        public static WPFColor FromUInt(uint c) => c.ToColor();
 
         public static WPFColor FromHex(string hex) {
             try {
@@ -42,9 +36,8 @@ namespace Mcasaenk {
                     byte g = Convert.ToByte(hex.Substring(4, 2), 16);
                     byte b = Convert.ToByte(hex.Substring(6, 2), 16);
                     return FromArgb(r, g, b, a);
-                } else throw new Exception();
-            }
-            catch {
+                } else return WPFColor.Transparent;
+            } catch {
                 return WPFColor.Transparent;
             }
         }
@@ -99,7 +92,7 @@ namespace Mcasaenk {
         public BitmapSource ToBitmapSource(bool save = false) {
             if(changed == true || last == null || (last?.Dispatcher == null && save) || last?.Dispatcher?.CheckAccess() == false) {
                 changed = false;
-                last = pixels.FromRGBMatrix();                
+                last = pixels.FromRGBMatrix();
             }
             return last;
         }
@@ -170,6 +163,76 @@ namespace Mcasaenk {
         public static uint ToUInt(this WPFColor c) {
             return (uint)((c.A << 24) | (c.R << 16) | (c.G << 8) | (c.B));
         }
+        public static (double L, double A, double B) ToLAB(this WPFColor c) {
+            double PivotXYZ(double n) => (n > 0.008856) ? Math.Pow(n, 1.0 / 3.0) : (7.787 * n + 16.0 / 116.0);
+
+            // Normalize RGB values to the range 0 - 1
+            double rNorm = c.R / 255.0;
+            double gNorm = c.G / 255.0;
+            double bNorm = c.B / 255.0;
+
+            // Convert RGB to linear RGB
+            rNorm = (rNorm > 0.04045) ? Math.Pow((rNorm + 0.055) / 1.055, 2.4) : (rNorm / 12.92);
+            gNorm = (gNorm > 0.04045) ? Math.Pow((gNorm + 0.055) / 1.055, 2.4) : (gNorm / 12.92);
+            bNorm = (bNorm > 0.04045) ? Math.Pow((bNorm + 0.055) / 1.055, 2.4) : (bNorm / 12.92);
+
+            // Convert to XYZ
+            double x = rNorm * 0.4124 + gNorm * 0.3576 + bNorm * 0.1805;
+            double y = rNorm * 0.2126 + gNorm * 0.7152 + bNorm * 0.0722;
+            double z = rNorm * 0.0193 + gNorm * 0.1192 + bNorm * 0.9505;
+
+            // Normalize for D65 white point
+            x /= 0.95047;
+            y /= 1.00000;
+            z /= 1.08883;
+
+            // Convert XYZ to LAB
+            x = PivotXYZ(x);
+            y = PivotXYZ(y);
+            z = PivotXYZ(z);
+
+            double l = 116 * y - 16;
+            double a = 500 * (x - y);
+            double b = 200 * (y - z);
+
+            return (l, a, b);
+        }
+
+        public static double CIE94((double L, double A, double B) lab1, (double L, double A, double B) lab2) {
+            const double kL = 0.298;
+            const double kC = 0.317;
+            const double kH = 0.385;
+
+            const double k1 = 0.045;
+            const double k2 = 0.015;
+
+            double l1 = lab1.L, a1 = lab1.A, b1 = lab1.B;
+            double l2 = lab2.L, a2 = lab2.A, b2 = lab2.B;
+
+            double deltaL = l1 - l2;
+            double deltaA = a1 - a2;
+            double deltaB = b1 - b2;
+
+            double c1 = Math.Sqrt(a1 * a1 + b1 * b1);
+            double c2 = Math.Sqrt(a2 * a2 + b2 * b2);
+            double deltaC = c1 - c2;
+
+            double deltaH_squared = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+            double deltaH = Math.Sqrt(Math.Max(0.0, deltaH_squared));
+
+            double sL = 1.0;
+            double sC = 1.0 + k1 * c1;
+            double sH = 1.0 + k2 * c1;
+
+            double lightness_term = deltaL / (kL * sL);
+            double chroma_term = deltaC / (kC * sC);
+            double hue_term = deltaH / (kH * sH);
+
+            return Math.Sqrt(lightness_term * lightness_term +
+                        chroma_term * chroma_term +
+                        hue_term * hue_term);
+        }
+
         public static string ToHex(this WPFColor c, bool containAlpha, bool hashtag) {
             string basec = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
             if(containAlpha) basec = c.A.ToString("X2") + basec;
@@ -182,6 +245,19 @@ namespace Mcasaenk {
             byte g = (byte)((color >> 8) & 0xFF);
             byte b = (byte)(color & 0xFF);
             return WPFColor.FromArgb(a, r, g, b);
+        }
+        public static uint ToGL(this uint color) {
+            byte a = (byte)((color >> 24) & 0xFF);
+            byte r = (byte)((color >> 16) & 0xFF);
+            byte g = (byte)((color >> 8) & 0xFF);
+            byte b = (byte)(color & 0xFF);
+            return (uint)((a << 24) | (b << 16) | (g << 8) | (r));
+        }
+
+        public static void ToGL(this uint[] data) {
+            for(int i = 0; i < data.Length; i++) {
+                data[i] = data[i].ToGL();
+            }
         }
 
         public static Color ToWinColor(this WPFColor c) {

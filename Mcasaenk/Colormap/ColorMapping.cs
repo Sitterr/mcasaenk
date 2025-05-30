@@ -1,42 +1,25 @@
 ﻿using System.Collections.Frozen;
-using System.IO;
-using System.Windows.Media.Imaging;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using Mcasaenk.Rendering;
+using Mcasaenk.Rendering_Opengl;
 using Mcasaenk.Resources;
 using Mcasaenk.WorldInfo;
 using static Mcasaenk.Colormaping.Tint;
-using System.Security.Policy;
-using System.DirectoryServices.ActiveDirectory;
-using System;
-using System.Xml.Linq;
-using System.Text.Json.Serialization;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
-using System.Windows.Media;
-using System.Drawing;
-using System.Windows.Documents;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Mcasaenk.Rendering;
-using System.Linq;
 
 namespace Mcasaenk.Colormaping {
 
-    public class Colormap {
+    public class Colormap : IDisposable {
         public const int DEFHEIGHT = 64;
 
-        public const ushort INVBLOCK = ushort.MaxValue, NONEBLOCK = ushort.MaxValue - 1, ERRORBLOCK = ushort.MaxValue - 2;
+        public const ushort INVBLOCK = 0, NONEBLOCK = 1, ERRORBLOCK = 2;
         public ushort BLOCK_AIR = INVBLOCK, BLOCK_WATER = INVBLOCK;
-        public readonly ushort depth;
-        public readonly ISet<ushort> noShades;
 
         public readonly BlockRegistry Block;
         public readonly BiomeRegistry Biome;
 
-        private IDictionary<ushort, uint> BlocksManager;   
+        public BlockManager BlocksManager;
         public readonly TintManager TintManager;
         public readonly FilterManager FilterManager;
-        public readonly TintFilterShadeGrouping Grouping;
 
         public Colormap(RawColormap rawmap, int world_version, DatapacksInfo datapacksInfo) {
 
@@ -61,16 +44,13 @@ namespace Mcasaenk.Colormaping {
                 }
             });
 
-            
-            BlocksManager = new Dictionary<ushort, uint>();
+            BlocksManager = new BlockManager(this, rawmap.depth);
+            BlocksManager.StartBlocksEdit();
+
             TintManager = new TintManager(this);
             FilterManager = new FilterManager(this);
             FilterManager.AddBlock(INVBLOCK, FilterManager.Invis);
             FilterManager.AddBlock(NONEBLOCK, FilterManager.Error);
-            Grouping = new TintFilterShadeGrouping([
-                (FilterManager.Invis, TintManager.NullTint, true),
-                (FilterManager.Error, TintManager.NullTint, true),
-                ]);
 
 
             //groupManager.AddBlockToFilter("minecraft:air", groupManager.filter_invis, true);
@@ -121,7 +101,7 @@ namespace Mcasaenk.Colormaping {
                         filter = new Filter(FilterManager, f.name, true, true) { ABSORBTION = (int)(Math.Round(15 - f.transparency * 15)) };
                         FilterManager.ELEMENTS.Add(filter);
                     } else filter = FilterManager.Invis;
-               
+
                     foreach(var block in f.blocks) {
                         if(Block.TryGetId(block.minecraftname(), out ushort id)) {
                             FilterManager.AddBlock(id, filter);
@@ -130,23 +110,30 @@ namespace Mcasaenk.Colormaping {
                 }
             }
 
-
-            BlocksManager = BlocksManager.ToFrozenDictionary();
+            BlocksManager.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => FilterManager.GetBlockVal(blid) != FilterManager.Invis)).ToFrozenSet();
+            BlocksManager.FinishBlocksEdit();
             Block.Freeze();
             Biome.Freeze();
             Block.LoadOldBlocks();
 
-            this.depth = rawmap != null ? Block.GetId(rawmap.depth) : NONEBLOCK;
-            FilterManager.AddBlock(depth, FilterManager.Depth);
+            // this.depth = rawmap != null ? Block.GetId(rawmap.depth) : NONEBLOCK;
+            FilterManager.AddBlock(BlockManager.depth, FilterManager.Depth);
 
-            this.noShades = new HashSet<ushort>(rawmap.no3dshadeblocks.Select(blname => Block.GetId(blname)).Where(blid => FilterManager.GetBlockVal(blid) != FilterManager.Invis)).ToFrozenSet();
-            //
+        }
+        private bool disposed = false;
+        public void Dispose() {
+            if(disposed) return;
+
+            BlocksManager?.GetTexture()?.Dispose();
+            TintManager?.GetTexture()?.Dispose();
+
+            disposed = true;
         }
 
-        public uint BaseColor(ushort block) => block switch { 
+        public uint BaseColor(ushort block) => block switch {
             ERRORBLOCK => 0xFFFF0000,
-            INVBLOCK =>   0x00000000,
-            NONEBLOCK =>  0xFF0000FF,
+            INVBLOCK => 0x00000000,
+            NONEBLOCK => 0xFF0000FF,
             _ => BlocksManager.GetValueOrDefault(block, (uint)0)
         };
         public uint FullColor(ushort block, ushort biome, short height) => TintManager.GetBlockVal(block).GetTintedColor(BaseColor(block), biome, height);
@@ -155,7 +142,7 @@ namespace Mcasaenk.Colormaping {
 
         public bool AirHeightmapCompatible, WaterHeightmapCompatible;
         public void UpdateHeightmapCompatability() {
-            AirHeightmapCompatible = true; 
+            AirHeightmapCompatible = true;
             WaterHeightmapCompatible = true;
 
             foreach(var airblock in HeightmapFilter.AIRBLOCKS) {
@@ -166,7 +153,7 @@ namespace Mcasaenk.Colormaping {
                 }
             }
 
-            if(Block.GetId(HeightmapFilter.WATERBLOCK) != depth || FilterManager.GetBlockVal(depth).ABSORBTION == 0) WaterHeightmapCompatible = false;
+            if(Block.GetId(HeightmapFilter.WATERBLOCK) != BlockManager.depth || FilterManager.GetBlockVal(BlockManager.depth).ABSORBTION == 0) WaterHeightmapCompatible = false;
             /*
             foreach(var waterinvblock in HeightmapFilter.WATERINVBLOCKS) {
                 ushort id = Block.GetId(waterinvblock);
@@ -192,6 +179,75 @@ namespace Mcasaenk.Colormaping {
     }
 
 
+    public class BlockManager {
+        private Colormap colormap;
+
+        public ISet<ushort> noShades;
+        private IDictionary<ushort, uint> map;
+        public const ushort depth = 3;
+        public BlockManager(Colormap colormap, string depth) {
+            this.colormap = colormap;
+
+            map = new Dictionary<ushort, uint>();
+            map[colormap.Block.GetId("_invblock_")] = 0x00000000; // 0
+            map[colormap.Block.GetId("_noneblock_")] = 0xFF0000FF; // 1
+            map[colormap.Block.GetId("_errorblock_")] = 0xFFFF0000; // 2
+            map[colormap.Block.GetId(depth)] = 0; // 3
+        }
+
+        public uint GetValueOrDefault(ushort id, uint def) => map.GetValueOrDefault(id, def);
+        public uint this[ushort id] {
+            get => map.GetValueOrDefault(id, (uint)0);
+            set {
+                if(map is not FrozenDictionary<ushort, uint>) map[id] = value;
+                else throw new Exception();
+            }
+        }
+
+        public void StartBlocksEdit() {
+            map = new Dictionary<ushort, uint>(map);
+        }
+        public void FinishBlocksEdit() {
+            map = map.ToFrozenDictionary();
+            if(map.Keys.Max() != texturedata?.Length) {
+                gputexture?.Dispose();
+                gputexture = null;
+
+                if(map.Keys.Max() > texturedata?.Length || texturedata == null) texturedata = new uint[map.Keys.Max()];
+            }
+            UpdateTexture();
+        }
+
+        private ShaderBufferTexture gputexture;
+        private uint[] texturedata;
+        private bool updatedata;
+
+        public ShaderBufferTexture GetTexture() {
+            if(gputexture == null || gputexture?.disposed == true) {
+                gputexture = new ShaderBufferTexture(texturedata.Length * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                updatedata = true;
+            }
+
+            if(updatedata) {
+                gputexture.Data(texturedata);
+                updatedata = false;
+            }
+
+            return gputexture;
+        }
+
+        public void UpdateTexture() {
+            if(texturedata == null) return;
+            for(int i = 0; i < texturedata.Length; i++) {
+                ushort id = (ushort)i;
+                texturedata[i] = (this.GetValueOrDefault(id, 0) << 8);
+                texturedata[i] += (uint)(colormap.TintManager.IndexOf(colormap.TintManager.GetBlockVal(id)) << 4);
+                texturedata[i] += (uint)(colormap.FilterManager.GetBlockVal(id).ABSORBTION);
+            }
+
+            updatedata = true;
+        }
+    }
 
     public class GroupManager<T> : StandardizedSettings where T : GroupElement<T> {
         public readonly Colormap colormap;
@@ -269,14 +325,78 @@ namespace Mcasaenk.Colormaping {
             if(map.TryGetValue(id, out var val)) return val;
             else return Default;
         }
+
+        public int IndexOf(T t) {
+            return ELEMENTS.IndexOf(t);
+        }
     }
     public class TintManager : GroupManager<Tint> {
+        public const int MAXCOUNT = 16;
+
         public readonly Tint NullTint;
         public TintManager(Colormap colormap) : base(colormap) {
             this.NullTint = new NullTint(this);
             this.InitDef(NullTint);
         }
-        public List<Tint> GetBlendingTints() => ELEMENTS.Where(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.full).ToList();
+        public List<Tint> GetBlendingTints() => ELEMENTS.Where(t => t.GetBlendMode() == Blending.biomeonly || t.GetBlendMode() == Blending.grid).ToList();
+        public int[] GetBlendingTintsIndexes() => GetBlendingTints().Select(t => this.IndexOf(t)).ToArray();
+
+        private ShaderBufferTexture gputexture;
+        private uint[] texturedata;
+        private bool textureupdate;
+
+        public override void SetFromBack() {
+            base.SetFromBack();
+            UpdateTexture();
+        }
+
+        public ShaderBufferTexture GetTexture() {
+            if(gputexture == null || gputexture?.size < texturedata.Length * 4 || gputexture?.disposed == true) {
+                gputexture?.Dispose();
+
+                int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
+                gputexture = new ShaderBufferTexture((MAXCOUNT + MAXCOUNT * w * h) * 4, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                textureupdate = true;
+            }
+            if(textureupdate) {
+                gputexture.Data(texturedata);
+                textureupdate = false;
+            }
+
+            return gputexture;
+        }
+        public void UpdateTexture() {
+            if(Global.Settings.RENDERMODE == RenderMode.OPENGL) {
+                textureupdate = true;
+
+                int w = Global.App.Colormap.Biome.Count, h = Global.App.OpenedSave.overworld.GetHeight().height;
+                if(texturedata == null || texturedata?.Length < ELEMENTS.Count + ELEMENTS.Count * w * h) texturedata = new uint[ELEMENTS.Count + ELEMENTS.Count * w * h];
+
+                int i = 0;
+                int c = MAXCOUNT + 1;
+                foreach(var el in ELEMENTS) {
+
+                    var blendmode = el.GetBlendMode();
+                    el.FillGPUData(texturedata.AsSpan().Slice(c));
+                    int len = blendmode switch {
+                        Blending.single => 1,
+                        Blending.biomeonly => w,
+                        Blending.heightonly => h,
+                        Blending.grid => w * h,
+                    };
+
+                    texturedata[i] = (uint)blendmode << 4; // 8 bit
+                    texturedata[i] += (uint)(c << 8); // 16 bit
+
+                    c += len;
+                    i++;
+                }
+                texturedata[MAXCOUNT] = (uint)w;
+
+                //Global.App.Window.canvas?.pipeline.kawaseShader?.UpdateBlendTintCounter(GetBlendingTintsIndexes());
+            }
+        }
+
     }
     public class FilterManager : GroupManager<Filter> {
         public readonly Filter Solid, Depth, Invis, Error;
@@ -327,68 +447,6 @@ namespace Mcasaenk.Colormaping {
             CalcAreThereHalfTransp();
         }
     }
-    public class TintFilterShadeGrouping {
-        private readonly List<(Filter gr, Tint tint, bool shade)> Pairs;
-        private IDictionary<(Filter gr, Tint tint, bool shade), int> PairsIndexes;
-
-        private (Filter gr, Tint tint, bool shade)[] predefined;
-        public TintFilterShadeGrouping((Filter gr, Tint tint, bool shade)[] predefined) {
-            Pairs = new List<(Filter gr, Tint tint, bool shade)>();
-            PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>();
-
-            betroffenTints = new();
-            betroffenFilters = new();
-
-            this.predefined = predefined;
-            foreach(var predef in predefined) {
-                Pairs.Add(predef);
-                PairsIndexes.TryAdd(predef, Pairs.Count - 1);
-            }
-        }
-
-
-        int i = 0;
-        public (Filter filter, Tint tint, bool shade) GetGroup(int id) => Pairs[id];
-        private HashSet<Tint> betroffenTints;
-        private HashSet<Filter> betroffenFilters;
-        public bool HaveInRecord(Tint tint) => betroffenTints.Contains(tint) || Global.Settings.DATASTORAGEMODEL != GenDataModel.COLOR;
-        public bool HaveInRecord(Filter filter) => betroffenFilters.Contains(filter) || Global.Settings.DATASTORAGEMODEL != GenDataModel.COLOR;
-
-        public int GetId(Filter filter, Tint tint, bool shade) {
-            //i++;
-            //if(i > 1500) PairsIndexes = PairsIndexes.ToFrozenDictionary();
-            if(PairsIndexes.TryGetValue((filter, tint, shade), out int otg)) return otg;
-            lock(this) {
-                if(PairsIndexes.TryGetValue((filter, tint, shade), out int otgnow)) return otgnow;
-
-                /*
-                i = 0;
-                if(PairsIndexes is FrozenDictionary<(Filter gr, Tint tint, bool shade), int>) {
-                    PairsIndexes = new Dictionary<(Filter gr, Tint tint, bool shade), int>(PairsIndexes);
-                    f++;
-                }*/
-
-                Pairs.Add((filter, tint, shade));
-                betroffenTints.Add(tint);
-                betroffenFilters.Add(filter);
-                PairsIndexes.TryAdd((filter, tint, shade), Pairs.Count - 1);
-                return Pairs.Count - 1;
-            }
-        }
-        public void Reset() {
-            betroffenTints.Clear();
-            betroffenFilters.Clear();
-            Pairs.Clear();
-            PairsIndexes.Clear();
-            i = 0;
-
-            foreach(var predef in predefined) {
-                Pairs.Add(predef);
-                PairsIndexes.TryAdd(predef, Pairs.Count - 1);
-            }
-        }
-    }
-
 
     public abstract class GroupElement<T> : StandardizedSettings where T : GroupElement<T> {
         protected GroupManager<T> groupManager;
@@ -404,7 +462,7 @@ namespace Mcasaenk.Colormaping {
             BLOCKS = new HashSet<ushort>();
         }
 
-        public void _AddBlock(ushort block) { 
+        public void _AddBlock(ushort block) {
             Blocks.Add(block);
             OnAutoChange(nameof(Blocks));
         }

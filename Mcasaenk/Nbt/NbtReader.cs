@@ -1,12 +1,8 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
-using Microsoft.Extensions.ObjectPool;
-using System;
-using System.Buffers;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Unicode;
-using System.Windows.Media.Animation;
+using CommunityToolkit.HighPerformance.Buffers;
 
 namespace Mcasaenk.Nbt {
     public class NbtReader {
@@ -21,8 +17,7 @@ namespace Mcasaenk.Nbt {
                 var name = ReadUTF8(true);
 
                 tag = ReadPayLoad(type);
-            }
-            catch (Exception e){
+            } catch(Exception e) {
                 tag = null;
                 throw e;
                 return true;
@@ -55,50 +50,50 @@ namespace Mcasaenk.Nbt {
                     return NumTag<string>.Get(ReadUTF8());
 
                 case TagType.ByteArray: {
-                    int len = ReadInt();
-                    var tag = ArrTag<byte>.Get(len);
-                    ReadBuffer(MemoryMarshal.Cast<byte, byte>(tag));
-                    return tag;
-                }
+                        int len = ReadInt();
+                        var tag = ArrTag<byte>.Get(len);
+                        ReadBuffer(MemoryMarshal.Cast<byte, byte>(tag));
+                        return tag;
+                    }
                 case TagType.IntArray: {
-                    int len = ReadInt();
-                    var tag = ArrTag<int>.Get(len);
-                    ReadBuffer(MemoryMarshal.Cast<int, byte>(tag));
-                    for(int i = 0; i < len; i++) {
-                        tag[i] = tag[i].SwapEndian();
+                        int len = ReadInt();
+                        var tag = ArrTag<int>.Get(len);
+                        ReadBuffer(MemoryMarshal.Cast<int, byte>(tag));
+                        for(int i = 0; i < len; i++) {
+                            tag[i] = tag[i].SwapEndian();
+                        }
+                        return tag;
                     }
-                    return tag;
-                }
                 case TagType.LongArray: {
-                    int len = ReadInt();
-                    var tag = ArrTag<long>.Get(len);
-                    ReadBuffer(MemoryMarshal.Cast<long, byte>(tag));
-                    for(int i = 0; i < len; i++) {
-                        tag[i] = tag[i].SwapEndian();
+                        int len = ReadInt();
+                        var tag = ArrTag<long>.Get(len);
+                        ReadBuffer(MemoryMarshal.Cast<long, byte>(tag));
+                        for(int i = 0; i < len; i++) {
+                            tag[i] = tag[i].SwapEndian();
+                        }
+                        return tag;
                     }
-                    return tag;
-                }
                 case TagType.Compound: {
-                    var ctag = CompoundTag_Optimal.Get();
-                    while(true) {
-                        var childType = (TagType)ReadByte();
-                        if(childType == TagType.End)
-                            break;
-                        var childName = ReadName();
-                        ctag.Add(childName, ReadPayLoad(childType));
+                        var ctag = CompoundTag_Optimal.Get();
+                        while(true) {
+                            var childType = (TagType)ReadByte();
+                            if(childType == TagType.End)
+                                break;
+                            var childName = ReadName();
+                            ctag.Add(childName, ReadPayLoad(childType));
+                        }
+                        return ctag;
                     }
-                    return ctag;
-                }   
                 case TagType.List: {
-                    var childtype = (TagType)ReadByte();
-                    int count = ReadInt();
+                        var childtype = (TagType)ReadByte();
+                        int count = ReadInt();
 
-                    var ltag = ListTag.Get(childtype);
-                    for(int i = 0; i < count; i++) {
-                        ltag.AddTag(ReadPayLoad(childtype));
+                        var ltag = ListTag.Get(childtype);
+                        for(int i = 0; i < count; i++) {
+                            ltag.AddTag(ReadPayLoad(childtype));
+                        }
+                        return ltag;
                     }
-                    return ltag;
-                }
 
                 default: return null;
             }

@@ -1,11 +1,6 @@
-﻿using Mcasaenk.Resources;
+﻿using System.Collections.Frozen;
+using Mcasaenk.Resources;
 using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Mcasaenk.Global;
 
 namespace Mcasaenk.Colormaping {
@@ -43,6 +38,8 @@ namespace Mcasaenk.Colormaping {
         }
         public void SetDef(ushort def) => this.def = def;
 
+        public int Count => nameToId.Count;
+
         public ushort GetId(string name) {
             if(name == null) return ++counter;
             if(nameToId.TryGetValue(name, out var id)) return id;
@@ -62,11 +59,9 @@ namespace Mcasaenk.Colormaping {
         }
 
 
-        public string GetName(ushort id) {
-            if(id == Colormap.ERRORBLOCK) return "_error block_";
-            if(id == Colormap.INVBLOCK) return "_void_";
+        public virtual string GetName(ushort id) {
             if(idToName.TryGetValue(id, out string name)) return name;
-            return "_unknown block_";
+            return "_unknown_";
         }
 
         private ushort assignNew(string name) {
@@ -142,6 +137,11 @@ namespace Mcasaenk.Colormaping {
         public ushort GetId(int oldid) {
             if(oldBlockIdToId.ContainsKey(oldid)) return oldBlockIdToId[oldid];
             return Colormap.NONEBLOCK;
+        }
+        public override string GetName(ushort id) {
+            if(id == Colormap.ERRORBLOCK) return "_error block_";
+            if(id == Colormap.INVBLOCK) return "_void_";
+            return base.GetName(id);
         }
 
         public void LoadOldBlocks() {

@@ -1,38 +1,15 @@
-﻿using Accessibility;
-using CommunityToolkit.HighPerformance;
-using Mcasaenk.Colormaping;
-using Mcasaenk.Shade3d;
-using System;
-using System.Buffers;
-using System.Collections;
+﻿using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
-using System.Xml.Linq;
-using static Mcasaenk.Global;
+using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
+using Mcasaenk.Shade3d;
 
-namespace Mcasaenk.Rendering {
+namespace Mcasaenk.Rendering_bitmap {
     public static unsafe class TileDraw {
 
         public static long drawTime = 0, drawCount = 1;
-        public static void FillPixels(uint* pixels, Colormap colormap, GenData genData, GenData[,] neighbours) {
+        public static void FillPixels(Span<uint> pixels, Colormap colormap, GenData genData, GenData[,] neighbours) {
             var st = Stopwatch.StartNew();
 
             PrepConstants consts = new PrepConstants() {
@@ -91,7 +68,7 @@ namespace Mcasaenk.Rendering {
 
 
                             // relshadevis                  
-                            if(Global.Settings.NOSHADE_STATIC_SHADE == false) {
+                            if(true) {
                                 relshadevis8.Clear();
                                 byte ostatuk = 255;
                                 for(int w = 0; w < genData.columns.Length - 1; w++) {
@@ -134,8 +111,8 @@ namespace Mcasaenk.Rendering {
                             meanheights[bi] = -1;
                         }
 
-                        if(genData.depthColumn.depths != null && x >= 0 && x < 512 && z >= 0 && z < 512) {
-                            genData.depthColumn.depths[z * 512 + x] = terrdepth;
+                        if(genData.depthColumn.depths15_lightfrombottom1 != null && x >= 0 && x < 512 && z >= 0 && z < 512) {
+                            if(genData.depthColumn.IsDepth(z * 512 + x)) genData.depthColumn.set_depth(z * 512 + x, terrdepth);
                         } else {
                             //meanheights[bi] = -1;
                         }
@@ -149,12 +126,11 @@ namespace Mcasaenk.Rendering {
 
             foreach(var tint in colormap.TintManager.GetBlendingTints()) {
                 var blendmode = tint.GetBlendMode();
-                if(colormap.Grouping.HaveInRecord(tint) == false) continue;
 
                 if(tint is DynamicTint dtint) {
                     if(blendmode == Tint.Blending.biomeonly) {
                         TraverseAndPaintForBlur(genData, pixels, consts, relvis8, meanheights, new ColorBlurDraw((dtint.Blend - 1) / 2, 0, new ColorBlurData() { tint = tint, colormap = colormap }, neighbours), tint);
-                    } else if(blendmode == Tint.Blending.full) {
+                    } else if(blendmode == Tint.Blending.grid) {
                         TraverseAndPaintForBlur(genData, pixels, consts, relvis8, meanheights, new PrecBlurDraw((dtint.Blend - 1) / 2, 0, new PrecBlurData() { tint = tint, dynbiomes = new DynBiome(PrecBlur.MB), colormap = colormap }, neighbours), tint);
                     }
                 }
@@ -163,9 +139,9 @@ namespace Mcasaenk.Rendering {
 
 
 
-            if(Global.Settings.USEMAPPALETTE) {
+            if(Global.Settings._UseMapPalette) {
                 for(int i = 0; i < 512 * 512; i++) {
-                    pixels[i] = JavaMapColors.Nearest(WPFColor.FromUInt(pixels[i]), Global.App.OpenedSave.levelDatInfo.version_id).color.ToUInt();
+                    pixels[i] = JavaMapColors.Nearest(Global.Settings.MAPAPPROXIMATIONALGO, WPFColor.FromUInt(pixels[i]), Global.App.OpenedSave.levelDatInfo.version_id).color.ToUInt();
                 }
             }
 
@@ -199,7 +175,7 @@ namespace Mcasaenk.Rendering {
 
 
 
-        static void TraverseAndPaintForBlur<U>(GenData genData, uint* pixels, PrepConstants consts, byte[][] relvis8, short[] meanheights, BlurDraw<U> tintblur, Tint tint) {
+        static void TraverseAndPaintForBlur<U>(GenData genData, Span<uint> pixels, PrepConstants consts, byte[][] relvis8, short[] meanheights, BlurDraw<U> tintblur, Tint tint) {
             tintblur.BoxBlur();
 
             for(int x = 0; x < 512; x++) {
@@ -276,7 +252,7 @@ namespace Mcasaenk.Rendering {
 
                         // shades
                         {
-                            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE && (Global.Settings.NOSHADE_STATIC_SHADE || colw.NeedShade(i))) { // traebva da e praedi shade
+                            if(Global.App.Settings.SHADETYPE == ShadeType.OG && Global.App.Settings.STATIC_SHADE) { // traebva da e praedi shade
 
                                 short hi, hx, hnx, hz, hnz;
                                 if(meanheights != null) {
@@ -352,7 +328,8 @@ namespace Mcasaenk.Rendering {
 
 
 
-                        double relvis = relvis8 != null ? relvis8[w][bi] / 255d : colw.relvis != null ? colw.relvis[i] / 255d : 1d;
+
+                        double relvis = relvis8 != null ? relvis8[w][bi] / 255d : 1d;
                         pixels[i] += Global.MultShade(color, relvis);
                     }
                 }
@@ -430,7 +407,7 @@ namespace Mcasaenk.Rendering {
 
                     cx2[R + r].Reset();
                     if(gen != null) {
-                        acc.IncreaseNewBlock(gen, data, ri);           
+                        acc.IncreaseNewBlock(gen, data, ri);
                         cx2[R + r].IncreaseNewBlock(gen, data, ri);
                     }
 
@@ -448,7 +425,7 @@ namespace Mcasaenk.Rendering {
 
                         cx2[R + x + R].Reset();
                         if(gen != null) {
-                            acc.IncreaseNewBlock(gen, data, ri);                          
+                            acc.IncreaseNewBlock(gen, data, ri);
                             cx2[R + x + R].IncreaseNewBlock(gen, data, ri);
                         }
                     }
@@ -571,7 +548,7 @@ namespace Mcasaenk.Rendering {
 
         public short Generate(GenData gen, TerrHeightBlurData data, int i) {
             if(gen == null) return -1;
-            if(gen.depthColumn.IsDepth(i) == false) return gen.depthColumn.depths[i];
+            if(gen.depthColumn.IsDepth(i) == false) return gen.depthColumn.Depth(i);
             double q = data.q(gen.depthColumn.Depth(i));
             //return (short)(h / br);
             return (short)(h / br * q + gen.depthColumn.Depth(i) * (1 - q));
@@ -753,7 +730,7 @@ namespace Mcasaenk.Rendering {
         public bool GetAndMoveOn() { return false; }
 
         public uint Draw(GenDataColumn colw, int i, bool data, Tint tint) {
-            if(tint.GetBlendMode() == Tint.Blending.none) {
+            if(tint.GetBlendMode() == Tint.Blending.single) {
                 return tint.GetTintedColor(colw.Color(i), Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
             } else if(tint.GetBlendMode() == Tint.Blending.heightonly) {
                 uint color = 0;

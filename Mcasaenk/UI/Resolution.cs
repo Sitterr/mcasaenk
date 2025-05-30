@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Mcasaenk.UI {
     public enum ResolutionType { stat, frame, resizeable, map, nul }
@@ -71,13 +67,25 @@ namespace Mcasaenk.UI {
             }
         }
 
+        private Brush _fore = new SolidColorBrush(Color.FromRgb(204, 205, 207));
+        [JsonIgnore]
+        public Brush Fore {
+            get { return _fore; }
+            set {
+                if(_fore != value) {
+                    _fore = value;
+                    OnPropertyChanged(nameof(Fore));
+                }
+            }
+        }
+
 
         public ResolutionType type;
 
 
         public static Resolution screen = new Resolution() { Name = "Screen1", type = ResolutionType.stat, FontStyle = FontStyles.Oblique };
         public static Resolution custom = new Resolution() { Name = "Custom", type = ResolutionType.resizeable, X = 500, Y = 500, FontStyle = FontStyles.Oblique };
-        public static Resolution map = new Resolution() { Name = "In-game map", type = ResolutionType.map, X = 128, Y = 128, FontStyle = FontStyles.Oblique };
+        public static Resolution map = new Resolution() { Name = "In-game map", type = ResolutionType.map, X = 128, Y = 128, FontStyle = FontStyles.Oblique, Fore = new SolidColorBrush(Color.FromRgb(229, 230, 173)) };
         public static Resolution frame = new Resolution() { Name = "Frame", type = ResolutionType.frame, X = 5000, Y = 3000, FontStyle = FontStyles.Oblique };
 
 

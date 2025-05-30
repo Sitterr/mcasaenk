@@ -124,20 +124,35 @@
   <data name="biomes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>biomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="kawase_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\Kawase\kawase.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="scale_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\Scale\scale.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="scene_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\Scene\color.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="def_vert" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\def.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tile_vert" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\tile.vert;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="capture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\capture.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="colormap_bedrock" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\bedrockmap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="colormap_betaplus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Colormaps\betaplus.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="colormap_java" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\javamap.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="colormap_texture" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Colormaps\texture.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="colormap_betaplus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Colormaps\betaplus.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="default_pack" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\default_pack.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -158,7 +173,7 @@
     <value>Images\grass8.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="heightmap_blocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>heightmap_blocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>heightmap_blocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\icon.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -170,7 +185,7 @@
     <value>Icon2.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="img31_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Images\img31_.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>Images\img31___.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="inherent_water_logged" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>inherent_water_logged.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
@@ -179,7 +194,7 @@
     <value>Images\nether8.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="oldbiomes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>oldbiomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>oldbiomes.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
   <data name="oldblocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>oldblocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
@@ -197,13 +212,13 @@
     <value>Images\settings.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="shade3d_filter" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>shade3d_filter.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>shade3d_filter.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
   <data name="synonymblocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>synonymblocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="tintblocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>tintblocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>tintblocks.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
   </data>
   <data name="undo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\undo.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -231,5 +246,14 @@
   </data>
   <data name="___" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Images\___.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="prep_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\Kawase\prep.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="kawase_approximations" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>kawase_approximations.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-1</value>
+  </data>
+  <data name="copy_frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Rendering-Opengl\Dissect\copy.frag;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

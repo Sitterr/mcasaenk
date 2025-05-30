@@ -1,24 +1,19 @@
-﻿using Accessibility;
+﻿using System.Collections.Concurrent;
 using Mcasaenk.Rendering;
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
-using System.Windows;
-using System.Xml.XPath;
-using static Mcasaenk.Rendering.GenerateTilePool;
 
 namespace Mcasaenk.Shade3d {
-    public class TileShade : GenDataEditor {
-        private readonly Tile tile;
+    public class TileShade {
+        private readonly GenDataTileMap tilemap;
+        private readonly Point2i pos;
         private int shadeStride;
-        public TileShade(Tile tile) : base(tile) {
-            this.tile = tile;
+        public TileShade(GenDataTileMap tilemap, Point2i pos) {
+            this.tilemap = tilemap;
+            this.pos = pos;
         }
 
         private byte[][] shadeValues; // colx512x512x20
 
-        private bool[] harvested;
+        private bool[] harvested_to;
 
         private GenData genData;
         public void Construct(RawData freeRaw, GenData genData) {
@@ -31,15 +26,15 @@ namespace Mcasaenk.Shade3d {
 
                 _ = Recalc();
 
-                harvested = new bool[ShadeConstants.GLB.regionReach.Length];
+                harvested_to = new bool[ShadeConstants.GLB.regionReach.Length];
                 int i = 0;
                 foreach(var p in ShadeConstants.GLB.regionReach) {
                     int _iz = p.p.Z, _ix = p.p.X;
 
-                    if(_ix == 0 && _iz == 0) harvested[i] = true;
+                    if(_ix == 0 && _iz == 0) harvested_to[i] = true;
 
 
-                    if(tile.GetOrigin().GetTile(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == null) harvested[i] = true;
+                    if(tilemap.RegionExists(pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp)) == false) harvested_to[i] = true;
 
                     i++;
                 }
@@ -49,13 +44,26 @@ namespace Mcasaenk.Shade3d {
             }
         }
 
-        protected override bool ShouldDestruct() {
-            return harvested.Contains(false) == false;
+        public bool IsActive { get; private set; }
+
+
+        private object locker = new object();
+
+        private void CheckDestruct() {
+            if(ShouldDestruct()) {
+                IsActive = false;
+                Destruct();
+            }
         }
-        protected override void Destruct() {
+
+        private bool ShouldDestruct() {
+            return harvested_to.Contains(false) == false;
+        }
+        private void Destruct() {
             this.shadeValues = null;
-            this.genData = null;
-            harvested = null;
+            genData.FreeData();
+            genData = null;
+            harvested_to = null;
         }
 
 
@@ -70,8 +78,8 @@ namespace Mcasaenk.Shade3d {
                     int offsetZ = ShadeConstants.GLB.nflowZ(_iz, 0, ShadeConstants.GLB.rZ) * 512;
                     int offsetX = ShadeConstants.GLB.nflowX(_ix, 0, ShadeConstants.GLB.rX) * 512;
 
-                    if(tile.GetOrigin().GetTileShadeFrame(tile.pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
-                        .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested[i] = true;
+                    if(tilemap.GetTileShadeFrame(pos + new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp))
+                        .GetCombinedSuitableFrames(new Point2i(_ix, _iz), shadeFrame, offsetX, offsetZ, ShadeConstants.GLB.rX * 512)) harvested_to[i] = true;
 
                     i++;
                 }
@@ -91,14 +99,14 @@ namespace Mcasaenk.Shade3d {
                             double x1 = (x0 + cx) + ShadeConstants.GLB.cosAcotgB * h, z1 = (z0 + cz) + -ShadeConstants.GLB.sinAcotgB * h;
 
 
-                            //if(genData.columns[w].Height(regionIndex) != 0) {
+                            if(genData.columns[w].Height(regionIndex) != 0) {
                                 ChunkRenderer.SetShadeValuesLine(shadeFrame, shadeValues[w], regionIndex, SHADEX, SHADEZ, (int)x1, (int)z1);
-                            //}
+                            }
                         }
                     }
                 }
 
-                if(Recalc()) tile.RegisterRedraw();
+                Recalc();
                 CheckDestruct();
             }
         }
@@ -109,7 +117,7 @@ namespace Mcasaenk.Shade3d {
                 var shadeValues = this.shadeValues[w];
 
                 if(shadeValues == null) continue;
-                
+
                 for(int i = 0; i < 512 * 512; i++) {
                     if(genData.columns[w].ContainsInfo(i) == false) continue;
                     if(genData.columns[w].Shade(i) == 15) continue;
@@ -128,7 +136,10 @@ namespace Mcasaenk.Shade3d {
                     }
 
                 }
+
             }
+
+            genData.UpdateTextureData();
 
             return changes;
         }
@@ -139,8 +150,8 @@ namespace Mcasaenk.Shade3d {
         public readonly ConcurrentDictionary<Point2i, (byte[] frame, bool[] harvested)> frames;
 
         private readonly Point2i pos;
-        private readonly TileMap tileMap;
-        public TileShadeFrames(TileMap tileMap, Point2i pos) {
+        private readonly GenDataTileMap tileMap;
+        public TileShadeFrames(GenDataTileMap tileMap, Point2i pos) {
             this.tileMap = tileMap;
             this.pos = pos;
             frames = new();
@@ -159,13 +170,13 @@ namespace Mcasaenk.Shade3d {
 
                 if(_ix >= dist.X && _iz >= dist.Z) {
                     var pp = pos - new Point2i(_ix * ShadeConstants.GLB.xp, _iz * ShadeConstants.GLB.zp);
-                    harvested[i] = (tileMap.GetTile(pp) == null);
+                    harvested[i] = (tileMap.RegionExists(pp) == false);
 
                     var f = (pp - tilepos).abs();
                     if(!ShadeConstants.GLB.regionReach.Any(r => r.p == f)) {
                         harvested[i] = true;
                     }
-                    
+
                 }
                 if(_ix == dist.X && _iz == dist.Z) {
                     harvested[i] = true;

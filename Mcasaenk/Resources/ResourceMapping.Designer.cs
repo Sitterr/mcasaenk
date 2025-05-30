@@ -91,8 +91,9 @@ namespace Mcasaenk.Resources {
         ///mangrove_swamp
         ///forest
         ///flower_forest
-        ///birch_forest;
+        ///birch_forest
         ///dark_forest
+        ///pale_garden
         ///old_growth_birch_forest
         ///old_growth_pine_taiga
         ///old_growth_spruce_taiga
@@ -116,8 +117,7 @@ namespace Mcasaenk.Resources {
         ///snowy_slopes
         ///frozen_peaks
         ///jagged_peaks
-        ///stony_peaks
-        ///riv [rest of string was truncated]&quot;;.
+        ///ston [rest of string was truncated]&quot;;.
         /// </summary>
         public static string biomes {
             get {
@@ -171,6 +171,26 @@ namespace Mcasaenk.Resources {
         public static byte[] colormap_texture {
             get {
                 object obj = ResourceManager.GetObject("colormap_texture", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] copy_frag {
+            get {
+                object obj = ResourceManager.GetObject("copy_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] def_vert {
+            get {
+                object obj = ResourceManager.GetObject("def_vert", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -314,6 +334,36 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to k = 001, n = 0, sim = 99.99%: [ ]
+        ///k = 003, n = 0, sim = 80.10%: [ ]
+        ///k = 005, n = 1, sim = 86.58%: [ 0 ]
+        ///k = 007, n = 2, sim = 95.24%: [ 0, 0 ]
+        ///k = 009, n = 3, sim = 95.28%: [ 0, 0, 0 ]
+        ///k = 011, n = 4, sim = 89.08%: [ 0, 0, 0, 0 ]
+        ///k = 013, n = 4, sim = 89.91%: [ 0, 0, 0, 1 ]
+        ///k = 015, n = 4, sim = 89.45%: [ 0, 0, 1, 1 ]
+        ///k = 017, n = 5, sim = 95.00%: [ 0, 0, 0, 1, 1 ]
+        ///k = 019, n = 5, sim = 95.73%: [ 0, 0, 1, 1, 1 ]
+        ///k = 021, n = 5, sim = 95.79%: [ 0, 1, 1, 1, 1 ]
+        ///k = 023, n = 6, sim = 97.34%: [ 0, 1, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string kawase_approximations {
+            get {
+                return ResourceManager.GetString("kawase_approximations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] kawase_frag {
+            get {
+                object obj = ResourceManager.GetObject("kawase_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] nether8 {
@@ -401,6 +451,16 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] prep_frag {
+            get {
+                object obj = ResourceManager.GetObject("prep_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] question {
             get {
                 object obj = ResourceManager.GetObject("question", resourceCulture);
@@ -431,6 +491,26 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] scale_frag {
+            get {
+                object obj = ResourceManager.GetObject("scale_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] scene_frag {
+            get {
+                object obj = ResourceManager.GetObject("scene_frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] settings {
             get {
                 object obj = ResourceManager.GetObject("settings", resourceCulture);
@@ -439,42 +519,42 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to // q = 0
-        ///acacia_sapling
+        ///   Looks up a localized string similar to acacia_sapling
         ///allium
         ///amethyst_cluster
         ///attached_melon_stem
         ///attached_pumpkin_stem
         ///azure_bluet
+        ///bamboo
         ///bamboo_sapling
         ///beetroots
+        ///bell
         ///big_dripleaf_stem
         ///birch_sapling
+        ///black_candle
+        ///black_stained_glass_pane
+        ///blue_candle
         ///blue_orchid
+        ///blue_stained_glass_pane
         ///brain_coral
+        ///brown_candle
         ///brown_mushroom
-        ///brown_mushroom_block
+        ///brown_stained_glass_pane
         ///bubble_coral
+        ///bush
+        ///cactus_flower
+        ///candle
         ///carrots
         ///cave_vines
         ///cave_vines_plant
         ///chain
         ///cherry_sapling
+        ///closed_eyeblossom
         ///cobweb
         ///cornflower
         ///crimson_fungus
         ///crimson_roots
-        ///dandelion
-        ///dark_oak_sapling
-        ///dead_brain_coral
-        ///dead_bubble_coral
-        ///dead_bush
-        ///dead_fire_coral
-        ///dead_horn_coral
-        ///dead_tube_coral
-        ///fern
-        ///fire_coral
-        ///glow_ [rest of string was truncated]&quot;;.
+        ///cya [rest of string was truncated]&quot;;.
         /// </summary>
         public static string shade3d_filter {
             get {
@@ -505,16 +585,27 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane;91BD59;
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] tile_vert {
+            get {
+                object obj = ResourceManager.GetObject("tile_vert", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- TINTS --
+        ///grass;vanilla_grass;grass_block,short_grass,tall_grass,fern,large_fern,sugar_cane,bush;91BD59;
         ///foliage;vanilla_foliage;oak_leaves,jungle_leaves,acacia_leaves,dark_oak_leaves,mangrove_leaves,vine;77AB2F;
+        ///dry_foliage;vanilla_dry_foliage;leaf_litter;7B5334;
         ///water;vanilla_water;water;3F76E4;
         ///
         ///birch_leaves;fixed;birch_leaves;80A755;
         ///spruce_leaves;fixed;spruce_leaves;619961;
         ///lily_pad;fixed;lily_pad;208030;
         ///stems;fixed;melon_stem,attached_melon_stem,pumpkin_stem,attached_pumpkin_stem;E0C71C;
-        ///redstone_wire;fixed;redstone_wire;AF1805;
-        ///notint;fixed;cherry_leaves,b [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string tintblocks {
             get {
@@ -575,15 +666,15 @@ namespace Mcasaenk.Resources {
         /// <summary>
         ///   Looks up a localized string similar to // automatically generated by Utils.AssetsUtils.CreateVanillaDataAsset
         ///-- BIOMES --
-        ///minecraft:badlands;2;0;4287660365;4288577869;4282349284;;
-        ///minecraft:bamboo_jungle;0.95;0.9;0;0;4282349284;;
-        ///minecraft:basalt_deltas;2;0;0;0;4282349284;;
-        ///minecraft:beach;0.8;0.4;0;0;4282349284;;
-        ///minecraft:birch_forest;0.6;0.6;0;0;4282349284;;
-        ///minecraft:cherry_grove;0.5;0.8;4290173793;4290173793;4284332015;;
-        ///minecraft:cold_ocean;0.5;0.5;0;0;4282210262;;
-        ///minecraft:crimson_forest;2;0;0;0;4282349284;;
-        ///minecraft:dark_for [rest of string was truncated]&quot;;.
+        ///minecraft:badlands;2;0;4287660365;4288577869;0;4282349284;;
+        ///minecraft:bamboo_jungle;0.95;0.9;0;0;0;4282349284;;
+        ///minecraft:basalt_deltas;2;0;0;0;0;4282349284;;
+        ///minecraft:beach;0.8;0.4;0;0;0;4282349284;;
+        ///minecraft:birch_forest;0.6;0.6;0;0;0;4282349284;;
+        ///minecraft:cherry_grove;0.5;0.8;4290173793;4290173793;0;4284332015;;
+        ///minecraft:cold_ocean;0.5;0.5;0;0;0;4282210262;;
+        ///minecraft:crimson_forest;2;0;0;0;0;4282349284;;
+        ///mi [rest of string was truncated]&quot;;.
         /// </summary>
         public static string vanilladatainfo {
             get {
@@ -592,17 +683,17 @@ namespace Mcasaenk.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- BIOMES --
-        ///minecraft:badlands;2;0;4287660365;4288577869;4282349284;;
-        ///minecraft:bamboo_jungle;0.95;0.9;0;0;4282349284;;
-        ///minecraft:basalt_deltas;2;0;0;0;4282349284;;
-        ///minecraft:beach;0.8;0.4;0;0;4282349284;;
-        ///minecraft:birch_forest;0.6;0.6;0;0;4282349284;;
-        ///minecraft:cherry_grove;0.5;0.8;4290173793;4290173793;4284332015;;
-        ///minecraft:cold_ocean;0.5;0.5;0;0;4282210262;;
-        ///minecraft:crimson_forest;2;0;0;0;4282349284;;
-        ///minecraft:dark_forest;0.7;0.8;0;0;4282349284;dark_forest;
-        ///minecraft:deep_cold_ocean;0.5;0 [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to // automatically generated by Utils.AssetsUtils.CreateVanillaDataAsset
+        ///-- BIOMES --
+        ///minecraft:badlands;2;0;4287660365;4288577869;0;4282349284;;
+        ///minecraft:bamboo_jungle;0.95;0.9;0;0;0;4282349284;;
+        ///minecraft:basalt_deltas;2;0;0;0;0;4282349284;;
+        ///minecraft:beach;0.8;0.4;0;0;0;4282349284;;
+        ///minecraft:birch_forest;0.6;0.6;0;0;0;4282349284;;
+        ///minecraft:cherry_grove;0.5;0.8;4290173793;4290173793;0;4284332015;;
+        ///minecraft:cold_ocean;0.5;0.5;0;0;0;4282210262;;
+        ///minecraft:crimson_forest;2;0;0;0;0;4282349284;;
+        ///mi [rest of string was truncated]&quot;;.
         /// </summary>
         public static string vanilladatainfo117 {
             get {

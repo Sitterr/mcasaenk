@@ -1,25 +1,9 @@
-﻿using Mcasaenk.Rendering.ChunkRenderData;
-using Mcasaenk.WorldInfo;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Mcasaenk.WorldInfo;
 using Path = System.IO.Path;
 
 namespace Mcasaenk.UI {
@@ -152,7 +136,7 @@ namespace Mcasaenk.UI {
             orderMode.SelectionChanged += (o, e) => { if(!fr) OrderJava(null); };
         }
 
-        
+
         LevelDatInfo InfoFromChild(UIElement javacontchild) => (((javacontchild as Border).Child as EButton).Content as ContentControl).Content as LevelDatInfo;
         UIElement ChildFromInfo(LevelDatInfo level) {
             string dir = Path.Combine(Global.Settings.McDir, level.foldername);
@@ -232,8 +216,8 @@ namespace Mcasaenk.UI {
 
 
 
-        
-        public void OnActive() {          
+
+        public void OnActive() {
             List<LevelDatInfo> levels = new();
             int br = 0;
             foreach(var dir in Global.FromFolder(Global.Settings.McDir, false, true).Shuffle()) {
@@ -271,7 +255,7 @@ namespace Mcasaenk.UI {
             orderMode.SelectedIndex = 0;
             fr = false;
 
-            OrderJava(levels.Select(l => (l, Visibility.Visible)).ToList());          
+            OrderJava(levels.Select(l => (l, Visibility.Visible)).ToList());
         }
 
     }

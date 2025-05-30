@@ -1,19 +1,10 @@
-﻿using Mcasaenk.Colormaping;
-using Mcasaenk.Resources;
-using Mcasaenk.UI;
-using Mcasaenk.WorldInfo;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using static Mcasaenk.Global;
+using Mcasaenk.Colormaping;
+using Mcasaenk.Rendering;
+using Mcasaenk.Resources;
+using Mcasaenk.WorldInfo;
 
 namespace Mcasaenk {
     public class Save {
@@ -90,7 +81,7 @@ namespace Mcasaenk {
         public readonly ImageSource image;
         public DimensionInfo info;
         public readonly Save save;
-        public TileMap tileMap;
+        public GenDataTileMap tileMap;
 
         public Dimension(Save save, string path, DimensionInfo info, ImageSource image) {
             this.save = save;
@@ -98,11 +89,12 @@ namespace Mcasaenk {
             this.image = image;
             this.name = info.name;
             this.path = path;
-            this.tileMap = new TileMap(this, ExistingRegions());
+            this.tileMap = new GenDataTileMap(this, ExistingRegions());
         }
 
         public void Reset() {
-            this.tileMap = new TileMap(this, ExistingRegions());
+            this.tileMap?.Dispose();
+            this.tileMap = new GenDataTileMap(this, ExistingRegions());
         }
 
         public (short height, short miny, short defheight) GetHeight() => (info.height, info.miny, info.defHeight);

@@ -1,11 +1,5 @@
-﻿using Microsoft.Extensions.ObjectPool;
-using System;
-using System.Buffers;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Buffers;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Mcasaenk.Nbt {
     public enum TagType : byte {
@@ -61,7 +55,7 @@ namespace Mcasaenk.Nbt {
         private T value;
         public NumTag() { }
 
-        public static implicit operator T(NumTag<T> tag) => tag.value;
+        public static implicit operator T(NumTag<T> tag) => tag == null ? default : tag.value;
     }
     public class ArrTag<T> : Tag {
         private static ArrayPool<T> arrpool = ArrayPool<T>.Shared;

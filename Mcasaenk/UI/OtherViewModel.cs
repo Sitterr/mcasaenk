@@ -1,15 +1,8 @@
-﻿using Mcasaenk.Colormaping;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Mcasaenk.UI
-{
+namespace Mcasaenk.UI {
     public class ViewModel : INotifyPropertyChanged {
         private ObservableCollection<string> _allColormaps;
         public ObservableCollection<string> AllColormaps {
@@ -20,7 +13,7 @@ namespace Mcasaenk.UI
                     __allColormaps.Add(Global.ReadName(fileorfolder));
                 }
 
-                __allColormaps = __allColormaps.OrderByDescending(c => c switch { 
+                __allColormaps = __allColormaps.OrderByDescending(c => c switch {
                     "default" => 4,
                     "java map" => 3,
                     "bedrock map" => 2,

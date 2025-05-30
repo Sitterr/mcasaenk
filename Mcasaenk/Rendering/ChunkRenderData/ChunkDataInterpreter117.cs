@@ -1,13 +1,6 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
+﻿using System.Buffers;
 using Mcasaenk.Colormaping;
 using Mcasaenk.Nbt;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Mcasaenk.Rendering.ChunkRenderData {
     public class ChunkDataInterpreter117 : IChunkInterpreter {
@@ -85,7 +78,7 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                                 waterlogged |= Colormap.INHERENT_WATER_LOGGED.Contains(name);
 
                                 ushort id = Colormap.Block.GetId(name);
-                                if(waterlogged && (id == Colormap.INVBLOCK || Colormap.depth == Colormap.BLOCK_WATER)) id = Colormap.BLOCK_WATER;
+                                if(waterlogged && (id == Colormap.INVBLOCK || BlockManager.depth == Colormap.BLOCK_WATER)) id = Colormap.BLOCK_WATER;
                                 palettes[y][i] = id;
 
                                 i++;
