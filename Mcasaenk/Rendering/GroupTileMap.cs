@@ -419,6 +419,7 @@ namespace Mcasaenk.Rendering {
 
         public bool IsLoading(Point2i p) => ((ObserverTaskTileMapQueuer<GenData>)queuer).IsLoading(p);
         public bool IsQueued(Point2i p) => ((ObserverTaskTileMapQueuer<GenData>)queuer).IsQueued(p);
+        public bool IsEmpty() => !existingRegions.Any();
 
         public IEnumerable<(Point2i reg, Point2i chunk)> GetVisibleChunkPositions(WorldPosition screen) {
             foreach(var ch in TileMap.GetVisibleTilesPositions(screen, 16)) {

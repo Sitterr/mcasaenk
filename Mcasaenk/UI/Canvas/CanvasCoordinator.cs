@@ -170,14 +170,6 @@ namespace Mcasaenk.UI.Canvas {
                 if(drawTileMap == null) drawTileMap = CreateGroupTileMap();
                 else drawTileMap.Reset(tileMap);
             }
-
-            //msg.Visibility = Visibility.Collapsed;
-            //if(tileMap != null) {
-            //    if(tileMap.Empty()) {
-            //        msg.Text = "This dimension is empty";
-            //        msg.Visibility = Visibility.Visible;
-            //    }
-            //}
         }
 
         public abstract ScreenshotTaker CreateScreenshotCamera(ScreenshotManager screenshot);

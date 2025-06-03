@@ -254,7 +254,9 @@ namespace Mcasaenk.UI {
                 };
 
                 Global.App.OpenedSave = null;
-                SetCanvas(Global.Settings.RENDERMODE);
+                while(SetCanvas(Global.Settings.RENDERMODE) == false) {
+                    Global.Settings.RENDERMODE = Global.IncrementEnumWithWrap(Global.Settings.RENDERMODE);
+                }
 
                 opener_worlds.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             };
@@ -312,14 +314,19 @@ namespace Mcasaenk.UI {
             }
         }
 
-        public void SetCanvas(RenderMode renderMode) {
+        public bool SetCanvas(RenderMode renderMode) {
             WorldPosition lastpos = canvas != null ? canvas.GetScreen() : WorldPosition.Empty;
             switch(renderMode) {
                 case RenderMode.OPENGL: {
                         var control = new GLWpfControl();
-                        this.canvas = new GLCanvasCoordinator(control, lastpos);
-                        this.canvasControl = control;
-                        break;
+                        if(Shader.StartOpenGL(control)) {
+                            this.canvas = new GLCanvasCoordinator(control, lastpos);
+                            this.canvasControl = control;
+                            break;
+                        } else {
+                            control.Dispose();
+                            return false;
+                        }
                     }
 
                 case RenderMode.LEGACY: {
@@ -332,6 +339,8 @@ namespace Mcasaenk.UI {
 
             canvasHolder.Children.Clear();
             canvasHolder.Children.Add(canvasControl);
+
+            return true;
         }
 
 
@@ -360,6 +369,14 @@ namespace Mcasaenk.UI {
             canvasControl.Focus();
 
             DimensionSetup();
+
+            screenmsg.Visibility = Visibility.Collapsed;
+            if(Global.App.TileMap != null) {
+                if(Global.App.TileMap.IsEmpty()) {
+                    screenmsg.Text = "This dimension is empty";
+                    screenmsg.Visibility = Visibility.Visible;
+                }
+            }
         }
 
 

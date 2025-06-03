@@ -34,7 +34,9 @@
             <Border x:Name="settings_cont2" HorizontalAlignment="Stretch" Background="{StaticResource BACK}" CornerRadius="3"/>
         </DockPanel>-->
 
-        <Grid Background="{StaticResource CANVASBACK}" x:Name="canvasHolder" Focusable="True" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
+        <Grid Background="{StaticResource CANVASBACK}" Focusable="True" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2">
+            <Grid Background="{StaticResource CANVASBACK}" x:Name="canvasHolder"/>
+            <TextBlock x:Name="screenmsg" Foreground="{StaticResource FORE}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"/>
         </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">

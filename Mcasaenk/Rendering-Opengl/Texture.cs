@@ -60,17 +60,16 @@ namespace Mcasaenk.Rendering_Opengl {
 
         //public nint uploadSync = -1;
         public override void DataP(nint p, int size = -1) {
-            int stagingBuffer;
-            GL.CreateBuffers(1, out stagingBuffer);
-            GL.NamedBufferStorage(stagingBuffer, l * w * h * brchannels * channelsize, p, BufferStorageFlags.ClientStorageBit);
+            int stagingBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.CopyReadBuffer, stagingBuffer);
+            GL.BufferData(BufferTarget.CopyReadBuffer, l * w * h * brchannels * channelsize, p, BufferUsageHint.StreamCopy);
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, stagingBuffer);
             GL.BindTexture(type, textureHandle);
-            if(type == TextureTarget.Texture2DArray) GL.TextureSubImage3D(textureHandle, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
-            else GL.TextureSubImage2D(textureHandle, 0, 0, 0, w, h, format, pixelType, 0);
+            if(type == TextureTarget.Texture2DArray) GL.TexSubImage3D(type, 0, 0, 0, 0, w, h, l, format, pixelType, 0);
+            else GL.TexSubImage2D(type, 0, 0, 0, w, h, format, pixelType, 0);
 
-
-            GL.DeleteBuffers(1, ref stagingBuffer);
+            GL.DeleteBuffer(stagingBuffer);
 
             //this.uploadSync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
         }
@@ -107,9 +106,9 @@ namespace Mcasaenk.Rendering_Opengl {
         public ShaderBufferTexture(int size, SizedInternalFormat format) {
             this.size = size;
 
-            GL.CreateBuffers(1, out bufferHandle);
-            GL.NamedBufferStorage(bufferHandle, (IntPtr)size, 0, BufferStorageFlags.DynamicStorageBit);
+            bufferHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.TextureBuffer, bufferHandle);
+            GL.BufferData(BufferTarget.TextureBuffer, (IntPtr)size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
 
             textureHandle = GL.GenTexture();
             GL.BindTexture(TextureTarget.TextureBuffer, textureHandle);
@@ -120,18 +119,20 @@ namespace Mcasaenk.Rendering_Opengl {
             if(disposed) return;
 
             GL.DeleteTexture(textureHandle);
-            GL.DeleteBuffers(1, [bufferHandle]);
+            GL.DeleteBuffer(bufferHandle);
             disposed = true;
         }
 
         public override void DataP(nint p, int size = -1) {
             if(size == -1) size = this.size;
-            int stagingBuffer;
-            GL.CreateBuffers(1, out stagingBuffer);
-            GL.NamedBufferStorage(stagingBuffer, size, p, BufferStorageFlags.ClientStorageBit);
-            GL.CopyNamedBufferSubData(stagingBuffer, bufferHandle, 0, 0, size);
+            int stagingBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.CopyReadBuffer, stagingBuffer);
+            GL.BufferData(BufferTarget.CopyReadBuffer, size, p, BufferUsageHint.StreamCopy);
 
-            GL.DeleteBuffers(1, [stagingBuffer]);
+            GL.BindBuffer(BufferTarget.CopyWriteBuffer, bufferHandle);
+            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, IntPtr.Zero, IntPtr.Zero, size);
+
+            GL.DeleteBuffer(stagingBuffer);
         }
 
         public override void Use(int point) {
@@ -140,6 +141,7 @@ namespace Mcasaenk.Rendering_Opengl {
         }
     }
 
+
     public unsafe class ShaderSSBO : ShaderArray {
         public readonly int size;
         private readonly int bufferHandle;
@@ -147,30 +149,33 @@ namespace Mcasaenk.Rendering_Opengl {
         public ShaderSSBO(int size, SizedInternalFormat format) {
             this.size = size;
 
-            GL.CreateBuffers(1, out bufferHandle);
-            GL.NamedBufferStorage(bufferHandle, (IntPtr)size, 0, BufferStorageFlags.DynamicStorageBit);
+            bufferHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, bufferHandle);
+            GL.BufferData(BufferTarget.ShaderStorageBuffer, (IntPtr)size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
         }
 
         public override void Dispose() {
             if(disposed) return;
 
-            GL.DeleteBuffers(1, [bufferHandle]);
+            GL.DeleteBuffer(bufferHandle);
             disposed = true;
         }
 
         public override void DataP(nint p, int size = -1) {
             if(size == -1) size = this.size;
-            int stagingBuffer;
-            GL.CreateBuffers(1, out stagingBuffer);
-            GL.NamedBufferStorage(stagingBuffer, size, p, BufferStorageFlags.ClientStorageBit);
-            GL.CopyNamedBufferSubData(stagingBuffer, bufferHandle, 0, 0, size);
+            int stagingBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.CopyReadBuffer, stagingBuffer);
+            GL.BufferData(BufferTarget.CopyReadBuffer, size, p, BufferUsageHint.StreamCopy);
 
-            GL.DeleteBuffers(1, [stagingBuffer]);
+            GL.BindBuffer(BufferTarget.CopyWriteBuffer, bufferHandle);
+            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, IntPtr.Zero, IntPtr.Zero, size);
+
+            GL.DeleteBuffer(stagingBuffer);
         }
 
         public override void Use(int point) {
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, point, bufferHandle);
         }
     }
+
 }

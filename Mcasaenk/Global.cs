@@ -49,7 +49,12 @@ namespace Mcasaenk {
         }
 
 
-
+        public static TEnum IncrementEnumWithWrap<TEnum>(TEnum value) where TEnum : Enum {
+            TEnum[] values = (TEnum[])Enum.GetValues(typeof(TEnum));
+            int index = Array.IndexOf(values, value);
+            index = (index + 1) % values.Length;
+            return values[index];
+        }
 
 
 

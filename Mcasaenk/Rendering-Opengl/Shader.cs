@@ -1,5 +1,9 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Controls;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Wpf;
 
 namespace Mcasaenk.Rendering_Opengl {
     public class Shader : IDisposable {
@@ -64,6 +68,30 @@ namespace Mcasaenk.Rendering_Opengl {
             GL.DeleteShader(VertexShader);
         }
 
+
+
+        public static bool StartOpenGL(GLWpfControl canvas) {
+            try {
+                var openglsettings = new GLWpfControlSettings {
+                    Profile = OpenTK.Windowing.Common.ContextProfile.Core,
+                    MajorVersion = 4,
+                    MinorVersion = 0,
+                };
+                canvas.Start(openglsettings);
+            } catch {
+                return false;
+            }
+            GL.Enable(EnableCap.DebugOutput);
+            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
+                string str = Marshal.PtrToStringAnsi(msg);
+                Debug.WriteLine(str);
+                if(type == DebugType.DebugTypeError) {
+                    Console.WriteLine(str);
+                }
+            }, IntPtr.Zero);
+
+            return true;
+        }
 
 
 

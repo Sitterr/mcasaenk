@@ -1,8 +1,7 @@
-﻿#version 430 core
+﻿#version 400 core
 out vec4 FragColor;
 in vec2 pos;
 in vec2 glpos;
-layout(pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform ivec2 tv_resolution;
 uniform ivec2 tv_glR;
@@ -60,10 +59,10 @@ bool pointInRect(vec2 point, vec4 rect) {
 
 // map palette
 vec4 unpackARGB(uint argb) {
-    float a = float((argb >> 24) & 0xFF) / 255.0;
-    float r = float((argb >> 16) & 0xFF) / 255.0;
-    float g = float((argb >> 8) & 0xFF) / 255.0;
-    float b = float(argb & 0xFF) / 255.0;
+    float a = float((argb >> 24) & 0xFFu) / 255.0;
+    float r = float((argb >> 16) & 0xFFu) / 255.0;
+    float g = float((argb >> 8) & 0xFFu) / 255.0;
+    float b = float(argb & 0xFFu) / 255.0;
     return vec4(r, g, b, a);
 }
 vec3 rgb2lab(vec3 c) {
@@ -148,12 +147,14 @@ BlockData blockData(int id){
 }
 BlockData depth;
 int biomecount;
-vec4 TintColorFor(ivec2 pos, int tint, int biome, int height) {
-    for(int i=0;i<blur_tintcount;i++){
-        if(tint == blur_blendtints[i]){
-            vec4 c = texelFetch(blur_tintcolors, ivec3(blurCoord(pos), i), 0);
-            c.a = 1;
-            return c; 
+vec4 TintColorFor(ivec2 pos, int tint, int biome, int height, bool blendifcan) {
+    if(blendifcan){
+        for(int i=0;i<blur_tintcount;i++){
+            if(tint == blur_blendtints[i]){
+                vec4 c = texelFetch(blur_tintcolors, ivec3(blurCoord(pos), i), 0);
+                c.a = 1;
+                return c; 
+            }
         }
     }
 
@@ -210,12 +211,12 @@ RegionData regionData(isampler2DArray region, int l, ivec2 pos) {
 
 bool IsDepth(RegionData d, int l) { return l == layers - 1 && d.depth != 0; }
 
-vec4 ActColor(RegionData d, ivec2 pos){
-    return d.block.basecolor * TintColorFor(pos, d.block.tint, d.biomeid, d.height);
+vec4 ActColor(RegionData d, ivec2 pos, bool blendifcan){
+    return d.block.basecolor * TintColorFor(pos, d.block.tint, d.biomeid, d.height, blendifcan);
 }
 vec4 Color(RegionData d, int l, ivec2 pos) {
-    if(IsDepth(d, l)) return depth.basecolor * TintColorFor(pos, depth.tint, d.biomeid, d.height);
-    else return ActColor(d, pos);
+    if(IsDepth(d, l)) return depth.basecolor * TintColorFor(pos, depth.tint, d.biomeid, d.height, true);
+    else return ActColor(d, pos, true);
 }
 bool ContainsInfo(RegionData d) {
     return d.blockid != 0 || d.height != 0;
@@ -231,7 +232,7 @@ int irx, irnx, irz, irnz;
 float jmap_normal = 220/220.0, jmap_dark = 180/220.0, jmap_darker = 135/220.0, jmap_light = 255/220.0;
 
 int meanheight(ivec2 pos){
-    return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r & 0xFFFF));
+    return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r & 0xFFFFu));
 }
 
 float staticShade(float fd) {
@@ -247,6 +248,7 @@ float staticShade(float fd) {
     if(SHADE3D) return (shade * 8 * CONTRAST * fd) / 255.0;
     else return (shade * 16 * CONTRAST * fd) / 255.0;
 }
+
 
 void setup(){
     layers = textureSize(region0, 0).z;
@@ -302,7 +304,7 @@ void main() {
             if(IsDepth(ir, l)) {
 
                 if(SHADETYPE == 0){
-                    vec4 terrainColor = ActColor(ir, ipos);
+                    vec4 terrainColor = vec4(ActColor(ir, ipos, false).rgb, 1);
                     int waterDepth = ir.depth;
                     if(waterDepth > ir.height) {
                         terrainColor = color;
@@ -331,7 +333,7 @@ void main() {
                             color = vec4(color.rgb * jmap_normal, color.a);                     
                         }
                     } else if(Jmap_WATER_MODE == 1){
-                        vec4 terrainColor = ActColor(ir, ipos);
+                        vec4 terrainColor = ActColor(ir, ipos, false);
 
                         int terrHeight = ir.height - ir.depth;
                         int compHeight = terrHeight;
@@ -378,28 +380,27 @@ void main() {
                 sh = clamp(sh * max((1 - (CONTRAST * ir.shade * (WATER_SMART_SHADE ? fd : 1))), ((color.r + color.g + color.b) / 3 - (CONTRAST * 150)) / 255), 0, 1);
             }
 
-            float _fd = ir.lightfrombottom ? fd : 1;
+            float _fd = ir.lightfrombottom ? sqrt(fd) : 1;
             sh = clamp(sh + clamp((ir.light - 1) / _fd + BLOCK_LIGHT, 0, 1), 0, 1);
 
             color = vec4(color.rgb * sh, color.a);
         }
 
 
-        //if(color.a > 0) color.a = 1;
         FragColor += color * relvis[l];
     }
 
-
     if(map_screenshot.z > 0 && map_screenshot.w > 0) {
         if(pointInRect(glpos, map_screenshot)) {
+            const int mapmults[4] = int[4](255, 220, 180, 135);
+
             float closest = 10000.0;
             vec3 closestCol = vec3(0);
-            const int mults[] = {255, 220, 180, 135};
             for(int i=0;i<64;i++) { 
                 vec4 mapcol = unpackARGB(map_screenshot_mapcolors[i]);
                 if(mapcol.a == 0) continue;
-                for(int k=0;k<mults.length;k++) {
-                    vec3 mapcol_ = mapcol.rgb * (float(mults[k]) / 255.0);
+                for(int k=0;k<4;k++) {
+                    vec3 mapcol_ = mapcol.rgb * (floor(mapmults[k]) / 255.0);
                     float res = colorDiff(FragColor.rgb, mapcol_);
                     if(res < closest) {
                         closest = res;

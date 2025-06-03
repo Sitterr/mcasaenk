@@ -17,7 +17,6 @@ namespace Mcasaenk.Rendering_Opengl {
         private GLWpfControl canvas;
         public GLCanvasCoordinator(GLWpfControl canvas, WorldPosition lastpos) : base(canvas, Global.App.Window, 50, lastpos) {
             this.canvas = canvas;
-            StartOpenGL();
         }
         protected override (double dpix, double dpiy) GetDpiScale() => (PresentationSource.FromVisual(canvas).CompositionTarget.TransformToDevice.M11, PresentationSource.FromVisual(canvas).CompositionTarget.TransformToDevice.M22);
 
@@ -58,21 +57,5 @@ namespace Mcasaenk.Rendering_Opengl {
 
         public override ScreenshotTaker CreateScreenshotCamera(ScreenshotManager screenshot) => new OpenGLScreenshotTaker(genTileMap, pipeline, screenshot.AsScreen(), screenshot.IsRotated());
         protected override DrawGroupTileMap<int> CreateGroupTileMap() => new OpenGLDrawTileMap(genTileMap, pipeline, dissectShader, DRAWZOOM, screen.zoom, (OpenGLDrawTileMap)drawTileMap);
-
-        public void StartOpenGL() {
-            var openglsettings = new GLWpfControlSettings {
-                MajorVersion = 4,
-                MinorVersion = 3
-            };
-            canvas.Start(openglsettings);
-            GL.Enable(EnableCap.DebugOutput);
-            GL.DebugMessageCallback((src, type, id, severity, len, msg, user) => {
-                string str = Marshal.PtrToStringAnsi(msg);
-                Debug.WriteLine(str);
-                if(type == DebugType.DebugTypeError) {
-                    Console.WriteLine(str);
-                }
-            }, IntPtr.Zero);
-        }
     }
 }

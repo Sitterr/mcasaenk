@@ -1,9 +1,9 @@
-﻿#version 430 core
+﻿#version 400 core
 
 out vec4 FragColor;
 in vec2 pos;
 in vec2 glpos;
-layout(pixel_center_integer) in vec4 gl_FragCoord;
+in vec4 gl_FragCoord;
 
 uniform sampler2D region0;
 uniform float zoom;

@@ -19,7 +19,7 @@ namespace Mcasaenk {
         public string APPFOLDER = Path.Combine(Directory.GetCurrentDirectory(), "mcasaenk");
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-        public const string VERSION = "1.3.0", MINECRAFTVERSION = "1.21.5";
+        public const string VERSION = "1.3.1", MINECRAFTVERSION = "1.21.5";
 
         public readonly string ID = "__" + Global.rand.NextString(5);
 
@@ -43,7 +43,9 @@ namespace Mcasaenk {
             SettingsHub.Freeze();
 
             if(changed.Contains("RENDERMODE")) {
-                Window.SetCanvas(Global.Settings.RENDERMODE);
+                while(Window.SetCanvas(Global.Settings.RENDERMODE) == false) {
+                    Global.Settings.RENDERMODE = Global.IncrementEnumWithWrap(Global.Settings.RENDERMODE);
+                }
             }
 
             Global.App.Window.canvas.DrawMassRedo();
