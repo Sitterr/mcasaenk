@@ -84,7 +84,7 @@ namespace Mcasaenk.Rendering {
                 Filter startfilter = data.Colormap.FilterManager.GetBlockVal(startblockid);
                 while(height-- >= 0) {
                     ushort blockid = data.GetBlock(cx, cz, height), biomeid = data.GetBiome(cx, cz, height);
-
+                   
                     Filter filter = data.Colormap.FilterManager.GetBlockVal(blockid);
 
                     if(filter.ABSORBTION == 0) continue;
@@ -142,9 +142,20 @@ namespace Mcasaenk.Rendering {
                        depth: (short)(startheight + 1),
                        r_absortion: 15,
                        r_relvisost: ref relvisostatuk
-                       );
+                    );
 
                     coli++;
+                } else if(height < 0 && startfilter.ABSORBTION > 0) {
+                    depthColumn.Input(regionIndex,
+                       blockid: startblockid,
+                       light: Math.Max(data.GetBlockLight(cx, cz, startheight), data.GetBlockLight(cx, cz, startheight + 1)),
+                       lightfrombottom: data.GetBlockLight(cx, cz, startheight - 1) > data.GetBlockLight(cx, cz, startheight + 1),
+                       biomeid: startbiomeid,
+                       height: startheight,
+                       depth: 0,
+                       r_absortion: 15,
+                       r_relvisost: ref relvisostatuk
+                    );
                 }
 
                 if(coli == 0) {

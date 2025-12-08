@@ -13,25 +13,61 @@ namespace Mcasaenk.UI {
 
         private bool saved = false;
         private readonly IEnumerable<(string name, bool important, Group group)> startingstate;
-        public BinaryBlockGroupWindow(string name_selected, IEnumerable<(string name, bool important, Group group)> blocks) {
+        public BinaryBlockGroupWindow(string name_selected, IEnumerable<(string name, bool important, Group group)> blocks, bool singlemode = false) {
             InitializeComponent();
             grid_selected.Columns[0].Header = $"{name_selected.FirstCharToUpper()} blocks";
 
-            this.Loaded += (_, _) => {
-                btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_finish.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
-            };
+            if(singlemode == false) {
+                btn_finish_text.Text = "Done";
 
-            if(blocks.All(f => f.important)) {
-                toggle_showall.Visibility = Visibility.Collapsed;
-                lbl_showall.Visibility = Visibility.Collapsed;
+                this.Loaded += (_, _) => {
+                    btn_undo.Margin = new Thickness(btn_undo.Margin.Left + btn_finish.ActualWidth + btn_undo.ActualWidth + 20, btn_undo.Margin.Top, btn_undo.Margin.Right, btn_undo.Margin.Bottom);
+                };
+
+                if(blocks.All(f => f.important)) {
+                    toggle_showall.Visibility = Visibility.Collapsed;
+                    lbl_showall.Visibility = Visibility.Collapsed;
+                }
+                toggle_showall.Checked += (_, _) => FilterLeft();
+                toggle_showall.Unchecked += (_, _) => FilterLeft();
+
+                btn_finish.Click += (_, _) => {
+                    saved = true;
+                    this.Close();
+                };
+
+                if(blocks.Any(b => b.important) == false) {
+                    lbl_showall.Visibility = Visibility.Collapsed;
+                    toggle_showall.Visibility = Visibility.Collapsed;
+                }
+
+            } else {
+                btn_finish_text.Text = "Select";
+                secondpart_cd.Width = new GridLength(0);
+                margin_cd.Width = new GridLength(0);
+                btn_undo.Visibility = Visibility.Collapsed;
+
+                if(true) {
+                    lbl_showall.Visibility = Visibility.Collapsed;
+                    toggle_showall.Visibility = Visibility.Collapsed;
+                }
+
+                btn_moveright.Visibility = Visibility.Collapsed;
+
+                this.MinWidth = this.MinWidth - 265;
+                this.Width = this.Width - 265;
+
+                grid_selected.Visibility = Visibility.Collapsed;
+                searchp_selected.Visibility = Visibility.Collapsed;
+
+                btn_finish.Click += (_, _) => {
+                    btn_moveright.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                    saved = true;
+                    this.Close();
+                };
             }
-            toggle_showall.Checked += (_, _) => FilterLeft();
-            toggle_showall.Unchecked += (_, _) => FilterLeft();
 
-            btn_finish.Click += (_, _) => {
-                saved = true;
-                this.Close();
-            };
 
             btn_undo.Click += (_, _) => {
                 SetUp();

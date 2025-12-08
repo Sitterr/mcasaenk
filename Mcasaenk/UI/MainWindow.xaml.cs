@@ -549,6 +549,19 @@ namespace Mcasaenk.UI {
             return null;
         }
 
+        public static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject {
+            DependencyObject parent = VisualTreeHelper.GetParent(child);
+
+            while(parent != null) {
+                if(parent is T correctlyTyped)
+                    return correctlyTyped;
+
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            return null;
+        }
+
         public static void SortByColumn(this DataGrid grid, string columnName, ListSortDirection direction) {
             // Ensure the DataGrid has an ItemsSource
             if(grid.ItemsSource == null)

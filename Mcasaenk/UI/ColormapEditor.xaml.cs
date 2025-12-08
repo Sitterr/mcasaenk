@@ -73,7 +73,7 @@ namespace Mcasaenk.UI {
                 var dialog = ChooseNameDialog.AddBLockDialog(((IEnumerable<EditBlockRow>)blockgrid.ItemsSource).Select(bl => bl.BlockName).ToArray());
                 dialog.ShowDialog();
                 if(dialog.Result(out string newblock)) {
-                    blockgrid.ItemsSource = ((IEnumerable<EditBlockRow>)blockgrid.ItemsSource).Append(new EditBlockRow(rawcolormap, newblock.minecraftname(), new RawBlock() { color = WPFColor.Transparent }));
+                    blockgrid.ItemsSource = ((IEnumerable<EditBlockRow>)blockgrid.ItemsSource).Prepend(new EditBlockRow(rawcolormap, newblock.minecraftname(), new RawBlock() { color = WPFColor.Transparent }));
                 }
             };
         }
@@ -315,6 +315,10 @@ namespace Mcasaenk.UI {
 
             ColorProperty = DependencyProperty.Register("Color", typeof(WPFColor), typeof(CButton), new PropertyMetadata(default(WPFColor), (d, e) => { ((CButton)d).OnColorChange(); }));
         }
+
+
+        private DataGrid parentgrid;
+        private EditBlockRow parentrow;
         public CButton() {
             OnColorChange();
         }
@@ -343,7 +347,11 @@ namespace Mcasaenk.UI {
         protected override void OnClick() {
             base.OnClick();
 
-            var cdialog = new ColorPicker(Color);
+            if(parentgrid == null) parentgrid = GlobalXaml.FindVisualParent<DataGrid>(this);
+            if(parentrow == null) parentrow = (EditBlockRow)GlobalXaml.FindVisualParent<DataGridRow>(this).DataContext;
+
+            var existingblocks = (parentgrid.ItemsSource as IEnumerable<EditBlockRow>).Select(brow => new KeyValuePair<string, WPFColor>(brow.BlockName, brow.Color)).ToDictionary();
+            var cdialog = new ColorPicker(Color, existingblocks, parentrow.BlockName);
             cdialog.ShowDialog();
             WPFColor res = cdialog.GetResult();
             if(Color != res) Color = res;

@@ -36,27 +36,27 @@ namespace Mcasaenk.Colormaping {
 
                     Dictionary<string, (WPFBitmap image, string loc)> textures = new();
                     var el = ReadModel(f.Value);
-                    if(el == null) continue;
-                    while(el.elements == null) {
-                        if(el.textures != null) {
-                            foreach(var t in el.textures) {
-                                if(t.Value.StartsWith("#")) {
-                                    if(textures.TryGetValue(t.Value.Substring(1), out var tex)) {
-                                        textures[t.Key] = tex;
-                                    }
-                                } else {
-                                    if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
-                                        textures[t.Key] = (bitmap, t.Value);
+                    if(el != null) {
+                        while(el.elements == null) {
+                            if(el.textures != null) {
+                                foreach(var t in el.textures) {
+                                    if(t.Value.StartsWith("#")) {
+                                        if(textures.TryGetValue(t.Value.Substring(1), out var tex)) {
+                                            textures[t.Key] = tex;
+                                        }
+                                    } else {
+                                        if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
+                                            textures[t.Key] = (bitmap, t.Value);
+                                        }
                                     }
                                 }
                             }
+                            if(el.parent == null) break;
+                            el = ReadModel(toLocation(el.parent, "models", "json"));
+                            if(el == null) break;
                         }
-                        if(el.parent == null) break;
-                        el = ReadModel(toLocation(el.parent, "models", "json"));
-                        if(el == null) break;
                     }
-                    if(el == null) continue;
-                    if(el.parent == null && el.elements == null) {
+                    if(el == null || (el?.parent == null && el?.elements == null)) {
                         if(textures.Count == 0) {
                             colormap.blocks.Add(blockname, new RawBlock() { color = WPFColor.Transparent, details = new CreationDetails() { shouldTint = false, q = 1, creationMethod = BlockCreationMethod.None } });
                         } else {
