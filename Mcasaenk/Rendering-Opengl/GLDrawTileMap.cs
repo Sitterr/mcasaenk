@@ -114,6 +114,8 @@ namespace Mcasaenk.Rendering_Opengl {
         private readonly WorldPosition frame;
         private readonly bool rotate;
 
+        private readonly int maxwidth = 4096, maxheight = 4096;
+
         private readonly ShaderTexture2D sceneimage;
         public OpenGLScreenshotTaker(GenDataTileMap gentilemap, ShaderPipeline renderer, WorldPosition frame, bool rotate) {
             this.gentilemap = gentilemap;
@@ -121,7 +123,10 @@ namespace Mcasaenk.Rendering_Opengl {
             this.frame = frame;
             this.rotate = rotate;
 
-            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)(frame.Width * frame.InSimZoom), (int)(frame.Height * frame.InSimZoom));
+            maxwidth = Math.Min(maxwidth, (int)(frame.Width));
+            maxheight = Math.Min(maxheight, (int)(frame.Height));
+
+            sceneimage = ShaderTexture2D.CreateRGBA8_Single((int)(maxwidth * frame.InSimZoom), (int)(maxheight * frame.InSimZoom));
         }
         public void Dispose() {
             sceneimage.Dispose();
@@ -137,14 +142,36 @@ namespace Mcasaenk.Rendering_Opengl {
             return NBTBlueprints.CreateMapScreenshot(MemoryMarshal.Cast<byte, uint>(Render(true)), frame, dim, version, coloralgo);
         }
         private byte[] Render(bool map) {
-            renderer.Render(frame, gentilemap, Global.App.Colormap, map ? frame : default, sceneimage.textureHandle);
+            byte[] whole = new byte[frame.ScreenWidth * frame.ScreenHeight * 4];
+            byte[] data = new byte[(int)(maxwidth * frame.InSimZoom) * (int)(maxheight * frame.InSimZoom) * 4];
 
-            byte[] data = sceneimage.ReadData();
-            if(frame.OutSimzoom > 1) data = ScaleUpRaw32bit(data, (int)frame.Width, (int)frame.Height, (int)frame.OutSimzoom);
-            FlipVert(data, frame.ScreenWidth, frame.ScreenHeight);
-            RgbaToBgra(data);
-            if(rotate) data = RotateMinus90(data, frame.ScreenWidth, frame.ScreenHeight);
-            return data;
+            for(int x = 0; x < frame.ScreenWidth; x += (int)(maxwidth * frame.zoom)) {
+                for(int z = 0; z < frame.ScreenHeight; z += (int)(maxheight * frame.zoom)) {
+
+                    var fr = new WorldPosition(new System.Windows.Point(frame.Start.X + x / frame.zoom, frame.Start.Y + z / frame.zoom), maxwidth, maxheight, frame.zoom);
+                    renderer.Render(fr, gentilemap, Global.App.Colormap, map ? fr : default, sceneimage.textureHandle);
+                    sceneimage.ReadData(data);
+
+                    if(fr.OutSimzoom > 1) data = ScaleUpRaw32bit(data, (int)fr.Width, (int)fr.Height, (int)fr.OutSimzoom);
+                    FlipVert(data, fr.ScreenWidth, fr.ScreenHeight);
+
+                    // paste data onto whole
+                    for(int xi = 0; xi < (int)(maxwidth * frame.zoom); xi++) {
+                        for(int zi = 0; zi < (int)(maxheight * frame.zoom); zi++) {
+                            for(int b = 0; b < 4; b++) {
+                                if(z + zi < frame.ScreenHeight && x + xi < frame.ScreenWidth) {
+                                    whole[((z + zi) * frame.ScreenWidth + (x + xi)) * 4 + b] = data[(zi * fr.ScreenWidth + xi) * 4 + b];
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            RgbaToBgra(whole);
+            if(rotate) whole = RotateMinus90(whole, frame.ScreenWidth, frame.ScreenHeight);
+            return whole;
         }
 
         static void FlipVert(byte[] data, int width, int height) {

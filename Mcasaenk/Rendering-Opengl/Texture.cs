@@ -74,9 +74,9 @@ namespace Mcasaenk.Rendering_Opengl {
             //this.uploadSync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
         }
 
-        public byte[] ReadData() {
+        public byte[] ReadData(byte[] data = null) {
             GL.BindTexture(type, textureHandle);
-            byte[] data = new byte[l * w * h * brchannels * channelsize];
+            if(data == null) data = new byte[l * w * h * brchannels * channelsize];
             GL.GetTexImage(type, 0, format, pixelType, data);
 
             return data;

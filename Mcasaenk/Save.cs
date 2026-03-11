@@ -109,7 +109,9 @@ namespace Mcasaenk {
             foreach(var file in Global.FromFolder(this.path, true, false)) {
                 var match = regionNamingConvention.Match(file);
                 if(match.Success) {
-                    set.Add(new Point2i(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value)));
+                    if(new FileInfo(file).Length > 0) {
+                        set.Add(new Point2i(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value)));
+                    }
                 }
             }
 

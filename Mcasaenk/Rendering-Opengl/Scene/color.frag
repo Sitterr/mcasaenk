@@ -179,6 +179,13 @@ vec4 TintColorFor(ivec2 pos, int tint, int biome, int height, bool blendifcan) {
 
 
 // reg
+int meanheight(ivec2 pos){
+    return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r & 0xFFFFu));
+}
+int oceandepth(ivec2 pos){
+    return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r >> 16) >> 1);
+}
+
 struct RegionData{
     int height, depth;
     int blockid, biomeid;
@@ -202,8 +209,7 @@ RegionData regionData(isampler2DArray region, int l, ivec2 pos) {
 
     if(l == layers - 1) {
         float q = depthQ(regionData.depth);
-        uint dv = (texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r >> 16) >> 1;
-        regionData.depth = int(dv * q + regionData.depth * (1 - q));
+        regionData.depth = int(oceandepth(pos) * q + regionData.depth * (1 - q));
     }
 
     return regionData;
@@ -227,28 +233,8 @@ bool ContainsInfo(RegionData d) {
 
 ivec2 ipos;
 RegionData irs[5];
-int irx, irnx, irz, irnz;
 
 float jmap_normal = 220/220.0, jmap_dark = 180/220.0, jmap_darker = 135/220.0, jmap_light = 255/220.0;
-
-int meanheight(ivec2 pos){
-    return int((texelFetch(blur_meanheight_oceandepth, blurCoord(pos), 0).r & 0xFFFFu));
-}
-
-float staticShade(float fd) {
-	int xdiff = 0;
-    xdiff += irx;
-    xdiff -= irnx;
-    int zdiff = 0;
-    zdiff += irz;
-    zdiff -= irnz;
-
-    float shade = clamp(-(cos(radians(ADEG)) * xdiff + -sin(radians(ADEG)) * zdiff), -5, 5);
-
-    if(SHADE3D) return (shade * 8 * CONTRAST * fd) / 255.0;
-    else return (shade * 16 * CONTRAST * fd) / 255.0;
-}
-
 
 void setup(){
     layers = textureSize(region0, 0).z;
@@ -256,13 +242,6 @@ void setup(){
 
     for(int l=0;l<layers;l++) {
         irs[l] = regionData(region0, l, ipos);
-    }
-    
-    if(STATIC_SHADE){
-        irx  = meanheight(ipos + ivec2( 1,  0));
-        irnx = meanheight(ipos + ivec2(-1,  0));
-        irz  = meanheight(ipos + ivec2( 0,  1));
-        irnz = meanheight(ipos + ivec2( 0, -1));
     }
 
     jmap_dark += (1 - jmap_dark) * (0.5 - CONTRAST) * 2;
@@ -335,12 +314,12 @@ void main() {
                     } else if(Jmap_WATER_MODE == 1){
                         vec4 terrainColor = ActColor(ir, ipos, false);
 
-                        int terrHeight = ir.height - ir.depth;
+                        int terrHeight = oceandepth(ipos);
                         int compHeight = terrHeight;
-                        if(Jmap_MAP_DIRECTION == 0) compHeight = irnz;
-                        else if(Jmap_MAP_DIRECTION == 1) compHeight = irz;
-                        else if(Jmap_MAP_DIRECTION == 2) compHeight = irnx;
-                        else if(Jmap_MAP_DIRECTION == 3) compHeight = irx;
+                        if(Jmap_MAP_DIRECTION == 0)      compHeight = oceandepth(ipos + ivec2( 0,-1));
+                        else if(Jmap_MAP_DIRECTION == 1) compHeight = oceandepth(ipos + ivec2( 0, 1));
+                        else if(Jmap_MAP_DIRECTION == 2) compHeight = oceandepth(ipos + ivec2(-1, 0));
+                        else if(Jmap_MAP_DIRECTION == 3) compHeight = oceandepth(ipos + ivec2( 1, 0));
 
                         if(terrHeight < compHeight) terrainColor = vec4(terrainColor.rgb * jmap_dark, terrainColor.a);
                         else if(terrHeight > compHeight) terrainColor = vec4(terrainColor.rgb * jmap_light, terrainColor.a);
@@ -353,19 +332,30 @@ void main() {
         {
             // static shades
             if(SHADETYPE == 0 && STATIC_SHADE) {
-                float stShade = staticShade(fd);
+                int xdiff = 0;
+                xdiff += meanheight(ipos + ivec2( 1, 0));
+                xdiff -= meanheight(ipos + ivec2(-1, 0));
+                int zdiff = 0;
+                zdiff += meanheight(ipos + ivec2( 0, 1));
+                zdiff -= meanheight(ipos + ivec2( 0,-1));
+
+                float shade = clamp(-(cos(radians(ADEG)) * xdiff + -sin(radians(ADEG)) * zdiff), -5, 5);
+
+                float stShade = (shade * 16 * CONTRAST * fd) / 255.0;
+                if(SHADE3D) stShade = (shade * 8 * CONTRAST * fd) / 255.0;
+
                 color = color + vec4(stShade, stShade, stShade, 0);
             } else if(SHADETYPE == 1){
                 if(IsDepth(ir, l) == false){
                     int terrHeight = ir.height;
                     int compHeight = terrHeight;
-                    if(Jmap_MAP_DIRECTION == 0) compHeight = irnz;
-                    else if(Jmap_MAP_DIRECTION == 1) compHeight = irz;
-                    else if(Jmap_MAP_DIRECTION == 2) compHeight = irnx;
-                    else if(Jmap_MAP_DIRECTION == 3) compHeight = irx;
+                    if(Jmap_MAP_DIRECTION == 0)      compHeight = meanheight(ipos + ivec2( 0, -1));
+                    else if(Jmap_MAP_DIRECTION == 1) compHeight = meanheight(ipos + ivec2( 0, 1));
+                    else if(Jmap_MAP_DIRECTION == 2) compHeight = meanheight(ipos + ivec2(-1, 0));
+                    else if(Jmap_MAP_DIRECTION == 3) compHeight = meanheight(ipos + ivec2( 1, 0));
 
-                    if(terrHeight < compHeight) color = vec4(color.rgb * 180 / 220.0, color.a);
-                    else if(terrHeight > compHeight) color = vec4(color.rgb * 255 / 220.0, color.a);
+                    if(terrHeight < compHeight) color = vec4(color.rgb * jmap_dark, color.a);
+                    else if(terrHeight > compHeight) color = vec4(color.rgb * jmap_light, color.a);
                 }
             }
         }

@@ -54,7 +54,8 @@ namespace Mcasaenk.UI {
 
                 if(state == ScreenshotManager.ConditionalState.invalid) return;
 
-                    ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
+                ScreenshotTaker screenshottaker = canvas.CreateScreenshotCamera(screenshot);
+                
                 if(screenshottaker == null) return;
                 try {
                     if(screenshot.ResolutionType() == ResolutionType.map) {
