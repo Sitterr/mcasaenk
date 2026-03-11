@@ -21,6 +21,8 @@ namespace Mcasaenk.Colormaping {
         public readonly TintManager TintManager;
         public readonly FilterManager FilterManager;
 
+        public HashSet<ushort> AlwaysInvis = [];
+
         public Colormap(RawColormap rawmap, int world_version, DatapacksInfo datapacksInfo) {
 
             ushort PLAINSBIOME = 0;
@@ -67,6 +69,7 @@ namespace Mcasaenk.Colormaping {
 
                     if(b.Value.color.A < 255) {
                         FilterManager.Invis._AddBlock(id);
+                        AlwaysInvis.Add(id);
                     }
                 }
 
@@ -105,6 +108,7 @@ namespace Mcasaenk.Colormaping {
                     foreach(var block in f.blocks) {
                         if(Block.TryGetId(block.minecraftname(), out ushort id)) {
                             FilterManager.AddBlock(id, filter);
+                            if (filter == FilterManager.Invis) AlwaysInvis.Add(id);
                         }
                     }
                 }
