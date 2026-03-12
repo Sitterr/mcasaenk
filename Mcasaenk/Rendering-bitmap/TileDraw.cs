@@ -81,11 +81,11 @@ namespace Mcasaenk.Rendering_bitmap {
                                 }
                                 {
                                     if(res.sector.columns[res.sector.columns.Length - 1].ContainsInfo(res.ri)) {
-                                        if(genData.columns[res.sector.columns.Length - 1].NeedShade(res.ri)) {
+                                        //if(genData.columns[res.sector.columns.Length - 1].NeedShade(res.ri)) {
                                             byte a = (byte)(ostatuk * (1 - Math.Pow(1 - (res.sector.columns[res.sector.columns.Length - 1].Filter(res.ri).ABSORBTION / 15d), Math.Max((int)terrdepth, 1))));
                                             relshadevis8[res.sector.columns.Length - 1] = a;
                                             ostatuk -= a;
-                                        }
+                                        //}
                                     }
                                 }
                                 for(int w = 0; w < genData.columns.Length; w++) {
@@ -288,8 +288,8 @@ namespace Mcasaenk.Rendering_bitmap {
                                         Direction.East => 1,
                                     }];
 
-                                    if(colw.TerrHeight(i) < heightAtComp) color = Global.MultShade(color, consts.jmap.dark);
-                                    else if(colw.TerrHeight(i) > heightAtComp) color = Global.MultShade(color, consts.jmap.light);
+                                    if(meanheights[bi] < heightAtComp) color = Global.MultShade(color, consts.jmap.dark);
+                                    else if(meanheights[bi] > heightAtComp) color = Global.MultShade(color, consts.jmap.light);
                                 }
 
                             }
@@ -508,9 +508,9 @@ namespace Mcasaenk.Rendering_bitmap {
         public int mindiff;
 
         public double q(int diff) {
-            if(diff < 8) return 0;
-            if(diff > 18) return 1;
-            return (diff - 8) / 10d;
+            if(diff < 5) return 0;
+            if(diff > 5 + 8) return 1;
+            return (diff - 5) / 8.0;
         }
     }
     struct TerrHeightBlur : BlurConstruct<TerrHeightBlur, short, TerrHeightBlurData> {
@@ -551,7 +551,7 @@ namespace Mcasaenk.Rendering_bitmap {
             if(gen.depthColumn.IsDepth(i) == false) return gen.depthColumn.Depth(i);
             double q = data.q(gen.depthColumn.Depth(i));
             //return (short)(h / br);
-            return (short)(h / br * q + gen.depthColumn.Depth(i) * (1 - q));
+            return (short)Math.Round(h / br * q + gen.depthColumn.Depth(i) * (1 - q));
         }
     }
 
