@@ -24,9 +24,18 @@ namespace Mcasaenk {
 
             this.datapackInfo = DatapacksInfo.FromPath(path, levelDat, modsInfo);
 
-            this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
-            this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
-            this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
+            if (levelDat.version_name.StartsWith("1.") || levelDat.version_name.StartsWith("0."))
+            {
+                this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
+                this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
+                this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
+            } 
+            else
+            {
+                this.overworld = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "overworld", "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
+                this.nether = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "the_nether", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
+                this.end = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "the_end", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
+            }
 
             dimensions = new List<Dimension>() { overworld, nether, end };
 
