@@ -29,13 +29,14 @@ Additionally, it strives to support modded worlds(Fabric and Forge), making effo
 
 
 ## Sample Screenshots/1440p/
-![img73](https://github.com/user-attachments/assets/46b6224a-8d60-4553-bd1d-9b7cb00c4388)
 
-![139](https://github.com/user-attachments/assets/2add3030-4084-4bfa-a523-aca6308ebcfa)
+![img73](https://github.com/user-attachments/assets/46b6224a-8d60-4553-bd1d-9b7cb00c4388)
 
 ![75](https://github.com/user-attachments/assets/ba59c688-b708-4cce-b2a4-f39662fcbe6a)
 
-![img42](https://github.com/user-attachments/assets/5dbbe59d-5ced-4ed8-b982-b0780b9b0f9a)
+![img146](https://github.com/user-attachments/assets/7ce7c339-16ea-4b70-abfc-ade6000a40de)
+
+![img145](https://github.com/user-attachments/assets/a5585dbe-4329-4b27-afd5-c34bffcc9aac)
 
 ![img92](https://github.com/user-attachments/assets/0585b250-b1a0-48ee-99f0-5eb964a79592)
 
