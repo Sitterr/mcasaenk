@@ -6,8 +6,8 @@
 
 
 ## Install&nbsp;&nbsp;[![total downloads](https://img.shields.io/github/downloads/Sitterr/mcasaenk/total.svg)](https://github.com/Sitterr/mcasaenk/releases)
-### Windows universal: [**Download Version 1.3.3**](https://github.com/Sitterr/mcasaenk/releases/download/v.1.3.3/mcasaenk-1.3.3.zip)
-### Windows framework-dependent: [**Download Version 1.3.3**](https://github.com/Sitterr/mcasaenk/releases/download/v.1.3.3/mcasaenk-1.3.3-framework.zip)
+### Windows universal: [**Download Version 1.3.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.4/mcasaenk-1.3.4.zip)
+### Windows framework-dependent: [**Download Version 1.3.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.4/mcasaenk-1.3.4-framework.zip)
 Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
 
 
@@ -23,7 +23,7 @@ Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already ins
 
 
 ## Supported Versions
-Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 1.21.10+.
+Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 26.2
 Additionally, it strives to support modded worlds(Fabric and Forge), making efforts to extract information about custom blocks, as well as biomes(1.16+) and dimensions(1.16+).
 
 
