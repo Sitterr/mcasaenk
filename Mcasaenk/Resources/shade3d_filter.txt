@@ -36,6 +36,7 @@ crimson_roots
 cyan_candle
 cyan_stained_glass_pane
 dandelion
+golden_dandelion
 dark_oak_sapling
 dead_brain_coral
 dead_bubble_coral
@@ -93,6 +94,7 @@ pink_stained_glass_pane
 pink_tulip
 pitcher_plant
 pointed_dripstone
+sulfur_spike
 poppy
 potatoes
 pumpkin_stem

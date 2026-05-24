@@ -40,13 +40,13 @@ namespace Mcasaenk.Colormaping {
                         while(el.elements == null) {
                             if(el.textures != null) {
                                 foreach(var t in el.textures) {
-                                    if(t.Value.StartsWith("#")) {
-                                        if(textures.TryGetValue(t.Value.Substring(1), out var tex)) {
+                                    if(JsonModel.GetPath(t.Value).StartsWith("#")) {
+                                        if(textures.TryGetValue(JsonModel.GetPath(t.Value).Substring(1), out var tex)) {
                                             textures[t.Key] = tex;
                                         }
                                     } else {
-                                        if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
-                                            textures[t.Key] = (bitmap, t.Value);
+                                        if(rightLocation<WPFBitmap>(toLocation(JsonModel.GetPath(t.Value), "textures", "png"), out var bitmap)) {
+                                            textures[t.Key] = (bitmap, JsonModel.GetPath(t.Value));
                                         }
                                     }
                                 }
@@ -66,14 +66,14 @@ namespace Mcasaenk.Colormaping {
 
                     } else {
                         if(el.textures != null) {
-                            foreach(var t in el.textures.OrderBy(t => t.Value.StartsWith("#"))) {
-                                if(t.Value.StartsWith("#")) {
-                                    if(textures.TryGetValue(t.Value.Substring(1), out var val)) {
+                            foreach(var t in el.textures.OrderBy(t => JsonModel.GetPath(t.Value).StartsWith("#"))) {
+                                if(JsonModel.GetPath(t.Value).StartsWith("#")) {
+                                    if(textures.TryGetValue(JsonModel.GetPath(t.Value).Substring(1), out var val)) {
                                         textures[t.Key] = val;
                                     }
                                 } else {
-                                    if(rightLocation<WPFBitmap>(toLocation(t.Value, "textures", "png"), out var bitmap)) {
-                                        textures[t.Key] = (bitmap, t.Value);
+                                    if(rightLocation<WPFBitmap>(toLocation(JsonModel.GetPath(t.Value), "textures", "png"), out var bitmap)) {
+                                        textures[t.Key] = (bitmap, JsonModel.GetPath(t.Value));
                                     }
                                 }
                             }
@@ -475,10 +475,10 @@ namespace Mcasaenk.Colormaping {
 
     class JsonModel {
         public string parent;
-        public Dictionary<string, string> textures;
-        public JsonElement[] elements = null;
+        public Dictionary<string, JsonElement> textures;
+        public Element[] elements = null;
 
-        public class JsonElement {
+        public class Element {
             public double[] from;
             public double[] to;
             public JsonRotation rotation;
@@ -498,7 +498,15 @@ namespace Mcasaenk.Colormaping {
             }
         }
 
-        public static (WPFColor topdowncolor, double q, int tintedindex) ReadTopDown(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
+        public static string GetPath(JsonElement textureValue) {
+            if(textureValue.ValueKind == JsonValueKind.String) {
+                return textureValue.GetString();
+            } else if(textureValue.ValueKind == JsonValueKind.Object) {
+                return textureValue.GetProperty("sprite").GetString();
+            } else throw new Exception();
+        }
+
+        public static (WPFColor topdowncolor, double q, int tintedindex) ReadTopDown(string block, Element[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
             (WPFColor color, int y, int tintindex)[,] topdown = new (WPFColor color, int y, int tintindex)[16, 16];
             for(int i = 0; i < 16 * 16; i++) topdown[i / 16, i % 16] = (WPFColor.Transparent, -1, -1);
 
@@ -588,7 +596,7 @@ namespace Mcasaenk.Colormaping {
             return (WPFColor.FromRgb((byte)(r / br), (byte)(g / br), (byte)(b / br)), Math.Round(br / 256d, 2), ft);
         }
 
-        public static (WPFColor sidecolor, double q, int tintindex) ReadSide(string block, JsonElement[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
+        public static (WPFColor sidecolor, double q, int tintindex) ReadSide(string block, Element[] elements, Dictionary<string, (WPFBitmap image, string loc)> textures) {
             int tintedindex = -1;
             bool instatint = false, first = true;
 

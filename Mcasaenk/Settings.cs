@@ -244,7 +244,7 @@ namespace Mcasaenk {
                 new Resolution() { Name = "WQHD", type = ResolutionType.stat, X = 2560, Y = 1440 },
                 new Resolution() { Name = "4K UHD", type = ResolutionType.stat, X = 3840, Y = 2160 },
             ],
-            PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true, BLOCKINFO = false,
+            PREFERHEIGHTMAPS = true, SKIP_UNKNOWN_BLOCKS = true, BLOCKINFO = true,
 
             COLOR_MAPPING_MODE = "default",
             SHADETYPE = ShadeType.OG,

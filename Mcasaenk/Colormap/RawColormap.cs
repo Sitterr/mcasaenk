@@ -202,7 +202,7 @@ namespace Mcasaenk.Colormaping {
             TxtFormatReader.ReadStandartFormat(blockstext, (group, parts) => {
                 string name = parts[0].minecraftname();
                 WPFColor color = WPFColor.FromHex(parts[1]);
-                colormap.blocks.Add(name, new RawBlock() { color = color });
+                colormap.blocks.TryAdd(name, new RawBlock() { color = color });
             }, '=');
 
             return colormap;
