@@ -94,6 +94,7 @@ pink_stained_glass_pane
 pink_tulip
 pitcher_plant
 pointed_dripstone
+poplar_sapling
 sulfur_spike
 poppy
 potatoes
@@ -104,12 +105,14 @@ redstone_torch
 redstone_wall_torch
 red_candle
 red_mushroom
+red_shrub
 red_stained_glass_pane
 red_tulip
 resin_clump
 rose_bush
 sculk_vein
 seagrass
+shelf_mushroom
 short_dry_grass
 short_grass
 small_amethyst_bud

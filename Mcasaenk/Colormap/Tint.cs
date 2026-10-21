@@ -41,7 +41,7 @@ namespace Mcasaenk.Colormaping {
         public virtual uint GetTintedColor(uint baseColor, ushort biome, short height) => ColorMult(baseColor, TintColorFor(biome, height));
 
         public abstract Blending GetBlendMode();
-        public enum Blending { single = 1, biomeonly = 2, heightonly = 3, grid = 4 }
+        public enum Blending { single = 1, biomeonly = 2, noblend = 3, grid = 4 }
 
 
         public void FillGPUData(Span<uint> mem) {
@@ -50,10 +50,8 @@ namespace Mcasaenk.Colormaping {
             var blendmode = this.GetBlendMode();
             if(blendmode == Blending.single) {
                 mem[0] = this.TintColorFor(Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
-            } else if(blendmode == Blending.biomeonly) {
+            } else if(blendmode == Blending.biomeonly || blendmode == Blending.noblend) {
                 for(int x = 0; x < w; x++) mem[x] = this.TintColorFor((ushort)x, Colormap.DEFHEIGHT);
-            } else if(blendmode == Blending.heightonly) {
-                for(int x = 0; x < h; x++) mem[x] = this.TintColorFor(Global.Settings.DEFBIOME, (short)x);
             } else if(blendmode == Blending.grid) {
                 for(int xx = 0; xx < w; xx++) {
                     for(int yy = 0; yy < h; yy++) {
@@ -130,7 +128,7 @@ namespace Mcasaenk.Colormaping {
 
         public override Blending GetBlendMode() {
             if(!On) return Blending.single;
-            if(Blend == 1) return Blending.heightonly;
+            if(Blend == 1) return Blending.noblend;
             if(TemperatureVariation > 0) return Blending.grid;
             else return Blending.biomeonly;
         }
@@ -158,7 +156,7 @@ namespace Mcasaenk.Colormaping {
 
         public override Blending GetBlendMode() {
             if(!On) return Blending.single;
-            if(Blend == 1) return Blending.heightonly;
+            if(Blend == 1) return Blending.noblend;
             if(TemperatureVariation > 0 && (tint == "grass" || tint == "foliage" || tint == "dry_foliage")) return Blending.grid;
             else return Blending.biomeonly;
         }
@@ -231,7 +229,7 @@ namespace Mcasaenk.Colormaping {
 
         public override Blending GetBlendMode() {
             if(!On) return Blending.single;
-            else if(sprite.GetLength(0) == 1 || Blend == 1) return Blending.heightonly;
+            else if(sprite.GetLength(0) == 1 || Blend == 1) return Blending.noblend;
             else if(sprite.GetLength(1) == 1 || heightparity) return Blending.biomeonly;
             else return Blending.grid;
         }

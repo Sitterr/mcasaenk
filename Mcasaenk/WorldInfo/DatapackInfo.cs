@@ -253,13 +253,13 @@ namespace Mcasaenk.WorldInfo {
             string grass_color_modifier = "";
             foreach(var el in o["effects"].EnumerateObject()) {
                 if(el.Name == "foliage_color") {
-                    folCol = 0xFF000000 | (uint)el.Value.GetInt32();
+                    folCol = ReadColor(el.Value);
                 } else if(el.Name == "dry_foliage_color") {
-                    dryfolCol = 0xFF000000 | (uint)el.Value.GetInt32();
+                    dryfolCol = ReadColor(el.Value);
                 } else if(el.Name == "grass_color") {
-                    grassCol = 0xFF000000 | (uint)el.Value.GetInt32();
+                    grassCol = ReadColor(el.Value);
                 } else if(el.Name == "water_color") {
-                    waterCol = 0xFF000000 | (uint)el.Value.GetInt32();
+                    waterCol = ReadColor(el.Value);
                 } else if(el.Name == "grass_color_modifier") {
                     grass_color_modifier = el.Value.GetString();
                 }
@@ -278,6 +278,24 @@ namespace Mcasaenk.WorldInfo {
                 temp = temp,
                 downfall = downfall
             };
+        }
+
+        private static uint ReadColor(JsonElement color) {
+            if(color.ValueKind == JsonValueKind.String) {
+                string hex = color.GetString();
+                if(hex.Length != 7 || hex[0] != '#') throw new JsonException("Biome colors must use #rrggbb");
+                return 0xFF000000 | Convert.ToUInt32(hex.Substring(1), 16);
+            } else if(color.ValueKind == JsonValueKind.Array) {
+                if(color.GetArrayLength() != 3) throw new JsonException("Biome colors need three RGB components");
+                uint rgb = 0;
+                foreach(var component in color.EnumerateArray()) {
+                    float value = component.GetSingle();
+                    if(value < 0 || value > 1) throw new JsonException("Biome color components must be between 0 and 1");
+                    rgb = (rgb << 8) | (uint)(value * 255);
+                }
+                return 0xFF000000 | rgb;
+            }
+            return 0xFF000000 | (uint)color.GetInt32();
         }
     }
     public record DimensionInfo {

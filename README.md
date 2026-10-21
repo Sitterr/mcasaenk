@@ -6,9 +6,9 @@
 
 
 ## Install&nbsp;&nbsp;[![total downloads](https://img.shields.io/github/downloads/Sitterr/mcasaenk/total.svg)](https://github.com/Sitterr/mcasaenk/releases)
-### Windows universal: [**Download Version 1.3.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.4/mcasaenk-1.3.4.zip)
-### Windows framework-dependent: [**Download Version 1.3.4**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.4/mcasaenk-1.3.4-framework.zip)
-Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already installed, you can download the lightweight framework version instead
+### Windows universal: [**Download Version 1.3.5**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.5/mcasaenk-1.3.5.zip)
+### Windows framework-dependent: [**Download Version 1.3.5**](https://github.com/Sitterr/mcasaenk/releases/download/v1.3.5/mcasaenk-1.3.5-framework.zip)
+Simply extract the zip file and run the `Mcasaenk.exe`. If you have at least .NET 8 installed, download the lightweight framework-dependent version instead
 
 
 
@@ -18,12 +18,12 @@ Simply extract the zip file and run the `Mcasaenk.exe`. If .NET 8 is already ins
 * **Colormaps:** apart from the 4 build-in distinct styles(_default_, _java map_, _bedrock map_, _betaplus_), you can create new styles based on resource packs(vanilla and optifine) and mods
 * **Filtering:** includes support for semi-transparent blocks and an intuitive, versatile filtering system
 * **Support for mods and datapacks:** can identify and read custom blocks, biomes, and dimensions defined in datapacks and mods
-* **30+ different individual settings:** _contrast_, _lightning_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen dynamically in real-time thanks to hardware acceleration
+* **30+ different individual settings:** _contrast_, _lighting_, _shading_, _colormaps_, _biome blending_, _water transluciency_, etc. Most of the customizations happen dynamically in real-time thanks to hardware acceleration
 * **Extensive interface for screenshot capturing:** drag and scale a virtual window representing the screenshot, before capturing. Can also export screenshots as in-game minecraft maps
 
 
 ## Supported Versions
-Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 26.2
+Currently MCA Saenk supports every official Java Edition release from 1.2.1 up to 26.3
 Additionally, it strives to support modded worlds(Fabric and Forge), making efforts to extract information about custom blocks, as well as biomes(1.16+) and dimensions(1.16+).
 
 
@@ -43,11 +43,3 @@ Additionally, it strives to support modded worlds(Fabric and Forge), making effo
 ![img35_](https://github.com/user-attachments/assets/7accf1c1-ce29-49eb-bfdf-679c38e17740)
 
 ![umg13](https://github.com/user-attachments/assets/a3fad97f-360d-482e-b78b-ae383b85963f)
-
-
-
-## Acknowledgments
-This program took much inspiration from the many already existing external mappers(and in this regard with MCA Saenk I tried to combine and build upon my favorite parts of each one of those tools). The main ones being:
-- [MCA Selector](https://github.com/Querz/mcaselector)
-- [Mapee](https://www.mapee.net/home)
-- [mcview](https://github.com/kbinani/mcview)

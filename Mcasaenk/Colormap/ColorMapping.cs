@@ -385,7 +385,7 @@ namespace Mcasaenk.Colormaping {
                     int len = blendmode switch {
                         Blending.single => 1,
                         Blending.biomeonly => w,
-                        Blending.heightonly => h,
+                        Blending.noblend => h,
                         Blending.grid => w * h,
                     };
 

@@ -60,12 +60,14 @@ namespace Mcasaenk.Rendering.ChunkRenderData {
                             else blockStates_palette[y][0] = 0;
                             int i = 1;
                             foreach(var _p in (List<Tag>)palette) {
-                                var p = (CompoundTag_Optimal)_p;
+                                // Mixed NBT lists wrap compact block IDs in a compound with an empty key.
+                                var value = _p is CompoundTag_Optimal wrapped ? wrapped[""] ?? _p : _p;
+                                var p = value as CompoundTag_Optimal;
 
-                                var name = ((string)(NumTag<string>)p["Name"]).minecraftname();
+                                var name = ((string)(NumTag<string>)(p != null ? p["id"] ?? p["Name"] : value)).minecraftname();
                                 bool waterlogged = false;
 
-                                var properties = (CompoundTag_Optimal)p["Properties"];
+                                var properties = (CompoundTag_Optimal)(p?["properties"] ?? p?["Properties"]);
                                 if(properties != null) {
                                     var wl = properties["waterlogged"];
                                     if(wl != null) waterlogged = (NumTag<string>)wl == "true";

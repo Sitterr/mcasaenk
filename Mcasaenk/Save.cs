@@ -24,18 +24,14 @@ namespace Mcasaenk {
 
             this.datapackInfo = DatapacksInfo.FromPath(path, levelDat, modsInfo);
 
-            if (levelDat.version_name.StartsWith("1.") || levelDat.version_name.StartsWith("0."))
-            {
-                this.overworld = new Dimension(this, Path.Combine(path, "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
-                this.nether = new Dimension(this, Path.Combine(path, "DIM-1", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
-                this.end = new Dimension(this, Path.Combine(path, "DIM1", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
-            } 
-            else
-            {
-                this.overworld = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "overworld", "region"), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
-                this.nether = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "the_nether", "region"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
-                this.end = new Dimension(this, Path.Combine(path, "dimensions", "minecraft", "the_end", "region"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
+            string RegionPath(string dimension, string oldFolder) {
+                string modern = Path.Combine(path, "dimensions", "minecraft", dimension, "region");
+                return Directory.Exists(modern) ? modern : Path.Combine(path, oldFolder, "region");
             }
+
+            this.overworld = new Dimension(this, RegionPath("overworld", ""), datapackInfo.dimensions["minecraft:overworld"], WPFBitmap.FromBytes(ResourceMapping.grass8).ToBitmapSource());
+            this.nether = new Dimension(this, RegionPath("the_nether", "DIM-1"), datapackInfo.dimensions["minecraft:the_nether"], WPFBitmap.FromBytes(ResourceMapping.nether8).ToBitmapSource());
+            this.end = new Dimension(this, RegionPath("the_end", "DIM1"), datapackInfo.dimensions["minecraft:the_end"], WPFBitmap.FromBytes(ResourceMapping.end8).ToBitmapSource());
 
             dimensions = new List<Dimension>() { overworld, nether, end };
 
@@ -52,7 +48,7 @@ namespace Mcasaenk {
             if(levelDatInfo.resourcepack || modsInfo.mods.Count() > 0) {
                 List<ReadInterface> respacks = new List<ReadInterface>();
                 using ReadInterface vanilla = new ZipRead(Path.Combine(Global.App.APPFOLDER, "vanilla_resource_pack.zip"));
-                using ReadInterface buildin = levelDatInfo.resourcepack ? new ZipRead(Path.Combine(path, "resources.zip")) : null;
+                using ReadInterface buildin = levelDatInfo.resourcepack ? new ZipRead(levelDatInfo.resourcepack_path) : null;
 
                 var list = new[] { vanilla }.Concat(modsInfo.mods.Select(m => m.read)).ToList();
                 if(buildin != null) list.Add(buildin);

@@ -732,7 +732,7 @@ namespace Mcasaenk.Rendering_bitmap {
         public uint Draw(GenDataColumn colw, int i, bool data, Tint tint) {
             if(tint.GetBlendMode() == Tint.Blending.single) {
                 return tint.GetTintedColor(colw.Color(i), Global.Settings.DEFBIOME, Colormap.DEFHEIGHT);
-            } else if(tint.GetBlendMode() == Tint.Blending.heightonly) {
+            } else if(tint.GetBlendMode() == Tint.Blending.noblend) {
                 uint color = 0;
                 float lcolor = 0.001f;
                 for(int h = colw.Height(i); h > colw.Height(i) - colw.Depth(i); h--) {

@@ -141,7 +141,8 @@ namespace Mcasaenk.WorldInfo {
 
         public string[] datapacks { get; private set; }
         public string[] mods { get; private set; }
-        public bool resourcepack { get; private set; }
+        public string resourcepack_path { get; private set; }
+        public bool resourcepack => resourcepack_path != null;
 
         public readonly PlayerLocData mainPlayer = new();
         public readonly PlayerLocData[] otherPlayers = [];
@@ -152,15 +153,27 @@ namespace Mcasaenk.WorldInfo {
             this.image = image;
             this.foldername = folder.Name;
             this.lastopened = lastopened;
-            this.resourcepack = folder.GetFiles().Any(f => f.Name == "resources.zip");
+            string packpath = Path.Combine(folder.FullName, "resourcepacks", "resources.zip");
+            if(!File.Exists(packpath)) packpath = Path.Combine(folder.FullName, "resources.zip");
+            this.resourcepack_path = File.Exists(packpath) ? packpath : null;
 
             bool hardcore = false;
 
             var tag = (CompoundTag_Optimal)_tag;
             var data = (CompoundTag_Optimal)tag["Data"];
+            var embeddedPlayer = data["Player"] as CompoundTag_Optimal;
+            PlayerLocData? mainPosition = embeddedPlayer != null ? ReadPlayer(embeddedPlayer) : null;
+            string singleplayer = null;
+            var uuid = data["singleplayer_uuid"] ?? embeddedPlayer?["UUID"];
+            if(uuid is ArrTag<int> ids && ids.Length == 4) {
+                singleplayer = Guid.ParseExact($"{ids[0]:x8}{ids[1]:x8}{ids[2]:x8}{ids[3]:x8}", "N").ToString();
+            } else if(uuid is NumTag<string> uuidString) singleplayer = uuidString;
             {
                 var d = (NumTag<sbyte>)data["Difficulty"];
                 this.difficulty = d != null ? (Difficulty)(sbyte)d : Difficulty.Normal;
+                if(data["difficulty_settings"] is CompoundTag_Optimal difficultySettings &&
+                    difficultySettings["difficulty"] is NumTag<string> difficultyName &&
+                    Enum.TryParse<Difficulty>(difficultyName, true, out var difficulty)) this.difficulty = difficulty;
 
                 this.name = (NumTag<string>)data["LevelName"];
                 this.gamemode = (Gamemode)(int)(NumTag<int>)data["GameType"];
@@ -178,33 +191,14 @@ namespace Mcasaenk.WorldInfo {
                 } else {
                     this.seed = (NumTag<long>)data["RandomSeed"];
                 }
-                hardcore = ((NumTag<sbyte>)data["hardcore"]) > 0;
-                mainPlayer.sp_x = (NumTag<int>)data["SpawnX"];
-                mainPlayer.sp_y = (NumTag<int>)data["SpawnY"];
-                mainPlayer.sp_z = (NumTag<int>)data["SpawnZ"];
-                if(data["SpawnDimension"] is NumTag<string> st) mainPlayer.sp_d = st;
-                else if(data["SpawnDimension"] is NumTag<int> it) {
-                    if(it == 0) mainPlayer.sp_d = "minecraft:overworld";
-                    if(it == 1) mainPlayer.sp_d = "minecraft:the_nether";
-                    if(it == 2) mainPlayer.sp_d = "minecraft:the_end";
-                } else mainPlayer.sp_d = "minecraft:overworld";
-
-                var player = (CompoundTag_Optimal)data["Player"];
-                {
-
-                    if(player?["Pos"] != null) {
-                        var pos = (List<Tag>)(ListTag)player["Pos"];
-                        mainPlayer.pl_x = (int)(NumTag<double>)pos[0];
-                        mainPlayer.pl_y = (int)(NumTag<double>)pos[1];
-                        mainPlayer.pl_z = (int)(NumTag<double>)pos[2];
-                        if(player["Dimension"] is NumTag<string> st2) mainPlayer.pl_d = st2;
-                        else if(player["Dimension"] is NumTag<int> it) {
-                            if(it == 0) mainPlayer.pl_d = "minecraft:overworld";
-                            if(it == 1) mainPlayer.pl_d = "minecraft:the_nether";
-                            if(it == 2) mainPlayer.pl_d = "minecraft:the_end";
-                        } else mainPlayer.pl_d = "minecraft:overworld";
-                    }
+                string settingspath = Path.Combine(folder.FullName, "data", "minecraft", "world_gen_settings.dat");
+                if(File.Exists(settingspath)) {
+                    using var settings = ReadDat(settingspath);
+                    var settingsData = (CompoundTag_Optimal)settings["data"];
+                    this.seed = (NumTag<long>)settingsData["seed"];
                 }
+                hardcore = ((NumTag<sbyte>)data["hardcore"]) > 0;
+                mainPlayer = ReadPlayer(data);
                 var datapacks = (CompoundTag_Optimal)data["DataPacks"];
                 this.mods = [];
                 this.datapacks = [];
@@ -224,45 +218,16 @@ namespace Mcasaenk.WorldInfo {
 
             // other players
             {
-                var plf = folder.GetDirectories().FirstOrDefault(sd => sd.Name == "playerdata");
+                string playerpath = Path.Combine(folder.FullName, "players", "data");
+                if(!Directory.Exists(playerpath)) playerpath = Path.Combine(folder.FullName, "playerdata");
                 List<PlayerLocData> otherPlayers = new();
-                if(plf != null) {
-                    foreach(var datf in plf.GetFiles().Where(f => f.Extension == ".dat")) {
+                if(Directory.Exists(playerpath)) {
+                    foreach(var datf in new DirectoryInfo(playerpath).GetFiles("*.dat")
+                        .OrderByDescending(f => f.Name.Equals(singleplayer + ".dat", StringComparison.OrdinalIgnoreCase))) {
                         try {
-                            PlayerLocData player = new PlayerLocData();
-
-                            using var pointer = new MemoryStream(File.ReadAllBytes(datf.FullName));
-                            if(pointer == null) continue;
-                            using var zlip = new GZipStream(pointer, CompressionMode.Decompress);
-                            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
-                            var nbtreader = new NbtReader(decompressedStream);
-                            _ = nbtreader.TryRead(out var _g);
-                            var globaltag = (CompoundTag_Optimal)_g;
-                            player.sp_x = (NumTag<int>)globaltag["SpawnX"];
-                            player.sp_y = (NumTag<int>)globaltag["SpawnY"];
-                            player.sp_z = (NumTag<int>)globaltag["SpawnZ"];
-                            if(globaltag["SpawnDimension"] is NumTag<string> st) player.sp_d = st;
-                            else if(globaltag["SpawnDimension"] is NumTag<int> it) {
-                                if(it == 0) player.sp_d = "minecraft:overworld";
-                                if(it == 1) player.sp_d = "minecraft:the_nether";
-                                if(it == 2) player.sp_d = "minecraft:the_end";
-                            } else player.sp_d = "minecraft:overworld";
-
-                            if(globaltag?["Pos"] != null) {
-                                var pos = (List<Tag>)(ListTag)globaltag["Pos"];
-
-                                player.pl_x = (int)(NumTag<double>)pos[0];
-                                player.pl_y = (int)(NumTag<double>)pos[1];
-                                player.pl_z = (int)(NumTag<double>)pos[2];
-                                if(globaltag["Dimension"] is NumTag<string> st3) player.pl_d = st3;
-                                else if(globaltag["Dimension"] is NumTag<int> it) {
-                                    if(it == 0) player.pl_d = "minecraft:overworld";
-                                    if(it == 1) player.pl_d = "minecraft:the_nether";
-                                    if(it == 2) player.pl_d = "minecraft:the_end";
-                                } else player.pl_d = "minecraft:overworld";
-
-                            }
-
+                            using var globaltag = ReadDat(datf.FullName);
+                            var player = ReadPlayer(globaltag);
+                            if(datf.Name.Equals(singleplayer + ".dat", StringComparison.OrdinalIgnoreCase)) mainPosition = player;
                             otherPlayers.Add(player);
                         } catch {
                             continue;
@@ -272,25 +237,66 @@ namespace Mcasaenk.WorldInfo {
                 this.otherPlayers = otherPlayers.ToArray();
             }
 
+            if(mainPosition is PlayerLocData position) {
+                mainPlayer.pl_x = position.pl_x;
+                mainPlayer.pl_y = position.pl_y;
+                mainPlayer.pl_z = position.pl_z;
+                mainPlayer.pl_d = position.pl_d;
+            }
 
             if(hardcore && gamemode == Gamemode.Survival) gamemode = Gamemode.Hardcore;
         }
         private LevelDatInfo() { }
 
+        private static PlayerLocData ReadPlayer(CompoundTag_Optimal tag) {
+            PlayerLocData player = new();
+            var spawn = (CompoundTag_Optimal)(tag["spawn"] ?? tag["respawn"]);
+            if(spawn?["pos"] is ArrTag<int> spawnPos && spawnPos.Length == 3) {
+                player.sp_x = spawnPos[0];
+                player.sp_y = spawnPos[1];
+                player.sp_z = spawnPos[2];
+                player.sp_d = ReadDimension(spawn["dimension"]);
+            } else if(tag["SpawnX"] != null) {
+                player.sp_x = (NumTag<int>)tag["SpawnX"];
+                player.sp_y = (NumTag<int>)tag["SpawnY"];
+                player.sp_z = (NumTag<int>)tag["SpawnZ"];
+                player.sp_d = ReadDimension(tag["SpawnDimension"]);
+            }
+
+            if(tag["Pos"] is ListTag pos && pos.Length == 3) {
+                var coords = (List<Tag>)pos;
+                player.pl_x = (int)(NumTag<double>)coords[0];
+                player.pl_y = (int)(NumTag<double>)coords[1];
+                player.pl_z = (int)(NumTag<double>)coords[2];
+                player.pl_d = ReadDimension(tag["Dimension"]);
+            }
+            return player;
+        }
+
+        private static string ReadDimension(Tag tag) {
+            if(tag is NumTag<string> name) return name;
+            if(tag is NumTag<int> id) {
+                return (int)id switch {
+                    -1 => "minecraft:the_nether",
+                    1 => "minecraft:the_end",
+                    _ => "minecraft:overworld",
+                };
+            }
+            return "minecraft:overworld";
+        }
+
+        private static CompoundTag_Optimal ReadDat(string path) {
+            using var pointer = File.OpenRead(path);
+            using var zlip = new GZipStream(pointer, CompressionMode.Decompress);
+            using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
+            var nbtreader = new NbtReader(decompressedStream);
+            _ = nbtreader.TryRead(out var tag);
+            return (CompoundTag_Optimal)tag;
+        }
 
         public static LevelDatInfo ReadWorld(string path) {
             try {
-                using var pointer = new MemoryStream(File.ReadAllBytes(Path.Combine(path, "level.dat")));
-
-                if(pointer == null) return null;
-                using var zlip = new GZipStream(pointer, CompressionMode.Decompress);
-                using var decompressedStream = new PooledBufferedStream(zlip, ArrayPool<byte>.Shared);
-
-
-                var nbtreader = new NbtReader(decompressedStream);
-                bool error = nbtreader.TryRead(out var _g);
-
-                var globaltag = (CompoundTag_Optimal)_g;
+                using var globaltag = ReadDat(Path.Combine(path, "level.dat"));
 
                 ImageSource icon = null;
                 if(File.Exists(Path.Combine(path, "icon.png"))) {

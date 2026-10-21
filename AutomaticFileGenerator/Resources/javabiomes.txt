@@ -10,6 +10,7 @@ forest
 flower_forest
 birch_forest
 dark_forest
+pale_garden
 old_growth_birch_forest
 old_growth_pine_taiga
 old_growth_spruce_taiga
@@ -62,3 +63,5 @@ end_highlands
 end_midlands
 small_end_islands
 end_barrens
+sulfur_caves
+dappled_forest
